@@ -1,0 +1,17 @@
+{
+  "name": "surfaces-platform-v2",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "interfacectl": "./bin/interfacectl"
+  },
+  "scripts": {
+    "materialize:p0": "node scripts/materialize-p0.mjs",
+    "proof:p0": "node bin/interfacectl.js surfaces proof --fixture fixtures/p0 --out artifacts/p0",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "ajv": "^8.17.1"
+  }
+}
