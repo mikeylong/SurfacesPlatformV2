@@ -23,6 +23,37 @@ test("diagnostics registry stays in lockstep across README, schema, and manifest
   await assertDiagnosticsContractLockstep();
 });
 
+test("diagnostics schema is closed over registered rows", async () => {
+  await materializeP0Contract(root);
+  const schemas = await loadSchemas();
+  const ajv = new Ajv2020({ allErrors: true, strict: false, validateSchema: true });
+  for (const schema of Object.values(schemas)) {
+    ajv.addSchema(schema);
+  }
+  const diagnosticsSchema = await readJson("schemas/diagnostics.v0.schema.json");
+  const rows = diagnosticsSchema.xDiagnosticsRegistry;
+  const concrete = rows.find((row) => row.fixtureCoverage === "invalid/unknown-component.json");
+  const schemaRow = rows.find((row) => row.code === "SCHEMA_VALIDATION_FAILED");
+
+  validateWith(ajv, "diagnostics.v0", diagnosticFromRegistryRow(concrete), "concrete diagnostic row");
+  assert.equal(validateResult(ajv, "diagnostics.v0", {
+    ...diagnosticFromRegistryRow(concrete),
+    artifactPath: "fixtures/p0/invalid/unknown-prop.json"
+  }).valid, false, "registered code must not validate on the wrong artifact path");
+  assert.equal(validateResult(ajv, "diagnostics.v0", {
+    ...diagnosticFromRegistryRow(concrete),
+    path: "/root/wrong",
+    instanceLocation: "/root/wrong"
+  }).valid, false, "registered code must not validate on the wrong JSON Pointer");
+
+  validateWith(ajv, "diagnostics.v0", diagnosticFromRegistryRow(schemaRow, {
+    artifactPath: "fixtures/p0/valid.surface-ir.json"
+  }), "manifest-wide schema diagnostic row");
+  assert.equal(validateResult(ajv, "diagnostics.v0", diagnosticFromRegistryRow(schemaRow, {
+    artifactPath: "package.json"
+  })).valid, false, "manifest-wide schema diagnostics must stay inside declared P0 artifacts");
+});
+
 test("P0 proof is deterministic, schema-valid, and manifest-complete", async () => {
   await materializeP0Contract(root);
   await fs.rm(artifactDir, { recursive: true, force: true });
@@ -40,6 +71,82 @@ test("P0 proof is deterministic, schema-valid, and manifest-complete", async () 
   await validateSchemasFixturesAndArtifacts();
   await assertDiagnosticsContractLockstep();
   await assertEvidenceInvariants();
+});
+
+test("P0 proof rejects tampered valid expectation artifact paths", async () => {
+  await materializeP0Contract(root);
+  await fs.rm(artifactDir, { recursive: true, force: true });
+  await runProof();
+
+  const manifestPath = path.join(root, "fixtures/p0/expectations.manifest.json");
+  const original = await fs.readFile(manifestPath, "utf8");
+  const invalidArtifactPaths = [
+    "package.json",
+    "/tmp/x",
+    "../x",
+    "fixtures/p0/invalid/unknown-component.json"
+  ];
+
+  try {
+    for (const expectedArtifactPath of invalidArtifactPaths) {
+      const manifest = JSON.parse(original);
+      const validExpectation = manifest.expectations.find((entry) => entry.fixturePath === "fixtures/p0/valid.surface-ir.json");
+      assert.ok(validExpectation, "valid fixture expectation must exist");
+      validExpectation.expectedArtifactPath = expectedArtifactPath;
+      await fs.writeFile(manifestPath, canonicalJson(manifest));
+
+      await assert.rejects(
+        runProof(),
+        (error) => {
+          assert.equal(error.code, 1);
+          assert.match(error.stderr, /expectedArtifactPath|schema validation failed/);
+          return true;
+        },
+        `tampered expectedArtifactPath must fail: ${expectedArtifactPath}`
+      );
+    }
+  } finally {
+    await fs.writeFile(manifestPath, original);
+    await runProof();
+  }
+});
+
+test("P0 proof rejects tampered valid expectation JSON Pointers", async () => {
+  await materializeP0Contract(root);
+  await fs.rm(artifactDir, { recursive: true, force: true });
+  await runProof();
+
+  const manifestPath = path.join(root, "fixtures/p0/expectations.manifest.json");
+  const original = await fs.readFile(manifestPath, "utf8");
+  const invalidJsonPointers = [
+    "package.json",
+    "/tmp/x",
+    "../x",
+    "/root/component"
+  ];
+
+  try {
+    for (const expectedJsonPointer of invalidJsonPointers) {
+      const manifest = JSON.parse(original);
+      const validExpectation = manifest.expectations.find((entry) => entry.fixturePath === "fixtures/p0/valid.surface-ir.json");
+      assert.ok(validExpectation, "valid fixture expectation must exist");
+      validExpectation.expectedJsonPointer = expectedJsonPointer;
+      await fs.writeFile(manifestPath, canonicalJson(manifest));
+
+      await assert.rejects(
+        runProof(),
+        (error) => {
+          assert.equal(error.code, 1);
+          assert.match(error.stderr, /expectedJsonPointer|schema validation failed/);
+          return true;
+        },
+        `tampered expectedJsonPointer must fail: ${expectedJsonPointer}`
+      );
+    }
+  } finally {
+    await fs.writeFile(manifestPath, original);
+    await runProof();
+  }
 });
 
 test("P0 proof rejects stale unexpected output before writing", async () => {
@@ -65,11 +172,11 @@ test("P0 proof rejects stale unexpected output before writing", async () => {
 
 test("P0 proof maps output path errors to exit 2", async () => {
   await materializeP0Contract(root);
-  const outputFile = path.join(root, "tmp-p0-out-file");
-  await fs.writeFile(outputFile, "not a directory");
   try {
+    await fs.rm(artifactDir, { recursive: true, force: true });
+    await fs.writeFile(artifactDir, "not a directory");
     await assert.rejects(
-      execFileAsync("node", ["bin/interfacectl.js", "surfaces", "proof", "--fixture", "fixtures/p0", "--out", "tmp-p0-out-file"], { cwd: root }),
+      runProof(),
       (error) => {
         assert.equal(error.code, 2);
         assert.match(error.stderr, /output path error/);
@@ -77,7 +184,300 @@ test("P0 proof maps output path errors to exit 2", async () => {
       }
     );
   } finally {
-    await fs.rm(outputFile, { force: true });
+    await fs.rm(artifactDir, { force: true });
+    await runProof();
+  }
+});
+
+test("P0 proof rejects parent traversal in command paths", async () => {
+  await materializeP0Contract(root);
+  await assert.rejects(
+    execFileAsync("node", ["bin/interfacectl.js", "surfaces", "proof", "--fixture", "fixtures/p0", "--out", "../artifacts/p0"], { cwd: root }),
+    (error) => {
+      assert.equal(error.code, 2);
+      assert.match(error.stderr, /POSIX-style relative path without \. or \.\. segments/);
+      return true;
+    }
+  );
+});
+
+test("P0 proof rejects fixture files not declared by the manifest", async () => {
+  await materializeP0Contract(root);
+  await fs.rm(artifactDir, { recursive: true, force: true });
+  await runProof();
+
+  const extraFixture = path.join(root, "fixtures/p0/invalid/unexpected-extra.json");
+  try {
+    await fs.writeFile(extraFixture, "{}");
+    await assert.rejects(
+      runProof(),
+      (error) => {
+        assert.equal(error.code, 1);
+        assert.match(error.stderr, /fixture directory contents drift/);
+        assert.match(error.stderr, /extra fixtures\/p0\/invalid\/unexpected-extra\.json/);
+        return true;
+      }
+    );
+  } finally {
+    await fs.rm(extraFixture, { force: true });
+    await runProof();
+  }
+});
+
+test("P0 proof rejects fixture and schema directory drift that is not a regular file", async () => {
+  await materializeP0Contract(root);
+  await fs.rm(artifactDir, { recursive: true, force: true });
+  await runProof();
+
+  const extraFixtureDir = path.join(root, "fixtures/p0/invalid/empty-extra");
+  const extraSchemaDir = path.join(root, "schemas/empty-extra");
+  try {
+    await fs.mkdir(extraFixtureDir);
+    await assert.rejects(
+      runProof(),
+      (error) => {
+        assert.equal(error.code, 1);
+        assert.match(error.stderr, /fixture directory contents drift/);
+        assert.match(error.stderr, /extra fixtures\/p0\/invalid\/empty-extra\//);
+        return true;
+      }
+    );
+
+    await fs.rm(extraFixtureDir, { recursive: true, force: true });
+    await fs.mkdir(extraSchemaDir);
+    await assert.rejects(
+      runProof(),
+      (error) => {
+        assert.equal(error.code, 1);
+        assert.match(error.stderr, /schema directory contents drift/);
+        assert.match(error.stderr, /extra schemas\/empty-extra\//);
+        return true;
+      }
+    );
+  } finally {
+    await fs.rm(extraFixtureDir, { recursive: true, force: true });
+    await fs.rm(extraSchemaDir, { recursive: true, force: true });
+    await runProof();
+  }
+});
+
+test("P0 proof rejects schema files outside the declared suite", async () => {
+  await materializeP0Contract(root);
+  await fs.rm(artifactDir, { recursive: true, force: true });
+  await runProof();
+
+  const extraSchema = path.join(root, "schemas/unexpected.v0.schema.json");
+  try {
+    await fs.writeFile(extraSchema, "{}");
+    await assert.rejects(
+      runProof(),
+      (error) => {
+        assert.equal(error.code, 1);
+        assert.match(error.stderr, /schema directory contents drift/);
+        assert.match(error.stderr, /extra schemas\/unexpected\.v0\.schema\.json/);
+        return true;
+      }
+    );
+  } finally {
+    await fs.rm(extraSchema, { force: true });
+    await runProof();
+  }
+});
+
+test("P0 proof validates evidence hash mutation against actual artifact bytes", async () => {
+  await materializeP0Contract(root);
+  await fs.rm(artifactDir, { recursive: true, force: true });
+  await runProof();
+
+  const mutationPath = path.join(root, "fixtures/p0/mutations/hash-mismatch.evidence.json");
+  const original = await fs.readFile(mutationPath, "utf8");
+  try {
+    await fs.writeFile(mutationPath, await fs.readFile(path.join(root, "artifacts/p0/evidence.json"), "utf8"));
+
+    const result = await runProof();
+    assert.match(result.stdout, /surfaces proof: pass/);
+    assert.match(result.stdout, /validationResults: 40\/40 matched/);
+  } finally {
+    await fs.writeFile(mutationPath, original);
+    await runProof();
+  }
+});
+
+test("P0 proof rejects hash mismatch mutations outside the declared artifact order", async () => {
+  await materializeP0Contract(root);
+  await fs.rm(artifactDir, { recursive: true, force: true });
+  await runProof();
+
+  const mutationPath = path.join(root, "fixtures/p0/mutations/hash-mismatch.evidence.json");
+  const original = await fs.readFile(mutationPath, "utf8");
+  try {
+    const mutation = JSON.parse(original);
+    mutation.artifacts = [{
+      role: "generated-artifact",
+      path: "package.json",
+      schemaId: null,
+      hashAlgorithm: "sha256",
+      hash: sha256Hex(canonicalJson(await readJson("package.json")))
+    }];
+    await fs.writeFile(mutationPath, canonicalJson(mutation));
+    await runProof();
+  } finally {
+    await fs.writeFile(mutationPath, original);
+    await runProof();
+  }
+});
+
+test("P0 golden extraction rejects missing nested source refs", async () => {
+  await materializeP0Contract(root);
+  await fs.rm(artifactDir, { recursive: true, force: true });
+  await runProof();
+
+  const sourcePath = path.join(root, "fixtures/p0/source.fixture.json");
+  const original = await fs.readFile(sourcePath, "utf8");
+  try {
+    const source = JSON.parse(original);
+    delete source.components[0].accessibility.sourceRef;
+    await fs.writeFile(sourcePath, canonicalJson(source));
+
+    await assert.rejects(
+      runProof(),
+      (error) => {
+        assert.equal(error.code, 1);
+        assert.match(error.stderr, /golden extraction failed: EXTRACT_SOURCE_REF_MISSING/);
+        return true;
+      }
+    );
+  } finally {
+    await fs.writeFile(sourcePath, original);
+    await runProof();
+  }
+});
+
+test("P0 golden extraction rejects stale sourceRefs map entries", async () => {
+  await materializeP0Contract(root);
+  await fs.rm(artifactDir, { recursive: true, force: true });
+  await runProof();
+
+  const sourcePath = path.join(root, "fixtures/p0/source.fixture.json");
+  const original = await fs.readFile(sourcePath, "utf8");
+  try {
+    const source = JSON.parse(original);
+    source.sourceRefs["/components/0/accessibility"] = "fixture://p0/source#/wrong";
+    await fs.writeFile(sourcePath, canonicalJson(source));
+
+    await assert.rejects(
+      runProof(),
+      (error) => {
+        assert.equal(error.code, 1);
+        assert.match(error.stderr, /golden extraction failed: EXTRACT_SOURCE_REF_MISSING/);
+        return true;
+      }
+    );
+  } finally {
+    await fs.writeFile(sourcePath, original);
+    await runProof();
+  }
+});
+
+test("P0 proof rejects malformed Surface IR source refs", async () => {
+  await materializeP0Contract(root);
+  await fs.rm(artifactDir, { recursive: true, force: true });
+  await runProof();
+
+  const surfacePath = path.join(root, "fixtures/p0/valid.surface-ir.json");
+  const original = await fs.readFile(surfacePath, "utf8");
+  try {
+    const surface = JSON.parse(original);
+    surface.root.sourceRef = "not-a-fixture-ref";
+    await fs.writeFile(surfacePath, canonicalJson(surface));
+
+    await assert.rejects(
+      runProof(),
+      (error) => {
+        assert.equal(error.code, 1);
+        assert.match(error.stderr, /run expectation mismatch/);
+        return true;
+      }
+    );
+  } finally {
+    await fs.writeFile(surfacePath, original);
+    await runProof();
+  }
+});
+
+test("P0 proof rejects output symlinks before writing artifacts", async () => {
+  await materializeP0Contract(root);
+  await fs.rm(artifactDir, { recursive: true, force: true });
+  await runProof();
+
+  const target = path.join(root, "tmp-p0-symlink-target.json");
+  const link = path.join(artifactDir, "extract.json");
+  const original = await fs.readFile(link, "utf8");
+  try {
+    await fs.writeFile(target, "{}");
+    await fs.rm(link, { force: true });
+    await fs.symlink(target, link);
+
+    await assert.rejects(
+      runProof(),
+      (error) => {
+        assert.equal(error.code, 1);
+        assert.match(error.stderr, /unsafe expected output entry/);
+        return true;
+      }
+    );
+    assert.equal(await fs.readFile(target, "utf8"), "{}");
+  } finally {
+    await fs.rm(link, { force: true });
+    await fs.writeFile(link, original);
+    await fs.rm(target, { force: true });
+    await runProof();
+  }
+});
+
+test("P0 proof rejects symlinked output root before writing artifacts", async () => {
+  await materializeP0Contract(root);
+  await fs.rm(artifactDir, { recursive: true, force: true });
+  await runProof();
+
+  const targetDir = path.join(root, "tmp-p0-symlink-output-root");
+  try {
+    await fs.rm(artifactDir, { recursive: true, force: true });
+    await fs.mkdir(targetDir, { recursive: true });
+    await fs.symlink(targetDir, artifactDir);
+
+    await assert.rejects(
+      runProof(),
+      (error) => {
+        assert.equal(error.code, 2);
+        assert.match(error.stderr, /output path error/);
+        return true;
+      }
+    );
+    assert.deepEqual(await fs.readdir(targetDir), []);
+  } finally {
+    await fs.rm(artifactDir, { force: true });
+    await fs.rm(targetDir, { recursive: true, force: true });
+    await runProof();
+  }
+});
+
+test("P0 proof rejects non-P0 output roots before creating directories", async () => {
+  await materializeP0Contract(root);
+  const nonP0Out = path.join(root, "tmp-safe-relative-out");
+  await fs.rm(nonP0Out, { recursive: true, force: true });
+  try {
+    await assert.rejects(
+      execFileAsync("node", ["bin/interfacectl.js", "surfaces", "proof", "--fixture", "fixtures/p0", "--out", "tmp-safe-relative-out"], { cwd: root }),
+      (error) => {
+        assert.equal(error.code, 2);
+        assert.match(error.stderr, /P0 proof requires --fixture fixtures\/p0 --out artifacts\/p0/);
+        return true;
+      }
+    );
+    await assert.rejects(fs.stat(nonP0Out), { code: "ENOENT" });
+  } finally {
+    await fs.rm(nonP0Out, { recursive: true, force: true });
   }
 });
 
@@ -127,8 +527,31 @@ async function validateSchemasFixturesAndArtifacts() {
   validateWith(ajv, "runtime-catalog.v0", await readJson("artifacts/p0/catalog.json"), "catalog artifact");
   validateWith(ajv, "runtime-catalog.v0", await readJson("artifacts/p0/governed-catalog.json"), "governed catalog artifact");
   validateWith(ajv, "adapter-diagnostics.v0", await readJson("artifacts/p0/adapter-diagnostics.json"), "adapter diagnostics artifact");
+  await assertNormalizedTokenArtifacts();
   const evidence = await readJson("artifacts/p0/evidence.json");
   validateWith(ajv, "evidence.v0", evidence, "evidence artifact");
+  for (const artifactPath of ["package.json", "/tmp/x", "../x"]) {
+    const poisonedEvidence = JSON.parse(JSON.stringify(evidence));
+    const validResult = poisonedEvidence.validationResults.find((result) => result.fixturePath === "fixtures/p0/valid.surface-ir.json");
+    assert.ok(validResult, "valid fixture result must exist");
+    validResult.artifactPath = artifactPath;
+    assert.equal(
+      validateResult(ajv, "evidence.v0", poisonedEvidence).valid,
+      false,
+      `evidence validationResults artifactPath must reject ${artifactPath}`
+    );
+  }
+  for (const jsonPointer of ["package.json", "/tmp/x", "../x"]) {
+    const poisonedEvidence = JSON.parse(JSON.stringify(evidence));
+    const validResult = poisonedEvidence.validationResults.find((result) => result.fixturePath === "fixtures/p0/valid.surface-ir.json");
+    assert.ok(validResult, "valid fixture result must exist");
+    validResult.jsonPointer = jsonPointer;
+    assert.equal(
+      validateResult(ajv, "evidence.v0", poisonedEvidence).valid,
+      false,
+      `evidence validationResults jsonPointer must reject ${jsonPointer}`
+    );
+  }
   const nullHashEvidence = JSON.parse(JSON.stringify(evidence));
   nullHashEvidence.artifacts[nullHashEvidence.artifacts.length - 1].hash = null;
   assert.equal(validateResult(ajv, "evidence.v0", nullHashEvidence).valid, false, "persisted evidence hashes must be strings, not null placeholders");
@@ -182,6 +605,42 @@ async function assertDiagnosticsContractLockstep() {
   assert.equal(manifest.expectations.filter((expectation) => expectation.expectedDiagnosticCodes.length === 0).length, 1);
   assert.equal(manifest.runExpectation.status, "pass");
   assert.equal(manifest.runExpectation.promotionStatus, "review_required");
+}
+
+async function assertNormalizedTokenArtifacts() {
+  const extract = await readJson("artifacts/p0/extract.json");
+  const catalog = await readJson("artifacts/p0/catalog.json");
+
+  assert.equal(extract.tokens.color.action.primaryBg.$value, "{color.brand.primary}");
+  assert.equal(extract.tokens.color.action.primaryBg.resolvedValue, "#0B5FFF");
+  assert.equal(extract.tokens.color.action.dangerBg.$ref, "/tokens/color/brand/danger");
+  assert.equal(extract.tokens.color.action.dangerBg.resolvedValue, "#C1121F");
+  assert.equal(extract.tokens.spacing.compact.$extends, "/tokens/spacing/base");
+  assert.equal(extract.tokens.spacing.compact.md.$value, 12);
+  assert.equal(extract.tokens.spacing.compact.lg.sourceRef, "fixture://p0/source#/tokens/spacing/base/lg");
+  assert.deepEqual(extract.tokens.typography.heading.resolvedSubvalues.fontSize, {
+    value: 20,
+    sourceRef: "fixture://p0/source#/tokens/typography/heading/$value/fontSize"
+  });
+  assert.deepEqual(extract.tokens.shadow.raised.resolvedSubvalues.blur, {
+    value: 18,
+    sourceRef: "fixture://p0/source#/tokens/shadow/raised/$value/blur"
+  });
+  assert.equal(
+    extract.sourceRefs["/tokens/typography/heading/$value/fontSize"],
+    "fixture://p0/source#/tokens/typography/heading/$value/fontSize"
+  );
+  assert.equal(
+    extract.sourceRefs["/tokens/shadow/raised/$value/blur"],
+    "fixture://p0/source#/tokens/shadow/raised/$value/blur"
+  );
+
+  assert.equal(catalog.tokens.color.action.primaryBg.$value, "#0B5FFF");
+  assert.equal(catalog.tokens.color.action.dangerBg.$value, "#C1121F");
+  assert.equal(Object.prototype.hasOwnProperty.call(catalog.tokens.color.action.dangerBg, "$ref"), false);
+  assert.equal(Object.prototype.hasOwnProperty.call(catalog.tokens.color.action.dangerBg, "resolvedValue"), false);
+  assert.equal(Object.prototype.hasOwnProperty.call(catalog.tokens.spacing.compact, "$extends"), false);
+  assert.equal(catalog.tokens.spacing.compact.md.$value, 12);
 }
 
 async function readReadmeDiagnosticsRegistry() {
@@ -238,6 +697,33 @@ function readmeComparableRegistryRow(row) {
 
 function schemaComparableRegistryRow(row) {
   return readmeComparableRegistryRow(row);
+}
+
+function diagnosticFromRegistryRow(row, overrides = {}) {
+  const diagnosticSource = row.code === "SCHEMA_VALIDATION_FAILED" ? "json-schema" :
+    row.stage === "extract" ? "extractor" :
+    row.stage === "compile" ? "catalog-validator" :
+    row.stage === "govern" ? "governance" :
+    row.stage === "adapter-conformance" ? "adapter" :
+    "catalog-validator";
+  return {
+    code: row.code,
+    diagnosticSource,
+    schemaOutputFormat: diagnosticSource === "json-schema" ? "basic" : null,
+    severity: row.severity,
+    message: row.canonicalMessage,
+    stage: row.stage,
+    path: row.jsonPointer,
+    instanceLocation: row.jsonPointer,
+    keywordLocation: diagnosticSource === "json-schema" ? "/type" : null,
+    absoluteKeywordLocation: diagnosticSource === "json-schema" ? "https://surfaces.dev/schemas/p0/surface-ir.v0.schema.json#/type" : null,
+    sourceRef: row.sourceRef,
+    artifactPath: row.artifactPath === "checked artifact" ? "fixtures/p0/valid.surface-ir.json" : row.artifactPath,
+    validationResult: row.severity === "review" ? "valid" : row.promotionStatus === "blocked" ? "invalid" : "valid",
+    promotionStatus: row.promotionStatus,
+    suggestedAction: "Test diagnostic schema closure.",
+    ...overrides
+  };
 }
 
 async function assertEvidenceInvariants() {

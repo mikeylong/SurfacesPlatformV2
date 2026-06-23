@@ -10,6 +10,7 @@ const CATALOG_ID = "surfaces-p0";
 const SCHEMA_ROOT = "schemas";
 const FIXTURE_ROOT = "fixtures/p0";
 const ARTIFACT_ROOT = "artifacts/p0";
+const P0_PATH_ROOTS = [SCHEMA_ROOT, FIXTURE_ROOT, ARTIFACT_ROOT];
 const GENERATED_ARTIFACTS = [
   "extract.json",
   "catalog.json",
@@ -656,21 +657,40 @@ function parseProofArgs(argv) {
   if (!result.fixture || !result.out) {
     return { ok: false, error: "usage: interfacectl surfaces proof --fixture fixtures/p0 --out artifacts/p0" };
   }
-  if (path.isAbsolute(result.fixture) || path.isAbsolute(result.out)) {
-    return { ok: false, error: "--fixture and --out must be POSIX-style relative paths" };
+  const fixturePath = parseRelativePosixPath(result.fixture, "--fixture");
+  if (!fixturePath.ok) return fixturePath;
+  const outPath = parseRelativePosixPath(result.out, "--out");
+  if (!outPath.ok) return outPath;
+  return { ok: true, fixture: fixturePath.path, out: outPath.path };
+}
+
+function parseRelativePosixPath(value, flagName) {
+  if (typeof value !== "string" || value.length === 0) {
+    return { ok: false, error: `${flagName} must be a POSIX-style relative path` };
   }
-  return { ok: true, fixture: normalizePosix(result.fixture), out: normalizePosix(result.out) };
+  if (value.includes("\\") || path.isAbsolute(value) || value.startsWith("/")) {
+    return { ok: false, error: `${flagName} must be a POSIX-style relative path` };
+  }
+  const trimmed = value.replace(/\/+$/, "");
+  const segments = trimmed.split("/");
+  if (trimmed.length === 0 || segments.some((segment) => segment === "" || segment === "." || segment === "..")) {
+    return { ok: false, error: `${flagName} must be a POSIX-style relative path without . or .. segments` };
+  }
+  return { ok: true, path: trimmed };
 }
 
 export async function runProof({ cwd, fixtureRoot, outRoot, command, args }) {
+  assertP0CommandRoots(fixtureRoot, outRoot);
   await assertReadableDir(path.join(cwd, fixtureRoot), `missing fixture path: ${fixtureRoot}`);
   await assertReadableDir(path.join(cwd, SCHEMA_ROOT), `unreadable schema path: ${SCHEMA_ROOT}`);
+  await assertSchemaDirectoryCompleteness(cwd);
   await rejectStaleOutput(cwd, outRoot);
 
   const validators = await loadValidators(cwd);
   const manifestPath = `${fixtureRoot}/expectations.manifest.json`;
   const manifest = await readJson(path.join(cwd, manifestPath));
   assertSchema(validators, "fixture-expectations.v0", manifest, manifestPath);
+  await assertManifestCompleteness(cwd, fixtureRoot, outRoot, manifest);
 
   const sourcePath = `${fixtureRoot}/source.fixture.json`;
   const sourceFixture = await readJson(path.join(cwd, sourcePath));
@@ -765,6 +785,7 @@ export async function runProof({ cwd, fixtureRoot, outRoot, command, args }) {
     diagnostics: allDiagnostics,
     status: validationResults.every((result) => result.matched) && adapterDiagnostics.status === "pass" ? "pass" : "fail"
   });
+  assertRunExpectation(manifest, evidence);
   assertSchema(validators, "evidence.v0", evidence, `${outRoot}/evidence.json`);
   await writeJson(path.join(cwd, outRoot, "evidence.json"), evidence);
 
@@ -784,9 +805,15 @@ export async function runProof({ cwd, fixtureRoot, outRoot, command, args }) {
   };
 }
 
+function assertP0CommandRoots(fixtureRoot, outRoot) {
+  if (fixtureRoot !== FIXTURE_ROOT || outRoot !== ARTIFACT_ROOT) {
+    throw contractError(`P0 proof requires --fixture ${FIXTURE_ROOT} --out ${ARTIFACT_ROOT}`, 2);
+  }
+}
+
 async function assertReadableDir(dir, message) {
   try {
-    const stat = await fs.stat(dir);
+    const stat = await fs.lstat(dir);
     if (!stat.isDirectory()) {
       throw new Error(message);
     }
@@ -796,22 +823,195 @@ async function assertReadableDir(dir, message) {
 }
 
 async function rejectStaleOutput(cwd, outRoot) {
-  const outDir = path.join(cwd, outRoot);
+  const outDir = await ensureSafeOutputDirectory(cwd, outRoot);
   let entries;
   try {
-    await fs.mkdir(outDir, { recursive: true });
     entries = await fs.readdir(outDir, { withFileTypes: true });
   } catch (error) {
     throw contractError(`output path error for --out ${outRoot}: ${error.code || error.message}`, 2);
   }
   const allowed = new Set(GENERATED_ARTIFACTS);
-  const stale = entries
-    .filter((entry) => !allowed.has(entry.name))
-    .map((entry) => `${outRoot}/${entry.name}${entry.isDirectory() ? "/" : ""}`)
-    .sort();
+  const stale = [];
+  const unsafeExpected = [];
+  for (const entry of entries) {
+    const entryPath = `${outRoot}/${entry.name}${entry.isDirectory() ? "/" : ""}`;
+    if (!allowed.has(entry.name)) {
+      stale.push(entryPath);
+    } else if (!entry.isFile()) {
+      unsafeExpected.push(entryPath);
+    }
+  }
+  unsafeExpected.sort();
+  if (unsafeExpected.length > 0) {
+    throw contractError(`unsafe expected output entry under --out: ${unsafeExpected.join(", ")}`, 1);
+  }
+  stale.sort();
   if (stale.length > 0) {
     throw contractError(`stale unexpected output under --out: ${stale.join(", ")}`, 1);
   }
+}
+
+async function ensureSafeOutputDirectory(cwd, outRoot) {
+  const segments = outRoot.split("/");
+  let current = cwd;
+  for (const segment of segments) {
+    current = path.join(current, segment);
+    let stat;
+    try {
+      stat = await fs.lstat(current);
+    } catch (error) {
+      if (error?.code !== "ENOENT") {
+        throw contractError(`output path error for --out ${outRoot}: ${error.code || error.message}`, 2);
+      }
+      await fs.mkdir(current);
+      stat = await fs.lstat(current);
+    }
+    if (!stat.isDirectory()) {
+      throw contractError(`output path error for --out ${outRoot}: ${path.relative(cwd, current)} is not a directory`, 2);
+    }
+  }
+  return current;
+}
+
+async function assertManifestCompleteness(cwd, fixtureRoot, outRoot, manifest) {
+  if (manifest.fixtureRoot !== fixtureRoot || manifest.artifactRoot !== outRoot || manifest.schemaRoot !== SCHEMA_ROOT) {
+    throw contractError("expectations manifest roots do not match proof command paths", 1);
+  }
+
+  const expectedInputs = manifest.expectations.map((expectation) => expectation.fixturePath);
+  assertOrderedPaths("expectations manifest inputs", manifest.inputs, expectedInputs);
+  assertNoDuplicatePaths("expectations manifest inputs", manifest.inputs);
+  assertNoDuplicatePaths("expectations manifest expectations", expectedInputs);
+
+  for (const inputPath of manifest.inputs) {
+    assertPathUnderRoot(inputPath, fixtureRoot, "expectations manifest input");
+  }
+  for (const expectation of manifest.expectations) {
+    assertP0RelativePath(expectation.expectedArtifactPath, "expectations manifest expectedArtifactPath");
+    const expectedArtifactPath = expectedArtifactPathForExpectation(expectation);
+    if (expectation.expectedArtifactPath !== expectedArtifactPath) {
+      throw contractError(
+        `expectations manifest expectedArtifactPath does not match P0 row for ${expectation.fixturePath}: expected ${expectedArtifactPath}, got ${expectation.expectedArtifactPath}`,
+        1
+      );
+    }
+    const expectedJsonPointer = expectedJsonPointerForExpectation(expectation);
+    if (expectation.expectedJsonPointer !== expectedJsonPointer) {
+      throw contractError(
+        `expectations manifest expectedJsonPointer does not match P0 row for ${expectation.fixturePath}: expected ${expectedJsonPointer}, got ${expectation.expectedJsonPointer}`,
+        1
+      );
+    }
+  }
+
+  const expectedArtifactOrder = artifactOrderFor(fixtureRoot, outRoot);
+  assertOrderedPaths("expectations manifest artifactOrder", manifest.artifactOrder, expectedArtifactOrder);
+
+  const expectedFixtureFiles = [
+    `${fixtureRoot}/source.fixture.json`,
+    `${fixtureRoot}/expectations.manifest.json`,
+    ...manifest.inputs
+  ].sort();
+  const expectedFixtureEntries = [
+    ...expectedFixtureFiles,
+    ...expectedDirectoryEntries(expectedFixtureFiles, fixtureRoot)
+  ].sort();
+  const actualFixtureEntries = (await listTreeEntries(path.join(cwd, fixtureRoot), fixtureRoot)).sort();
+  assertPathSet("fixture directory contents", actualFixtureEntries, expectedFixtureEntries);
+}
+
+async function assertSchemaDirectoryCompleteness(cwd) {
+  const expectedSchemaFiles = SCHEMA_FILES.map((file) => `${SCHEMA_ROOT}/${file}`).sort();
+  const expectedSchemaEntries = [
+    ...expectedSchemaFiles,
+    ...expectedDirectoryEntries(expectedSchemaFiles, SCHEMA_ROOT)
+  ].sort();
+  const actualSchemaEntries = (await listTreeEntries(path.join(cwd, SCHEMA_ROOT), SCHEMA_ROOT)).sort();
+  assertPathSet("schema directory contents", actualSchemaEntries, expectedSchemaEntries);
+}
+
+function assertRunExpectation(manifest, evidence) {
+  const expected = manifest.runExpectation;
+  if (evidence.status !== expected.status || evidence.promotionStatus !== expected.promotionStatus) {
+    throw contractError(
+      `run expectation mismatch: expected ${expected.status}/${expected.promotionStatus}, got ${evidence.status}/${evidence.promotionStatus}`,
+      1
+    );
+  }
+}
+
+function assertOrderedPaths(label, actual, expected) {
+  if (!Array.isArray(actual) || actual.length !== expected.length || actual.some((entry, index) => entry !== expected[index])) {
+    throw contractError(`${label} does not match the P0 contract`, 1);
+  }
+}
+
+function assertNoDuplicatePaths(label, paths) {
+  const duplicates = paths.filter((entry, index) => paths.indexOf(entry) !== index);
+  if (duplicates.length > 0) {
+    throw contractError(`${label} contains duplicate paths: ${[...new Set(duplicates)].join(", ")}`, 1);
+  }
+}
+
+function assertPathUnderRoot(value, root, label) {
+  if (value.includes("\\") || value.startsWith("/") || value.split("/").some((segment) => segment === "" || segment === "." || segment === "..") || !value.startsWith(`${root}/`)) {
+    throw contractError(`${label} must stay under ${root}: ${value}`, 1);
+  }
+}
+
+function assertP0RelativePath(value, label) {
+  if (
+    typeof value !== "string" ||
+    value.includes("\\") ||
+    value.startsWith("/") ||
+    value.split("/").some((segment) => segment === "" || segment === "." || segment === "..")
+  ) {
+    throw contractError(`${label} must be a POSIX-style relative P0 path without . or .. segments: ${value}`, 1);
+  }
+  if (!P0_PATH_ROOTS.some((root) => value.startsWith(`${root}/`))) {
+    throw contractError(`${label} must stay under a P0 root (${P0_PATH_ROOTS.join(", ")}): ${value}`, 1);
+  }
+}
+
+function assertPathSet(label, actual, expected) {
+  const missing = expected.filter((entry) => !actual.includes(entry));
+  const extra = actual.filter((entry) => !expected.includes(entry));
+  if (missing.length > 0 || extra.length > 0) {
+    const parts = [];
+    if (missing.length > 0) parts.push(`missing ${missing.join(", ")}`);
+    if (extra.length > 0) parts.push(`extra ${extra.join(", ")}`);
+    throw contractError(`${label} drift: ${parts.join("; ")}`, 1);
+  }
+}
+
+function expectedDirectoryEntries(files, root) {
+  const dirs = new Set();
+  for (const file of files) {
+    let current = path.posix.dirname(file);
+    while (current !== "." && current !== root) {
+      dirs.add(`${current}/`);
+      current = path.posix.dirname(current);
+    }
+  }
+  return [...dirs];
+}
+
+async function listTreeEntries(dir, relativeRoot) {
+  const entries = await fs.readdir(dir, { withFileTypes: true });
+  const files = [];
+  for (const entry of entries) {
+    const relativePath = `${relativeRoot}/${entry.name}`;
+    const absolutePath = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      files.push(`${relativePath}/`);
+      files.push(...await listTreeEntries(absolutePath, relativePath));
+    } else if (entry.isFile()) {
+      files.push(relativePath);
+    } else {
+      files.push(`${relativePath}${entry.isSymbolicLink() ? "@" : "!"}`);
+    }
+  }
+  return files;
 }
 
 function contractError(message, exitCode) {
@@ -860,12 +1060,14 @@ async function evaluateManifestExpectations({ cwd, fixtureRoot, outRoot, manifes
   const results = [];
   for (const expectation of manifest.expectations) {
     const artifactPath = expectation.fixturePath;
+    const expectedArtifactPath = expectedArtifactPathForExpectation(expectation);
+    const expectedJsonPointer = expectedJsonPointerForExpectation(expectation);
     const absolute = path.join(cwd, artifactPath);
     const fixture = await readJson(absolute);
     let actual;
 
     if (expectation.fixtureKind === "mutation") {
-      actual = evaluateMutationFixture(fixture, expectation, artifactPath, outRoot);
+      actual = await evaluateMutationFixture(fixture, expectation, artifactPath, cwd);
     } else {
       actual = evaluateSurfaceFixture({
         fixture,
@@ -876,7 +1078,7 @@ async function evaluateManifestExpectations({ cwd, fixtureRoot, outRoot, manifes
       });
     }
 
-    const matched = compareExpectation(expectation, actual);
+    const matched = compareExpectation(expectation, actual, expectedArtifactPath, expectedJsonPointer);
     results.push({
       fixturePath: expectation.fixturePath,
       fixtureKind: expectation.fixtureKind,
@@ -890,9 +1092,9 @@ async function evaluateManifestExpectations({ cwd, fixtureRoot, outRoot, manifes
       actualPromotionStatus: actual.promotionStatus,
       expectedDiagnosticCodes: expectation.expectedDiagnosticCodes,
       actualDiagnosticCodes: actual.diagnostics.map((diagnostic) => diagnostic.code),
-      artifactPath: expectation.expectedArtifactPath,
-      jsonPointer: expectation.expectedJsonPointer,
-      sourceRef: expectation.requiredSourceRef,
+      artifactPath: expectedArtifactPath,
+      jsonPointer: expectedJsonPointer,
+      sourceRef: actual.sourceRef,
       matched,
       diagnostics: actual.diagnostics
     });
@@ -900,7 +1102,7 @@ async function evaluateManifestExpectations({ cwd, fixtureRoot, outRoot, manifes
   return results;
 }
 
-function evaluateMutationFixture(fixture, expectation, artifactPath, outRoot) {
+async function evaluateMutationFixture(fixture, expectation, artifactPath, cwd) {
   if (artifactPath.endsWith(".source.fixture.json")) {
     const extractResult = extractSourceFixture(fixture, artifactPath);
     if (!extractResult.ok) {
@@ -920,7 +1122,7 @@ function evaluateMutationFixture(fixture, expectation, artifactPath, outRoot) {
   }
 
   if (artifactPath.endsWith("hash-mismatch.evidence.json")) {
-    const diagnostics = validateEvidenceMutation(fixture, artifactPath, outRoot);
+    const diagnostics = await validateEvidenceMutation(fixture, cwd);
     return resultFromDiagnostics(expectation, diagnostics);
   }
 
@@ -940,32 +1142,78 @@ function evaluateSurfaceFixture({ fixture, expectation, artifactPath, governedCa
     ]);
   }
 
+  const sourceRefDiagnostic = validateSurfaceIrSourceRefs(fixture, artifactPath);
+  if (sourceRefDiagnostic) {
+    return resultFromDiagnostics(expectation, [sourceRefDiagnostic]);
+  }
+
   const diagnostics = validateSurfaceIr(fixture, governedCatalog, artifactPath);
   if (diagnostics.length === 0) {
-    return passResult(expectation);
+    return passResult(expectation, fixture.root.sourceRef);
   }
   return resultFromDiagnostics(expectation, diagnostics);
 }
 
-function compareExpectation(expectation, actual) {
+function compareExpectation(expectation, actual, expectedArtifactPath, expectedJsonPointer) {
   return expectation.expectedStage === actual.stage &&
     expectation.expectedPhase === actual.phase &&
     expectation.validationResult === actual.validationResult &&
     expectation.promotionStatus === actual.promotionStatus &&
     expectation.expectedDiagnosticCodes.length === actual.diagnostics.length &&
     expectation.expectedDiagnosticCodes.every((code, index) => actual.diagnostics[index]?.code === code) &&
-    expectation.expectedArtifactPath === (actual.diagnostics[0]?.artifactPath ?? expectation.expectedArtifactPath) &&
-    expectation.expectedJsonPointer === (actual.diagnostics[0]?.path ?? expectation.expectedJsonPointer) &&
-    expectation.requiredSourceRef === (actual.diagnostics[0]?.sourceRef ?? expectation.requiredSourceRef);
+    expectedArtifactPath === (actual.diagnostics[0]?.artifactPath ?? expectedArtifactPath) &&
+    expectedJsonPointer === (actual.diagnostics[0]?.path ?? expectedJsonPointer) &&
+    expectation.requiredSourceRef === actual.sourceRef;
 }
 
-function passResult(expectation) {
+function expectedArtifactPathForExpectation(expectation) {
+  if (expectation.expectedDiagnosticCodes.length === 0) {
+    if (
+      expectation.fixtureKind === "valid" &&
+      expectation.fixturePath === `${FIXTURE_ROOT}/valid.surface-ir.json` &&
+      expectation.expectedStage === "validate" &&
+      expectation.expectedPhase === "surface-ir-validation"
+    ) {
+      return expectation.fixturePath;
+    }
+    throw contractError(`expectations manifest has no P0 row for no-diagnostic expectation ${expectation.fixturePath}`, 1);
+  }
+
+  const row = REGISTRY_BY_ARTIFACT.get(expectation.fixturePath);
+  if (!row) {
+    throw contractError(`expectations manifest has no P0 diagnostic row for ${expectation.fixturePath}`, 1);
+  }
+  return row.artifactPath;
+}
+
+function expectedJsonPointerForExpectation(expectation) {
+  if (expectation.expectedDiagnosticCodes.length === 0) {
+    if (
+      expectation.fixtureKind === "valid" &&
+      expectation.fixturePath === `${FIXTURE_ROOT}/valid.surface-ir.json` &&
+      expectation.expectedStage === "validate" &&
+      expectation.expectedPhase === "surface-ir-validation"
+    ) {
+      return "/root";
+    }
+    throw contractError(`expectations manifest has no P0 row for no-diagnostic expectation ${expectation.fixturePath}`, 1);
+  }
+
+  const row = REGISTRY_BY_ARTIFACT.get(expectation.fixturePath);
+  if (!row) {
+    throw contractError(`expectations manifest has no P0 diagnostic row for ${expectation.fixturePath}`, 1);
+  }
+  return row.pointer;
+}
+
+function passResult(expectation, sourceRef = expectation.requiredSourceRef) {
   return {
     stage: expectation.expectedStage,
     phase: expectation.expectedPhase,
     validationResult: "valid",
     promotionStatus: "allowed",
-    diagnostics: []
+    diagnostics: [],
+    sourceRef
   };
 }
 
@@ -976,7 +1224,8 @@ function resultFromDiagnostics(expectation, diagnostics) {
     phase: expectation.expectedPhase,
     validationResult: first?.validationResult ?? expectation.validationResult,
     promotionStatus: first?.promotionStatus ?? expectation.promotionStatus,
-    diagnostics: sortDiagnostics(diagnostics)
+    diagnostics: sortDiagnostics(diagnostics),
+    sourceRef: first?.sourceRef ?? null
   };
 }
 
@@ -987,11 +1236,14 @@ function extractSourceFixture(source, artifactPath) {
       return failed([diagnosticForCoverage("mutations/missing-required-field.source.fixture.json")]);
     }
   }
-  if (!source.provenance?.sourceRef) {
+  if (!isValidSourceRef(source.provenance?.sourceRef)) {
     return failed([diagnosticForCoverage("mutations/missing-source-ref.source.fixture.json")]);
   }
   const missingSourceRef = findMissingSourceRef(source);
   if (missingSourceRef) {
+    return failed([diagnosticForCoverage("mutations/missing-source-ref.source.fixture.json")]);
+  }
+  if (!sourceRefsMapMatchesInlineRefs(source)) {
     return failed([diagnosticForCoverage("mutations/missing-source-ref.source.fixture.json")]);
   }
 
@@ -1000,6 +1252,11 @@ function extractSourceFixture(source, artifactPath) {
     return failed([tokenDiagnostic]);
   }
 
+  const normalizedTokens = normalizeTokens(source.tokens);
+  const normalizedSourceRefs = {
+    ...source.sourceRefs,
+    ...collectCompositeSubvalueSourceRefs(normalizedTokens)
+  };
   const extract = {
     schemaId: "extract.v0",
     version: VERSION,
@@ -1007,9 +1264,9 @@ function extractSourceFixture(source, artifactPath) {
     generatedAt: TIMESTAMP,
     sourceUri: source.sourceUri,
     sourceHash: source.sourceHash,
-    tokens: source.tokens,
+    tokens: normalizedTokens,
     components: source.components,
-    sourceRefs: source.sourceRefs,
+    sourceRefs: normalizedSourceRefs,
     provenance: {
       sourceUri: source.sourceUri,
       sourceHash: source.sourceHash,
@@ -1032,27 +1289,51 @@ function failed(diagnostics) {
 }
 
 function findMissingSourceRef(source) {
-  const stack = [source.components, source.tokens];
+  const tokenRefMissing = findMissingTokenSourceRef(source.tokens);
+  if (tokenRefMissing) return tokenRefMissing;
+
+  for (const component of source.components) {
+    if (!hasSourceRef(component)) return component;
+    if (component.accessibility && !hasSourceRef(component.accessibility)) return component.accessibility;
+    for (const collectionName of ["props", "variants", "states", "slots", "actions", "events", "dataBindings", "governance"]) {
+      const collection = component[collectionName] || {};
+      for (const entry of Object.values(collection)) {
+        if (entry && typeof entry === "object" && !hasSourceRef(entry)) return entry;
+      }
+    }
+    for (const example of component.examples || []) {
+      if (!hasSourceRef(example)) return example;
+    }
+  }
+
+  return null;
+}
+
+function findMissingTokenSourceRef(tokens) {
+  const stack = [tokens];
   while (stack.length > 0) {
     const current = stack.pop();
-    if (!current || typeof current !== "object") {
-      continue;
-    }
-    if (Array.isArray(current)) {
-      for (const item of current) stack.push(item);
-      continue;
-    }
-    const isDeclaredEntity = Object.prototype.hasOwnProperty.call(current, "id") ||
-      Object.prototype.hasOwnProperty.call(current, "$value") ||
-      Object.prototype.hasOwnProperty.call(current, "$ref");
-    if (isDeclaredEntity && typeof current.sourceRef !== "string") {
-      return current;
-    }
-    for (const value of Object.values(current)) {
-      if (value && typeof value === "object") stack.push(value);
+    if (!current || typeof current !== "object" || Array.isArray(current)) continue;
+    if (isTokenNode(current) && !hasSourceRef(current)) return current;
+    for (const [key, value] of Object.entries(current)) {
+      if (!key.startsWith("$") && value && typeof value === "object") stack.push(value);
     }
   }
   return null;
+}
+
+function hasSourceRef(value) {
+  return isValidSourceRef(value?.sourceRef);
+}
+
+function isValidSourceRef(value) {
+  return typeof value === "string" && /^fixture:\/\/p0\/(?:source|valid|invalid\/[A-Za-z0-9-]+|review\/[A-Za-z0-9-]+)#\/(?:[^/~#]|~0|~1|\/)*$/.test(value);
+}
+
+function sourceRefsMapMatchesInlineRefs(source) {
+  const expected = collectSourceRefs(source);
+  return Object.values(expected).every((sourceRef) => isValidSourceRef(sourceRef)) &&
+    canonicalJson(source.sourceRefs) === canonicalJson(expected);
 }
 
 function validateSourceTokens(tokens, artifactPath) {
@@ -1069,6 +1350,159 @@ function validateSourceTokens(tokens, artifactPath) {
     if (diagnostic) return diagnostic;
   }
   return null;
+}
+
+function normalizeTokens(tokens) {
+  const inherited = applyTokenGroupExtends(tokens, tokens, "/tokens", []);
+  const flat = flattenTokens(inherited);
+
+  const normalizeNode = (node, parts) => {
+    if (!node || typeof node !== "object" || Array.isArray(node)) return deepClone(node);
+    if (isTokenNode(node)) {
+      const normalized = deepClone(node);
+      const resolvedValue = resolveTokenValue(parts.join("."), node, flat, []);
+      normalized.resolvedValue = resolvedValue;
+      if (resolvedValue && typeof resolvedValue === "object" && !Array.isArray(resolvedValue)) {
+        normalized.resolvedSubvalues = compositeSubvalues(resolvedValue, normalized.sourceRef);
+      }
+      return normalized;
+    }
+
+    const normalized = {};
+    for (const [key, value] of Object.entries(node)) {
+      normalized[key] = key.startsWith("$") ? deepClone(value) : normalizeNode(value, [...parts, key]);
+    }
+    return normalized;
+  };
+
+  return normalizeNode(inherited, []);
+}
+
+function catalogTokensFromExtract(tokens) {
+  const walk = (node) => {
+    if (!node || typeof node !== "object" || Array.isArray(node)) return deepClone(node);
+    if (isTokenNode(node)) {
+      const normalized = deepClone(node);
+      if (Object.prototype.hasOwnProperty.call(normalized, "resolvedValue")) {
+        normalized.$value = deepClone(normalized.resolvedValue);
+      }
+      delete normalized.$ref;
+      delete normalized.resolvedValue;
+      return normalized;
+    }
+    const output = {};
+    for (const [key, value] of Object.entries(node)) {
+      if (key === "$extends") continue;
+      output[key] = walk(value);
+    }
+    return output;
+  };
+  return walk(tokens);
+}
+
+function compositeSubvalues(resolvedValue, tokenSourceRef) {
+  const subvalues = {};
+  for (const [key, value] of Object.entries(resolvedValue)) {
+    subvalues[key] = {
+      value: deepClone(value),
+      sourceRef: `${tokenSourceRef}/$value/${escapePointerSegment(key)}`
+    };
+  }
+  return subvalues;
+}
+
+function collectCompositeSubvalueSourceRefs(tokens) {
+  const refs = {};
+  const walk = (node, pointer) => {
+    if (!node || typeof node !== "object" || Array.isArray(node)) return;
+    if (isTokenNode(node)) {
+      for (const [key, subvalue] of Object.entries(node.resolvedSubvalues || {})) {
+        refs[`${pointer}/$value/${escapePointerSegment(key)}`] = subvalue.sourceRef;
+      }
+      return;
+    }
+    for (const [key, value] of Object.entries(node)) {
+      if (!key.startsWith("$")) {
+        walk(value, `${pointer}/${escapePointerSegment(key)}`);
+      }
+    }
+  };
+  walk(tokens, "/tokens");
+  return refs;
+}
+
+function applyTokenGroupExtends(group, rootTokens, groupPointer, stack) {
+  if (!group || typeof group !== "object" || Array.isArray(group) || isTokenNode(group)) {
+    return deepClone(group);
+  }
+
+  let inherited = {};
+  if (typeof group.$extends === "string" && !stack.includes(groupPointer)) {
+    const target = getByPointer({ tokens: rootTokens }, group.$extends);
+    inherited = applyTokenGroupExtends(target, rootTokens, group.$extends, [...stack, groupPointer]);
+  }
+
+  const own = {};
+  for (const [key, value] of Object.entries(group)) {
+    own[key] = key.startsWith("$") ? deepClone(value) : applyTokenGroupExtends(value, rootTokens, `${groupPointer}/${escapePointerSegment(key)}`, stack);
+  }
+
+  return mergeTokenGroups(inherited, own);
+}
+
+function mergeTokenGroups(base, override) {
+  const result = deepClone(base || {});
+  for (const [key, value] of Object.entries(override || {})) {
+    const existing = result[key];
+    if (isMergeableTokenGroup(existing) && isMergeableTokenGroup(value)) {
+      result[key] = mergeTokenGroups(existing, value);
+    } else {
+      result[key] = deepClone(value);
+    }
+  }
+  return result;
+}
+
+function isMergeableTokenGroup(value) {
+  return value && typeof value === "object" && !Array.isArray(value) && !isTokenNode(value);
+}
+
+function isTokenNode(value) {
+  return Boolean(value && typeof value === "object" && !Array.isArray(value) &&
+    (Object.prototype.hasOwnProperty.call(value, "$value") || Object.prototype.hasOwnProperty.call(value, "$ref")));
+}
+
+function resolveTokenValue(tokenPath, token, flat, stack) {
+  if (stack.includes(tokenPath)) return deepClone(token.$value);
+  if (typeof token.$ref === "string") {
+    const targetPath = token.$ref.replace(/^\/tokens\/?/, "").replaceAll("/", ".");
+    const target = flat.get(targetPath);
+    return target ? resolveTokenValue(targetPath, target, flat, [...stack, tokenPath]) : deepClone(token.$value);
+  }
+  return resolveTokenValueNode(token.$value, flat, [...stack, tokenPath]);
+}
+
+function resolveTokenValueNode(value, flat, stack) {
+  if (typeof value === "string") {
+    const match = value.match(/^\{([A-Za-z0-9_.-]+)\}$/);
+    if (match) {
+      const targetPath = match[1];
+      const target = flat.get(targetPath);
+      return target ? resolveTokenValue(targetPath, target, flat, stack) : value;
+    }
+    return value;
+  }
+  if (Array.isArray(value)) {
+    return value.map((item) => resolveTokenValueNode(item, flat, stack));
+  }
+  if (value && typeof value === "object") {
+    const resolved = {};
+    for (const [key, nested] of Object.entries(value)) {
+      resolved[key] = resolveTokenValueNode(nested, flat, stack);
+    }
+    return resolved;
+  }
+  return value;
 }
 
 function validateExtends(tokens, artifactPath) {
@@ -1239,7 +1673,7 @@ function compileCatalog(extract, artifactPath) {
     artifactKind: "catalog",
     version: VERSION,
     sourceRefs: extract.sourceRefs,
-    tokens: extract.tokens,
+      tokens: catalogTokensFromExtract(extract.tokens),
     components,
     runtimeCapabilities: {
       unknownComponent: "blocked",
@@ -1430,6 +1864,27 @@ function validateSurfaceIr(surfaceIr, catalog, artifactPath) {
   return [];
 }
 
+function validateSurfaceIrSourceRefs(surfaceIr, artifactPath) {
+  let invalid = null;
+  const walk = (value) => {
+    if (invalid || !value || typeof value !== "object") return;
+    if (Array.isArray(value)) {
+      for (const item of value) walk(item);
+      return;
+    }
+    if (Object.prototype.hasOwnProperty.call(value, "sourceRef") && !isValidSourceRef(value.sourceRef)) {
+      invalid = value.sourceRef;
+      return;
+    }
+    for (const nested of Object.values(value)) walk(nested);
+  };
+  walk(surfaceIr);
+  return invalid === null ? null : diagnosticForRow(REGISTRY_ROWS[0], artifactPath, {
+    diagnosticSource: "json-schema",
+    schemaOutputFormat: "basic"
+  });
+}
+
 function validateAccessibility(instance, component) {
   const accessibility = instance.accessibility || {};
   if (["dialog", "alertdialog"].includes(accessibility.role) || accessibility["aria-modal"] === true ||
@@ -1463,12 +1918,40 @@ function validateAccessibility(instance, component) {
   return null;
 }
 
-function validateEvidenceMutation(evidence, artifactPath, outRoot) {
-  const entry = evidence.artifacts?.[0];
-  if (!entry || entry.hash !== "0000000000000000000000000000000000000000000000000000000000000000") {
+async function validateEvidenceMutation(evidence, cwd) {
+  if (!Array.isArray(evidence.artifacts) || evidence.artifacts.length === 0) {
     return [diagnosticForCoverage("mutations/hash-mismatch.evidence.json")];
   }
-  return [diagnosticForCoverage("mutations/hash-mismatch.evidence.json")];
+
+  const expectedPaths = artifactOrderFor(FIXTURE_ROOT, ARTIFACT_ROOT);
+  const actualPaths = evidence.artifacts.map((entry) => entry.path);
+  if (actualPaths.length !== expectedPaths.length || actualPaths.some((entryPath, index) => entryPath !== expectedPaths[index])) {
+    return [diagnosticForCoverage("mutations/hash-mismatch.evidence.json")];
+  }
+
+  for (const entry of evidence.artifacts) {
+    if (entry.hashAlgorithm !== "sha256" || typeof entry.path !== "string" || typeof entry.hash !== "string") {
+      return [diagnosticForCoverage("mutations/hash-mismatch.evidence.json")];
+    }
+    if (entry.role !== roleForPath(entry.path) || entry.schemaId !== schemaIdForPath(entry.path)) {
+      return [diagnosticForCoverage("mutations/hash-mismatch.evidence.json")];
+    }
+
+    let actualHash;
+    try {
+      actualHash = entry.path === `${ARTIFACT_ROOT}/evidence.json` ?
+        computeEvidenceSelfHash(evidence) :
+        await canonicalFileHash(path.join(cwd, entry.path));
+    } catch {
+      return [diagnosticForCoverage("mutations/hash-mismatch.evidence.json")];
+    }
+
+    if (entry.hash !== actualHash) {
+      return [diagnosticForCoverage("mutations/hash-mismatch.evidence.json")];
+    }
+  }
+
+  return [];
 }
 
 async function buildEvidence({ cwd, fixtureRoot, outRoot, command, args, runId, manifest, sourceFixture, validationResults, diagnostics, status }) {
@@ -1735,15 +2218,30 @@ async function readJson(filePath) {
 
 async function writeJson(filePath, data) {
   await fs.mkdir(path.dirname(filePath), { recursive: true });
-  await fs.writeFile(filePath, canonicalJson(data));
+  try {
+    const stat = await fs.lstat(filePath);
+    if (!stat.isFile()) {
+      throw contractError(`refusing to overwrite non-regular file: ${filePath}`, 1);
+    }
+  } catch (error) {
+    if (error?.code !== "ENOENT") throw error;
+  }
+
+  const tempPath = path.join(
+    path.dirname(filePath),
+    `.${path.basename(filePath)}.${process.pid}.${crypto.randomBytes(6).toString("hex")}.tmp`
+  );
+  try {
+    await fs.writeFile(tempPath, canonicalJson(data), { flag: "wx" });
+    await fs.rename(tempPath, filePath);
+  } catch (error) {
+    await fs.rm(tempPath, { force: true }).catch(() => {});
+    throw error;
+  }
 }
 
 function deepClone(value) {
   return JSON.parse(JSON.stringify(value));
-}
-
-function normalizePosix(value) {
-  return value.replaceAll("\\", "/").replace(/^\.\/+/, "").replace(/\/+$/, "");
 }
 
 function getByPointer(root, pointer) {
@@ -1758,6 +2256,10 @@ function getByPointer(root, pointer) {
     current = current[part];
   }
   return current;
+}
+
+function escapePointerSegment(segment) {
+  return segment.replaceAll("~", "~0").replaceAll("/", "~1");
 }
 
 export async function materializeP0Contract(cwd) {
@@ -1879,7 +2381,35 @@ function diagnosticsSchema() {
           }
         }
       })),
+    oneOf: REGISTRY_ROWS.map((entry) => diagnosticRegistryRowSchema(entry)),
     unevaluatedProperties: false
+  };
+}
+
+function diagnosticRegistryRowSchema(entry) {
+  const schemaProperties = {
+    code: { const: entry.code },
+    message: { const: entry.message },
+    stage: { const: entry.stage },
+    severity: { const: entry.severity },
+    promotionStatus: { const: entry.promotionStatus },
+    validationResult: { const: entry.validationResult },
+    sourceRef: { const: entry.sourceRef }
+  };
+
+  if (entry.artifactPath !== "checked artifact") {
+    schemaProperties.artifactPath = { const: entry.artifactPath };
+    schemaProperties.path = { const: entry.pointer };
+    schemaProperties.instanceLocation = { const: entry.pointer };
+  } else {
+    schemaProperties.artifactPath = { enum: artifactOrderFor(FIXTURE_ROOT, ARTIFACT_ROOT) };
+    schemaProperties.path = { const: entry.pointer };
+    schemaProperties.instanceLocation = { const: entry.pointer };
+  }
+
+  return {
+    properties: schemaProperties,
+    required: Object.keys(schemaProperties)
   };
 }
 
@@ -2127,8 +2657,8 @@ function fixtureExpectationsSchema() {
       validationResult: { enum: ["valid", "invalid", "not_applicable"] },
       promotionStatus: { enum: ["allowed", "review_required", "blocked"] },
       expectedDiagnosticCodes: { type: "array", items: { type: "string" } },
-      expectedArtifactPath: { type: "string" },
-      expectedJsonPointer: { type: "string" },
+      expectedArtifactPath: p0ExpectationArtifactPathSchema(),
+      expectedJsonPointer: p0ExpectationJsonPointerSchema(),
       requiredSourceRef: { anyOf: [{ type: "string" }, { type: "null" }] }
     },
     unevaluatedProperties: false
@@ -2325,12 +2855,38 @@ function validationResultSchema() {
       expectedDiagnosticCodes: { type: "array", items: { type: "string" } },
       actualDiagnosticCodes: { type: "array", items: { type: "string" } },
       matched: { type: "boolean" },
-      artifactPath: { type: "string" },
-      jsonPointer: { type: "string" },
+      artifactPath: p0ExpectationArtifactPathSchema(),
+      jsonPointer: p0ExpectationJsonPointerSchema(),
       sourceRef: { anyOf: [{ type: "string" }, { type: "null" }] }
     },
     unevaluatedProperties: false
   };
+}
+
+function p0ExpectationArtifactPathSchema() {
+  return { enum: p0ExpectationArtifactPaths() };
+}
+
+function p0ExpectationArtifactPaths() {
+  return [
+    ...SOURCE_MUTATIONS.map((file) => `${FIXTURE_ROOT}/mutations/${file}`),
+    `${FIXTURE_ROOT}/valid.surface-ir.json`,
+    ...INVALID_FIXTURES.map((file) => `${FIXTURE_ROOT}/invalid/${file}`),
+    `${FIXTURE_ROOT}/review/review-required-action.json`
+  ];
+}
+
+function p0ExpectationJsonPointerSchema() {
+  return { enum: p0ExpectationJsonPointers() };
+}
+
+function p0ExpectationJsonPointers() {
+  return [...new Set([
+    ...SOURCE_MUTATIONS.map((file) => REGISTRY_BY_COVERAGE.get(`mutations/${file}`)?.pointer),
+    "/root",
+    ...INVALID_FIXTURES.map((file) => REGISTRY_BY_COVERAGE.get(`invalid/${file}`)?.pointer),
+    REGISTRY_BY_COVERAGE.get("review/review-required-action.json")?.pointer
+  ])].filter(Boolean);
 }
 
 function environmentSchema() {
