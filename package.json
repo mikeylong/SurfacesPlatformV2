@@ -8,9 +8,11 @@
   },
   "scripts": {
     "materialize:p0": "node scripts/materialize-p0.mjs",
+    "build:p0-demo": "node scripts/build-p0-demo.mjs",
+    "demo:p0": "npm run proof:p0 && npm run build:p0-demo",
     "proof:p0": "node bin/interfacectl.js surfaces proof --fixture fixtures/p0 --out artifacts/p0",
-    "check:p0": "npm run materialize:p0 && npm run proof:p0 && npm test",
-    "check:p0:ci": "npm run check:p0 && git diff --exit-code -- schemas fixtures artifacts",
+    "check:p0": "npm run materialize:p0 && npm run proof:p0 && npm run build:p0-demo && npm test",
+    "check:p0:ci": "npm run check:p0 && git diff --exit-code -- schemas fixtures artifacts demo",
     "test": "node --test"
   },
   "dependencies": {
