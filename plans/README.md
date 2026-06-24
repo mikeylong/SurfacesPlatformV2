@@ -1,6 +1,6 @@
 # SurfacesPlatformV2 Subplans
 
-These subplans define the Surfaces Platform proof contracts. P0 specifies the first executable catalog, validation, adapter-diagnostics, and evidence proof. P1 specifies the first runtime projection and adapter proof without turning the demo into an unaudited product mock.
+These subplans define the Surfaces Platform proof contracts and their materialized schemas, fixtures, artifacts, demos, scripts, and tests. P0 specifies the first executable catalog, validation, adapter-diagnostics, and evidence proof. P1 specifies the first runtime projection and adapter proof without turning the demo into an unaudited product mock.
 
 ## P0 Dependency Order
 1. [Runtime Catalog v0](runtime-catalog-v0.md)
@@ -149,7 +149,7 @@ Given the P0 fixture, the proof command emits all expected artifacts, valid Surf
 | `ARTIFACT_HASH_MISMATCH` | Artifact hash differs from evidence manifest | Artifact hash does not match the evidence manifest. | `validate` | `error` | `blocked` | `fixtures/p0/mutations/hash-mismatch.evidence.json` | `/artifacts/0/hash` | `null` | `mutations/hash-mismatch.evidence.json` |
 
 ## Proof CLI Contract
-`interfacectl surfaces proof --fixture fixtures/p0 --out artifacts/p0` has these documented behaviors:
+`interfacectl surfaces proof --fixture fixtures/p0 --out artifacts/p0` is implemented with these required behaviors:
 
 - The command is run from the workspace root.
 - `--fixture` and `--out` are POSIX-style paths relative to the workspace root.
