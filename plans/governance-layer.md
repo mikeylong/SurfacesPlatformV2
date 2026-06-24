@@ -32,7 +32,7 @@ P0 has exactly three promotion statuses:
 - Missing provenance is `blocked`.
 - Invalid artifact hashes are `blocked`.
 - Destructive actions are `review_required`.
-- P0 fixtures must not contain deprecated entries. Deprecation policy, warning severity, and deprecated-usage promotion are P1 unless backed by manifest and registry fixtures.
+- P0 fixtures must not contain deprecated entries. Deprecation policy, warning severity, and deprecated-usage promotion are deferred beyond P1 unless backed by manifest and registry fixtures in a later phase.
 
 ## P0 Proof
 The governed catalog marks valid usage as `allowed`, marks destructive usage as `review_required`, and marks invalid usage as `blocked`. These statuses are visible in evidence and adapter diagnostics.

@@ -43,11 +43,11 @@ Make P1 inspectable without weakening the contract boundary. The demo should hel
   "build:p1-demo": "node scripts/build-p1-demo.mjs --evidence artifacts/p1/evidence.json --out demo/p1",
   "demo:p1": "npm run proof:p1 && npm run build:p1-demo",
   "check:p1": "npm run materialize:p1 && npm run proof:p1 && npm run build:p1-demo && npm test",
-  "check:p1:ci": "npm run check:p1 && git diff --exit-code -- schemas fixtures artifacts demo && bash -lc 'test -z \"$(git ls-files --others --exclude-standard -- artifacts/p1)\"'"
+  "check:p1:ci": "npm run check:p1 && git diff --exit-code -- schemas fixtures artifacts demo && npm run check:p1:untracked"
 }
 ```
 
-The script names are normative. Implementations may split helper commands, but `check:p1:ci` must enforce the same materialize, proof, demo build, tests, tracked diff, and untracked `artifacts/p1` checks.
+The script names are normative. Implementations may split helper commands, but `check:p1:ci` must enforce the same materialize, proof, demo build, tests, tracked diff, and `check:p1:untracked` coverage for P1 generated-output and source files.
 
 ## Stale Output Contract
 - The declared P1 proof artifact set is the only allowed file set directly under `artifacts/p1`.

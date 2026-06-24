@@ -120,7 +120,7 @@ P1 introduces a strict extension registry for adapter proof failures. The eviden
 | `RUNTIME_EVIDENCE_HASH_MISMATCH` | Runtime adapter evidence hash differs from manifest or self-hash rule | `evidence` | `blocked` | `mutations/hash-mismatch.runtime-adapter-evidence.json` |
 
 ## Proof CLI Contract
-`interfacectl surfaces adapter proof --catalog artifacts/p0/governed-catalog.json --fixture fixtures/p1 --out artifacts/p1` has these documented behaviors:
+`interfacectl surfaces adapter proof --catalog artifacts/p0/governed-catalog.json --fixture fixtures/p1 --out artifacts/p1` is implemented with these required behaviors:
 
 - The command is run from the workspace root.
 - `--catalog`, `--fixture`, and `--out` are POSIX-style paths relative to the workspace root.

@@ -548,8 +548,8 @@ const REGISTRY_ROWS = [
   }),
   row({
     code: "ACCESSIBILITY_MODAL_UNSUPPORTED",
-    trigger: "Surface IR attempts modal dialog semantics through unsupported modal fields",
-    message: "Modal dialog semantics are unsupported in P0.",
+    trigger: "Surface IR attempts modal dialog or alertdialog semantics through unsupported modal fields",
+    message: "Modal dialog and alertdialog semantics are deferred beyond P1 and unsupported in P0/P1.",
     stage: "validate",
     severity: "error",
     promotionStatus: "blocked",

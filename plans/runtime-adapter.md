@@ -1,10 +1,10 @@
 # Runtime Adapter
 
 ## Decision
-The runtime adapter is planned but not built in P0. P0 defines enough catalog, Surface IR, diagnostic, evidence, and conformance behavior for a future adapter to consume approved components, actions, and runtime capabilities safely.
+The runtime adapter is planned but not built in P0. P0 defines enough catalog, Surface IR, diagnostic, evidence, and conformance behavior for later adapter proofs to consume approved components, actions, and runtime capabilities safely. P1 resolves the first adapter proof boundary as `web-static` over `runtime-projection.v0`, while live rendering remains deferred.
 
 ## Goal
-Keep runtime rendering as a future implementation target while making the contract boundary testable now through adapter conformance.
+Keep live runtime rendering as a future implementation target while making the contract boundary testable through adapter conformance and adapter-specific proof artifacts.
 
 ## Inputs
 - `artifacts/p0/governed-catalog.json`.
@@ -13,9 +13,9 @@ Keep runtime rendering as a future implementation target while making the contra
 - Runtime Catalog v0 runtime capability rules.
 
 ## Outputs
-- Future adapter contract notes.
+- Runtime adapter boundary notes.
 - P0 `artifacts/p0/adapter-diagnostics.json` from the conformance check.
-- Open questions for renderer and protocol implementation after P0.
+- Open questions for live renderer and protocol implementation after P1.
 
 ## Future Adapter Constraints
 Any future runtime adapter must:
@@ -37,11 +37,12 @@ No renderer is built. The proof is that adapter conformance can accept valid usa
 ## Non-Goals
 - No runtime renderer.
 - No A2UI compatibility implementation.
-- No web/native adapter.
+- No P0 web/native adapter; P1's `web-static` proof target is not a live or general-purpose web/native adapter.
 - No component package integration.
 - No live action execution.
 
 ## Post-P0 Decisions
-- Whether the first runtime adapter targets A2UI, React, web components, or another runtime.
-- Whether runtime actions are declarative intents, callbacks, RPC commands, or workflow triggers.
-- Whether runtime adapters consume `governed-catalog.json` directly or a smaller adapter-specific projection.
+- P1 resolves the first adapter proof target as `web-static`.
+- P1 resolves the first runtime boundary as `runtime-projection.v0`, a smaller adapter-specific projection derived from `governed-catalog.json`.
+- Runtime actions remain inert descriptors in P1; callbacks, RPC commands, workflow triggers, and live side effects remain deferred beyond P1.
+- A2UI, React, web-component, native, or live runtime adapters remain future targets unless a later phase defines their schema, fixtures, conformance proof, and evidence.

@@ -86,7 +86,7 @@ artifacts/p0/
 ## Mutation Fixture Matrix
 Mutation fixtures exercise non-Surface-IR failure paths. Each mutation starts from the golden source or artifact named in the file and violates one rule. This table is explanatory; `fixtures/p0/expectations.manifest.json` is the machine-readable source of truth.
 
-Compile mutation coverage is intentionally limited to duplicate component ids through `CATALOG_DUPLICATE_ID` and generated artifact provenance through `PROVENANCE_MISSING`. Validate-stage failures, including unknown token refs, invalid values, accessibility failures, and invalid Surface IR paths, are covered under `invalid/`. Member-level duplicate ids are P1 unless dedicated mutation fixtures and registry rows are added.
+Compile mutation coverage is intentionally limited to duplicate component ids through `CATALOG_DUPLICATE_ID` and generated artifact provenance through `PROVENANCE_MISSING`. Validate-stage failures, including unknown token refs, invalid values, accessibility failures, and invalid Surface IR paths, are covered under `invalid/`. Member-level duplicate ids are deferred beyond P1 unless a later phase adds dedicated mutation fixtures and registry rows.
 
 | Fixture | Expected stage | Expected phase | Expected code |
 | --- | --- | --- | --- |
@@ -194,4 +194,4 @@ The fixture compiles deterministically through `artifacts/p0/extract.json`, `art
 - Fixture examples are JSON only for P0.
 - Destructive behavior is included only as `review_required`; it is not executed.
 - File names and folder layout are fixed by this document.
-- `ConfirmPanel` modal dialog and `alertdialog` semantics are P1.
+- `ConfirmPanel` modal dialog and `alertdialog` semantics are deferred beyond P1 and remain unsupported in P0/P1.

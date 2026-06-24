@@ -4,7 +4,7 @@
 Surfaces Platform V2 compiles design-system source material into governed UI contracts that agents can use for bounded generation, CI/CD validation, evidence review, and runtime-safe rendering.
 
 ## P0 Focus
-P0 is a docs/spec revision for one executable contract. It stops describing desired behavior and specifies the exact schema files, fixture files, output artifacts, diagnostics, and pass/fail gates that an implementation must satisfy.
+P0 establishes one executable catalog proof contract. It specifies and implements the exact schema files, fixture files, output artifacts, diagnostics, and pass/fail gates that the proof must satisfy.
 
 The proof path is:
 
@@ -99,14 +99,14 @@ Given the P0 fixture, the proof command emits all expected artifacts, valid Surf
 - Surfaces.systems: category and product home. Context-only for P0.
 - Surfaces.dev: agent-ready instructions with human-readable intent. Context-only for P0.
 - JudgmentKit: judgment layer for activity fit, contract quality, evidence, and handoff. Context-only for P0 unless the proof records evaluator metadata.
-- interfacectl: compiler, validation, and enforcement tooling. P0 specifies one future CLI proof command but does not implement it.
+- interfacectl: compiler, validation, and enforcement tooling. P0 implements the catalog proof command; P1 implements the adapter proof command.
 - SurfaceOps: operational review surface. Context-only for P0; it may consume `evidence.json` later.
 - Surfaces Catalog: product-facing name for the governed design-system catalog/compiler artifact.
 - `runtime-catalog.v0`: schema/artifact id for the P0 Surfaces Catalog.
 - A2UI: reference-only for P0. Post-P0, Surfaces may emit A2UI-compatible projections/exports from the governed Surfaces Catalog and validate those projections against A2UI conformance; P0 does not define an A2UI adapter.
 
 ## Missing Layer
-Define the Surfaces Catalog as the governed design-system contract that decides what agents may emit and what future runtime adapters may render, reject, or send to review.
+Define the Surfaces Catalog as the governed design-system contract that decides what agents may emit and what proof consumers, runtime projections, and future adapters may render as inert plans, reject, or send to review.
 
 ## P0 Architecture
 1. Schema Contracts
@@ -117,7 +117,7 @@ Define the Surfaces Catalog as the governed design-system contract that decides 
 6. Surface IR Validation
 7. Adapter Conformance Check
 8. Final Evidence Layer
-9. Future Runtime Adapter Notes
+9. Runtime Adapter Boundary Notes
 
 ## P0 Acceptance Criteria
 - The schema suite is specified: `runtime-catalog.v0.schema.json`, `surface-ir.v0.schema.json`, `fixture-expectations.v0.schema.json`, `extract.v0.schema.json`, `adapter-diagnostics.v0.schema.json`, `evidence.v0.schema.json`, and `diagnostics.v0.schema.json`.
@@ -221,10 +221,10 @@ Given a valid P0 proof and the P1 fixture set, the adapter proof command emits t
 - Actions remain inert descriptors in P1; no live execution is allowed.
 - Demo output is checked by drift and generated from evidence, but final P1 proof authority stays in `artifacts/p1/evidence.json`.
 
-## Non-Goals For First Pass
+## Non-Goals For P0/P1
 - No full product scaffold.
 - No copied legacy implementation.
 - No live Figma ingestion before fixture-based compiler proof.
-- No runtime renderer before the catalog contract is clear.
+- No live or general-purpose runtime renderer in P0/P1; P1 stops at `web-static` projection, deterministic render plans, generated demos, and evidence.
 - No broad A2UI compatibility layer.
-- No implementation files beyond the docs/spec contract in this pass.
+- No production product implementation or live operational surface in P0/P1 beyond proof tooling, generated artifacts, generated demos, and tests.

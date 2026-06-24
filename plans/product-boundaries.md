@@ -1,7 +1,7 @@
 # Product Boundaries
 
 ## Decision
-For P0, `interfacectl` is the future command surface for compiling, validating, and enforcing the proof contract; JudgmentKit evaluates quality, evidence, and handoff after the contract exists; SurfaceOps is the future human review console. Surfaces.systems and Surfaces.dev remain product context, not implementation targets.
+For P0/P1, `interfacectl` is the implemented proof command surface: P0 uses `interfacectl surfaces proof --fixture fixtures/p0 --out artifacts/p0`, and P1 uses `interfacectl surfaces adapter proof --catalog artifacts/p0/governed-catalog.json --fixture fixtures/p1 --out artifacts/p1`. JudgmentKit evaluates quality, evidence, and handoff after the contract exists; SurfaceOps is the future human review console. Surfaces.systems and Surfaces.dev remain product context, not implementation targets.
 
 ## Goal
 Prevent overlap between product surfaces while proving the Surfaces Catalog contract. P0 should make each product's future responsibility legible without requiring product implementation.

@@ -1,6 +1,6 @@
 # SurfacesPlatformV2 Subplans
 
-These subplans define the Surfaces Platform proof contracts. P0 specifies the first executable catalog, validation, adapter-diagnostics, and evidence proof. P1 specifies the first runtime projection and adapter proof without turning the demo into an unaudited product mock.
+These subplans define the Surfaces Platform proof contracts and their materialized schemas, fixtures, artifacts, demos, scripts, and tests. P0 specifies the first executable catalog, validation, adapter-diagnostics, and evidence proof. P1 specifies the first runtime projection and adapter proof without turning the demo into an unaudited product mock.
 
 ## P0 Dependency Order
 1. [Runtime Catalog v0](runtime-catalog-v0.md)
@@ -143,13 +143,13 @@ Given the P0 fixture, the proof command emits all expected artifacts, valid Surf
 | `ACCESSIBILITY_CONTRACT_UNMET` | Keyboard contract is unmet | Keyboard contract is unmet. | `validate` | `error` | `blocked` | `fixtures/p0/invalid/invalid-keyboard-contract.json` | `/instances/primaryAction/accessibility/activationKeys` | `fixture://p0/invalid/invalid-keyboard-contract#/instances/primaryAction/accessibility` | `invalid/invalid-keyboard-contract.json` |
 | `ACCESSIBILITY_CONTRACT_UNMET` | Focus contract is unmet | Focus contract is unmet. | `validate` | `error` | `blocked` | `fixtures/p0/invalid/invalid-focus-contract.json` | `/instances/primaryAction/accessibility/focusableWhenDisabled` | `fixture://p0/invalid/invalid-focus-contract#/instances/primaryAction/accessibility` | `invalid/invalid-focus-contract.json` |
 | `ACCESSIBILITY_CONTRACT_UNMET` | Live-region contract is unmet | Live-region contract is unmet. | `validate` | `error` | `blocked` | `fixtures/p0/invalid/invalid-live-region.json` | `/instances/callout1/accessibility/liveRegion` | `fixture://p0/invalid/invalid-live-region#/instances/callout1/accessibility` | `invalid/invalid-live-region.json` |
-| `ACCESSIBILITY_MODAL_UNSUPPORTED` | Surface IR attempts modal dialog semantics through unsupported modal fields | Modal dialog semantics are unsupported in P0. | `validate` | `error` | `blocked` | `fixtures/p0/invalid/modal-role-not-supported.json` | `/root/accessibility/role` | `fixture://p0/invalid/modal-role-not-supported#/root/accessibility` | `invalid/modal-role-not-supported.json` |
+| `ACCESSIBILITY_MODAL_UNSUPPORTED` | Surface IR attempts modal dialog or alertdialog semantics through unsupported modal fields | Modal dialog and alertdialog semantics are deferred beyond P1 and unsupported in P0/P1. | `validate` | `error` | `blocked` | `fixtures/p0/invalid/modal-role-not-supported.json` | `/root/accessibility/role` | `fixture://p0/invalid/modal-role-not-supported#/root/accessibility` | `invalid/modal-role-not-supported.json` |
 | `GOVERNANCE_REVIEW_REQUIRED` | Structurally valid usage requires review | Usage requires review before unattended promotion. | `govern` | `review` | `review_required` | `fixtures/p0/review/review-required-action.json` | `/root/actions/confirm/execute` | `fixture://p0/review/review-required-action#/root/actions/confirm` | `review/review-required-action.json` |
 | `PROVENANCE_MISSING` | Required provenance is absent | Required generated artifact provenance is missing. | `compile` | `error` | `blocked` | `fixtures/p0/mutations/missing-provenance.extract.json` | `/provenance` | `fixture://p0/source#/provenance` | `mutations/missing-provenance.extract.json` |
 | `ARTIFACT_HASH_MISMATCH` | Artifact hash differs from evidence manifest | Artifact hash does not match the evidence manifest. | `validate` | `error` | `blocked` | `fixtures/p0/mutations/hash-mismatch.evidence.json` | `/artifacts/0/hash` | `null` | `mutations/hash-mismatch.evidence.json` |
 
 ## Proof CLI Contract
-`interfacectl surfaces proof --fixture fixtures/p0 --out artifacts/p0` has these documented behaviors:
+`interfacectl surfaces proof --fixture fixtures/p0 --out artifacts/p0` is implemented with these required behaviors:
 
 - The command is run from the workspace root.
 - `--fixture` and `--out` are POSIX-style paths relative to the workspace root.

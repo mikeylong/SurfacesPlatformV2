@@ -25,7 +25,7 @@ The compiler must block:
 
 Surface IR misuse, unknown token refs, invalid values, missing accessibility contracts, and invalid JSON Pointer paths are validated in the `validate` phase against `surface-ir.v0.schema.json`, `runtime-catalog.v0.schema.json`, and the governed catalog. P0 does not assign those failures to the compiler unless a compile-stage mutation fixture and registry row are added.
 
-Duplicate prop, variant, state, slot, action, event, or data-binding ids within a component are deferred to P1 unless P0 adds dedicated member-duplicate mutation fixtures and registry rows. They must not be claimed as P0 compile-stage proof coverage.
+Duplicate prop, variant, state, slot, action, event, or data-binding ids within a component are deferred beyond P1 unless a later phase adds dedicated member-duplicate mutation fixtures and registry rows. They must not be claimed as P0/P1 compile-stage proof coverage.
 
 ## P0 Proof
 The compiler produces deterministic `artifacts/p0/catalog.json` for the golden fixture. It records diagnostics for every blocking condition in the shared diagnostic shape.
