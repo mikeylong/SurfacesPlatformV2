@@ -351,6 +351,38 @@ const EXPECTATION_ROWS = [
     requiredSourceRef: "fixture://p1/invalid/disabled-action-execution#/instances/secondaryAction/actions/dismiss",
     renderPlanPath: null
   }),
+  projectionMemberExpectation({
+    slug: "unknown-action",
+    pointer: "/root/actions/escalate"
+  }),
+  projectionMemberExpectation({
+    slug: "unknown-event",
+    pointer: "/root/events/escalated"
+  }),
+  projectionMemberExpectation({
+    slug: "unknown-slot",
+    pointer: "/root/slots/footer"
+  }),
+  projectionMemberExpectation({
+    slug: "unknown-token-key",
+    pointer: "/root/tokenRefs/accent"
+  }),
+  projectionMemberExpectation({
+    slug: "unknown-token-ref",
+    pointer: "/root/tokenRefs/surface"
+  }),
+  projectionMemberExpectation({
+    slug: "unknown-data-binding",
+    pointer: "/root/dataBindings/userId"
+  }),
+  projectionMemberExpectation({
+    slug: "unknown-variant",
+    pointer: "/root/variant"
+  }),
+  projectionMemberExpectation({
+    slug: "unknown-state",
+    pointer: "/root/state"
+  }),
   expectationRow({
     fixturePath: "fixtures/p1/invalid/modal-role-not-supported.surface-ir.json",
     fixtureKind: "invalid",
@@ -444,6 +476,22 @@ const EXPECTATION_ROWS = [
   })
 ];
 
+function projectionMemberExpectation({ slug, pointer }) {
+  return expectationRow({
+    fixturePath: `fixtures/p1/invalid/${slug}.surface-ir.json`,
+    fixtureKind: "invalid",
+    expectedStage: "runtime-boundary",
+    expectedPhase: "runtime-invalid",
+    validationResult: "invalid",
+    promotionStatus: "blocked",
+    expectedDiagnosticCodes: ["RUNTIME_PROJECTION_MEMBER_UNKNOWN"],
+    expectedArtifactPath: "artifacts/p1/runtime-adapter-report.json",
+    expectedJsonPointer: pointer,
+    requiredSourceRef: `fixture://p1/invalid/${slug}#${pointer}`,
+    renderPlanPath: null
+  });
+}
+
 const P1_STAGE_ORDER = ["projection", "runtime-boundary", "evidence"];
 const P1_PHASES = ["projection-mutation", "runtime-adapter", "runtime-review", "runtime-invalid", "runtime-evidence"];
 const PROMOTION_STATUSES = ["allowed", "review_required", "blocked"];
@@ -505,6 +553,14 @@ function buildFixtures() {
     "invalid/disabled-action-execution.surface-ir.json": confirmPanelSurface("invalid", "disabled-action-execution", {
       secondaryDismissExecute: true
     }),
+    "invalid/unknown-action.surface-ir.json": unknownActionSurface(),
+    "invalid/unknown-event.surface-ir.json": unknownEventSurface(),
+    "invalid/unknown-slot.surface-ir.json": unknownSlotSurface(),
+    "invalid/unknown-token-key.surface-ir.json": unknownTokenKeySurface(),
+    "invalid/unknown-token-ref.surface-ir.json": unknownTokenRefSurface(),
+    "invalid/unknown-data-binding.surface-ir.json": unknownDataBindingSurface(),
+    "invalid/unknown-variant.surface-ir.json": unknownVariantSurface(),
+    "invalid/unknown-state.surface-ir.json": unknownStateSurface(),
     "invalid/modal-role-not-supported.surface-ir.json": confirmPanelSurface("invalid", "modal-role-not-supported", {
       rootAccessibility: {
         focusTrap: true,
@@ -571,21 +627,7 @@ function artifactOrder() {
     "artifacts/p0/governed-catalog.json",
     "artifacts/p0/adapter-diagnostics.json",
     `${FIXTURE_ROOT}/expectations.manifest.json`,
-    "fixtures/p1/mutations/missing-catalog-ref.runtime-projection.json",
-    "fixtures/p1/mutations/catalog-hash-mismatch.runtime-projection.json",
-    "fixtures/p1/mutations/projection-authority-escalation.runtime-projection.json",
-    "fixtures/p1/mutations/missing-render-plan-provenance.render-plan.json",
-    "fixtures/p1/mutations/runtime-projection-hash-mismatch.runtime-adapter-report.json",
-    "fixtures/p1/mutations/hash-mismatch.runtime-adapter-evidence.json",
-    "fixtures/p1/valid/confirm-panel.surface-ir.json",
-    "fixtures/p1/valid/status-callout.surface-ir.json",
-    "fixtures/p1/valid/button-defaults.surface-ir.json",
-    "fixtures/p1/invalid/unknown-component.surface-ir.json",
-    "fixtures/p1/invalid/unknown-prop.surface-ir.json",
-    "fixtures/p1/invalid/unsafe-markup.surface-ir.json",
-    "fixtures/p1/invalid/disabled-action-execution.surface-ir.json",
-    "fixtures/p1/invalid/modal-role-not-supported.surface-ir.json",
-    "fixtures/p1/review/review-required-action.surface-ir.json",
+    ...EXPECTATION_ROWS.map((row) => row.fixturePath),
     ...GENERATED_P1_ARTIFACTS
   ];
 }
@@ -1455,6 +1497,54 @@ function buttonDefaultsSurface(kind, slug) {
     instances: {},
     bindings: {}
   });
+}
+
+function unknownActionSurface() {
+  const surface = confirmPanelSurface("invalid", "unknown-action");
+  surface.root.actions.escalate = actionUse("fixture://p1/invalid/unknown-action#/root/actions/escalate", false);
+  return surface;
+}
+
+function unknownEventSurface() {
+  const surface = confirmPanelSurface("invalid", "unknown-event");
+  surface.root.events.escalated = eventUse("fixture://p1/invalid/unknown-event#/root/events/escalated");
+  return surface;
+}
+
+function unknownSlotSurface() {
+  const surface = confirmPanelSurface("invalid", "unknown-slot");
+  surface.root.slots.footer = [];
+  return surface;
+}
+
+function unknownTokenKeySurface() {
+  const surface = confirmPanelSurface("invalid", "unknown-token-key");
+  surface.root.tokenRefs.accent = "color.brand.primary";
+  return surface;
+}
+
+function unknownTokenRefSurface() {
+  const surface = confirmPanelSurface("invalid", "unknown-token-ref");
+  surface.root.tokenRefs.surface = "color.surface.missing";
+  return surface;
+}
+
+function unknownDataBindingSurface() {
+  const surface = confirmPanelSurface("invalid", "unknown-data-binding");
+  surface.root.dataBindings.userId = "selectedItem.userId";
+  return surface;
+}
+
+function unknownVariantSurface() {
+  const surface = confirmPanelSurface("invalid", "unknown-variant");
+  surface.root.variant = "expanded";
+  return surface;
+}
+
+function unknownStateSurface() {
+  const surface = confirmPanelSurface("invalid", "unknown-state");
+  surface.root.state = "expanded";
+  return surface;
 }
 
 function surfaceFixture({ uri, root, instances, bindings }) {

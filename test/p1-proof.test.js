@@ -132,6 +132,38 @@ const expectedP1Rows = [
     requiredSourceRef: "fixture://p1/invalid/disabled-action-execution#/instances/secondaryAction/actions/dismiss",
     renderPlanPath: null
   },
+  expectedProjectionMemberRow({
+    slug: "unknown-action",
+    pointer: "/root/actions/escalate"
+  }),
+  expectedProjectionMemberRow({
+    slug: "unknown-event",
+    pointer: "/root/events/escalated"
+  }),
+  expectedProjectionMemberRow({
+    slug: "unknown-slot",
+    pointer: "/root/slots/footer"
+  }),
+  expectedProjectionMemberRow({
+    slug: "unknown-token-key",
+    pointer: "/root/tokenRefs/accent"
+  }),
+  expectedProjectionMemberRow({
+    slug: "unknown-token-ref",
+    pointer: "/root/tokenRefs/surface"
+  }),
+  expectedProjectionMemberRow({
+    slug: "unknown-data-binding",
+    pointer: "/root/dataBindings/userId"
+  }),
+  expectedProjectionMemberRow({
+    slug: "unknown-variant",
+    pointer: "/root/variant"
+  }),
+  expectedProjectionMemberRow({
+    slug: "unknown-state",
+    pointer: "/root/state"
+  }),
   {
     fixturePath: "fixtures/p1/invalid/modal-role-not-supported.surface-ir.json",
     fixtureKind: "invalid",
@@ -224,6 +256,22 @@ const expectedP1Rows = [
     renderPlanPath: null
   }
 ];
+
+function expectedProjectionMemberRow({ slug, pointer }) {
+  return {
+    fixturePath: `fixtures/p1/invalid/${slug}.surface-ir.json`,
+    fixtureKind: "invalid",
+    expectedStage: "runtime-boundary",
+    expectedPhase: "runtime-invalid",
+    expectedValidationResult: "invalid",
+    expectedPromotionStatus: "blocked",
+    expectedDiagnosticCodes: ["RUNTIME_PROJECTION_MEMBER_UNKNOWN"],
+    expectedArtifactPath: "artifacts/p1/runtime-adapter-report.json",
+    expectedJsonPointer: pointer,
+    requiredSourceRef: `fixture://p1/invalid/${slug}#${pointer}`,
+    renderPlanPath: null
+  };
+}
 
 const expectedP1Fixtures = [
   "fixtures/p1/expectations.manifest.json",

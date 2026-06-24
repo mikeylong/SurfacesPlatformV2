@@ -62,6 +62,14 @@ const P1_INVALID_FILES = [
   "unknown-prop.surface-ir.json",
   "unsafe-markup.surface-ir.json",
   "disabled-action-execution.surface-ir.json",
+  "unknown-action.surface-ir.json",
+  "unknown-event.surface-ir.json",
+  "unknown-slot.surface-ir.json",
+  "unknown-token-key.surface-ir.json",
+  "unknown-token-ref.surface-ir.json",
+  "unknown-data-binding.surface-ir.json",
+  "unknown-variant.surface-ir.json",
+  "unknown-state.surface-ir.json",
   "modal-role-not-supported.surface-ir.json"
 ];
 const P1_REVIEW_FILES = ["review-required-action.surface-ir.json"];
@@ -339,9 +347,15 @@ export async function runAdapterProof({ cwd, catalogPath, fixtureRoot, outRoot, 
   await assertP1Manifest(cwd, manifest, fixtureRoot, outRoot);
 
   const runId = buildRunId(p0, command, args, manifest);
-  const projection = buildRuntimeProjection(p0, runId);
+  let projection = buildRuntimeProjection(p0, runId);
   assertSchema(validators, "p1", "runtime-projection.v0", projection, `${outRoot}/runtime-projection.json`);
   await writeJson(path.join(cwd, outRoot, "runtime-projection.json"), projection);
+  const persistedProjection = await readJson(path.join(cwd, outRoot, "runtime-projection.json"));
+  assertSchema(validators, "p1", "runtime-projection.v0", persistedProjection, `${outRoot}/runtime-projection.json`);
+  if (canonicalJson(persistedProjection) !== canonicalJson(projection)) {
+    throw contractError("P1 runtime projection persisted artifact does not match generated projection", 1);
+  }
+  projection = persistedProjection;
   const projectionHash = await canonicalFileHash(path.join(cwd, outRoot, "runtime-projection.json"));
   const projectionRef = {
     path: `${outRoot}/runtime-projection.json`,
@@ -665,7 +679,7 @@ async function assertP1Manifest(cwd, manifest, fixtureRoot, outRoot) {
   for (const expectation of manifest.expectations) {
     assertP1Expectation(expectation);
   }
-  assertOrderedPaths("P1 expectations manifest artifactOrder", manifest.artifactOrder, artifactOrderFor(fixtureRoot, outRoot));
+  assertOrderedPaths("P1 expectations manifest artifactOrder", manifest.artifactOrder, artifactOrderFor(fixtureRoot, outRoot, manifest.inputs));
 
   const expectedFixtureFiles = [
     `${fixtureRoot}/expectations.manifest.json`,
@@ -703,6 +717,12 @@ function assertP1Expectation(expectation) {
     throw contractError(`P1 diagnostic expectation must not declare renderPlanPath: ${expectation.fixturePath}`, 1);
   }
   const row = P1_REGISTRY_BY_ARTIFACT.get(expectation.expectedArtifactPath) || P1_REGISTRY_BY_ARTIFACT.get(expectation.fixturePath);
+  if (!row && expectation.fixtureKind === "invalid" && expectation.expectedDiagnosticCodes[0] === "RUNTIME_PROJECTION_MEMBER_UNKNOWN") {
+    if (expectation.expectedArtifactPath !== `${ARTIFACT_ROOT}/runtime-adapter-report.json`) {
+      throw contractError(`P1 projection-member expectation must point at runtime-adapter-report: ${expectation.fixturePath}`, 1);
+    }
+    return;
+  }
   if (!row && expectation.fixtureKind === "invalid" && INHERITED_P0_DIAGNOSTIC_CODES.has(expectation.expectedDiagnosticCodes[0])) {
     if (expectation.expectedArtifactPath !== `${ARTIFACT_ROOT}/runtime-adapter-report.json`) {
       throw contractError(`P1 inherited diagnostic expectation must point at runtime-adapter-report: ${expectation.fixturePath}`, 1);
@@ -1239,7 +1259,7 @@ async function buildP1Evidence({ cwd, fixtureRoot, outRoot, command, args, runId
     }, "render-plan")),
     boundaryRef(reportRef, "runtime-adapter-report")
   ];
-  const artifacts = await buildEvidenceArtifactEntries(cwd, fixtureRoot, outRoot);
+  const artifacts = await buildEvidenceArtifactEntries(cwd, fixtureRoot, outRoot, manifest.inputs);
   const evidence = {
     contractId: "surfaces-p1-runtime-adapter-proof",
     schemaId: "runtime-adapter-evidence.v0",
@@ -1292,9 +1312,9 @@ function boundaryRef(ref, role) {
   };
 }
 
-async function buildEvidenceArtifactEntries(cwd, fixtureRoot, outRoot) {
+async function buildEvidenceArtifactEntries(cwd, fixtureRoot, outRoot, inputs) {
   const entries = [];
-  for (const artifactPath of artifactOrderFor(fixtureRoot, outRoot)) {
+  for (const artifactPath of artifactOrderFor(fixtureRoot, outRoot, inputs)) {
     const hash = artifactPath === `${outRoot}/evidence.json` ? null :
       artifactPath === `${P0_ARTIFACT_ROOT}/evidence.json` ? computeEvidenceSelfHash(await readJson(path.join(cwd, artifactPath))) :
       await canonicalFileHash(path.join(cwd, artifactPath));
@@ -1322,17 +1342,14 @@ function artifactProvenance(artifactPath, hash, role) {
   };
 }
 
-function artifactOrderFor(fixtureRoot, outRoot) {
+function artifactOrderFor(fixtureRoot, outRoot, inputs) {
   return [
     ...P1_SCHEMA_FILES.map((file) => `${SCHEMA_ROOT}/${file}`),
     `${P0_ARTIFACT_ROOT}/evidence.json`,
     `${P0_ARTIFACT_ROOT}/governed-catalog.json`,
     `${P0_ARTIFACT_ROOT}/adapter-diagnostics.json`,
     `${fixtureRoot}/expectations.manifest.json`,
-    ...P1_MUTATION_FILES.map((file) => `${fixtureRoot}/mutations/${file}`),
-    ...P1_VALID_FILES.map((file) => `${fixtureRoot}/valid/${file}`),
-    ...P1_INVALID_FILES.map((file) => `${fixtureRoot}/invalid/${file}`),
-    ...P1_REVIEW_FILES.map((file) => `${fixtureRoot}/review/${file}`),
+    ...inputs,
     `${outRoot}/runtime-projection.json`,
     `${outRoot}/render-plan.confirm-panel.json`,
     `${outRoot}/render-plan.status-callout.json`,

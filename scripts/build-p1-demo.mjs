@@ -51,6 +51,14 @@ const P1_INVALID_FILES = [
   "unknown-prop.surface-ir.json",
   "unsafe-markup.surface-ir.json",
   "disabled-action-execution.surface-ir.json",
+  "unknown-action.surface-ir.json",
+  "unknown-event.surface-ir.json",
+  "unknown-slot.surface-ir.json",
+  "unknown-token-key.surface-ir.json",
+  "unknown-token-ref.surface-ir.json",
+  "unknown-data-binding.surface-ir.json",
+  "unknown-variant.surface-ir.json",
+  "unknown-state.surface-ir.json",
   "modal-role-not-supported.surface-ir.json"
 ];
 const P1_REVIEW_FILES = ["review-required-action.surface-ir.json"];
@@ -88,14 +96,14 @@ const EXPECTED_ARTIFACT_SPECS = [
   { role: "upstream-boundary", path: `${P0_ARTIFACT_ROOT}/governed-catalog.json`, schemaId: "runtime-catalog.v0" },
   { role: "upstream-boundary", path: `${P0_ARTIFACT_ROOT}/adapter-diagnostics.json`, schemaId: "adapter-diagnostics.v0" },
   { role: "expectations-manifest", path: `${P1_FIXTURE_ROOT}/expectations.manifest.json`, schemaId: "runtime-adapter-expectations.v0" },
-  ...P1_MUTATION_FILES.map(([file, schemaId]) => ({
-    role: "mutation-fixture",
-    path: `${P1_FIXTURE_ROOT}/mutations/${file}`,
-    schemaId
-  })),
   ...P1_VALID_FILES.map((file) => ({
     role: "valid-fixture",
     path: `${P1_FIXTURE_ROOT}/valid/${file}`,
+    schemaId: "surface-ir.v0"
+  })),
+  ...P1_REVIEW_FILES.map((file) => ({
+    role: "review-fixture",
+    path: `${P1_FIXTURE_ROOT}/review/${file}`,
     schemaId: "surface-ir.v0"
   })),
   ...P1_INVALID_FILES.map((file) => ({
@@ -103,10 +111,10 @@ const EXPECTED_ARTIFACT_SPECS = [
     path: `${P1_FIXTURE_ROOT}/invalid/${file}`,
     schemaId: "surface-ir.v0"
   })),
-  ...P1_REVIEW_FILES.map((file) => ({
-    role: "review-fixture",
-    path: `${P1_FIXTURE_ROOT}/review/${file}`,
-    schemaId: "surface-ir.v0"
+  ...P1_MUTATION_FILES.map(([file, schemaId]) => ({
+    role: "mutation-fixture",
+    path: `${P1_FIXTURE_ROOT}/mutations/${file}`,
+    schemaId
   })),
   { role: "runtime-projection", path: `${P1_ARTIFACT_ROOT}/runtime-projection.json`, schemaId: "runtime-projection.v0" },
   ...EXPECTED_RENDER_PLAN_PATHS.map((refPath) => ({ role: "render-plan", path: refPath, schemaId: "render-plan.v0" })),

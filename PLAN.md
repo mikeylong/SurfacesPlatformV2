@@ -175,6 +175,7 @@ Given a valid P0 proof and the P1 fixture set, the adapter proof command emits t
 - P0 proof still passes unchanged before and after P1 work.
 - `runtime-projection.json` is derived from `artifacts/p0/governed-catalog.json` and hash-verified against P0 evidence.
 - Runtime projection cannot introduce components, props, actions, token refs, data bindings, governance rules, or promotion statuses absent from the governed catalog.
+- Surface IR fixtures cannot reference actions, events, slots, token keys, token refs, data bindings, variants, or states absent from the runtime projection.
 - Valid P1 fixtures produce deterministic render plans.
 - Invalid P1 fixtures and inherited P0 invalid behavior remain blocked with expected diagnostics.
 - Review-required fixtures remain structurally valid, record `review_required`, execute no actions, and block unattended promotion.
