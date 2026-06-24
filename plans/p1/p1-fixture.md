@@ -22,6 +22,14 @@ fixtures/p1/
     unknown-prop.surface-ir.json
     unsafe-markup.surface-ir.json
     disabled-action-execution.surface-ir.json
+    unknown-action.surface-ir.json
+    unknown-event.surface-ir.json
+    unknown-slot.surface-ir.json
+    unknown-token-key.surface-ir.json
+    unknown-token-ref.surface-ir.json
+    unknown-data-binding.surface-ir.json
+    unknown-variant.surface-ir.json
+    unknown-state.surface-ir.json
     modal-role-not-supported.surface-ir.json
   mutations/
     missing-catalog-ref.runtime-projection.json
@@ -84,6 +92,14 @@ The table below is the normative `expectations[]` content. The row order is also
 | `fixtures/p1/invalid/unknown-prop.surface-ir.json` | `invalid` | `runtime-boundary` | `runtime-invalid` | `invalid` | `blocked` | `["CATALOG_UNKNOWN_PROP"]` | `artifacts/p1/runtime-adapter-report.json` | `/root/props/eyebrow` | `fixture://p1/invalid/unknown-prop#/root/props/eyebrow` | `null` |
 | `fixtures/p1/invalid/unsafe-markup.surface-ir.json` | `invalid` | `runtime-boundary` | `runtime-invalid` | `invalid` | `blocked` | `["CATALOG_INVALID_VALUE"]` | `artifacts/p1/runtime-adapter-report.json` | `/instances/secondaryAction/props/label` | `fixture://p1/invalid/unsafe-markup#/instances/secondaryAction/props/label` | `null` |
 | `fixtures/p1/invalid/disabled-action-execution.surface-ir.json` | `invalid` | `runtime-boundary` | `runtime-invalid` | `invalid` | `blocked` | `["RUNTIME_ACTION_EXECUTION_BLOCKED"]` | `artifacts/p1/runtime-adapter-report.json` | `/instances/secondaryAction/actions/dismiss/execute` | `fixture://p1/invalid/disabled-action-execution#/instances/secondaryAction/actions/dismiss` | `null` |
+| `fixtures/p1/invalid/unknown-action.surface-ir.json` | `invalid` | `runtime-boundary` | `runtime-invalid` | `invalid` | `blocked` | `["RUNTIME_PROJECTION_MEMBER_UNKNOWN"]` | `artifacts/p1/runtime-adapter-report.json` | `/root/actions/escalate` | `fixture://p1/invalid/unknown-action#/root/actions/escalate` | `null` |
+| `fixtures/p1/invalid/unknown-event.surface-ir.json` | `invalid` | `runtime-boundary` | `runtime-invalid` | `invalid` | `blocked` | `["RUNTIME_PROJECTION_MEMBER_UNKNOWN"]` | `artifacts/p1/runtime-adapter-report.json` | `/root/events/escalated` | `fixture://p1/invalid/unknown-event#/root/events/escalated` | `null` |
+| `fixtures/p1/invalid/unknown-slot.surface-ir.json` | `invalid` | `runtime-boundary` | `runtime-invalid` | `invalid` | `blocked` | `["RUNTIME_PROJECTION_MEMBER_UNKNOWN"]` | `artifacts/p1/runtime-adapter-report.json` | `/root/slots/footer` | `fixture://p1/invalid/unknown-slot#/root/slots/footer` | `null` |
+| `fixtures/p1/invalid/unknown-token-key.surface-ir.json` | `invalid` | `runtime-boundary` | `runtime-invalid` | `invalid` | `blocked` | `["RUNTIME_PROJECTION_MEMBER_UNKNOWN"]` | `artifacts/p1/runtime-adapter-report.json` | `/root/tokenRefs/accent` | `fixture://p1/invalid/unknown-token-key#/root/tokenRefs/accent` | `null` |
+| `fixtures/p1/invalid/unknown-token-ref.surface-ir.json` | `invalid` | `runtime-boundary` | `runtime-invalid` | `invalid` | `blocked` | `["RUNTIME_PROJECTION_MEMBER_UNKNOWN"]` | `artifacts/p1/runtime-adapter-report.json` | `/root/tokenRefs/surface` | `fixture://p1/invalid/unknown-token-ref#/root/tokenRefs/surface` | `null` |
+| `fixtures/p1/invalid/unknown-data-binding.surface-ir.json` | `invalid` | `runtime-boundary` | `runtime-invalid` | `invalid` | `blocked` | `["RUNTIME_PROJECTION_MEMBER_UNKNOWN"]` | `artifacts/p1/runtime-adapter-report.json` | `/root/dataBindings/userId` | `fixture://p1/invalid/unknown-data-binding#/root/dataBindings/userId` | `null` |
+| `fixtures/p1/invalid/unknown-variant.surface-ir.json` | `invalid` | `runtime-boundary` | `runtime-invalid` | `invalid` | `blocked` | `["RUNTIME_PROJECTION_MEMBER_UNKNOWN"]` | `artifacts/p1/runtime-adapter-report.json` | `/root/variant` | `fixture://p1/invalid/unknown-variant#/root/variant` | `null` |
+| `fixtures/p1/invalid/unknown-state.surface-ir.json` | `invalid` | `runtime-boundary` | `runtime-invalid` | `invalid` | `blocked` | `["RUNTIME_PROJECTION_MEMBER_UNKNOWN"]` | `artifacts/p1/runtime-adapter-report.json` | `/root/state` | `fixture://p1/invalid/unknown-state#/root/state` | `null` |
 | `fixtures/p1/invalid/modal-role-not-supported.surface-ir.json` | `invalid` | `runtime-boundary` | `runtime-invalid` | `invalid` | `blocked` | `["ACCESSIBILITY_MODAL_UNSUPPORTED"]` | `artifacts/p1/runtime-adapter-report.json` | `/root/accessibility/role` | `fixture://p1/invalid/modal-role-not-supported#/root/accessibility` | `null` |
 | `fixtures/p1/mutations/missing-catalog-ref.runtime-projection.json` | `mutation` | `projection` | `projection-mutation` | `invalid` | `blocked` | `["PROJECTION_CATALOG_REF_MISSING"]` | `fixtures/p1/mutations/missing-catalog-ref.runtime-projection.json` | `/catalogRef` | `null` | `null` |
 | `fixtures/p1/mutations/catalog-hash-mismatch.runtime-projection.json` | `mutation` | `projection` | `projection-mutation` | `invalid` | `blocked` | `["PROJECTION_SOURCE_HASH_MISMATCH"]` | `fixtures/p1/mutations/catalog-hash-mismatch.runtime-projection.json` | `/catalogRef/hash` | `fixture://p1/mutations/catalog-hash-mismatch.runtime-projection#/catalogRef` | `null` |
@@ -109,6 +125,7 @@ Invalid fixtures prove that the adapter boundary still blocks:
 - unknown props;
 - unsafe markup;
 - disabled action execution;
+- Surface IR members absent from `runtime-projection.v0`, including actions, events, slots, token keys, token refs, data bindings, variants, and states;
 - modal or `alertdialog` semantics unsupported by the P1 adapter.
 
 Shared failures should preserve P0 diagnostic meaning where possible. P1-only diagnostics are used only for projection, render-plan, runtime-boundary, and evidence failures that P0 does not cover.

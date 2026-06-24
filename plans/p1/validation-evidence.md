@@ -80,10 +80,10 @@ P1 evidence artifact order is:
 1. P1 schemas.
 2. Upstream P0 evidence and artifacts consumed by P1.
 3. P1 expectations manifest.
-4. P1 mutation fixtures.
-5. P1 valid fixtures.
+4. P1 valid fixtures.
+5. P1 review fixtures.
 6. P1 invalid fixtures.
-7. P1 review fixtures.
+7. P1 mutation fixtures.
 8. Runtime projection.
 9. Render plans.
 10. Runtime adapter report.

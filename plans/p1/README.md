@@ -44,6 +44,14 @@ fixtures/p1/
     unknown-prop.surface-ir.json
     unsafe-markup.surface-ir.json
     disabled-action-execution.surface-ir.json
+    unknown-action.surface-ir.json
+    unknown-event.surface-ir.json
+    unknown-slot.surface-ir.json
+    unknown-token-key.surface-ir.json
+    unknown-token-ref.surface-ir.json
+    unknown-data-binding.surface-ir.json
+    unknown-variant.surface-ir.json
+    unknown-state.surface-ir.json
     modal-role-not-supported.surface-ir.json
   mutations/
     missing-catalog-ref.runtime-projection.json
@@ -107,6 +115,7 @@ P1 introduces a strict extension registry for adapter proof failures. The eviden
 | `RUNTIME_PROJECTION_HASH_MISMATCH` | Adapter proof consumes a projection whose hash differs from evidence or report metadata | `runtime-boundary` | `blocked` | `mutations/runtime-projection-hash-mismatch.runtime-adapter-report.json` |
 | `RUNTIME_RENDER_PLAN_PROVENANCE_MISSING` | Render plan omits required provenance | `runtime-boundary` | `blocked` | `mutations/missing-render-plan-provenance.render-plan.json` |
 | `RUNTIME_ACTION_EXECUTION_BLOCKED` | Runtime proof encounters disabled or unsupported action execution | `runtime-boundary` | `blocked` | `invalid/disabled-action-execution.surface-ir.json` |
+| `RUNTIME_PROJECTION_MEMBER_UNKNOWN` | Runtime Surface IR references a component member or token absent from the runtime projection | `runtime-boundary` | `blocked` | `manifest-wide` |
 | `RUNTIME_REVIEW_REQUIRED` | Runtime proof encounters structurally valid usage that requires review | `runtime-boundary` | `review_required` | `review/review-required-action.surface-ir.json` |
 | `RUNTIME_EVIDENCE_HASH_MISMATCH` | Runtime adapter evidence hash differs from manifest or self-hash rule | `evidence` | `blocked` | `mutations/hash-mismatch.runtime-adapter-evidence.json` |
 
