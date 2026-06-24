@@ -210,4 +210,4 @@ The golden fixture compiles into deterministic `artifacts/p0/catalog.json` and `
 - `runtime-catalog.v0` is internal until P0 proves the contract.
 - Surface IR is an internal validation fixture for P0.
 - Diagnostics codes are shared across compiler, governance, validation, and adapter conformance.
-- Post-P0 adapter target selection is deferred; A2UI remains reference-only in P0.
+- P1 resolves the first post-P0 adapter proof target as `web-static` over `runtime-projection.v0`; additional adapter target selection remains deferred, and A2UI remains reference-only in P0.

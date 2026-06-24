@@ -180,8 +180,8 @@ const INHERITED_P0_DIAGNOSTIC_CODES = [
 const INHERITED_P0_DIAGNOSTIC_ROWS = [
   diagnosticRow({
     code: "ACCESSIBILITY_MODAL_UNSUPPORTED",
-    trigger: "Surface IR attempts modal dialog semantics through unsupported modal fields",
-    canonicalMessage: "Modal dialog semantics are unsupported in P0.",
+    trigger: "Surface IR attempts modal dialog or alertdialog semantics through unsupported modal fields",
+    canonicalMessage: "Modal dialog and alertdialog semantics are deferred beyond P1 and unsupported in P0/P1.",
     severity: "error",
     diagnosticSource: "catalog-validator",
     stage: "runtime-boundary",

@@ -37,7 +37,7 @@ No renderer is built. The proof is that adapter conformance can accept valid usa
 ## Non-Goals
 - No runtime renderer.
 - No A2UI compatibility implementation.
-- No web/native adapter.
+- No P0 web/native adapter; P1's `web-static` proof target is not a live or general-purpose web/native adapter.
 - No component package integration.
 - No live action execution.
 

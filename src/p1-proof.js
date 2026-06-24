@@ -992,7 +992,7 @@ function catalogDiagnostic(code, artifactPath, pointer, sourceRef) {
     CATALOG_UNKNOWN_COMPONENT: "Surface IR references an unknown component.",
     CATALOG_UNKNOWN_PROP: "Surface IR references an unknown prop.",
     CATALOG_INVALID_VALUE: "String prop contains unsafe markup or unsanitized text.",
-    ACCESSIBILITY_MODAL_UNSUPPORTED: "Modal dialog semantics are unsupported in P0."
+    ACCESSIBILITY_MODAL_UNSUPPORTED: "Modal dialog and alertdialog semantics are deferred beyond P1 and unsupported in P0/P1."
   };
   return {
     code,
@@ -1472,8 +1472,8 @@ function inheritedP0RegistryRows() {
   return [
     {
       code: "ACCESSIBILITY_MODAL_UNSUPPORTED",
-      trigger: "Surface IR attempts modal dialog semantics through unsupported modal fields",
-      message: "Modal dialog semantics are unsupported in P0.",
+      trigger: "Surface IR attempts modal dialog or alertdialog semantics through unsupported modal fields",
+      message: "Modal dialog and alertdialog semantics are deferred beyond P1 and unsupported in P0/P1.",
       severity: "error",
       diagnosticSource: "catalog-validator",
       stage: "runtime-boundary",
