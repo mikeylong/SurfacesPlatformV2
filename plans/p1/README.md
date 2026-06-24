@@ -127,6 +127,7 @@ P1 introduces a strict extension registry for adapter proof failures. The eviden
 - `--catalog` must point to the governed P0 catalog artifact recorded in P0 evidence.
 - The command verifies the upstream hashes for `artifacts/p0/evidence.json`, `artifacts/p0/governed-catalog.json`, and `artifacts/p0/adapter-diagnostics.json` before projection.
 - Upstream P0 preflight failures stop before projection and before writing any P1 output.
+- P1 schema validation is closed over the P0 and P1 schema suites consumed by this proof. Regular future phase-owned `*.vN.schema.json` files may exist under the shared `schemas/` root without entering P1 evidence or drift expectations; missing or tampered P0/P1 schemas and non-regular schema-root entries still fail.
 - `fixtures/p1/expectations.manifest.json` is the machine-readable fixture comparison reference.
 - Exit `0`: all P1 expectations match, all render plans are schema-valid, final evidence is reproducible, `evidence.status` is `pass`, and aggregate `evidence.promotionStatus` is `review_required` when review fixtures are present.
 - Exit `1`: contract validation fails, manifest expectations do not match, invalid usage is not blocked, review-required usage is rendered as allowed, hashes/provenance are missing, actions execute, or stale unexpected output exists under `--out`.

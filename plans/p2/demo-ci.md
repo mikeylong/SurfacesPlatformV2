@@ -47,7 +47,10 @@ npm run check:p2:ci
 - rebuild `demo/p2`;
 - run the full test suite;
 - fail if generated schemas, fixtures, artifacts, source inventory, source mapping, catalogs, evidence, or demos drift;
+- run the inherited P0 and P1 untracked-file guards or an equivalent superset before claiming P2 CI success;
 - fail if expected P2 generated/source files are untracked.
+
+P2 CI must treat `git diff --exit-code -- schemas fixtures artifacts demo` as necessary but not sufficient. It must also detect untracked P0, P1, and P2 generated-output and source files because untracked files can otherwise bypass proof drift checks.
 
 ## P2 Proof
 The demo/CI layer passes only when P2 evidence passes, demo output rebuilds deterministically from evidence, tests cover the P2 ingestion proof contract and tamper cases, and drift checks confirm generated artifacts are current.

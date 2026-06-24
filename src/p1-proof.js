@@ -38,6 +38,7 @@ const P0_SCHEMA_FILES = [
   "evidence.v0.schema.json",
   "diagnostics.v0.schema.json"
 ];
+const SCHEMA_FILE_NAME_PATTERN = /^[a-z0-9][a-z0-9-]*\.v[0-9]+\.schema\.json$/;
 const P1_SCHEMA_IDS = Object.freeze(Object.fromEntries(
   P1_SCHEMA_FILES.map((file) => [file, file.replace(/\.schema\.json$/, "")])
 ));
@@ -338,9 +339,9 @@ export async function runAdapterProof({ cwd, catalogPath, fixtureRoot, outRoot, 
   await assertRequiredP1Files(cwd, fixtureRoot);
   await assertSchemaDirectoryCompleteness(cwd);
   const validators = await loadValidators(cwd);
-  await rejectStaleOutput(cwd, outRoot);
 
   const p0 = await p0Preflight(cwd, catalogPath, validators);
+  await rejectStaleOutput(cwd, outRoot);
   const manifestPath = `${fixtureRoot}/expectations.manifest.json`;
   const manifest = await readJson(path.join(cwd, manifestPath));
   assertSchema(validators, "p1", "runtime-adapter-expectations.v0", manifest, manifestPath);
@@ -1575,7 +1576,18 @@ async function assertSchemaDirectoryCompleteness(cwd) {
     .map((file) => `${SCHEMA_ROOT}/${file}`)
     .sort();
   const actualSchemaEntries = (await listTreeEntries(path.join(cwd, SCHEMA_ROOT), SCHEMA_ROOT)).sort();
-  assertPathSet("schema directory contents", actualSchemaEntries, expectedSchemaFiles);
+  const missing = expectedSchemaFiles.filter((entry) => !actualSchemaEntries.includes(entry));
+  const unsupported = actualSchemaEntries.filter((entry) => {
+    if (expectedSchemaFiles.includes(entry)) return false;
+    const fileName = entry.slice(`${SCHEMA_ROOT}/`.length);
+    return !SCHEMA_FILE_NAME_PATTERN.test(fileName);
+  });
+  if (missing.length > 0 || unsupported.length > 0) {
+    const parts = [];
+    if (missing.length > 0) parts.push(`missing ${missing.join(", ")}`);
+    if (unsupported.length > 0) parts.push(`unsupported ${unsupported.join(", ")}`);
+    throw contractError(`schema directory contents drift: ${parts.join("; ")}`, 1);
+  }
 }
 
 function assertPathUnderRoot(value, root, label) {

@@ -77,7 +77,7 @@ P1 evidence must copy the accepted P0 evidence, governed catalog, and adapter di
 ## Artifact Ordering
 P1 evidence artifact order is:
 
-1. P1 schemas.
+1. P1-owned schemas only.
 2. Upstream P0 evidence and artifacts consumed by P1.
 3. P1 expectations manifest.
 4. P1 valid fixtures.
@@ -92,6 +92,8 @@ P1 evidence artifact order is:
 The `artifacts` entry for `artifacts/p1/evidence.json` is required and ordered last. Its persisted `hash` is the lowercase SHA-256 hex digest of the canonical evidence object after replacing only that entry's `hash` field with JSON `null`.
 
 Runtime projection, render plans, runtime adapter report, and final evidence are generated proof artifacts under `artifacts/p1`. Demo files under `demo/p1` are generated presentation output, not evidence-hashed proof artifacts.
+
+The shared `schemas/` directory may contain regular schemas for later phases. P1 evidence does not hash or claim those schemas unless a later phase adds its own proof contract; P1 remains closed over the P1-owned schema list plus the upstream P0 artifacts it consumes.
 
 ## Diagnostics
 P1 diagnostics must use canonical registry messages. Validator-native messages are non-normative and must not be used in golden evidence hashing or manifest comparison. The registry `canonicalMessage` is emitted as the diagnostic `message`; any schema or manifest field named `canonicalMessage` must match it exactly.

@@ -176,7 +176,7 @@ For golden fixtures, `generatedAt` is fixed to `1970-01-01T00:00:00.000Z`. Imple
 
 `artifacts/p0/adapter-diagnostics.json` must conform to `schemas/adapter-diagnostics.v0.schema.json`, contain the conformance matrix result for valid, invalid, and review fixtures, and embed diagnostics conforming to `schemas/diagnostics.v0.schema.json`.
 
-`artifacts/p0/evidence.json` must be finalized last and contain hashes/provenance for schemas, source fixture, mutation fixtures, valid fixture, invalid fixtures, review fixtures, generated artifacts, adapter diagnostics, and itself under the fixed null-placeholder self-hash rule.
+`artifacts/p0/evidence.json` must be finalized last and contain hashes/provenance for P0-owned schemas, source fixture, mutation fixtures, valid fixture, invalid fixtures, review fixtures, generated artifacts, adapter diagnostics, and itself under the fixed null-placeholder self-hash rule.
 
 ## P0 Proof
 The fixture compiles deterministically through `artifacts/p0/extract.json`, `artifacts/p0/catalog.json`, and `artifacts/p0/governed-catalog.json`. `fixtures/p0/valid.surface-ir.json` passes validation. Every invalid fixture fails with its expected diagnostic code. Every review fixture is structurally valid, records `review_required`, and blocks unattended promotion. The results appear in both `artifacts/p0/adapter-diagnostics.json` and final `artifacts/p0/evidence.json`.

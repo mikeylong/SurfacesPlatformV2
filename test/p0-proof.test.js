@@ -18,6 +18,37 @@ const expectedArtifacts = [
   "adapter-diagnostics.json",
   "evidence.json"
 ];
+const p0SchemaFiles = [
+  "runtime-catalog.v0.schema.json",
+  "surface-ir.v0.schema.json",
+  "fixture-expectations.v0.schema.json",
+  "extract.v0.schema.json",
+  "adapter-diagnostics.v0.schema.json",
+  "evidence.v0.schema.json",
+  "diagnostics.v0.schema.json"
+];
+
+test("P0 CI exposes an untracked-file guard", async () => {
+  const packageJson = await readJson("package.json");
+  assert.equal(typeof packageJson.scripts?.["check:p0:untracked"], "string");
+  assert.match(packageJson.scripts?.["check:p0:ci"] || "", /check:p0:untracked/);
+
+  const untrackedPath = path.join(root, "artifacts/p0/untracked-guard.tmp");
+  try {
+    await fs.writeFile(untrackedPath, "untracked");
+    await assert.rejects(
+      execFileAsync("npm", ["run", "check:p0:untracked"], { cwd: root }),
+      (error) => {
+        assert.equal(error.code, 1);
+        assert.match(`${error.stdout || ""}\n${error.stderr || ""}`, /untracked P0 files must be added/);
+        assert.match(`${error.stdout || ""}\n${error.stderr || ""}`, /artifacts\/p0\/untracked-guard\.tmp/);
+        return true;
+      }
+    );
+  } finally {
+    await fs.rm(untrackedPath, { force: true });
+  }
+});
 
 test("diagnostics registry stays in lockstep across README, schema, and manifest", async () => {
   await assertDiagnosticsContractLockstep();
@@ -250,7 +281,7 @@ test("P0 proof rejects fixture and schema directory drift that is not a regular 
       (error) => {
         assert.equal(error.code, 1);
         assert.match(error.stderr, /schema directory contents drift/);
-        assert.match(error.stderr, /extra schemas\/empty-extra\//);
+        assert.match(error.stderr, /unsupported schemas\/empty-extra\//);
         return true;
       }
     );
@@ -261,25 +292,30 @@ test("P0 proof rejects fixture and schema directory drift that is not a regular 
   }
 });
 
-test("P0 proof rejects schema files outside the declared suite", async () => {
+test("P0 proof allows regular future phase schema files outside the declared suite", async () => {
   await materializeP0Contract(root);
   await fs.rm(artifactDir, { recursive: true, force: true });
   await runProof();
 
-  const extraSchema = path.join(root, "schemas/unexpected.v0.schema.json");
+  const futureSchemaPath = "schemas/future-phase.v0.schema.json";
+  const futureSchema = path.join(root, futureSchemaPath);
   try {
-    await fs.writeFile(extraSchema, "{}");
-    await assert.rejects(
-      runProof(),
-      (error) => {
-        assert.equal(error.code, 1);
-        assert.match(error.stderr, /schema directory contents drift/);
-        assert.match(error.stderr, /extra schemas\/unexpected\.v0\.schema\.json/);
-        return true;
-      }
+    await fs.writeFile(futureSchema, JSON.stringify({
+      $schema: "https://json-schema.org/draft/2020-12/schema",
+      $id: "https://surfaces.dev/schemas/future/future-phase.v0.schema.json",
+      schemaId: "future-phase.v0",
+      type: "object",
+      additionalProperties: false
+    }));
+    await runProof();
+    const evidence = await readJson("artifacts/p0/evidence.json");
+    assert.equal(
+      evidence.artifacts.some((artifact) => artifact.path === futureSchemaPath),
+      false,
+      "future phase schemas must not enter P0 proof authority"
     );
   } finally {
-    await fs.rm(extraSchema, { force: true });
+    await fs.rm(futureSchema, { force: true });
     await runProof();
   }
 });
@@ -760,13 +796,9 @@ async function assertEvidenceInvariants() {
 }
 
 async function loadSchemas() {
-  const dir = path.join(root, "schemas");
-  const files = await fs.readdir(dir);
   const schemas = {};
-  for (const file of files.sort()) {
-    if (file.endsWith(".json")) {
-      schemas[file] = await readJson(`schemas/${file}`);
-    }
+  for (const file of p0SchemaFiles) {
+    schemas[file] = await readJson(`schemas/${file}`);
   }
   return schemas;
 }

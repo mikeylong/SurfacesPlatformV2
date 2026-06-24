@@ -29,7 +29,7 @@ Each phase update must include:
 | P0 | Planned and implemented in proof docs | Explain catalog proof, fixture-only extraction, diagnostics, evidence, and no real design-system ingestion claim |
 | P1 | Planned and implemented in proof docs | Explain `web-static` runtime projection, render plans, generated demo, review-required behavior, and no runtime authority expansion |
 | P2 | Planned as real design-system ingestion | Explain source bundle requirements, source refs, mapping review, ingestion diagnostics, evidence, and the selected target design system once chosen |
-| P3 | Parked as agent orchestration draft | Explain capability registry, inert work orders, review queue, report, and no live agent execution after P3 is accepted |
+| P3 | Parked as agent orchestration draft | Explain capability registry, inert work orders, review queue, report, and no live agent execution in P3; any later live execution requires a separate proof or explicit authorization |
 
 ## Non-Goals
 - No docs site implementation in this repo yet.

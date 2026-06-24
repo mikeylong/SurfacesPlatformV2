@@ -46,7 +46,7 @@ Create one evidence artifact that can later be consumed by JudgmentKit, SurfaceO
 - `adapterDiagnosticsPath`: `artifacts/p0/adapter-diagnostics.json`.
 
 ## Hash And Provenance Policy
-P0 evidence must cover every listed input and output artifact:
+P0 evidence must cover every listed P0-owned input and output artifact:
 
 - `schemas/runtime-catalog.v0.schema.json`.
 - `schemas/surface-ir.v0.schema.json`.
@@ -67,11 +67,13 @@ P0 evidence must cover every listed input and output artifact:
 - `artifacts/p0/adapter-diagnostics.json`.
 - `artifacts/p0/evidence.json`.
 
+Regular future phase-owned schemas may exist under the shared `schemas/` root, but they are not P0 inputs and must not be added to P0 evidence until a later phase defines its own proof contract.
+
 The spec pins deterministic proof output:
 
 - Canonical JSON: RFC 8785 JSON Canonicalization Scheme over UTF-8 JSON, with no insignificant whitespace, arrays preserved in specified order, object properties recursively sorted by UTF-16 code units, and string, literal, and number serialization following JCS. Inputs must be I-JSON: JSON numbers must be IEEE 754 double-precision compatible, and larger integers or higher-precision values must be represented as strings. Non-finite numbers are invalid, and string token values are never coerced to numbers.
 - Hash algorithm: SHA-256 over canonical JSON bytes.
-- Artifact ordering in evidence: schemas, source fixture, expectations manifest, mutation fixtures, valid fixture, invalid fixtures, review fixtures, generated artifacts, adapter diagnostics, final evidence.
+- Artifact ordering in evidence: P0-owned schemas, source fixture, expectations manifest, mutation fixtures, valid fixture, invalid fixtures, review fixtures, generated artifacts, adapter diagnostics, final evidence.
 - `runId`: deterministic P0 value derived from the SHA-256 hash of `source.fixture.json`, schema ids, and command args unless explicitly overridden.
 - `checkedAt`: normalized to `1970-01-01T00:00:00.000Z` for golden artifacts; real timestamps are allowed only outside golden fixture comparison.
 - `generatedAt`: all golden fixture and artifact provenance timestamps are normalized to `1970-01-01T00:00:00.000Z`.
@@ -135,5 +137,5 @@ One evidence file records successful validation for the valid Surface IR, expect
 
 ## Closed P0 Decisions
 - Evidence status values are `pass` and `fail`; review state is represented by aggregate `promotionStatus: review_required` only when proof correctness passes and at least one structurally valid fixture or governed result requires review.
-- Evidence hashes cover every schema, fixture, and artifact.
+- Evidence hashes cover every P0-owned schema, fixture, and artifact.
 - JudgmentKit is outside P0 and remains a deferred evaluator candidate.

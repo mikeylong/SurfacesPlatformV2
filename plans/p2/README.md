@@ -11,13 +11,13 @@ Surfaces Platform turns design-system source material into governed, versioned U
 P2 preserves this mission by replacing the synthetic P0 source fixture with a bounded source bundle exported from real design-system source material. [VISION](../../VISION.md#real-design-system-extraction) remains the canonical extraction and authority taxonomy; P2 describes only the phase-local mechanics for source eligibility, provenance, mapping, diagnostics, and evidence. The proof must show what can be extracted, what must be mapped manually, what is unsupported, and what can become governed catalog contract.
 
 ## Source Strategy
-The accepted P2 pilot source container is `design-system-source-bundle.v0`: a local, versioned snapshot exported from manifest-declared design-system source material. This is a phase-local ingestion and fixture strategy, not a universal product source policy decision. Future source-family choices still follow [VISION source-selection rules and open decisions](../../VISION.md#open-decisions).
+The accepted P2 pilot source container is `design-system-source-bundle.v0`: a local, versioned, hash-bound snapshot exported from the real design-system target named in `sources/p2/design-system-source/manifest.json`. This is a phase-local ingestion and fixture strategy, not a universal product source policy decision, and not a synthetic replacement for the P0 fixture. Future source-family choices still follow [VISION source-selection rules and open decisions](../../VISION.md#open-decisions).
 
 The bundle may include Figma exports, Storybook or code-doc metadata, Code Connect mappings, and structured usage-policy docs, but P2 reads only the declared local bundle.
 
 P2 does not call remote APIs. Live Figma, Storybook, Code Connect, docs, and production HTML ingestion require later connector-specific proofs.
 
-The target design system must be named in `sources/p2/design-system-source/manifest.json` before implementation starts. Without that manifest, P2 is planned but not implementation-ready.
+The target design system must be named in `sources/p2/design-system-source/manifest.json` before implementation starts, with non-placeholder source files, required mappings, policy refs, and hashes. Without that manifest, P2 is planned but not implementation-ready.
 
 ## P2 Dependency Order
 1. [Product Boundaries](product-boundaries.md)

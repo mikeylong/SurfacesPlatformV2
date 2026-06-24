@@ -1,7 +1,7 @@
 # Source Strategy
 
 ## Decision
-P2 uses `design-system-source-bundle.v0` as the accepted P2 pilot source container. It is a local source bundle exported from manifest-declared design-system source material.
+P2 uses `design-system-source-bundle.v0` as the accepted P2 pilot source container. It is a local, hash-bound snapshot exported from a named real design-system source selected in `sources/p2/design-system-source/manifest.json`; it is not a synthetic replacement for the P0 fixture and not a placeholder bundle invented for the proof.
 
 This keeps the proof deterministic while moving beyond P0 synthetic fixture extraction. It does not settle the universal product source policy decision; [VISION](../../VISION.md#real-design-system-extraction) remains canonical for the authority model and future source-family choices.
 
@@ -23,6 +23,8 @@ Define how real design-system source material becomes eligible for P2 extraction
 
 The manifest is the source eligibility gate. Files absent from the manifest must not be read. Files present in the manifest but missing or hash-mismatched must block before extraction.
 
+The manifest must identify the real pilot target before implementation begins. If `designSystemId`, `designSystemName`, source files, required mappings, or policy refs are placeholders, P2 remains planned-only and no P2 schemas, fixtures, artifacts, or source bundle should be created.
+
 ## Initial Source Types
 The first P2 source bundle may include:
 
@@ -35,7 +37,7 @@ The first P2 source bundle may include:
 P2 does not require every source type to exist. The manifest must declare which source types are in scope for the selected design system, and the proof must block when required source classes are absent.
 
 ## Target Design System
-The target design system is selected by `designSystemId` and `designSystemName` in the source manifest. P2 implementation must not begin until those fields identify a real design-system source. The manifest selects the P2 pilot target only; it is not a product-wide source policy or source-family taxonomy.
+The target design system is selected by `designSystemId` and `designSystemName` in the source manifest. P2 implementation must not begin until those fields identify a real, authoritative design-system source and the declared files are available as local exports with hashes. The manifest selects the P2 pilot target only; it is not a product-wide source policy or source-family taxonomy.
 
 ## P2 Eligibility Rules
 - Figma exports may provide declared design variables, component variants, component properties, and design provenance when present in the manifest.

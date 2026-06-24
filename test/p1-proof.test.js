@@ -26,6 +26,15 @@ const requiredP1Schemas = [
   "schemas/runtime-adapter-expectations.v0.schema.json",
   "schemas/runtime-adapter-diagnostics.v0.schema.json"
 ];
+const requiredP0Schemas = [
+  "schemas/runtime-catalog.v0.schema.json",
+  "schemas/surface-ir.v0.schema.json",
+  "schemas/fixture-expectations.v0.schema.json",
+  "schemas/extract.v0.schema.json",
+  "schemas/adapter-diagnostics.v0.schema.json",
+  "schemas/evidence.v0.schema.json",
+  "schemas/diagnostics.v0.schema.json"
+];
 
 const expectedP1Rows = [
   {
@@ -580,6 +589,26 @@ test("P1 proof rejects tampered P1 schema files", async (t) => {
   await assertProofP1Rejects(workspace, /schema validation failed|schema directory|schema.*render-plan|render-plan.*schema|tampered P1 schema/);
 });
 
+test("P1 proof allows regular future phase schema files outside the P0/P1 suite", async (t) => {
+  const workspace = await createWorkspace(t);
+  await runNpm(workspace, ["run", "materialize:p1"]);
+  await writeJson(workspace, "schemas/future-phase.v0.schema.json", {
+    $schema: "https://json-schema.org/draft/2020-12/schema",
+    $id: "https://surfaces.dev/schemas/future/future-phase.v0.schema.json",
+    schemaId: "future-phase.v0",
+    type: "object",
+    additionalProperties: false
+  });
+
+  await runNpm(workspace, ["run", "proof:p1"]);
+  const evidence = await readJson(workspace, "artifacts/p1/evidence.json");
+  assert.equal(
+    evidence.artifacts.some((artifact) => artifact.path === "schemas/future-phase.v0.schema.json"),
+    false,
+    "future phase schemas must not enter P1 proof authority"
+  );
+});
+
 test("P1 proof rejects tampered manifest runExpectation", async (t) => {
   const scenarios = [
     {
@@ -756,6 +785,11 @@ test("P1 P0 preflight rejects corrupted P0 boundary artifacts", async (t) => {
       await scenario.mutate(workspace);
 
       await assertDirectP1ProofRejects(workspace, scenario.pattern);
+      assert.equal(
+        await pathExists(path.join(workspace, "artifacts/p1")),
+        false,
+        "P0 preflight failure must not create or write the P1 output root"
+      );
     });
   }
 });
@@ -842,11 +876,9 @@ async function assertP1ArtifactSet(workspace) {
 
 async function assertP1ArtifactsValidate(workspace) {
   const ajv = new Ajv2020({ allErrors: true, strict: false, validateSchema: true });
-  const schemaEntries = await fs.readdir(path.join(workspace, "schemas"));
-  for (const schemaFile of schemaEntries.sort()) {
-    if (!schemaFile.endsWith(".json")) continue;
-    const schema = await readJson(workspace, `schemas/${schemaFile}`);
-    assert.equal(ajv.validateSchema(schema), true, `${schemaFile} must be a valid JSON Schema`);
+  for (const schemaPath of [...requiredP0Schemas, ...requiredP1Schemas]) {
+    const schema = await readJson(workspace, schemaPath);
+    assert.equal(ajv.validateSchema(schema), true, `${schemaPath} must be a valid JSON Schema`);
     ajv.addSchema(schema);
   }
 

@@ -127,6 +127,7 @@ Subordinate to the authority model in [VISION.md](VISION.md#canonical-authority-
 
 ## P0 Acceptance Criteria
 - The schema suite is specified: `runtime-catalog.v0.schema.json`, `surface-ir.v0.schema.json`, `fixture-expectations.v0.schema.json`, `extract.v0.schema.json`, `adapter-diagnostics.v0.schema.json`, `evidence.v0.schema.json`, and `diagnostics.v0.schema.json`.
+- The P0 proof gate is closed over the P0-owned schema suite above. The shared `schemas/` root may also contain regular future phase-owned `*.vN.schema.json` files without adding them to P0 proof authority, evidence, or drift expectations; missing or tampered P0 schemas and non-regular schema-root entries still fail closed.
 - One golden fixture source produces deterministic `extract.json`, `catalog.json`, and `governed-catalog.json`.
 - `fixtures/p0/expectations.manifest.json` declares every fixture input, expected stage, expected phase, expected validation result, expected promotion status, and expected diagnostic code.
 - `fixtures/p0/valid.surface-ir.json` passes catalog, governance, accessibility, token-ref, action, and provenance validation.
@@ -138,6 +139,7 @@ Subordinate to the authority model in [VISION.md](VISION.md#canonical-authority-
 - Diagnostic messages in hashed evidence use canonical registry wording; validator-native schema error text is non-normative.
 - Evidence canonicalization follows RFC 8785/JCS with I-JSON numeric input constraints.
 - The proof command rejects stale unexpected files or directories under `--out` before writing the exact P0 artifact set.
+- `check:p0:ci` must combine tracked drift checks with a P0 untracked-file guard because `git diff --exit-code` does not report untracked generated or source files.
 
 ## P1 Focus
 P1 proves a governed product surface through a `web-static` runtime projection and deterministic render-plan proof. It is not a product mock, general DOM runtime, React package, native adapter, P5 A2UI adapter, SurfaceOps console, JudgmentKit evaluator, or public Surface IR protocol.
@@ -188,6 +190,7 @@ Given a valid P0 proof and the P1 fixture set, the adapter proof command emits t
 - Render plans contain inert action descriptors only: no callbacks, RPC, workflow triggers, network calls, or side effects.
 - `runtime-adapter-report.json` records every expected and actual result before final P1 evidence.
 - P1 evidence hashes upstream P0 artifacts, P1 schemas, P1 fixtures, generated P1 artifacts, and itself under the same canonicalization discipline as P0.
+- The P1 proof gate is closed over the P0 and P1 schema suites it consumes. Regular future phase-owned schemas under `schemas/` do not enter P1 proof authority or evidence, while missing or tampered P0/P1 schemas and non-regular schema-root entries still fail closed.
 - `demo/p1/index.html` is generated from P1 proof artifacts and does not count as proof unless the underlying P1 evidence passes.
 - Review-required P1 fixtures are report/evidence-only and must not produce render-plan artifacts.
 
@@ -349,7 +352,7 @@ Given valid P2 ingestion evidence and the P3 fixture set, the agents proof comma
 - Demo output is checked by drift and generated from evidence, but final P1 proof authority stays in `artifacts/p1/evidence.json`.
 
 ## P2 Decisions
-- First real-ingestion target: `design-system-source-bundle.v0`, a local source bundle exported from authoritative design-system systems.
+- First real-ingestion target: `design-system-source-bundle.v0`, a local hash-bound source bundle exported from the real design-system target named in the P2 source manifest.
 - First source boundary: `sources/p2/design-system-source/manifest.json`, source inventory, source mapping, extract, catalog, governed catalog, ingestion report, and evidence.
 - P2 chooses a declared source bundle over live source APIs so the first real-ingestion proof remains deterministic.
 - P2 may preserve review-required mapping rows, but it does not build SurfaceOps persistence.

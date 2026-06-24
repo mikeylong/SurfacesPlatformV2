@@ -176,6 +176,7 @@ Given the P0 fixture, the proof command emits all expected artifacts, valid Surf
 - The command is run from the workspace root.
 - `--fixture` and `--out` are POSIX-style paths relative to the workspace root.
 - The schema directory is fixed at `schemas/` relative to the workspace root; P0 has no `--schemas` flag.
+- P0 proof authority is closed over the P0-owned schema suite listed in this document. Regular future phase-owned `*.vN.schema.json` files may exist under the shared `schemas/` root without entering P0 evidence or drift expectations; missing or tampered P0 schemas and non-regular schema-root entries still fail.
 - `fixtures/p0/expectations.manifest.json` is the machine-readable fixture comparison reference.
 - Exit `0`: all valid fixtures are allowed, all mutation and invalid fixtures are blocked in the expected phase with expected codes, all review fixtures are `review_required`, final evidence is reproducible, `evidence.status` is `pass`, and the P0 fixture set produces aggregate `evidence.promotionStatus: review_required`.
 - Exit `1`: contract validation fails, invalid fixture expectations do not match, review fixtures do not block unattended promotion, hashes/provenance are missing, or stale unexpected output exists under `--out`.
@@ -184,6 +185,7 @@ Given the P0 fixture, the proof command emits all expected artifacts, valid Surf
 - The expected P0 output set is exactly `extract.json`, `catalog.json`, `governed-catalog.json`, `adapter-diagnostics.json`, and `evidence.json` directly under `--out`. Before writing, the command enumerates `--out`; expected files are replaced, but any other file or directory is stale unexpected output, causes exit `1`, and is excluded from evidence.
 - The command writes a concise stage summary to stdout and machine-readable artifacts to `--out`.
 - The command writes diagnostics to stderr only for command/runtime failure, not expected invalid fixture failures.
+- `check:p0:ci` must run the materialize, proof, demo, test, tracked drift, and P0 untracked-file guard sequence. The untracked guard is required because `git diff --exit-code` does not report untracked files under P0 generated-output or source paths.
 
 ## P1 Contract Summary
 P1 proves a governed product surface through a `web-static` runtime projection and deterministic render-plan proof. The governed catalog remains the contract authority. The runtime projection is a derived, hash-bound adapter subset. The generated demo is proof output, not a hand-authored product mock.
@@ -201,6 +203,8 @@ P1 proof command:
 ```bash
 interfacectl surfaces adapter proof --catalog artifacts/p0/governed-catalog.json --fixture fixtures/p1 --out artifacts/p1
 ```
+
+The P1 proof gate is closed over the P0 and P1 schema suites it consumes. Regular future phase-owned schemas under `schemas/` do not enter P1 evidence or drift expectations, while missing or tampered P0/P1 schemas and non-regular schema-root entries still fail closed.
 
 ## P2 Contract Summary
 P2 proves real design-system ingestion. It consumes a declared local source bundle from `sources/p2/design-system-source`, materializes source inventory and mapping artifacts, extracts normalized design-system material with source refs, compiles catalog and governed catalog artifacts, records an ingestion report, and finalizes evidence. P2 does not call live source APIs, crawl docs, build a runtime adapter, recruit agents, persist review decisions, or run JudgmentKit.
