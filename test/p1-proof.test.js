@@ -522,6 +522,12 @@ test("P1 proof rejects runtime fixture members absent from the projection", asyn
       }
     },
     {
+      name: "unknown token key",
+      mutate: (fixture) => {
+        fixture.root.tokenRefs.accent = "color.brand.primary";
+      }
+    },
+    {
       name: "unknown data binding",
       mutate: (fixture) => {
         fixture.root.dataBindings.userId = "selectedItem.userId";
@@ -537,6 +543,16 @@ test("P1 proof rejects runtime fixture members absent from the projection", asyn
       name: "unknown state",
       mutate: (fixture) => {
         fixture.root.state = "expanded";
+      }
+    },
+    {
+      name: "nested unknown action",
+      mutate: (fixture) => {
+        fixture.instances.primaryAction.actions.escalate = {
+          execute: false,
+          payload: {},
+          sourceRef: "fixture://p1/valid/confirm-panel#/instances/primaryAction/actions/escalate"
+        };
       }
     }
   ];
