@@ -162,7 +162,7 @@ P0 accessibility validation is catalog-declared, not a browser audit. Each compo
 
 P0 uses WAI-ARIA APG as reference guidance for catalog-declared semantics, keyboard support, accessible names/descriptions, focus behavior, and status/alert announcements. P0 does not run a browser accessibility audit; it validates the declared Surface IR against the catalog accessibility contract.
 
-WAI-ARIA APG modal dialog and `alertdialog` support is P1. P0 does not declare modal roles or modal behavior because modal support requires inert outside content, focus containment and return, Escape behavior, and modal role/ARIA fields. P0 schema/catalog validation must reject `dialog`, `alertdialog`, `aria-modal`, `modal: true`, `focusTrap`, `initialFocus`, `returnFocus`, or `inertOutside` with `ACCESSIBILITY_MODAL_UNSUPPORTED`.
+WAI-ARIA APG modal dialog and `alertdialog` support is deferred beyond P1. P0 and P1 do not declare modal roles or modal behavior because modal support requires inert outside content, focus containment and return, Escape behavior, and modal role/ARIA fields. P0 schema/catalog validation must reject `dialog`, `alertdialog`, `aria-modal`, `modal: true`, `focusTrap`, `initialFocus`, `returnFocus`, or `inertOutside` with `ACCESSIBILITY_MODAL_UNSUPPORTED`.
 
 Accessibility fixture coverage is:
 

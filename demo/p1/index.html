@@ -1,0 +1,2222 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; img-src 'self' data:; script-src 'none'; connect-src 'none'; form-action 'none'; base-uri 'none'">
+  <title>Surfaces P1 Demo</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f7f8fa;
+      --ink: #1f2328;
+      --muted: #59636e;
+      --panel: #ffffff;
+      --line: #d8dee4;
+      --line-strong: #afb8c1;
+      --green: #0f7a5f;
+      --green-bg: #e7f6ef;
+      --amber: #9a6700;
+      --amber-bg: #fff4d6;
+      --red: #b42318;
+      --red-bg: #fde8e4;
+      --blue: #0b5cad;
+      --blue-bg: #eaf2ff;
+      --shadow: 0 1px 2px rgba(31, 35, 40, 0.08);
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-width: 320px;
+      background: var(--bg);
+      color: var(--ink);
+      letter-spacing: 0;
+    }
+    .shell {
+      width: min(1280px, 100%);
+      margin: 0 auto;
+      padding: 24px;
+    }
+    header {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 20px;
+      align-items: start;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 18px;
+    }
+    h1, h2, h3, p { margin-top: 0; }
+    h1 {
+      margin-bottom: 8px;
+      font-size: 32px;
+      line-height: 1.1;
+    }
+    h2 {
+      margin-bottom: 12px;
+      font-size: 20px;
+      line-height: 1.2;
+    }
+    h3 {
+      margin-bottom: 8px;
+      font-size: 16px;
+      line-height: 1.25;
+    }
+    .meta {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    .status-strip {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 26px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 4px 9px;
+      background: var(--panel);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .pill.allowed, .pill.pass {
+      border-color: #94d3bd;
+      background: var(--green-bg);
+      color: var(--green);
+    }
+    .pill.review_required, .pill.review {
+      border-color: #f0cc75;
+      background: var(--amber-bg);
+      color: var(--amber);
+    }
+    .pill.blocked, .pill.fail, .pill.invalid {
+      border-color: #f0aaa0;
+      background: var(--red-bg);
+      color: var(--red);
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin: 18px 0;
+    }
+    .metric, .panel, .surface {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+    .metric {
+      min-height: 92px;
+      padding: 14px;
+    }
+    .metric span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .metric strong {
+      display: block;
+      margin-top: 8px;
+      font-size: 24px;
+      line-height: 1.1;
+      word-break: break-word;
+    }
+    .section {
+      margin: 22px 0;
+    }
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      border-bottom: 1px solid var(--line);
+      padding: 13px 14px;
+    }
+    .panel-header h2, .panel-header h3 {
+      margin: 0;
+    }
+    .panel-body {
+      padding: 14px;
+    }
+    .surfaces {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .surface-preview {
+      display: grid;
+      gap: 10px;
+      min-height: 220px;
+      padding: 16px;
+      border: 1px solid var(--line-strong);
+      border-radius: 8px;
+      background: #fbfcfd;
+    }
+    .surface-node {
+      display: grid;
+      gap: 8px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      background: #ffffff;
+    }
+    .node-kicker {
+      color: var(--blue);
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+    .prop-list, .detail-list {
+      display: grid;
+      gap: 6px;
+      margin: 0;
+    }
+    .prop-list div, .detail-list div {
+      display: grid;
+      grid-template-columns: minmax(96px, 0.35fr) minmax(0, 1fr);
+      gap: 8px;
+      align-items: start;
+    }
+    dt {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+    dd {
+      margin: 0;
+      word-break: break-word;
+    }
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .inert-action {
+      display: inline-flex;
+      min-height: 34px;
+      align-items: center;
+      border: 1px solid var(--line-strong);
+      border-radius: 6px;
+      padding: 6px 10px;
+      background: var(--blue-bg);
+      color: var(--blue);
+      font-size: 13px;
+      font-weight: 700;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    th, td {
+      border-bottom: 1px solid var(--line);
+      padding: 9px 8px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+    }
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12px;
+      overflow-wrap: anywhere;
+    }
+    pre {
+      max-height: 420px;
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      margin: 0;
+      padding: 12px;
+      background: #f6f8fa;
+      font-size: 12px;
+      line-height: 1.45;
+    }
+    .two-col {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 12px;
+    }
+    @media (max-width: 980px) {
+      header, .two-col, .surfaces { grid-template-columns: 1fr; }
+      .status-strip { justify-content: flex-start; }
+      .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 640px) {
+      .shell { padding: 16px; }
+      .grid { grid-template-columns: 1fr; }
+      .prop-list div, .detail-list div { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <div>
+        <h1>Surfaces P1 Demo</h1>
+        <p class="meta">Generated from <code>artifacts/p1/evidence.json</code>. Demo output is presentation-only and is checked by deterministic rebuild drift.</p>
+      </div>
+      <div class="status-strip">
+        <span class="pill pass">pass</span>
+        <span class="pill review_required">review_required</span>
+        <span class="pill">web-static</span>
+      </div>
+    </header>
+
+    <section class="grid" aria-label="P1 proof summary">
+      <article class="metric"><span>Run</span><strong>p1-2c5ea1809d6528f2fde3d3b4e207b51a</strong></article>
+      <article class="metric"><span>Render plans</span><strong>3</strong></article>
+      <article class="metric"><span>Results</span><strong>15</strong></article>
+      <article class="metric"><span>Diagnostics</span><strong>12</strong></article>
+    </section>
+
+    <section class="section">
+      <div class="surfaces">
+        <article class="surface">
+  <div class="panel-header">
+    <h2>confirm panel</h2>
+    <span class="pill allowed">allowed</span>
+  </div>
+  <div class="panel-body">
+    <div class="surface-preview">
+      <section class="surface-node" role="group" aria-label="Delete archive item?">
+  <div class="node-kicker">ConfirmPanel</div>
+  <h3>Delete archive item?</h3>
+  <p>This removes the archived item from the workspace.</p>
+  <dl class="prop-list"><div><dt>body</dt><dd>This removes the archived item from the workspace.</dd></div><div><dt>heading</dt><dd>Delete archive item?</dd></div></dl>
+  <section class="surface-node" role="button" aria-label="Delete">
+  <div class="node-kicker">Button</div>
+  <h3>Delete</h3>
+  <dl class="prop-list"><div><dt>disabled</dt><dd>false</dd></div><div><dt>icon</dt><dd></dd></div><div><dt>label</dt><dd>Delete</dd></div><div><dt>loading</dt><dd>false</dd></div><div><dt>size</dt><dd>md</dd></div><div><dt>variant</dt><dd>danger</dd></div></dl>
+</section>
+<section class="surface-node" role="button" aria-label="Cancel">
+  <div class="node-kicker">Button</div>
+  <h3>Cancel</h3>
+  <dl class="prop-list"><div><dt>disabled</dt><dd>false</dd></div><div><dt>icon</dt><dd></dd></div><div><dt>label</dt><dd>Cancel</dd></div><div><dt>loading</dt><dd>false</dd></div><div><dt>size</dt><dd>md</dd></div><div><dt>variant</dt><dd>secondary</dd></div></dl>
+</section>
+<section class="surface-node" role="alert" aria-label="Review the impact">
+  <div class="node-kicker">StatusCallout</div>
+  <h3>Review the impact</h3>
+  <p>This action affects archived workspace data.</p>
+  <dl class="prop-list"><div><dt>body</dt><dd>This action affects archived workspace data.</dd></div><div><dt>dismissible</dt><dd>false</dd></div><div><dt>status</dt><dd>warning</dd></div><div><dt>title</dt><dd>Review the impact</dd></div></dl>
+</section>
+</section>
+<div class="actions"><span class="inert-action" aria-disabled="true">Delete archive item? (inert)</span><span class="inert-action" aria-disabled="true">Delete archive item? (review required)</span><span class="inert-action" aria-disabled="true">dismiss (inert)</span><span class="inert-action" aria-disabled="true">Delete (disabled)</span><span class="inert-action" aria-disabled="true">Delete (inert)</span><span class="inert-action" aria-disabled="true">Cancel (disabled)</span><span class="inert-action" aria-disabled="true">Cancel (inert)</span></div>
+    </div>
+    <dl class="detail-list">
+      <div><dt>Artifact</dt><dd><code>artifacts/p1/render-plan.confirm-panel.json</code></dd></div>
+      <div><dt>Surface</dt><dd><code>fixtures/p1/valid/confirm-panel.surface-ir.json</code></dd></div>
+      <div><dt>Schema</dt><dd>render-plan.v0</dd></div>
+    </dl>
+  </div>
+</article>
+<article class="surface">
+  <div class="panel-header">
+    <h2>status callout</h2>
+    <span class="pill allowed">allowed</span>
+  </div>
+  <div class="panel-body">
+    <div class="surface-preview">
+      <section class="surface-node" role="status" aria-label="Projection ready">
+  <div class="node-kicker">StatusCallout</div>
+  <h3>Projection ready</h3>
+  <p>P1 runtime projection is current and evidence-bound.</p>
+  <dl class="prop-list"><div><dt>body</dt><dd>P1 runtime projection is current and evidence-bound.</dd></div><div><dt>dismissible</dt><dd>false</dd></div><div><dt>status</dt><dd>info</dd></div><div><dt>title</dt><dd>Projection ready</dd></div></dl>
+</section>
+<div class="actions"><span class="inert-action" aria-disabled="true">dismiss (inert)</span></div>
+    </div>
+    <dl class="detail-list">
+      <div><dt>Artifact</dt><dd><code>artifacts/p1/render-plan.status-callout.json</code></dd></div>
+      <div><dt>Surface</dt><dd><code>fixtures/p1/valid/status-callout.surface-ir.json</code></dd></div>
+      <div><dt>Schema</dt><dd>render-plan.v0</dd></div>
+    </dl>
+  </div>
+</article>
+<article class="surface">
+  <div class="panel-header">
+    <h2>button defaults</h2>
+    <span class="pill allowed">allowed</span>
+  </div>
+  <div class="panel-body">
+    <div class="surface-preview">
+      <section class="surface-node" role="button" aria-label="Continue">
+  <div class="node-kicker">Button</div>
+  <h3>Continue</h3>
+  <dl class="prop-list"><div><dt>disabled</dt><dd>false</dd></div><div><dt>icon</dt><dd></dd></div><div><dt>label</dt><dd>Continue</dd></div><div><dt>loading</dt><dd>false</dd></div><div><dt>size</dt><dd>md</dd></div><div><dt>variant</dt><dd>primary</dd></div></dl>
+</section>
+<div class="actions"><span class="inert-action" aria-disabled="true">Continue (disabled)</span><span class="inert-action" aria-disabled="true">Continue (inert)</span></div>
+    </div>
+    <dl class="detail-list">
+      <div><dt>Artifact</dt><dd><code>artifacts/p1/render-plan.button-defaults.json</code></dd></div>
+      <div><dt>Surface</dt><dd><code>fixtures/p1/valid/button-defaults.surface-ir.json</code></dd></div>
+      <div><dt>Schema</dt><dd>render-plan.v0</dd></div>
+    </dl>
+  </div>
+</article>
+      </div>
+    </section>
+
+    <section class="section two-col">
+      <article class="panel">
+        <div class="panel-header"><h2>Outcomes</h2><span class="pill">15</span></div>
+        <div class="panel-body"><table>
+  <thead><tr><th>Fixture</th><th>Result</th><th>Promotion</th><th>Matched</th></tr></thead>
+  <tbody><tr><td><code>fixtures/p1/invalid/disabled-action-execution.surface-ir.json</code></td><td>invalid</td><td>blocked</td><td>true</td></tr><tr><td><code>fixtures/p1/invalid/modal-role-not-supported.surface-ir.json</code></td><td>invalid</td><td>blocked</td><td>true</td></tr><tr><td><code>fixtures/p1/invalid/unknown-component.surface-ir.json</code></td><td>invalid</td><td>blocked</td><td>true</td></tr><tr><td><code>fixtures/p1/invalid/unknown-prop.surface-ir.json</code></td><td>invalid</td><td>blocked</td><td>true</td></tr><tr><td><code>fixtures/p1/invalid/unsafe-markup.surface-ir.json</code></td><td>invalid</td><td>blocked</td><td>true</td></tr><tr><td><code>fixtures/p1/mutations/catalog-hash-mismatch.runtime-projection.json</code></td><td>invalid</td><td>blocked</td><td>true</td></tr><tr><td><code>fixtures/p1/mutations/hash-mismatch.runtime-adapter-evidence.json</code></td><td>invalid</td><td>blocked</td><td>true</td></tr><tr><td><code>fixtures/p1/mutations/missing-catalog-ref.runtime-projection.json</code></td><td>invalid</td><td>blocked</td><td>true</td></tr><tr><td><code>fixtures/p1/mutations/missing-render-plan-provenance.render-plan.json</code></td><td>invalid</td><td>blocked</td><td>true</td></tr><tr><td><code>fixtures/p1/mutations/projection-authority-escalation.runtime-projection.json</code></td><td>invalid</td><td>blocked</td><td>true</td></tr><tr><td><code>fixtures/p1/mutations/runtime-projection-hash-mismatch.runtime-adapter-report.json</code></td><td>invalid</td><td>blocked</td><td>true</td></tr><tr><td><code>fixtures/p1/review/review-required-action.surface-ir.json</code></td><td>review_required</td><td>review_required</td><td>true</td></tr><tr><td><code>fixtures/p1/valid/button-defaults.surface-ir.json</code></td><td>valid</td><td>allowed</td><td>true</td></tr><tr><td><code>fixtures/p1/valid/confirm-panel.surface-ir.json</code></td><td>valid</td><td>allowed</td><td>true</td></tr><tr><td><code>fixtures/p1/valid/status-callout.surface-ir.json</code></td><td>valid</td><td>allowed</td><td>true</td></tr></tbody>
+</table></div>
+      </article>
+      <article class="panel">
+        <div class="panel-header"><h2>Diagnostics</h2><span class="pill">12</span></div>
+        <div class="panel-body"><table>
+  <thead><tr><th>Code</th><th>Severity</th><th>Stage</th><th>Artifact</th></tr></thead>
+  <tbody><tr><td>RUNTIME_ACTION_EXECUTION_BLOCKED</td><td>error</td><td>runtime-boundary</td><td><code>fixtures/p1/invalid/disabled-action-execution.surface-ir.json</code></td></tr><tr><td>ACCESSIBILITY_MODAL_UNSUPPORTED</td><td>error</td><td>runtime-boundary</td><td><code>fixtures/p1/invalid/modal-role-not-supported.surface-ir.json</code></td></tr><tr><td>CATALOG_UNKNOWN_COMPONENT</td><td>error</td><td>runtime-boundary</td><td><code>fixtures/p1/invalid/unknown-component.surface-ir.json</code></td></tr><tr><td>CATALOG_UNKNOWN_PROP</td><td>error</td><td>runtime-boundary</td><td><code>fixtures/p1/invalid/unknown-prop.surface-ir.json</code></td></tr><tr><td>CATALOG_INVALID_VALUE</td><td>error</td><td>runtime-boundary</td><td><code>fixtures/p1/invalid/unsafe-markup.surface-ir.json</code></td></tr><tr><td>PROJECTION_SOURCE_HASH_MISMATCH</td><td>error</td><td>projection</td><td><code>fixtures/p1/mutations/catalog-hash-mismatch.runtime-projection.json</code></td></tr><tr><td>RUNTIME_EVIDENCE_HASH_MISMATCH</td><td>error</td><td>evidence</td><td><code>fixtures/p1/mutations/hash-mismatch.runtime-adapter-evidence.json</code></td></tr><tr><td>PROJECTION_CATALOG_REF_MISSING</td><td>error</td><td>projection</td><td><code>fixtures/p1/mutations/missing-catalog-ref.runtime-projection.json</code></td></tr><tr><td>RUNTIME_RENDER_PLAN_PROVENANCE_MISSING</td><td>error</td><td>runtime-boundary</td><td><code>fixtures/p1/mutations/missing-render-plan-provenance.render-plan.json</code></td></tr><tr><td>PROJECTION_AUTHORITY_ESCALATION</td><td>error</td><td>projection</td><td><code>fixtures/p1/mutations/projection-authority-escalation.runtime-projection.json</code></td></tr><tr><td>RUNTIME_PROJECTION_HASH_MISMATCH</td><td>error</td><td>runtime-boundary</td><td><code>fixtures/p1/mutations/runtime-projection-hash-mismatch.runtime-adapter-report.json</code></td></tr><tr><td>RUNTIME_REVIEW_REQUIRED</td><td>review</td><td>runtime-boundary</td><td><code>fixtures/p1/review/review-required-action.surface-ir.json</code></td></tr></tbody>
+</table></div>
+      </article>
+    </section>
+
+    <section class="section two-col">
+      <article class="panel">
+        <div class="panel-header"><h2>Evidence</h2><span class="pill review_required">review_required</span></div>
+        <div class="panel-body">
+          <dl class="detail-list">
+            <div><dt>Schema</dt><dd>runtime-adapter-evidence.v0</dd></div>
+            <div><dt>Contract</dt><dd>surfaces-p1-runtime-adapter-proof</dd></div>
+            <div><dt>Checked</dt><dd>1970-01-01T00:00:00.000Z</dd></div>
+            <div><dt>Self hash</dt><dd><code>010e07072064b99e0f...</code></dd></div>
+            <div><dt>Output</dt><dd><code>demo/p1</code></dd></div>
+          </dl>
+        </div>
+      </article>
+      <article class="panel">
+        <div class="panel-header"><h2>Artifacts</h2><span class="pill">31</span></div>
+        <div class="panel-body"><table>
+  <thead><tr><th>Path</th><th>Schema</th><th>Hash</th></tr></thead>
+  <tbody><tr><td><code>schemas/runtime-projection.v0.schema.json</code></td><td>json-schema</td><td><code>10cb23d256253d92ba...</code></td></tr><tr><td><code>schemas/render-plan.v0.schema.json</code></td><td>json-schema</td><td><code>873a3481124788bd0f...</code></td></tr><tr><td><code>schemas/runtime-adapter-report.v0.schema.json</code></td><td>json-schema</td><td><code>7e21a03198d6275a6d...</code></td></tr><tr><td><code>schemas/runtime-adapter-evidence.v0.schema.json</code></td><td>json-schema</td><td><code>378534b27d00737ccf...</code></td></tr><tr><td><code>schemas/runtime-adapter-expectations.v0.schema.json</code></td><td>json-schema</td><td><code>b5365a7cd4d3ba25c8...</code></td></tr><tr><td><code>schemas/runtime-adapter-diagnostics.v0.schema.json</code></td><td>json-schema</td><td><code>135971b6f2c835713a...</code></td></tr><tr><td><code>artifacts/p0/evidence.json</code></td><td>evidence.v0</td><td><code>896c4cbaf60a72e08d...</code></td></tr><tr><td><code>artifacts/p0/governed-catalog.json</code></td><td>runtime-catalog.v0</td><td><code>446fb75d170cc753fd...</code></td></tr><tr><td><code>artifacts/p0/adapter-diagnostics.json</code></td><td>adapter-diagnostics.v0</td><td><code>0cad8e3094d65d1961...</code></td></tr><tr><td><code>fixtures/p1/expectations.manifest.json</code></td><td>runtime-adapter-expectations.v0</td><td><code>0d8d771fc1ffc59e7a...</code></td></tr><tr><td><code>fixtures/p1/mutations/missing-catalog-ref.runtime-projection.json</code></td><td>runtime-projection.v0</td><td><code>3932aaa93e8f921079...</code></td></tr><tr><td><code>fixtures/p1/mutations/catalog-hash-mismatch.runtime-projection.json</code></td><td>runtime-projection.v0</td><td><code>98bc5f5ec22d47549e...</code></td></tr><tr><td><code>fixtures/p1/mutations/projection-authority-escalation.runtime-projection.json</code></td><td>runtime-projection.v0</td><td><code>0ff0636d068a3abfef...</code></td></tr><tr><td><code>fixtures/p1/mutations/missing-render-plan-provenance.render-plan.json</code></td><td>render-plan.v0</td><td><code>0378dd743e60fc8f2b...</code></td></tr><tr><td><code>fixtures/p1/mutations/runtime-projection-hash-mismatch.runtime-adapter-report.json</code></td><td>runtime-adapter-report.v0</td><td><code>4b6b44d20522dad1a9...</code></td></tr><tr><td><code>fixtures/p1/mutations/hash-mismatch.runtime-adapter-evidence.json</code></td><td>runtime-adapter-evidence.v0</td><td><code>dda467ab57ef5900ab...</code></td></tr><tr><td><code>fixtures/p1/valid/confirm-panel.surface-ir.json</code></td><td>surface-ir.v0</td><td><code>7a6dcf3260d1874a83...</code></td></tr><tr><td><code>fixtures/p1/valid/status-callout.surface-ir.json</code></td><td>surface-ir.v0</td><td><code>2bd2147bbe528e329f...</code></td></tr><tr><td><code>fixtures/p1/valid/button-defaults.surface-ir.json</code></td><td>surface-ir.v0</td><td><code>3e1852cbe48907ff44...</code></td></tr><tr><td><code>fixtures/p1/invalid/unknown-component.surface-ir.json</code></td><td>surface-ir.v0</td><td><code>071b6ad18413316f30...</code></td></tr><tr><td><code>fixtures/p1/invalid/unknown-prop.surface-ir.json</code></td><td>surface-ir.v0</td><td><code>7894bc98f02399fe5b...</code></td></tr><tr><td><code>fixtures/p1/invalid/unsafe-markup.surface-ir.json</code></td><td>surface-ir.v0</td><td><code>5ba1d41ba4b92d94ff...</code></td></tr><tr><td><code>fixtures/p1/invalid/disabled-action-execution.surface-ir.json</code></td><td>surface-ir.v0</td><td><code>c5b5848c0c08cb7dfe...</code></td></tr><tr><td><code>fixtures/p1/invalid/modal-role-not-supported.surface-ir.json</code></td><td>surface-ir.v0</td><td><code>27de27c2f07fb007b3...</code></td></tr><tr><td><code>fixtures/p1/review/review-required-action.surface-ir.json</code></td><td>surface-ir.v0</td><td><code>4b9cd235f77df5189b...</code></td></tr><tr><td><code>artifacts/p1/runtime-projection.json</code></td><td>runtime-projection.v0</td><td><code>83257c17a1077960c7...</code></td></tr><tr><td><code>artifacts/p1/render-plan.confirm-panel.json</code></td><td>render-plan.v0</td><td><code>47986fee402552dfc7...</code></td></tr><tr><td><code>artifacts/p1/render-plan.status-callout.json</code></td><td>render-plan.v0</td><td><code>a8178b5a1c75d35d21...</code></td></tr><tr><td><code>artifacts/p1/render-plan.button-defaults.json</code></td><td>render-plan.v0</td><td><code>8b64ddea431761cdac...</code></td></tr><tr><td><code>artifacts/p1/runtime-adapter-report.json</code></td><td>runtime-adapter-report.v0</td><td><code>a79ed0399ccd5d7413...</code></td></tr><tr><td><code>artifacts/p1/evidence.json</code></td><td>runtime-adapter-evidence.v0</td><td><code>010e07072064b99e0f...</code></td></tr></tbody>
+</table></div>
+      </article>
+    </section>
+
+    <section class="section two-col">
+      <article class="panel">
+        <div class="panel-header"><h2>Projection</h2><span class="pill">web-static</span></div>
+        <div class="panel-body"><pre>{
+  &quot;accessibility&quot;: {
+    &quot;Button&quot;: {
+      &quot;activationKeys&quot;: [
+        &quot;Enter&quot;,
+        &quot;Space&quot;
+      ],
+      &quot;descriptionFrom&quot;: &quot;props.label&quot;,
+      &quot;disabledBlocksActivation&quot;: true,
+      &quot;focusableUnlessDisabled&quot;: true,
+      &quot;nameFrom&quot;: [
+        &quot;props.label&quot;,
+        &quot;props.icon&quot;
+      ],
+      &quot;role&quot;: &quot;button&quot;,
+      &quot;sourceRef&quot;: &quot;fixture://p0/source#/components/Button/accessibility&quot;
+    },
+    &quot;ConfirmPanel&quot;: {
+      &quot;descriptionFrom&quot;: &quot;props.body&quot;,
+      &quot;modalSupported&quot;: false,
+      &quot;nameFrom&quot;: &quot;props.heading&quot;,
+      &quot;primaryActionNameFrom&quot;: &quot;slots.primaryAction.props.label&quot;,
+      &quot;role&quot;: &quot;group&quot;,
+      &quot;secondaryActionNameFrom&quot;: &quot;slots.secondaryAction.props.label&quot;,
+      &quot;sourceRef&quot;: &quot;fixture://p0/source#/components/ConfirmPanel/accessibility&quot;
+    },
+    &quot;StatusCallout&quot;: {
+      &quot;descriptionFrom&quot;: &quot;props.body&quot;,
+      &quot;dismissActionNameFrom&quot;: &quot;props.title&quot;,
+      &quot;liveRegionByStatus&quot;: {
+        &quot;critical&quot;: &quot;assertive&quot;,
+        &quot;info&quot;: &quot;polite&quot;,
+        &quot;success&quot;: &quot;polite&quot;,
+        &quot;warning&quot;: &quot;assertive&quot;
+      },
+      &quot;nameFrom&quot;: &quot;props.title&quot;,
+      &quot;roleByStatus&quot;: {
+        &quot;critical&quot;: &quot;alert&quot;,
+        &quot;info&quot;: &quot;status&quot;,
+        &quot;success&quot;: &quot;status&quot;,
+        &quot;warning&quot;: &quot;alert&quot;
+      },
+      &quot;sourceRef&quot;: &quot;fixture://p0/source#/components/StatusCallout/accessibility&quot;
+    }
+  },
+  &quot;adapter&quot;: &quot;web-static&quot;,
+  &quot;adapterDiagnosticsRef&quot;: {
+    &quot;hash&quot;: &quot;0cad8e3094d65d19611fbb717f923e34eba7a1ef2b189ce82b3a5118e08f9f90&quot;,
+    &quot;hashAlgorithm&quot;: &quot;sha256&quot;,
+    &quot;path&quot;: &quot;artifacts/p0/adapter-diagnostics.json&quot;,
+    &quot;schemaId&quot;: &quot;adapter-diagnostics.v0&quot;
+  },
+  &quot;catalogRef&quot;: {
+    &quot;hash&quot;: &quot;446fb75d170cc753fd0b8fafb171fc380a04c524db55df7dc8c22027484dc317&quot;,
+    &quot;hashAlgorithm&quot;: &quot;sha256&quot;,
+    &quot;path&quot;: &quot;artifacts/p0/governed-catalog.json&quot;,
+    &quot;schemaId&quot;: &quot;runtime-catalog.v0&quot;,
+    &quot;sourceEvidenceHash&quot;: &quot;896c4cbaf60a72e08d89a752b7b44408701701be6ef3dde66723b6cb209400ed&quot;
+  },
+  &quot;components&quot;: {
+    &quot;Button&quot;: {
+      &quot;accessibility&quot;: {
+        &quot;activationKeys&quot;: [
+          &quot;Enter&quot;,
+          &quot;Space&quot;
+        ],
+        &quot;descriptionFrom&quot;: &quot;props.label&quot;,
+        &quot;disabledBlocksActivation&quot;: true,
+        &quot;focusableUnlessDisabled&quot;: true,
+        &quot;nameFrom&quot;: [
+          &quot;props.label&quot;,
+          &quot;props.icon&quot;
+        ],
+        &quot;role&quot;: &quot;button&quot;,
+        &quot;sourceRef&quot;: &quot;fixture://p0/source#/components/Button/accessibility&quot;
+      },
+      &quot;actions&quot;: {
+        &quot;dismiss&quot;: {
+          &quot;allowedTargets&quot;: [],
+          &quot;dataBindingConstraints&quot;: {},
+          &quot;destructive&quot;: false,
+          &quot;disabledUntilImplemented&quot;: true,
+          &quot;id&quot;: &quot;dismiss&quot;,
+          &quot;kind&quot;: &quot;event&quot;,
+          &quot;requiresReview&quot;: false,
+          &quot;sourceRef&quot;: &quot;fixture://p0/source#/components/Button/actions/dismiss&quot;
+        },
+        &quot;submit&quot;: {
+          &quot;allowedTargets&quot;: [],
+          &quot;dataBindingConstraints&quot;: {},
+          &quot;destructive&quot;: false,
+          &quot;disabledUntilImplemented&quot;: false,
+          &quot;id&quot;: &quot;submit&quot;,
+          &quot;kind&quot;: &quot;event&quot;,
+          &quot;requiresReview&quot;: false,
+          &quot;sourceRef&quot;: &quot;fixture://p0/source#/components/Button/actions/submit&quot;
+        }
+      },
+      &quot;dataBindings&quot;: {
+        &quot;label&quot;: {
+          &quot;constraints&quot;: {},
+          &quot;id&quot;: &quot;label&quot;,
+          &quot;sourceRef&quot;: &quot;fixture://p0/source#/components/Button/dataBindings/label&quot;,
+          &quot;type&quot;: &quot;string&quot;
+        }
+      },
+      &quot;events&quot;: {
+        &quot;click&quot;: {
+          &quot;allowedActionBindings&quot;: [],
+          &quot;id&quot;: &quot;click&quot;,
+          &quot;payloadShape&quot;: {},
+          &quot;sourceRef&quot;: &quot;fixture://p0/source#/components/Button/events/click&quot;
+        }
+      },
+      &quot;id&quot;: &quot;Button&quot;,
+      &quot;props&quot;: {
+        &quot;disabled&quot;: {
+          &quot;allowMarkup&quot;: false,
+          &quot;allowedValues&quot;: [],
+          &quot;default&quot;: false,
+          &quot;diagnostics&quot;: [],
+          &quot;id&quot;: &quot;disabled&quot;,
+          &quot;maxLength&quot;: null,
+          &quot;minLength&quot;: null,
+          &quot;required&quot;: false,
+          &quot;sourceRef&quot;: &quot;fixture://p0/source#/components/Button/props/disabled&quot;,
+          &quot;tokenRefs&quot;: [],
+          &quot;type&quot;: &quot;boolean&quot;
+        },
+        &quot;icon&quot;: {
+          &quot;allowMarkup&quot;: false,
+          &quot;allowedValues&quot;: [],
+          &quot;default&quot;: &quot;&quot;,
+          &quot;diagnostics&quot;: [],
+          &quot;id&quot;: &quot;icon&quot;,
+          &quot;maxLength&quot;: 40,
+          &quot;minLength&quot;: 0,
+          &quot;required&quot;: false,
+          &quot;sourceRef&quot;: &quot;fixture://p0/source#/components/Button/props/icon&quot;,
+          &quot;tokenRefs&quot;: [],
+          &quot;type&quot;: &quot;string&quot;
+        },
+        &quot;label&quot;: {
+          &quot;allowMarkup&quot;: false,
+          &quot;allowedValues&quot;: [],
+          &quot;default&quot;: &quot;&quot;,
+          &quot;diagnostics&quot;: [],
+          &quot;id&quot;: &quot;label&quot;,
+          &quot;maxLength&quot;: 80,
+          &quot;minLength&quot;: 1,
+          &quot;required&quot;: true,
+          &quot;sourceRef&quot;: &quot;fixture://p0/source#/components/Button/props/label&quot;,
+          &quot;tokenRefs&quot;: [
+            &quot;typography.body&quot;
+          ],
+          &quot;type&quot;: &quot;string&quot;
+        },
+        &quot;loading&quot;: {
+          &quot;allowMarkup&quot;: false,
+          &quot;allowedValues&quot;: [],
+          &quot;default&quot;: false,
+          &quot;diagnostics&quot;: [],
+          &quot;id&quot;: &quot;loading&quot;,
+          &quot;maxLength&quot;: null,
+          &quot;minLength&quot;: null,
+          &quot;required&quot;: false,
+          &quot;sourceRef&quot;: &quot;fixture://p0/source#/components/Button/props/loading&quot;,
+          &quot;tokenRefs&quot;: [],
+          &quot;type&quot;: &quot;boolean&quot;
+        },
+        &quot;size&quot;: {
+          &quot;allowMarkup&quot;: false,
+          &quot;allowedValues&quot;: [
+            &quot;sm&quot;,
+            &quot;md&quot;,
+            &quot;lg&quot;
+          ],
+          &quot;default&quot;: &quot;md&quot;,
+          &quot;diagnostics&quot;: [],
+          &quot;id&quot;: &quot;size&quot;,
+          &quot;maxLength&quot;: null,
+          &quot;minLength&quot;: null,
+          &quot;required&quot;: false,
+          &quot;sourceRef&quot;: &quot;fixture://p0/source#/components/Button/props/size&quot;,
+          &quot;tokenRefs&quot;: [
+            &quot;spacing.base.sm&quot;,
+            &quot;spacing.base.md&quot;,
+            &quot;spacing.base.lg&quot;
+          ],
+          &quot;type&quot;: &quot;string&quot;
+        },
+        &quot;variant&quot;: {
+          &quot;allowMarkup&quot;: false,
+          &quot;allowedValues&quot;: [
+            &quot;primary&quot;,
+            &quot;secondary&quot;,
+            &quot;danger&quot;
+          ],
+          &quot;default&quot;: &quot;primary&quot;,
+          &quot;diagnostics&quot;: [],
+          &quot;id&quot;: &quot;variant&quot;,
+          &quot;maxLength&quot;: null,
+          &quot;minLength&quot;: null,
+          &quot;required&quot;: true,
+          &quot;sourceRef&quot;: &quot;fixture://p0/source#/components/Button/props/variant&quot;,
+          &quot;tokenRefs&quot;: [
+            &quot;color.action.primaryBg&quot;,
+            &quot;color.action.dangerBg&quot;
+          ],
+          &quot;type&quot;: &quot;string&quot;
+        }
+      },
+      &quot;slots&quot;: {},
+      &quot;sourceRef&quot;: &quot;fixture://p0/source#/components/Button&quot;,
+      &quot;states&quot;: {
+        &quot;default&quot;: {
+          &quot;accessibilityExpectations&quot;: {},
+          &quot;allowedProps&quot;: [],
+          &quot;id&quot;: &quot;default&quot;,
+          &quot;sourceRef&quot;: &quot;fixture://p0/source#/components/Button/states/default&quot;
+        },
+        &quot;disabled&quot;: {
+          &quot;accessibilityExpectations&quot;: {},
+          &quot;allowedProps&quot;: [],
+          &quot;id&quot;: &quot;disabled&quot;,
+          &quot;sourceRef&quot;: &quot;fixture://p0/source#/components/Button/states/disabled&quot;
+        },
+        &quot;focus&quot;: {
+          &quot;accessibilityExpectations&quot;: {},
+          &quot;allowedProps&quot;: [],
+          &quot;id&quot;: &quot;focus&quot;,
+          &quot;sourceRef&quot;: &quot;fixture://p0/source#/components/Button/states/focus&quot;
+        },
+        &quot;hover&quot;: {
+          &quot;accessibilityExpectations&quot;: {},
+          &quot;allowedProps&quot;: [],
+          &quot;id&quot;: &quot;hover&quot;,
+          &quot;sourceRef&quot;: &quot;fixture://p0/source#/components/Button/states/hover&quot;
+        },
+        &quot;loading&quot;: {
+          &quot;accessibilityExpectations&quot;: {},
+          &quot;allowedProps&quot;: [],
+          &quot;id&quot;: &quot;loading&quot;,
+          &quot;sourceRef&quot;: &quot;fixture://p0/source#/components/Button/states/loading&quot;
+        }
+      },
+      &quot;tokenRefs&quot;: {
+        &quot;background&quot;: &quot;color.action.primaryBg&quot;,
+        &quot;radius&quot;: &quot;radius.sm&quot;,
+        &quot;spacing&quot;: &quot;spacing.base.md&quot;,
+        &quot;text&quot;: &quot;color.text.inverse&quot;
+      },
+      &quot;variants&quot;: {
+        &quot;danger&quot;: {
+          &quot;allowedValues&quot;: [
+            &quot;danger&quot;
+          ],
+          &quot;id&quot;: &quot;danger&quot;,
+          &quot;requiredProps&quot;: [],
+          &quot;sourceRef&quot;: &quot;fixture://p0/source#/components/Button/variants/danger&quot;,
+          &quot;stateConstraints&quot;: []
+        },
+        &quot;primary&quot;: {
+          &quot;allowedValues&quot;: [
+            &quot;primary&quot;
+          ],
+          &quot;id&quot;: &quot;primary&quot;,
+          &quot;requiredProps&quot;: [],
+          &quot;sourceRef&quot;: &quot;fixture://p0/source#/components/Button/variants/primary&quot;,
+          &quot;stateConstraints&quot;: []
+        },
+        &quot;secondary&quot;: {
+          &quot;allowedValues&quot;: [
+            &quot;secondary&quot;
+          ],
+          &quot;id&quot;: &quot;secondary&quot;,
+          &quot;requiredProps&quot;: [],
+          &quot;sourceRef&quot;: &quot;fixture://p0/source#/components/Button/variants/secondary&quot;,
+          &quot;stateConstraints&quot;: []
+        }
+      }
+    },
+    &quot;ConfirmPanel&quot;: {
+      &quot;accessibility&quot;: {
+        &quot;descriptionFrom&quot;: &quot;props.body&quot;,
+        &quot;modalSupported&quot;: false,
+        &quot;nameFrom&quot;: &quot;props.heading&quot;,
+        &quot;primaryActionNameFrom&quot;: &quot;slots.primaryAction.props.label&quot;,
+        &quot;role&quot;: &quot;group&quot;,
+        &quot;secondaryActionNameFrom&quot;: &quot;slots.secondaryAction.props.label&quot;,
+        &quot;sourceRef&quot;: &quot;fixture://p0/source#/components/ConfirmPanel/accessibility&quot;
+      },
+      &quot;actions&quot;: {
+        &quot;cancel&quot;: {
+          &quot;allowedTargets&quot;: [],
+          &quot;dataBindingConstraints&quot;: {},
+          &quot;destructive&quot;: false,
+          &quot;disabledUntilImplemented&quot;: false,
+          &quot;id&quot;: &quot;cancel&quot;,
+          &quot;kind&quot;: &quot;event&quot;,
+          &quot;requiresReview&quot;: false,
+          &quot;sourceRef&quot;: &quot;fixture://p0/source#/components/ConfirmPanel/actions/cancel&quot;
+        },
+        &quot;confirm&quot;: {
+          &quot;allowedTargets&quot;: [],
+          &quot;dataBindingConstraints&quot;: {},
+          &quot;destructive&quot;: true,
+          &quot;disabledUntilImplemented&quot;: false,
+          &quot;id&quot;: &quot;confirm&quot;,
+          &quot;kind&quot;: &quot;event&quot;,
+          &quot;requiresReview&quot;: true,
+          &quot;sourceRef&quot;: &quot;fixture://p0/source#/components/ConfirmPanel/actions/confirm&quot;
+        }
+      },
+      &quot;dataBindings&quot;: {
+        &quot;itemName&quot;: {
+          &quot;constraints&quot;: {},
+          &quot;id&quot;: &quot;itemName&quot;,
+          &quot;sourceRef&quot;: &quot;fixture://p0/source#/components/ConfirmPanel/dataBindings/itemName&quot;,
+          &quot;type&quot;: &quot;string&quot;
+        }
+      },
+      &quot;events&quot;: {
+        &quot;cancel&quot;: {
+          &quot;allowedActionBindings&quot;: [],
+          &quot;id&quot;: &quot;cancel&quot;,
+          &quot;payloadShape&quot;: {},
+          &quot;sourceRef&quot;: &quot;fixture://p0/source#/components/ConfirmPanel/events/cancel&quot;
+        },
+        &quot;confirm&quot;: {
+          &quot;allowedActionBindings&quot;: [],
+          &quot;id&quot;: &quot;confirm&quot;,
+          &quot;payloadShape&quot;: {},
+          &quot;sourceRef&quot;: &quot;fixture://p0/source#/components/ConfirmPanel/events/confirm&quot;
+        }
+      },
+      &quot;id&quot;: &quot;ConfirmPanel&quot;,
+      &quot;props&quot;: {
+        &quot;body&quot;: {
+          &quot;allowMarkup&quot;: false,
+          &quot;allowedValues&quot;: [],
+          &quot;default&quot;: &quot;&quot;,
+          &quot;diagnostics&quot;: [],
+          &quot;id&quot;: &quot;body&quot;,
+          &quot;maxLength&quot;: 320,
+          &quot;minLength&quot;: 1,
+          &quot;required&quot;: true,
+          &quot;sourceRef&quot;: &quot;fixture://p0/source#/components/ConfirmPanel/props/body&quot;,
+          &quot;tokenRefs&quot;: [
+            &quot;typography.body&quot;
+          ],
+          &quot;type&quot;: &quot;string&quot;
+        },
+        &quot;heading&quot;: {
+          &quot;allowMarkup&quot;: false,
+          &quot;allowedValues&quot;: [],
+          &quot;default&quot;: &quot;&quot;,
+          &quot;diagnostics&quot;: [],
+          &quot;id&quot;: &quot;heading&quot;,
+          &quot;maxLength&quot;: 100,
+          &quot;minLength&quot;: 1,
+          &quot;required&quot;: true,
+          &quot;sourceRef&quot;: &quot;fixture://p0/source#/components/ConfirmPanel/props/heading&quot;,
+          &quot;tokenRefs&quot;: [
+            &quot;typography.heading&quot;
+          ],
+          &quot;type&quot;: &quot;string&quot;
+        }
+      },
+      &quot;slots&quot;: {
+        &quot;body&quot;: {
+          &quot;allowedComponents&quot;: [],
+          &quot;id&quot;: &quot;body&quot;,
+          &quot;kind&quot;: &quot;text&quot;,
+          &quot;maxItems&quot;: 0,
+          &quot;required&quot;: false,
+          &quot;sourceRef&quot;: &quot;fixture://p0/source#/components/ConfirmPanel/slots/body&quot;
+        },
+        &quot;heading&quot;: {
+          &quot;allowedComponents&quot;: [],
+          &quot;id&quot;: &quot;heading&quot;,
+          &quot;kind&quot;: &quot;text&quot;,
+          &quot;maxItems&quot;: 0,
+          &quot;required&quot;: false,
+          &quot;sourceRef&quot;: &quot;fixture://p0/source#/components/ConfirmPanel/slots/heading&quot;
+        },
+        &quot;primaryAction&quot;: {
+          &quot;allowedComponents&quot;: [
+            &quot;Button&quot;
+          ],
+          &quot;id&quot;: &quot;primaryAction&quot;,
+          &quot;kind&quot;: &quot;action&quot;,
+          &quot;maxItems&quot;: 1,
+          &quot;required&quot;: true,
+          &quot;sourceRef&quot;: &quot;fixture://p0/source#/components/ConfirmPanel/slots/primaryAction&quot;
+        },
+        &quot;secondaryAction&quot;: {
+          &quot;allowedComponents&quot;: [
+            &quot;Button&quot;
+          ],
+          &quot;id&quot;: &quot;secondaryAction&quot;,
+          &quot;kind&quot;: &quot;action&quot;,
+          &quot;maxItems&quot;: 1,
+          &quot;required&quot;: true,
+          &quot;sourceRef&quot;: &quot;fixture://p0/source#/components/ConfirmPanel/slots/secondaryAction&quot;
+        },
+        &quot;supportingContent&quot;: {
+          &quot;allowedComponents&quot;: [
+            &quot;StatusCallout&quot;
+          ],
+          &quot;id&quot;: &quot;supportingContent&quot;,
+          &quot;kind&quot;: &quot;content&quot;,
+          &quot;maxItems&quot;: 1,
+          &quot;required&quot;: false,
+          &quot;sourceRef&quot;: &quot;fixture://p0/source#/components/ConfirmPanel/slots/supportingContent&quot;
+        }
+      },
+      &quot;sourceRef&quot;: &quot;fixture://p0/source#/components/ConfirmPanel&quot;,
+      &quot;states&quot;: {
+        &quot;default&quot;: {
+          &quot;accessibilityExpectations&quot;: {},
+          &quot;allowedProps&quot;: [],
+          &quot;id&quot;: &quot;default&quot;,
+          &quot;sourceRef&quot;: &quot;fixture://p0/source#/components/ConfirmPanel/states/default&quot;
+        }
+      },
+      &quot;tokenRefs&quot;: {
+        &quot;radius&quot;: &quot;radius.md&quot;,
+        &quot;shadow&quot;: &quot;shadow.raised&quot;,
+        &quot;spacing&quot;: &quot;spacing.base.lg&quot;,
+        &quot;surface&quot;: &quot;color.surface.panel&quot;
+      },
+      &quot;variants&quot;: {
+        &quot;standard&quot;: {
+          &quot;allowedValues&quot;: [
+            &quot;standard&quot;
+          ],
+          &quot;id&quot;: &quot;standard&quot;,
+          &quot;requiredProps&quot;: [],
+          &quot;sourceRef&quot;: &quot;fixture://p0/source#/components/ConfirmPanel/variants/standard&quot;,
+          &quot;stateConstraints&quot;: []
+        }
+      }
+    },
+    &quot;StatusCallout&quot;: {
+      &quot;accessibility&quot;: {
+        &quot;descriptionFrom&quot;: &quot;props.body&quot;,
+        &quot;dismissActionNameFrom&quot;: &quot;props.title&quot;,
+        &quot;liveRegionByStatus&quot;: {
+          &quot;critical&quot;: &quot;assertive&quot;,
+          &quot;info&quot;: &quot;polite&quot;,
+          &quot;success&quot;: &quot;polite&quot;,
+          &quot;warning&quot;: &quot;assertive&quot;
+        },
+        &quot;nameFrom&quot;: &quot;props.title&quot;,
+        &quot;roleByStatus&quot;: {
+          &quot;critical&quot;: &quot;alert&quot;,
+          &quot;info&quot;: &quot;status&quot;,
+          &quot;success&quot;: &quot;status&quot;,
+          &quot;warning&quot;: &quot;alert&quot;
+        },
+        &quot;sourceRef&quot;: &quot;fixture://p0/source#/components/StatusCallout/accessibility&quot;
+      },
+      &quot;actions&quot;: {
+        &quot;dismiss&quot;: {
+          &quot;allowedTargets&quot;: [],
+          &quot;dataBindingConstraints&quot;: {},
+          &quot;destructive&quot;: false,
+          &quot;disabledUntilImplemented&quot;: false,
+          &quot;id&quot;: &quot;dismiss&quot;,
+          &quot;kind&quot;: &quot;event&quot;,
+          &quot;requiresReview&quot;: false,
+          &quot;sourceRef&quot;: &quot;fixture://p0/source#/components/StatusCallout/actions/dismiss&quot;
+        }
+      },
+      &quot;dataBindings&quot;: {
+        &quot;message&quot;: {
+          &quot;constraints&quot;: {},
+          &quot;id&quot;: &quot;message&quot;,
+          &quot;sourceRef&quot;: &quot;fixture://p0/source#/components/StatusCallout/dataBindings/message&quot;,
+          &quot;type&quot;: &quot;string&quot;
+        }
+      },
+      &quot;events&quot;: {
+        &quot;dismiss&quot;: {
+          &quot;allowedActionBindings&quot;: [],
+          &quot;id&quot;: &quot;dismiss&quot;,
+          &quot;payloadShape&quot;: {},
+          &quot;sourceRef&quot;: &quot;fixture://p0/source#/components/StatusCallout/events/dismiss&quot;
+        }
+      },
+      &quot;id&quot;: &quot;StatusCallout&quot;,
+      &quot;props&quot;: {
+        &quot;body&quot;: {
+          &quot;allowMarkup&quot;: false,
+          &quot;allowedValues&quot;: [],
+          &quot;default&quot;: &quot;&quot;,
+          &quot;diagnostics&quot;: [],
+          &quot;id&quot;: &quot;body&quot;,
+          &quot;maxLength&quot;: 240,
+          &quot;minLength&quot;: 1,
+          &quot;required&quot;: true,
+          &quot;sourceRef&quot;: &quot;fixture://p0/source#/components/StatusCallout/props/body&quot;,
+          &quot;tokenRefs&quot;: [
+            &quot;typography.body&quot;
+          ],
+          &quot;type&quot;: &quot;string&quot;
+        },
+        &quot;dismissible&quot;: {
+          &quot;allowMarkup&quot;: false,
+          &quot;allowedValues&quot;: [],
+          &quot;default&quot;: false,
+          &quot;diagnostics&quot;: [],
+          &quot;id&quot;: &quot;dismissible&quot;,
+          &quot;maxLength&quot;: null,
+          &quot;minLength&quot;: null,
+          &quot;required&quot;: false,
+          &quot;sourceRef&quot;: &quot;fixture://p0/source#/components/StatusCallout/props/dismissible&quot;,
+          &quot;tokenRefs&quot;: [],
+          &quot;type&quot;: &quot;boolean&quot;
+        },
+        &quot;status&quot;: {
+          &quot;allowMarkup&quot;: false,
+          &quot;allowedValues&quot;: [
+            &quot;info&quot;,
+            &quot;success&quot;,
+            &quot;warning&quot;,
+            &quot;critical&quot;
+          ],
+          &quot;default&quot;: &quot;info&quot;,
+          &quot;diagnostics&quot;: [],
+          &quot;id&quot;: &quot;status&quot;,
+          &quot;maxLength&quot;: null,
+          &quot;minLength&quot;: null,
+          &quot;required&quot;: true,
+          &quot;sourceRef&quot;: &quot;fixture://p0/source#/components/StatusCallout/props/status&quot;,
+          &quot;tokenRefs&quot;: [
+            &quot;color.surface.calloutInfo&quot;
+          ],
+          &quot;type&quot;: &quot;string&quot;
+        },
+        &quot;title&quot;: {
+          &quot;allowMarkup&quot;: false,
+          &quot;allowedValues&quot;: [],
+          &quot;default&quot;: &quot;&quot;,
+          &quot;diagnostics&quot;: [],
+          &quot;id&quot;: &quot;title&quot;,
+          &quot;maxLength&quot;: 80,
+          &quot;minLength&quot;: 1,
+          &quot;required&quot;: true,
+          &quot;sourceRef&quot;: &quot;fixture://p0/source#/components/StatusCallout/props/title&quot;,
+          &quot;tokenRefs&quot;: [
+            &quot;typography.heading&quot;
+          ],
+          &quot;type&quot;: &quot;string&quot;
+        }
+      },
+      &quot;slots&quot;: {
+        &quot;action&quot;: {
+          &quot;allowedComponents&quot;: [
+            &quot;Button&quot;
+          ],
+          &quot;id&quot;: &quot;action&quot;,
+          &quot;kind&quot;: &quot;action&quot;,
+          &quot;maxItems&quot;: 1,
+          &quot;required&quot;: false,
+          &quot;sourceRef&quot;: &quot;fixture://p0/source#/components/StatusCallout/slots/action&quot;
+        }
+      },
+      &quot;sourceRef&quot;: &quot;fixture://p0/source#/components/StatusCallout&quot;,
+      &quot;states&quot;: {
+        &quot;default&quot;: {
+          &quot;accessibilityExpectations&quot;: {},
+          &quot;allowedProps&quot;: [],
+          &quot;id&quot;: &quot;default&quot;,
+          &quot;sourceRef&quot;: &quot;fixture://p0/source#/components/StatusCallout/states/default&quot;
+        }
+      },
+      &quot;tokenRefs&quot;: {
+        &quot;background&quot;: &quot;color.surface.calloutInfo&quot;,
+        &quot;spacing&quot;: &quot;spacing.base.md&quot;,
+        &quot;text&quot;: &quot;color.text.primary&quot;
+      },
+      &quot;variants&quot;: {
+        &quot;critical&quot;: {
+          &quot;allowedValues&quot;: [
+            &quot;critical&quot;
+          ],
+          &quot;id&quot;: &quot;critical&quot;,
+          &quot;requiredProps&quot;: [],
+          &quot;sourceRef&quot;: &quot;fixture://p0/source#/components/StatusCallout/variants/critical&quot;,
+          &quot;stateConstraints&quot;: []
+        },
+        &quot;info&quot;: {
+          &quot;allowedValues&quot;: [
+            &quot;info&quot;
+          ],
+          &quot;id&quot;: &quot;info&quot;,
+          &quot;requiredProps&quot;: [],
+          &quot;sourceRef&quot;: &quot;fixture://p0/source#/components/StatusCallout/variants/info&quot;,
+          &quot;stateConstraints&quot;: []
+        },
+        &quot;success&quot;: {
+          &quot;allowedValues&quot;: [
+            &quot;success&quot;
+          ],
+          &quot;id&quot;: &quot;success&quot;,
+          &quot;requiredProps&quot;: [],
+          &quot;sourceRef&quot;: &quot;fixture://p0/source#/components/StatusCallout/variants/success&quot;,
+          &quot;stateConstraints&quot;: []
+        },
+        &quot;warning&quot;: {
+          &quot;allowedValues&quot;: [
+            &quot;warning&quot;
+          ],
+          &quot;id&quot;: &quot;warning&quot;,
+          &quot;requiredProps&quot;: [],
+          &quot;sourceRef&quot;: &quot;fixture://p0/source#/components/StatusCallout/variants/warning&quot;,
+          &quot;stateConstraints&quot;: []
+        }
+      }
+    }
+  },
+  &quot;diagnostics&quot;: [],
+  &quot;governance&quot;: {
+    &quot;promotionStatus&quot;: &quot;review_required&quot;,
+    &quot;results&quot;: {
+      &quot;invalidUsage&quot;: &quot;blocked&quot;,
+      &quot;reviewRequiredAction&quot;: &quot;review_required&quot;,
+      &quot;validSurfaceIr&quot;: &quot;allowed&quot;
+    },
+    &quot;rules&quot;: {
+      &quot;destructiveAction&quot;: {
+        &quot;appliesTo&quot;: [
+          &quot;ConfirmPanel.actions.confirm&quot;
+        ],
+        &quot;result&quot;: &quot;review_required&quot;
+      },
+      &quot;disabledActionExecution&quot;: {
+        &quot;appliesTo&quot;: [
+          &quot;Button.actions.dismiss&quot;
+        ],
+        &quot;result&quot;: &quot;blocked&quot;
+      },
+      &quot;unknownUsage&quot;: {
+        &quot;appliesTo&quot;: [
+          &quot;component&quot;,
+          &quot;prop&quot;,
+          &quot;variant&quot;,
+          &quot;state&quot;,
+          &quot;slot&quot;,
+          &quot;action&quot;,
+          &quot;event&quot;,
+          &quot;tokenRef&quot;,
+          &quot;dataBinding&quot;
+        ],
+        &quot;result&quot;: &quot;blocked&quot;
+      }
+    }
+  },
+  &quot;p0EvidenceRef&quot;: {
+    &quot;hash&quot;: &quot;896c4cbaf60a72e08d89a752b7b44408701701be6ef3dde66723b6cb209400ed&quot;,
+    &quot;hashAlgorithm&quot;: &quot;sha256&quot;,
+    &quot;path&quot;: &quot;artifacts/p0/evidence.json&quot;,
+    &quot;schemaId&quot;: &quot;evidence.v0&quot;
+  },
+  &quot;provenance&quot;: {
+    &quot;environment&quot;: {
+      &quot;golden&quot;: true,
+      &quot;host&quot;: null,
+      &quot;jsonCanonicalization&quot;: &quot;rfc8785&quot;,
+      &quot;locale&quot;: &quot;en-US-POSIX&quot;,
+      &quot;numberSerialization&quot;: &quot;rfc8785&quot;,
+      &quot;pathStyle&quot;: &quot;posix-relative&quot;,
+      &quot;schemaOutputFormat&quot;: &quot;basic&quot;,
+      &quot;timestampMode&quot;: &quot;normalized&quot;,
+      &quot;timestampOverride&quot;: null,
+      &quot;timezone&quot;: &quot;UTC&quot;
+    },
+    &quot;generatedAt&quot;: &quot;1970-01-01T00:00:00.000Z&quot;,
+    &quot;generator&quot;: {
+      &quot;name&quot;: &quot;interfacectl-p1-runtime-projection&quot;,
+      &quot;version&quot;: &quot;0.0.0&quot;
+    },
+    &quot;runId&quot;: &quot;p1-2c5ea1809d6528f2fde3d3b4e207b51a&quot;,
+    &quot;sourceHash&quot;: &quot;446fb75d170cc753fd0b8fafb171fc380a04c524db55df7dc8c22027484dc317&quot;,
+    &quot;sourceRef&quot;: &quot;artifacts/p0/governed-catalog.json&quot;,
+    &quot;sourceRefs&quot;: [
+      &quot;fixture://p0/source#/components/Button&quot;,
+      &quot;fixture://p0/source#/components/ConfirmPanel&quot;,
+      &quot;fixture://p0/source#/components/StatusCallout&quot;
+    ],
+    &quot;sourceUri&quot;: &quot;fixture://surfaces/p0/source&quot;
+  },
+  &quot;runtimeCapabilities&quot;: {
+    &quot;actionExecution&quot;: &quot;fail-closed&quot;,
+    &quot;unknownAction&quot;: &quot;blocked&quot;,
+    &quot;unknownComponent&quot;: &quot;blocked&quot;,
+    &quot;unknownDataBinding&quot;: &quot;blocked&quot;,
+    &quot;unknownEvent&quot;: &quot;blocked&quot;,
+    &quot;unknownProp&quot;: &quot;blocked&quot;,
+    &quot;unknownSlot&quot;: &quot;blocked&quot;,
+    &quot;unknownState&quot;: &quot;blocked&quot;,
+    &quot;unknownTokenRef&quot;: &quot;blocked&quot;,
+    &quot;unknownVariant&quot;: &quot;blocked&quot;
+  },
+  &quot;schemaId&quot;: &quot;runtime-projection.v0&quot;,
+  &quot;tokens&quot;: {
+    &quot;color.action.dangerBg&quot;: {
+      &quot;cssVariable&quot;: &quot;--surfaces-color-action-danger-bg&quot;,
+      &quot;sourceRef&quot;: &quot;fixture://p0/source#/tokens/color/action/dangerBg&quot;,
+      &quot;value&quot;: &quot;#C1121F&quot;
+    },
+    &quot;color.action.primaryBg&quot;: {
+      &quot;cssVariable&quot;: &quot;--surfaces-color-action-primary-bg&quot;,
+      &quot;sourceRef&quot;: &quot;fixture://p0/source#/tokens/color/action/primaryBg&quot;,
+      &quot;value&quot;: &quot;#0B5FFF&quot;
+    },
+    &quot;color.brand.danger&quot;: {
+      &quot;cssVariable&quot;: &quot;--surfaces-color-brand-danger&quot;,
+      &quot;sourceRef&quot;: &quot;fixture://p0/source#/tokens/color/brand/danger&quot;,
+      &quot;value&quot;: &quot;#C1121F&quot;
+    },
+    &quot;color.brand.primary&quot;: {
+      &quot;cssVariable&quot;: &quot;--surfaces-color-brand-primary&quot;,
+      &quot;sourceRef&quot;: &quot;fixture://p0/source#/tokens/color/brand/primary&quot;,
+      &quot;value&quot;: &quot;#0B5FFF&quot;
+    },
+    &quot;color.surface.calloutInfo&quot;: {
+      &quot;cssVariable&quot;: &quot;--surfaces-color-surface-callout-info&quot;,
+      &quot;sourceRef&quot;: &quot;fixture://p0/source#/tokens/color/surface/calloutInfo&quot;,
+      &quot;value&quot;: &quot;#E8F2FF&quot;
+    },
+    &quot;color.surface.panel&quot;: {
+      &quot;cssVariable&quot;: &quot;--surfaces-color-surface-panel&quot;,
+      &quot;sourceRef&quot;: &quot;fixture://p0/source#/tokens/color/surface/panel&quot;,
+      &quot;value&quot;: &quot;#FFFFFF&quot;
+    },
+    &quot;color.text.inverse&quot;: {
+      &quot;cssVariable&quot;: &quot;--surfaces-color-text-inverse&quot;,
+      &quot;sourceRef&quot;: &quot;fixture://p0/source#/tokens/color/text/inverse&quot;,
+      &quot;value&quot;: &quot;#FFFFFF&quot;
+    },
+    &quot;color.text.primary&quot;: {
+      &quot;cssVariable&quot;: &quot;--surfaces-color-text-primary&quot;,
+      &quot;sourceRef&quot;: &quot;fixture://p0/source#/tokens/color/text/primary&quot;,
+      &quot;value&quot;: &quot;#101828&quot;
+    },
+    &quot;motion.fast&quot;: {
+      &quot;cssVariable&quot;: &quot;--surfaces-motion-fast&quot;,
+      &quot;sourceRef&quot;: &quot;fixture://p0/source#/tokens/motion/fast&quot;,
+      &quot;value&quot;: &quot;120ms&quot;
+    },
+    &quot;radius.md&quot;: {
+      &quot;cssVariable&quot;: &quot;--surfaces-radius-md&quot;,
+      &quot;sourceRef&quot;: &quot;fixture://p0/source#/tokens/radius/md&quot;,
+      &quot;value&quot;: 8
+    },
+    &quot;radius.sm&quot;: {
+      &quot;cssVariable&quot;: &quot;--surfaces-radius-sm&quot;,
+      &quot;sourceRef&quot;: &quot;fixture://p0/source#/tokens/radius/sm&quot;,
+      &quot;value&quot;: 4
+    },
+    &quot;shadow.raised&quot;: {
+      &quot;cssVariable&quot;: &quot;--surfaces-shadow-raised&quot;,
+      &quot;sourceRef&quot;: &quot;fixture://p0/source#/tokens/shadow/raised&quot;,
+      &quot;value&quot;: {
+        &quot;blur&quot;: 18,
+        &quot;color&quot;: &quot;rgba(16,24,40,0.18)&quot;,
+        &quot;offsetX&quot;: 0,
+        &quot;offsetY&quot;: 6,
+        &quot;spread&quot;: 0
+      }
+    },
+    &quot;spacing.base.lg&quot;: {
+      &quot;cssVariable&quot;: &quot;--surfaces-spacing-base-lg&quot;,
+      &quot;sourceRef&quot;: &quot;fixture://p0/source#/tokens/spacing/base/lg&quot;,
+      &quot;value&quot;: 16
+    },
+    &quot;spacing.base.md&quot;: {
+      &quot;cssVariable&quot;: &quot;--surfaces-spacing-base-md&quot;,
+      &quot;sourceRef&quot;: &quot;fixture://p0/source#/tokens/spacing/base/md&quot;,
+      &quot;value&quot;: 12
+    },
+    &quot;spacing.base.sm&quot;: {
+      &quot;cssVariable&quot;: &quot;--surfaces-spacing-base-sm&quot;,
+      &quot;sourceRef&quot;: &quot;fixture://p0/source#/tokens/spacing/base/sm&quot;,
+      &quot;value&quot;: 8
+    },
+    &quot;spacing.compact.lg&quot;: {
+      &quot;cssVariable&quot;: &quot;--surfaces-spacing-compact-lg&quot;,
+      &quot;sourceRef&quot;: &quot;fixture://p0/source#/tokens/spacing/base/lg&quot;,
+      &quot;value&quot;: 16
+    },
+    &quot;spacing.compact.md&quot;: {
+      &quot;cssVariable&quot;: &quot;--surfaces-spacing-compact-md&quot;,
+      &quot;sourceRef&quot;: &quot;fixture://p0/source#/tokens/spacing/base/md&quot;,
+      &quot;value&quot;: 12
+    },
+    &quot;spacing.compact.sm&quot;: {
+      &quot;cssVariable&quot;: &quot;--surfaces-spacing-compact-sm&quot;,
+      &quot;sourceRef&quot;: &quot;fixture://p0/source#/tokens/spacing/base/sm&quot;,
+      &quot;value&quot;: 8
+    },
+    &quot;spacing.compact.xs&quot;: {
+      &quot;cssVariable&quot;: &quot;--surfaces-spacing-compact-xs&quot;,
+      &quot;sourceRef&quot;: &quot;fixture://p0/source#/tokens/spacing/compact/xs&quot;,
+      &quot;value&quot;: 4
+    },
+    &quot;typography.body&quot;: {
+      &quot;cssVariable&quot;: &quot;--surfaces-typography-body&quot;,
+      &quot;sourceRef&quot;: &quot;fixture://p0/source#/tokens/typography/body&quot;,
+      &quot;value&quot;: {
+        &quot;fontFamily&quot;: &quot;Inter&quot;,
+        &quot;fontSize&quot;: 14,
+        &quot;fontWeight&quot;: 400,
+        &quot;lineHeight&quot;: 20
+      }
+    },
+    &quot;typography.heading&quot;: {
+      &quot;cssVariable&quot;: &quot;--surfaces-typography-heading&quot;,
+      &quot;sourceRef&quot;: &quot;fixture://p0/source#/tokens/typography/heading&quot;,
+      &quot;value&quot;: {
+        &quot;fontFamily&quot;: &quot;Inter&quot;,
+        &quot;fontSize&quot;: 20,
+        &quot;fontWeight&quot;: 700,
+        &quot;lineHeight&quot;: 28
+      }
+    }
+  },
+  &quot;version&quot;: &quot;0.0.0&quot;
+}</pre></div>
+      </article>
+      <article class="panel">
+        <div class="panel-header"><h2>Adapter Report</h2><span class="pill review_required">review_required</span></div>
+        <div class="panel-body"><pre>{
+  &quot;adapter&quot;: &quot;web-static&quot;,
+  &quot;artifactRoot&quot;: &quot;artifacts/p1&quot;,
+  &quot;diagnostics&quot;: [
+    {
+      &quot;absoluteKeywordLocation&quot;: null,
+      &quot;artifactPath&quot;: &quot;fixtures/p1/invalid/disabled-action-execution.surface-ir.json&quot;,
+      &quot;code&quot;: &quot;RUNTIME_ACTION_EXECUTION_BLOCKED&quot;,
+      &quot;diagnosticSource&quot;: &quot;runtime-boundary-validator&quot;,
+      &quot;instanceLocation&quot;: &quot;/instances/secondaryAction/actions/dismiss/execute&quot;,
+      &quot;jsonPointer&quot;: &quot;/instances/secondaryAction/actions/dismiss/execute&quot;,
+      &quot;keywordLocation&quot;: null,
+      &quot;message&quot;: &quot;Runtime action execution is blocked by the governed catalog.&quot;,
+      &quot;path&quot;: &quot;/instances/secondaryAction/actions/dismiss/execute&quot;,
+      &quot;phase&quot;: &quot;runtime-invalid&quot;,
+      &quot;promotionStatus&quot;: &quot;blocked&quot;,
+      &quot;schemaOutputFormat&quot;: null,
+      &quot;severity&quot;: &quot;error&quot;,
+      &quot;sourceRef&quot;: &quot;fixture://p1/invalid/disabled-action-execution#/instances/secondaryAction/actions/dismiss&quot;,
+      &quot;stage&quot;: &quot;runtime-boundary&quot;,
+      &quot;suggestedAction&quot;: &quot;Reject runtime usage without rendering or executing actions.&quot;,
+      &quot;validationResult&quot;: &quot;invalid&quot;
+    },
+    {
+      &quot;absoluteKeywordLocation&quot;: null,
+      &quot;artifactPath&quot;: &quot;fixtures/p1/invalid/modal-role-not-supported.surface-ir.json&quot;,
+      &quot;code&quot;: &quot;ACCESSIBILITY_MODAL_UNSUPPORTED&quot;,
+      &quot;diagnosticSource&quot;: &quot;catalog-validator&quot;,
+      &quot;instanceLocation&quot;: &quot;/root/accessibility/role&quot;,
+      &quot;jsonPointer&quot;: &quot;/root/accessibility/role&quot;,
+      &quot;keywordLocation&quot;: null,
+      &quot;message&quot;: &quot;Modal dialog semantics are unsupported in P0.&quot;,
+      &quot;path&quot;: &quot;/root/accessibility/role&quot;,
+      &quot;phase&quot;: &quot;runtime-invalid&quot;,
+      &quot;promotionStatus&quot;: &quot;blocked&quot;,
+      &quot;schemaOutputFormat&quot;: null,
+      &quot;severity&quot;: &quot;error&quot;,
+      &quot;sourceRef&quot;: &quot;fixture://p1/invalid/modal-role-not-supported#/root/accessibility&quot;,
+      &quot;stage&quot;: &quot;runtime-boundary&quot;,
+      &quot;suggestedAction&quot;: &quot;Reject runtime usage without rendering or executing actions.&quot;,
+      &quot;validationResult&quot;: &quot;invalid&quot;
+    },
+    {
+      &quot;absoluteKeywordLocation&quot;: null,
+      &quot;artifactPath&quot;: &quot;fixtures/p1/invalid/unknown-component.surface-ir.json&quot;,
+      &quot;code&quot;: &quot;CATALOG_UNKNOWN_COMPONENT&quot;,
+      &quot;diagnosticSource&quot;: &quot;catalog-validator&quot;,
+      &quot;instanceLocation&quot;: &quot;/root/component&quot;,
+      &quot;jsonPointer&quot;: &quot;/root/component&quot;,
+      &quot;keywordLocation&quot;: null,
+      &quot;message&quot;: &quot;Surface IR references an unknown component.&quot;,
+      &quot;path&quot;: &quot;/root/component&quot;,
+      &quot;phase&quot;: &quot;runtime-invalid&quot;,
+      &quot;promotionStatus&quot;: &quot;blocked&quot;,
+      &quot;schemaOutputFormat&quot;: null,
+      &quot;severity&quot;: &quot;error&quot;,
+      &quot;sourceRef&quot;: &quot;fixture://p1/invalid/unknown-component#/root&quot;,
+      &quot;stage&quot;: &quot;runtime-boundary&quot;,
+      &quot;suggestedAction&quot;: &quot;Reject runtime usage without rendering or executing actions.&quot;,
+      &quot;validationResult&quot;: &quot;invalid&quot;
+    },
+    {
+      &quot;absoluteKeywordLocation&quot;: null,
+      &quot;artifactPath&quot;: &quot;fixtures/p1/invalid/unknown-prop.surface-ir.json&quot;,
+      &quot;code&quot;: &quot;CATALOG_UNKNOWN_PROP&quot;,
+      &quot;diagnosticSource&quot;: &quot;catalog-validator&quot;,
+      &quot;instanceLocation&quot;: &quot;/root/props/eyebrow&quot;,
+      &quot;jsonPointer&quot;: &quot;/root/props/eyebrow&quot;,
+      &quot;keywordLocation&quot;: null,
+      &quot;message&quot;: &quot;Surface IR references an unknown prop.&quot;,
+      &quot;path&quot;: &quot;/root/props/eyebrow&quot;,
+      &quot;phase&quot;: &quot;runtime-invalid&quot;,
+      &quot;promotionStatus&quot;: &quot;blocked&quot;,
+      &quot;schemaOutputFormat&quot;: null,
+      &quot;severity&quot;: &quot;error&quot;,
+      &quot;sourceRef&quot;: &quot;fixture://p1/invalid/unknown-prop#/root/props/eyebrow&quot;,
+      &quot;stage&quot;: &quot;runtime-boundary&quot;,
+      &quot;suggestedAction&quot;: &quot;Reject runtime usage without rendering or executing actions.&quot;,
+      &quot;validationResult&quot;: &quot;invalid&quot;
+    },
+    {
+      &quot;absoluteKeywordLocation&quot;: null,
+      &quot;artifactPath&quot;: &quot;fixtures/p1/invalid/unsafe-markup.surface-ir.json&quot;,
+      &quot;code&quot;: &quot;CATALOG_INVALID_VALUE&quot;,
+      &quot;diagnosticSource&quot;: &quot;catalog-validator&quot;,
+      &quot;instanceLocation&quot;: &quot;/instances/secondaryAction/props/label&quot;,
+      &quot;jsonPointer&quot;: &quot;/instances/secondaryAction/props/label&quot;,
+      &quot;keywordLocation&quot;: null,
+      &quot;message&quot;: &quot;String prop contains unsafe markup or unsanitized text.&quot;,
+      &quot;path&quot;: &quot;/instances/secondaryAction/props/label&quot;,
+      &quot;phase&quot;: &quot;runtime-invalid&quot;,
+      &quot;promotionStatus&quot;: &quot;blocked&quot;,
+      &quot;schemaOutputFormat&quot;: null,
+      &quot;severity&quot;: &quot;error&quot;,
+      &quot;sourceRef&quot;: &quot;fixture://p1/invalid/unsafe-markup#/instances/secondaryAction/props/label&quot;,
+      &quot;stage&quot;: &quot;runtime-boundary&quot;,
+      &quot;suggestedAction&quot;: &quot;Reject runtime usage without rendering or executing actions.&quot;,
+      &quot;validationResult&quot;: &quot;invalid&quot;
+    },
+    {
+      &quot;absoluteKeywordLocation&quot;: null,
+      &quot;artifactPath&quot;: &quot;fixtures/p1/mutations/catalog-hash-mismatch.runtime-projection.json&quot;,
+      &quot;code&quot;: &quot;PROJECTION_SOURCE_HASH_MISMATCH&quot;,
+      &quot;diagnosticSource&quot;: &quot;runtime-projection-validator&quot;,
+      &quot;instanceLocation&quot;: &quot;/catalogRef/hash&quot;,
+      &quot;jsonPointer&quot;: &quot;/catalogRef/hash&quot;,
+      &quot;keywordLocation&quot;: null,
+      &quot;message&quot;: &quot;Runtime projection governed catalog hash does not match P0 evidence.&quot;,
+      &quot;path&quot;: &quot;/catalogRef/hash&quot;,
+      &quot;phase&quot;: &quot;projection-mutation&quot;,
+      &quot;promotionStatus&quot;: &quot;blocked&quot;,
+      &quot;schemaOutputFormat&quot;: null,
+      &quot;severity&quot;: &quot;error&quot;,
+      &quot;sourceRef&quot;: &quot;fixture://p1/mutations/catalog-hash-mismatch.runtime-projection#/catalogRef&quot;,
+      &quot;stage&quot;: &quot;projection&quot;,
+      &quot;suggestedAction&quot;: &quot;Reject the projection and regenerate it from the accepted P0 catalog ref.&quot;,
+      &quot;validationResult&quot;: &quot;invalid&quot;
+    },
+    {
+      &quot;absoluteKeywordLocation&quot;: null,
+      &quot;artifactPath&quot;: &quot;fixtures/p1/mutations/hash-mismatch.runtime-adapter-evidence.json&quot;,
+      &quot;code&quot;: &quot;RUNTIME_EVIDENCE_HASH_MISMATCH&quot;,
+      &quot;diagnosticSource&quot;: &quot;evidence-validator&quot;,
+      &quot;instanceLocation&quot;: &quot;/artifacts/0/hash&quot;,
+      &quot;jsonPointer&quot;: &quot;/artifacts/0/hash&quot;,
+      &quot;keywordLocation&quot;: null,
+      &quot;message&quot;: &quot;Runtime adapter evidence hash does not match the manifest or self-hash rule.&quot;,
+      &quot;path&quot;: &quot;/artifacts/0/hash&quot;,
+      &quot;phase&quot;: &quot;runtime-evidence&quot;,
+      &quot;promotionStatus&quot;: &quot;blocked&quot;,
+      &quot;schemaOutputFormat&quot;: null,
+      &quot;severity&quot;: &quot;error&quot;,
+      &quot;sourceRef&quot;: null,
+      &quot;stage&quot;: &quot;evidence&quot;,
+      &quot;suggestedAction&quot;: &quot;Reject the evidence and regenerate it from current proof artifacts.&quot;,
+      &quot;validationResult&quot;: &quot;invalid&quot;
+    },
+    {
+      &quot;absoluteKeywordLocation&quot;: null,
+      &quot;artifactPath&quot;: &quot;fixtures/p1/mutations/missing-catalog-ref.runtime-projection.json&quot;,
+      &quot;code&quot;: &quot;PROJECTION_CATALOG_REF_MISSING&quot;,
+      &quot;diagnosticSource&quot;: &quot;runtime-projection-validator&quot;,
+      &quot;instanceLocation&quot;: &quot;/catalogRef&quot;,
+      &quot;jsonPointer&quot;: &quot;/catalogRef&quot;,
+      &quot;keywordLocation&quot;: null,
+      &quot;message&quot;: &quot;Runtime projection governed catalog reference is missing.&quot;,
+      &quot;path&quot;: &quot;/catalogRef&quot;,
+      &quot;phase&quot;: &quot;projection-mutation&quot;,
+      &quot;promotionStatus&quot;: &quot;blocked&quot;,
+      &quot;schemaOutputFormat&quot;: null,
+      &quot;severity&quot;: &quot;error&quot;,
+      &quot;sourceRef&quot;: null,
+      &quot;stage&quot;: &quot;projection&quot;,
+      &quot;suggestedAction&quot;: &quot;Reject the projection and regenerate it from the governed P0 catalog.&quot;,
+      &quot;validationResult&quot;: &quot;invalid&quot;
+    },
+    {
+      &quot;absoluteKeywordLocation&quot;: null,
+      &quot;artifactPath&quot;: &quot;fixtures/p1/mutations/missing-render-plan-provenance.render-plan.json&quot;,
+      &quot;code&quot;: &quot;RUNTIME_RENDER_PLAN_PROVENANCE_MISSING&quot;,
+      &quot;diagnosticSource&quot;: &quot;render-plan-validator&quot;,
+      &quot;instanceLocation&quot;: &quot;/provenance&quot;,
+      &quot;jsonPointer&quot;: &quot;/provenance&quot;,
+      &quot;keywordLocation&quot;: null,
+      &quot;message&quot;: &quot;Render plan provenance is missing.&quot;,
+      &quot;path&quot;: &quot;/provenance&quot;,
+      &quot;phase&quot;: &quot;runtime-adapter&quot;,
+      &quot;promotionStatus&quot;: &quot;blocked&quot;,
+      &quot;schemaOutputFormat&quot;: null,
+      &quot;severity&quot;: &quot;error&quot;,
+      &quot;sourceRef&quot;: &quot;fixture://p1/valid/confirm-panel#/root&quot;,
+      &quot;stage&quot;: &quot;runtime-boundary&quot;,
+      &quot;suggestedAction&quot;: &quot;Reject the render plan and regenerate it with required provenance.&quot;,
+      &quot;validationResult&quot;: &quot;invalid&quot;
+    },
+    {
+      &quot;absoluteKeywordLocation&quot;: null,
+      &quot;artifactPath&quot;: &quot;fixtures/p1/mutations/projection-authority-escalation.runtime-projection.json&quot;,
+      &quot;code&quot;: &quot;PROJECTION_AUTHORITY_ESCALATION&quot;,
+      &quot;diagnosticSource&quot;: &quot;runtime-projection-validator&quot;,
+      &quot;instanceLocation&quot;: &quot;/components/ConfirmPanel/actions/escalate&quot;,
+      &quot;jsonPointer&quot;: &quot;/components/ConfirmPanel/actions/escalate&quot;,
+      &quot;keywordLocation&quot;: null,
+      &quot;message&quot;: &quot;Runtime projection grants authority absent from the governed catalog.&quot;,
+      &quot;path&quot;: &quot;/components/ConfirmPanel/actions/escalate&quot;,
+      &quot;phase&quot;: &quot;projection-mutation&quot;,
+      &quot;promotionStatus&quot;: &quot;blocked&quot;,
+      &quot;schemaOutputFormat&quot;: null,
+      &quot;severity&quot;: &quot;error&quot;,
+      &quot;sourceRef&quot;: &quot;fixture://p1/mutations/projection-authority-escalation.runtime-projection#/components/ConfirmPanel/actions/escalate&quot;,
+      &quot;stage&quot;: &quot;projection&quot;,
+      &quot;suggestedAction&quot;: &quot;Reject the projection and remove non-catalog authority before proof continues.&quot;,
+      &quot;validationResult&quot;: &quot;invalid&quot;
+    },
+    {
+      &quot;absoluteKeywordLocation&quot;: null,
+      &quot;artifactPath&quot;: &quot;fixtures/p1/mutations/runtime-projection-hash-mismatch.runtime-adapter-report.json&quot;,
+      &quot;code&quot;: &quot;RUNTIME_PROJECTION_HASH_MISMATCH&quot;,
+      &quot;diagnosticSource&quot;: &quot;runtime-boundary-validator&quot;,
+      &quot;instanceLocation&quot;: &quot;/runtimeProjectionRef/hash&quot;,
+      &quot;jsonPointer&quot;: &quot;/runtimeProjectionRef/hash&quot;,
+      &quot;keywordLocation&quot;: null,
+      &quot;message&quot;: &quot;Runtime projection hash does not match adapter proof metadata.&quot;,
+      &quot;path&quot;: &quot;/runtimeProjectionRef/hash&quot;,
+      &quot;phase&quot;: &quot;runtime-adapter&quot;,
+      &quot;promotionStatus&quot;: &quot;blocked&quot;,
+      &quot;schemaOutputFormat&quot;: null,
+      &quot;severity&quot;: &quot;error&quot;,
+      &quot;sourceRef&quot;: &quot;fixture://p1/mutations/runtime-projection-hash-mismatch.runtime-adapter-report#/runtimeProjectionRef&quot;,
+      &quot;stage&quot;: &quot;runtime-boundary&quot;,
+      &quot;suggestedAction&quot;: &quot;Reject the adapter report and regenerate proof artifacts from the current runtime projection.&quot;,
+      &quot;validationResult&quot;: &quot;invalid&quot;
+    },
+    {
+      &quot;absoluteKeywordLocation&quot;: null,
+      &quot;artifactPath&quot;: &quot;fixtures/p1/review/review-required-action.surface-ir.json&quot;,
+      &quot;code&quot;: &quot;RUNTIME_REVIEW_REQUIRED&quot;,
+      &quot;diagnosticSource&quot;: &quot;runtime-boundary-validator&quot;,
+      &quot;instanceLocation&quot;: &quot;/root/actions/confirm/execute&quot;,
+      &quot;jsonPointer&quot;: &quot;/root/actions/confirm/execute&quot;,
+      &quot;keywordLocation&quot;: null,
+      &quot;message&quot;: &quot;Runtime usage requires review before unattended promotion.&quot;,
+      &quot;path&quot;: &quot;/root/actions/confirm/execute&quot;,
+      &quot;phase&quot;: &quot;runtime-review&quot;,
+      &quot;promotionStatus&quot;: &quot;review_required&quot;,
+      &quot;schemaOutputFormat&quot;: null,
+      &quot;severity&quot;: &quot;review&quot;,
+      &quot;sourceRef&quot;: &quot;fixture://p1/review/review-required-action#/root/actions/confirm&quot;,
+      &quot;stage&quot;: &quot;runtime-boundary&quot;,
+      &quot;suggestedAction&quot;: &quot;Preserve review status in report and evidence, and do not emit executable output for the action.&quot;,
+      &quot;validationResult&quot;: &quot;review_required&quot;
+    }
+  ],
+  &quot;diagnosticsRegistry&quot;: [
+    {
+      &quot;artifactPath&quot;: &quot;fixtures/p1/mutations/missing-catalog-ref.runtime-projection.json&quot;,
+      &quot;canonicalMessage&quot;: &quot;Runtime projection governed catalog reference is missing.&quot;,
+      &quot;code&quot;: &quot;PROJECTION_CATALOG_REF_MISSING&quot;,
+      &quot;diagnosticSource&quot;: &quot;runtime-projection-validator&quot;,
+      &quot;fixtureCoverage&quot;: &quot;mutations/missing-catalog-ref.runtime-projection.json&quot;,
+      &quot;jsonPointer&quot;: &quot;/catalogRef&quot;,
+      &quot;phase&quot;: &quot;projection-mutation&quot;,
+      &quot;promotionStatus&quot;: &quot;blocked&quot;,
+      &quot;severity&quot;: &quot;error&quot;,
+      &quot;sourceRef&quot;: null,
+      &quot;stage&quot;: &quot;projection&quot;,
+      &quot;suggestedAction&quot;: &quot;Reject the projection and regenerate it from the governed P0 catalog.&quot;,
+      &quot;trigger&quot;: &quot;Runtime projection omits its governed catalog reference&quot;,
+      &quot;validationResult&quot;: &quot;invalid&quot;
+    },
+    {
+      &quot;artifactPath&quot;: &quot;fixtures/p1/mutations/catalog-hash-mismatch.runtime-projection.json&quot;,
+      &quot;canonicalMessage&quot;: &quot;Runtime projection governed catalog hash does not match P0 evidence.&quot;,
+      &quot;code&quot;: &quot;PROJECTION_SOURCE_HASH_MISMATCH&quot;,
+      &quot;diagnosticSource&quot;: &quot;runtime-projection-validator&quot;,
+      &quot;fixtureCoverage&quot;: &quot;mutations/catalog-hash-mismatch.runtime-projection.json&quot;,
+      &quot;jsonPointer&quot;: &quot;/catalogRef/hash&quot;,
+      &quot;phase&quot;: &quot;projection-mutation&quot;,
+      &quot;promotionStatus&quot;: &quot;blocked&quot;,
+      &quot;severity&quot;: &quot;error&quot;,
+      &quot;sourceRef&quot;: &quot;fixture://p1/mutations/catalog-hash-mismatch.runtime-projection#/catalogRef&quot;,
+      &quot;stage&quot;: &quot;projection&quot;,
+      &quot;suggestedAction&quot;: &quot;Reject the projection and regenerate it from the accepted P0 catalog ref.&quot;,
+      &quot;trigger&quot;: &quot;Runtime projection catalog hash differs from P0 evidence&quot;,
+      &quot;validationResult&quot;: &quot;invalid&quot;
+    },
+    {
+      &quot;artifactPath&quot;: &quot;fixtures/p1/mutations/projection-authority-escalation.runtime-projection.json&quot;,
+      &quot;canonicalMessage&quot;: &quot;Runtime projection grants authority absent from the governed catalog.&quot;,
+      &quot;code&quot;: &quot;PROJECTION_AUTHORITY_ESCALATION&quot;,
+      &quot;diagnosticSource&quot;: &quot;runtime-projection-validator&quot;,
+      &quot;fixtureCoverage&quot;: &quot;mutations/projection-authority-escalation.runtime-projection.json&quot;,
+      &quot;jsonPointer&quot;: &quot;/components/ConfirmPanel/actions/escalate&quot;,
+      &quot;phase&quot;: &quot;projection-mutation&quot;,
+      &quot;promotionStatus&quot;: &quot;blocked&quot;,
+      &quot;severity&quot;: &quot;error&quot;,
+      &quot;sourceRef&quot;: &quot;fixture://p1/mutations/projection-authority-escalation.runtime-projection#/components/ConfirmPanel/actions/escalate&quot;,
+      &quot;stage&quot;: &quot;projection&quot;,
+      &quot;suggestedAction&quot;: &quot;Reject the projection and remove non-catalog authority before proof continues.&quot;,
+      &quot;trigger&quot;: &quot;Runtime projection grants component, prop, action, token, data-binding, or governance authority absent from the governed catalog&quot;,
+      &quot;validationResult&quot;: &quot;invalid&quot;
+    },
+    {
+      &quot;artifactPath&quot;: &quot;fixtures/p1/mutations/runtime-projection-hash-mismatch.runtime-adapter-report.json&quot;,
+      &quot;canonicalMessage&quot;: &quot;Runtime projection hash does not match adapter proof metadata.&quot;,
+      &quot;code&quot;: &quot;RUNTIME_PROJECTION_HASH_MISMATCH&quot;,
+      &quot;diagnosticSource&quot;: &quot;runtime-boundary-validator&quot;,
+      &quot;fixtureCoverage&quot;: &quot;mutations/runtime-projection-hash-mismatch.runtime-adapter-report.json&quot;,
+      &quot;jsonPointer&quot;: &quot;/runtimeProjectionRef/hash&quot;,
+      &quot;phase&quot;: &quot;runtime-adapter&quot;,
+      &quot;promotionStatus&quot;: &quot;blocked&quot;,
+      &quot;severity&quot;: &quot;error&quot;,
+      &quot;sourceRef&quot;: &quot;fixture://p1/mutations/runtime-projection-hash-mismatch.runtime-adapter-report#/runtimeProjectionRef&quot;,
+      &quot;stage&quot;: &quot;runtime-boundary&quot;,
+      &quot;suggestedAction&quot;: &quot;Reject the adapter report and regenerate proof artifacts from the current runtime projection.&quot;,
+      &quot;trigger&quot;: &quot;Adapter proof consumes runtime projection metadata whose hash differs from the current projection artifact&quot;,
+      &quot;validationResult&quot;: &quot;invalid&quot;
+    },
+    {
+      &quot;artifactPath&quot;: &quot;fixtures/p1/mutations/missing-render-plan-provenance.render-plan.json&quot;,
+      &quot;canonicalMessage&quot;: &quot;Render plan provenance is missing.&quot;,
+      &quot;code&quot;: &quot;RUNTIME_RENDER_PLAN_PROVENANCE_MISSING&quot;,
+      &quot;diagnosticSource&quot;: &quot;render-plan-validator&quot;,
+      &quot;fixtureCoverage&quot;: &quot;mutations/missing-render-plan-provenance.render-plan.json&quot;,
+      &quot;jsonPointer&quot;: &quot;/provenance&quot;,
+      &quot;phase&quot;: &quot;runtime-adapter&quot;,
+      &quot;promotionStatus&quot;: &quot;blocked&quot;,
+      &quot;severity&quot;: &quot;error&quot;,
+      &quot;sourceRef&quot;: &quot;fixture://p1/valid/confirm-panel#/root&quot;,
+      &quot;stage&quot;: &quot;runtime-boundary&quot;,
+      &quot;suggestedAction&quot;: &quot;Reject the render plan and regenerate it with required provenance.&quot;,
+      &quot;trigger&quot;: &quot;Render plan omits required provenance&quot;,
+      &quot;validationResult&quot;: &quot;invalid&quot;
+    },
+    {
+      &quot;artifactPath&quot;: &quot;fixtures/p1/invalid/disabled-action-execution.surface-ir.json&quot;,
+      &quot;canonicalMessage&quot;: &quot;Runtime action execution is blocked by the governed catalog.&quot;,
+      &quot;code&quot;: &quot;RUNTIME_ACTION_EXECUTION_BLOCKED&quot;,
+      &quot;diagnosticSource&quot;: &quot;runtime-boundary-validator&quot;,
+      &quot;fixtureCoverage&quot;: &quot;invalid/disabled-action-execution.surface-ir.json&quot;,
+      &quot;jsonPointer&quot;: &quot;/instances/secondaryAction/actions/dismiss/execute&quot;,
+      &quot;phase&quot;: &quot;runtime-invalid&quot;,
+      &quot;promotionStatus&quot;: &quot;blocked&quot;,
+      &quot;severity&quot;: &quot;error&quot;,
+      &quot;sourceRef&quot;: &quot;fixture://p1/invalid/disabled-action-execution#/instances/secondaryAction/actions/dismiss&quot;,
+      &quot;stage&quot;: &quot;runtime-boundary&quot;,
+      &quot;suggestedAction&quot;: &quot;Reject runtime usage without rendering or executing actions.&quot;,
+      &quot;trigger&quot;: &quot;Runtime proof encounters disabled or unsupported action execution&quot;,
+      &quot;validationResult&quot;: &quot;invalid&quot;
+    },
+    {
+      &quot;artifactPath&quot;: &quot;runtime-surface-fixture&quot;,
+      &quot;canonicalMessage&quot;: &quot;Runtime Surface IR references authority absent from the runtime projection.&quot;,
+      &quot;code&quot;: &quot;RUNTIME_PROJECTION_MEMBER_UNKNOWN&quot;,
+      &quot;diagnosticSource&quot;: &quot;runtime-boundary-validator&quot;,
+      &quot;fixtureCoverage&quot;: &quot;manifest-wide&quot;,
+      &quot;jsonPointer&quot;: &quot;/&quot;,
+      &quot;phase&quot;: &quot;runtime-invalid&quot;,
+      &quot;promotionStatus&quot;: &quot;blocked&quot;,
+      &quot;severity&quot;: &quot;error&quot;,
+      &quot;sourceRef&quot;: null,
+      &quot;stage&quot;: &quot;runtime-boundary&quot;,
+      &quot;suggestedAction&quot;: &quot;Reject runtime usage and correct the Surface IR against the runtime projection.&quot;,
+      &quot;trigger&quot;: &quot;Runtime Surface IR references a component member or token absent from the runtime projection&quot;,
+      &quot;validationResult&quot;: &quot;invalid&quot;
+    },
+    {
+      &quot;artifactPath&quot;: &quot;fixtures/p1/review/review-required-action.surface-ir.json&quot;,
+      &quot;canonicalMessage&quot;: &quot;Runtime usage requires review before unattended promotion.&quot;,
+      &quot;code&quot;: &quot;RUNTIME_REVIEW_REQUIRED&quot;,
+      &quot;diagnosticSource&quot;: &quot;runtime-boundary-validator&quot;,
+      &quot;fixtureCoverage&quot;: &quot;review/review-required-action.surface-ir.json&quot;,
+      &quot;jsonPointer&quot;: &quot;/root/actions/confirm/execute&quot;,
+      &quot;phase&quot;: &quot;runtime-review&quot;,
+      &quot;promotionStatus&quot;: &quot;review_required&quot;,
+      &quot;severity&quot;: &quot;review&quot;,
+      &quot;sourceRef&quot;: &quot;fixture://p1/review/review-required-action#/root/actions/confirm&quot;,
+      &quot;stage&quot;: &quot;runtime-boundary&quot;,
+      &quot;suggestedAction&quot;: &quot;Preserve review status in report and evidence, and do not emit executable output for the action.&quot;,
+      &quot;trigger&quot;: &quot;Runtime proof encounters structurally valid usage that requires review&quot;,
+      &quot;validationResult&quot;: &quot;review_required&quot;
+    },
+    {
+      &quot;artifactPath&quot;: &quot;fixtures/p1/mutations/hash-mismatch.runtime-adapter-evidence.json&quot;,
+      &quot;canonicalMessage&quot;: &quot;Runtime adapter evidence hash does not match the manifest or self-hash rule.&quot;,
+      &quot;code&quot;: &quot;RUNTIME_EVIDENCE_HASH_MISMATCH&quot;,
+      &quot;diagnosticSource&quot;: &quot;evidence-validator&quot;,
+      &quot;fixtureCoverage&quot;: &quot;mutations/hash-mismatch.runtime-adapter-evidence.json&quot;,
+      &quot;jsonPointer&quot;: &quot;/artifacts/0/hash&quot;,
+      &quot;phase&quot;: &quot;runtime-evidence&quot;,
+      &quot;promotionStatus&quot;: &quot;blocked&quot;,
+      &quot;severity&quot;: &quot;error&quot;,
+      &quot;sourceRef&quot;: null,
+      &quot;stage&quot;: &quot;evidence&quot;,
+      &quot;suggestedAction&quot;: &quot;Reject the evidence and regenerate it from current proof artifacts.&quot;,
+      &quot;trigger&quot;: &quot;Runtime adapter evidence hash differs from manifest or self-hash rule&quot;,
+      &quot;validationResult&quot;: &quot;invalid&quot;
+    },
+    {
+      &quot;artifactPath&quot;: &quot;fixtures/p1/invalid/modal-role-not-supported.surface-ir.json&quot;,
+      &quot;canonicalMessage&quot;: &quot;Modal dialog semantics are unsupported in P0.&quot;,
+      &quot;code&quot;: &quot;ACCESSIBILITY_MODAL_UNSUPPORTED&quot;,
+      &quot;diagnosticSource&quot;: &quot;catalog-validator&quot;,
+      &quot;fixtureCoverage&quot;: &quot;invalid/modal-role-not-supported.surface-ir.json&quot;,
+      &quot;jsonPointer&quot;: &quot;/root/accessibility/role&quot;,
+      &quot;phase&quot;: &quot;runtime-invalid&quot;,
+      &quot;promotionStatus&quot;: &quot;blocked&quot;,
+      &quot;severity&quot;: &quot;error&quot;,
+      &quot;sourceRef&quot;: &quot;fixture://p1/invalid/modal-role-not-supported#/root/accessibility&quot;,
+      &quot;stage&quot;: &quot;runtime-boundary&quot;,
+      &quot;suggestedAction&quot;: &quot;Reject runtime usage without rendering or executing actions.&quot;,
+      &quot;trigger&quot;: &quot;Surface IR attempts modal dialog semantics through unsupported modal fields&quot;,
+      &quot;validationResult&quot;: &quot;invalid&quot;
+    },
+    {
+      &quot;artifactPath&quot;: &quot;fixtures/p1/invalid/unsafe-markup.surface-ir.json&quot;,
+      &quot;canonicalMessage&quot;: &quot;String prop contains unsafe markup or unsanitized text.&quot;,
+      &quot;code&quot;: &quot;CATALOG_INVALID_VALUE&quot;,
+      &quot;diagnosticSource&quot;: &quot;catalog-validator&quot;,
+      &quot;fixtureCoverage&quot;: &quot;invalid/unsafe-markup.surface-ir.json&quot;,
+      &quot;jsonPointer&quot;: &quot;/instances/secondaryAction/props/label&quot;,
+      &quot;phase&quot;: &quot;runtime-invalid&quot;,
+      &quot;promotionStatus&quot;: &quot;blocked&quot;,
+      &quot;severity&quot;: &quot;error&quot;,
+      &quot;sourceRef&quot;: &quot;fixture://p1/invalid/unsafe-markup#/instances/secondaryAction/props/label&quot;,
+      &quot;stage&quot;: &quot;runtime-boundary&quot;,
+      &quot;suggestedAction&quot;: &quot;Reject runtime usage without rendering or executing actions.&quot;,
+      &quot;trigger&quot;: &quot;String prop contains unsafe markup or unsanitized text&quot;,
+      &quot;validationResult&quot;: &quot;invalid&quot;
+    },
+    {
+      &quot;artifactPath&quot;: &quot;fixtures/p1/invalid/unknown-component.surface-ir.json&quot;,
+      &quot;canonicalMessage&quot;: &quot;Surface IR references an unknown component.&quot;,
+      &quot;code&quot;: &quot;CATALOG_UNKNOWN_COMPONENT&quot;,
+      &quot;diagnosticSource&quot;: &quot;catalog-validator&quot;,
+      &quot;fixtureCoverage&quot;: &quot;invalid/unknown-component.surface-ir.json&quot;,
+      &quot;jsonPointer&quot;: &quot;/root/component&quot;,
+      &quot;phase&quot;: &quot;runtime-invalid&quot;,
+      &quot;promotionStatus&quot;: &quot;blocked&quot;,
+      &quot;severity&quot;: &quot;error&quot;,
+      &quot;sourceRef&quot;: &quot;fixture://p1/invalid/unknown-component#/root&quot;,
+      &quot;stage&quot;: &quot;runtime-boundary&quot;,
+      &quot;suggestedAction&quot;: &quot;Reject runtime usage without rendering or executing actions.&quot;,
+      &quot;trigger&quot;: &quot;Surface IR references an unknown component&quot;,
+      &quot;validationResult&quot;: &quot;invalid&quot;
+    },
+    {
+      &quot;artifactPath&quot;: &quot;fixtures/p1/invalid/unknown-prop.surface-ir.json&quot;,
+      &quot;canonicalMessage&quot;: &quot;Surface IR references an unknown prop.&quot;,
+      &quot;code&quot;: &quot;CATALOG_UNKNOWN_PROP&quot;,
+      &quot;diagnosticSource&quot;: &quot;catalog-validator&quot;,
+      &quot;fixtureCoverage&quot;: &quot;invalid/unknown-prop.surface-ir.json&quot;,
+      &quot;jsonPointer&quot;: &quot;/root/props/eyebrow&quot;,
+      &quot;phase&quot;: &quot;runtime-invalid&quot;,
+      &quot;promotionStatus&quot;: &quot;blocked&quot;,
+      &quot;severity&quot;: &quot;error&quot;,
+      &quot;sourceRef&quot;: &quot;fixture://p1/invalid/unknown-prop#/root/props/eyebrow&quot;,
+      &quot;stage&quot;: &quot;runtime-boundary&quot;,
+      &quot;suggestedAction&quot;: &quot;Reject runtime usage without rendering or executing actions.&quot;,
+      &quot;trigger&quot;: &quot;Surface IR references an unknown prop&quot;,
+      &quot;validationResult&quot;: &quot;invalid&quot;
+    }
+  ],
+  &quot;environment&quot;: {
+    &quot;golden&quot;: true,
+    &quot;host&quot;: null,
+    &quot;jsonCanonicalization&quot;: &quot;rfc8785&quot;,
+    &quot;locale&quot;: &quot;en-US-POSIX&quot;,
+    &quot;numberSerialization&quot;: &quot;rfc8785&quot;,
+    &quot;pathStyle&quot;: &quot;posix-relative&quot;,
+    &quot;schemaOutputFormat&quot;: &quot;basic&quot;,
+    &quot;timestampMode&quot;: &quot;normalized&quot;,
+    &quot;timestampOverride&quot;: null,
+    &quot;timezone&quot;: &quot;UTC&quot;
+  },
+  &quot;fixtureRoot&quot;: &quot;fixtures/p1&quot;,
+  &quot;projectionRef&quot;: {
+    &quot;hash&quot;: &quot;83257c17a1077960c71588c747241413cf09b54877f5870d28d8e98133546d82&quot;,
+    &quot;hashAlgorithm&quot;: &quot;sha256&quot;,
+    &quot;path&quot;: &quot;artifacts/p1/runtime-projection.json&quot;,
+    &quot;schemaId&quot;: &quot;runtime-projection.v0&quot;
+  },
+  &quot;promotionStatus&quot;: &quot;review_required&quot;,
+  &quot;provenance&quot;: {
+    &quot;args&quot;: {
+      &quot;catalog&quot;: &quot;artifacts/p0/governed-catalog.json&quot;,
+      &quot;fixture&quot;: &quot;fixtures/p1&quot;,
+      &quot;out&quot;: &quot;artifacts/p1&quot;
+    },
+    &quot;checkedAt&quot;: &quot;1970-01-01T00:00:00.000Z&quot;,
+    &quot;command&quot;: &quot;interfacectl surfaces adapter proof&quot;,
+    &quot;evaluator&quot;: {
+      &quot;name&quot;: &quot;interfacectl-p1-adapter-proof&quot;,
+      &quot;version&quot;: &quot;0.0.0&quot;
+    }
+  },
+  &quot;renderPlans&quot;: [
+    {
+      &quot;artifactPath&quot;: &quot;artifacts/p1/render-plan.confirm-panel.json&quot;,
+      &quot;hash&quot;: &quot;47986fee402552dfc7dd6ca3891d8bdf398481436bdb7f29705b86a9250edadd&quot;,
+      &quot;hashAlgorithm&quot;: &quot;sha256&quot;,
+      &quot;promotionStatus&quot;: &quot;allowed&quot;,
+      &quot;provenance&quot;: {
+        &quot;artifactPath&quot;: &quot;artifacts/p1/render-plan.confirm-panel.json&quot;,
+        &quot;environment&quot;: {
+          &quot;golden&quot;: true,
+          &quot;host&quot;: null,
+          &quot;jsonCanonicalization&quot;: &quot;rfc8785&quot;,
+          &quot;locale&quot;: &quot;en-US-POSIX&quot;,
+          &quot;numberSerialization&quot;: &quot;rfc8785&quot;,
+          &quot;pathStyle&quot;: &quot;posix-relative&quot;,
+          &quot;schemaOutputFormat&quot;: &quot;basic&quot;,
+          &quot;timestampMode&quot;: &quot;normalized&quot;,
+          &quot;timestampOverride&quot;: null,
+          &quot;timezone&quot;: &quot;UTC&quot;
+        },
+        &quot;generatedAt&quot;: &quot;1970-01-01T00:00:00.000Z&quot;,
+        &quot;generator&quot;: {
+          &quot;name&quot;: &quot;interfacectl-p1-render-plan&quot;,
+          &quot;version&quot;: &quot;0.0.0&quot;
+        },
+        &quot;runId&quot;: &quot;p1-2c5ea1809d6528f2fde3d3b4e207b51a&quot;,
+        &quot;sourceHash&quot;: &quot;7a6dcf3260d1874a8375986bd86bb8247d591caf8ad51bcf60af324da3df91e2&quot;,
+        &quot;sourceRef&quot;: &quot;fixture://p1/valid/confirm-panel#/root&quot;,
+        &quot;sourceRefs&quot;: [
+          &quot;fixture://p1/valid/confirm-panel#/bindings/selectedItem&quot;,
+          &quot;fixture://p1/valid/confirm-panel#/instances/callout1&quot;,
+          &quot;fixture://p1/valid/confirm-panel#/instances/callout1/actions/dismiss&quot;,
+          &quot;fixture://p1/valid/confirm-panel#/instances/callout1/events/dismiss&quot;,
+          &quot;fixture://p1/valid/confirm-panel#/instances/primaryAction&quot;,
+          &quot;fixture://p1/valid/confirm-panel#/instances/primaryAction/actions/dismiss&quot;,
+          &quot;fixture://p1/valid/confirm-panel#/instances/primaryAction/actions/submit&quot;,
+          &quot;fixture://p1/valid/confirm-panel#/instances/primaryAction/events/click&quot;,
+          &quot;fixture://p1/valid/confirm-panel#/instances/secondaryAction&quot;,
+          &quot;fixture://p1/valid/confirm-panel#/instances/secondaryAction/actions/dismiss&quot;,
+          &quot;fixture://p1/valid/confirm-panel#/instances/secondaryAction/actions/submit&quot;,
+          &quot;fixture://p1/valid/confirm-panel#/instances/secondaryAction/events/click&quot;,
+          &quot;fixture://p1/valid/confirm-panel#/provenance&quot;,
+          &quot;fixture://p1/valid/confirm-panel#/root&quot;,
+          &quot;fixture://p1/valid/confirm-panel#/root/actions/cancel&quot;,
+          &quot;fixture://p1/valid/confirm-panel#/root/actions/confirm&quot;,
+          &quot;fixture://p1/valid/confirm-panel#/root/events/cancel&quot;,
+          &quot;fixture://p1/valid/confirm-panel#/root/events/confirm&quot;
+        ],
+        &quot;sourceUri&quot;: &quot;fixtures/p1/valid/confirm-panel.surface-ir.json&quot;
+      },
+      &quot;surfaceRef&quot;: {
+        &quot;hash&quot;: &quot;7a6dcf3260d1874a8375986bd86bb8247d591caf8ad51bcf60af324da3df91e2&quot;,
+        &quot;hashAlgorithm&quot;: &quot;sha256&quot;,
+        &quot;path&quot;: &quot;fixtures/p1/valid/confirm-panel.surface-ir.json&quot;,
+        &quot;schemaId&quot;: &quot;surface-ir.v0&quot;,
+        &quot;sourceRef&quot;: &quot;fixture://p1/valid/confirm-panel#/root&quot;
+      }
+    },
+    {
+      &quot;artifactPath&quot;: &quot;artifacts/p1/render-plan.status-callout.json&quot;,
+      &quot;hash&quot;: &quot;a8178b5a1c75d35d21b54e85aef37b765ffbe3f3706735d30a04e9aa04edab5e&quot;,
+      &quot;hashAlgorithm&quot;: &quot;sha256&quot;,
+      &quot;promotionStatus&quot;: &quot;allowed&quot;,
+      &quot;provenance&quot;: {
+        &quot;artifactPath&quot;: &quot;artifacts/p1/render-plan.status-callout.json&quot;,
+        &quot;environment&quot;: {
+          &quot;golden&quot;: true,
+          &quot;host&quot;: null,
+          &quot;jsonCanonicalization&quot;: &quot;rfc8785&quot;,
+          &quot;locale&quot;: &quot;en-US-POSIX&quot;,
+          &quot;numberSerialization&quot;: &quot;rfc8785&quot;,
+          &quot;pathStyle&quot;: &quot;posix-relative&quot;,
+          &quot;schemaOutputFormat&quot;: &quot;basic&quot;,
+          &quot;timestampMode&quot;: &quot;normalized&quot;,
+          &quot;timestampOverride&quot;: null,
+          &quot;timezone&quot;: &quot;UTC&quot;
+        },
+        &quot;generatedAt&quot;: &quot;1970-01-01T00:00:00.000Z&quot;,
+        &quot;generator&quot;: {
+          &quot;name&quot;: &quot;interfacectl-p1-render-plan&quot;,
+          &quot;version&quot;: &quot;0.0.0&quot;
+        },
+        &quot;runId&quot;: &quot;p1-2c5ea1809d6528f2fde3d3b4e207b51a&quot;,
+        &quot;sourceHash&quot;: &quot;2bd2147bbe528e329fdf75e84e8f73d93e19a4ab814827d81287b14518091ebb&quot;,
+        &quot;sourceRef&quot;: &quot;fixture://p1/valid/status-callout#/root&quot;,
+        &quot;sourceRefs&quot;: [
+          &quot;fixture://p1/valid/status-callout#/provenance&quot;,
+          &quot;fixture://p1/valid/status-callout#/root&quot;,
+          &quot;fixture://p1/valid/status-callout#/root/actions/dismiss&quot;,
+          &quot;fixture://p1/valid/status-callout#/root/events/dismiss&quot;
+        ],
+        &quot;sourceUri&quot;: &quot;fixtures/p1/valid/status-callout.surface-ir.json&quot;
+      },
+      &quot;surfaceRef&quot;: {
+        &quot;hash&quot;: &quot;2bd2147bbe528e329fdf75e84e8f73d93e19a4ab814827d81287b14518091ebb&quot;,
+        &quot;hashAlgorithm&quot;: &quot;sha256&quot;,
+        &quot;path&quot;: &quot;fixtures/p1/valid/status-callout.surface-ir.json&quot;,
+        &quot;schemaId&quot;: &quot;surface-ir.v0&quot;,
+        &quot;sourceRef&quot;: &quot;fixture://p1/valid/status-callout#/root&quot;
+      }
+    },
+    {
+      &quot;artifactPath&quot;: &quot;artifacts/p1/render-plan.button-defaults.json&quot;,
+      &quot;hash&quot;: &quot;8b64ddea431761cdac4679e7fc39a0d029e88083842ab5c99b3e0a8e8ec844b5&quot;,
+      &quot;hashAlgorithm&quot;: &quot;sha256&quot;,
+      &quot;promotionStatus&quot;: &quot;allowed&quot;,
+      &quot;provenance&quot;: {
+        &quot;artifactPath&quot;: &quot;artifacts/p1/render-plan.button-defaults.json&quot;,
+        &quot;environment&quot;: {
+          &quot;golden&quot;: true,
+          &quot;host&quot;: null,
+          &quot;jsonCanonicalization&quot;: &quot;rfc8785&quot;,
+          &quot;locale&quot;: &quot;en-US-POSIX&quot;,
+          &quot;numberSerialization&quot;: &quot;rfc8785&quot;,
+          &quot;pathStyle&quot;: &quot;posix-relative&quot;,
+          &quot;schemaOutputFormat&quot;: &quot;basic&quot;,
+          &quot;timestampMode&quot;: &quot;normalized&quot;,
+          &quot;timestampOverride&quot;: null,
+          &quot;timezone&quot;: &quot;UTC&quot;
+        },
+        &quot;generatedAt&quot;: &quot;1970-01-01T00:00:00.000Z&quot;,
+        &quot;generator&quot;: {
+          &quot;name&quot;: &quot;interfacectl-p1-render-plan&quot;,
+          &quot;version&quot;: &quot;0.0.0&quot;
+        },
+        &quot;runId&quot;: &quot;p1-2c5ea1809d6528f2fde3d3b4e207b51a&quot;,
+        &quot;sourceHash&quot;: &quot;3e1852cbe48907ff4443f2f16d848f79843f8b05b0eb6d39d335e12240381a0e&quot;,
+        &quot;sourceRef&quot;: &quot;fixture://p1/valid/button-defaults#/root&quot;,
+        &quot;sourceRefs&quot;: [
+          &quot;fixture://p1/valid/button-defaults#/provenance&quot;,
+          &quot;fixture://p1/valid/button-defaults#/root&quot;,
+          &quot;fixture://p1/valid/button-defaults#/root/actions/dismiss&quot;,
+          &quot;fixture://p1/valid/button-defaults#/root/actions/submit&quot;,
+          &quot;fixture://p1/valid/button-defaults#/root/events/click&quot;
+        ],
+        &quot;sourceUri&quot;: &quot;fixtures/p1/valid/button-defaults.surface-ir.json&quot;
+      },
+      &quot;surfaceRef&quot;: {
+        &quot;hash&quot;: &quot;3e1852cbe48907ff4443f2f16d848f79843f8b05b0eb6d39d335e12240381a0e&quot;,
+        &quot;hashAlgorithm&quot;: &quot;sha256&quot;,
+        &quot;path&quot;: &quot;fixtures/p1/valid/button-defaults.surface-ir.json&quot;,
+        &quot;schemaId&quot;: &quot;surface-ir.v0&quot;,
+        &quot;sourceRef&quot;: &quot;fixture://p1/valid/button-defaults#/root&quot;
+      }
+    }
+  ],
+  &quot;results&quot;: [
+    {
+      &quot;actualDiagnosticCodes&quot;: [],
+      &quot;actualPhase&quot;: &quot;runtime-adapter&quot;,
+      &quot;actualPromotionStatus&quot;: &quot;allowed&quot;,
+      &quot;actualStage&quot;: &quot;runtime-boundary&quot;,
+      &quot;actualValidationResult&quot;: &quot;valid&quot;,
+      &quot;artifactPath&quot;: &quot;artifacts/p1/render-plan.confirm-panel.json&quot;,
+      &quot;expectedDiagnosticCodes&quot;: [],
+      &quot;expectedPhase&quot;: &quot;runtime-adapter&quot;,
+      &quot;expectedPromotionStatus&quot;: &quot;allowed&quot;,
+      &quot;expectedStage&quot;: &quot;runtime-boundary&quot;,
+      &quot;expectedValidationResult&quot;: &quot;valid&quot;,
+      &quot;fixtureKind&quot;: &quot;valid&quot;,
+      &quot;fixturePath&quot;: &quot;fixtures/p1/valid/confirm-panel.surface-ir.json&quot;,
+      &quot;jsonPointer&quot;: &quot;/root&quot;,
+      &quot;matched&quot;: true,
+      &quot;renderPlanPath&quot;: &quot;artifacts/p1/render-plan.confirm-panel.json&quot;,
+      &quot;sourceRef&quot;: &quot;fixture://p1/valid/confirm-panel#/root&quot;
+    },
+    {
+      &quot;actualDiagnosticCodes&quot;: [],
+      &quot;actualPhase&quot;: &quot;runtime-adapter&quot;,
+      &quot;actualPromotionStatus&quot;: &quot;allowed&quot;,
+      &quot;actualStage&quot;: &quot;runtime-boundary&quot;,
+      &quot;actualValidationResult&quot;: &quot;valid&quot;,
+      &quot;artifactPath&quot;: &quot;artifacts/p1/render-plan.status-callout.json&quot;,
+      &quot;expectedDiagnosticCodes&quot;: [],
+      &quot;expectedPhase&quot;: &quot;runtime-adapter&quot;,
+      &quot;expectedPromotionStatus&quot;: &quot;allowed&quot;,
+      &quot;expectedStage&quot;: &quot;runtime-boundary&quot;,
+      &quot;expectedValidationResult&quot;: &quot;valid&quot;,
+      &quot;fixtureKind&quot;: &quot;valid&quot;,
+      &quot;fixturePath&quot;: &quot;fixtures/p1/valid/status-callout.surface-ir.json&quot;,
+      &quot;jsonPointer&quot;: &quot;/root&quot;,
+      &quot;matched&quot;: true,
+      &quot;renderPlanPath&quot;: &quot;artifacts/p1/render-plan.status-callout.json&quot;,
+      &quot;sourceRef&quot;: &quot;fixture://p1/valid/status-callout#/root&quot;
+    },
+    {
+      &quot;actualDiagnosticCodes&quot;: [],
+      &quot;actualPhase&quot;: &quot;runtime-adapter&quot;,
+      &quot;actualPromotionStatus&quot;: &quot;allowed&quot;,
+      &quot;actualStage&quot;: &quot;runtime-boundary&quot;,
+      &quot;actualValidationResult&quot;: &quot;valid&quot;,
+      &quot;artifactPath&quot;: &quot;artifacts/p1/render-plan.button-defaults.json&quot;,
+      &quot;expectedDiagnosticCodes&quot;: [],
+      &quot;expectedPhase&quot;: &quot;runtime-adapter&quot;,
+      &quot;expectedPromotionStatus&quot;: &quot;allowed&quot;,
+      &quot;expectedStage&quot;: &quot;runtime-boundary&quot;,
+      &quot;expectedValidationResult&quot;: &quot;valid&quot;,
+      &quot;fixtureKind&quot;: &quot;valid&quot;,
+      &quot;fixturePath&quot;: &quot;fixtures/p1/valid/button-defaults.surface-ir.json&quot;,
+      &quot;jsonPointer&quot;: &quot;/root&quot;,
+      &quot;matched&quot;: true,
+      &quot;renderPlanPath&quot;: &quot;artifacts/p1/render-plan.button-defaults.json&quot;,
+      &quot;sourceRef&quot;: &quot;fixture://p1/valid/button-defaults#/root&quot;
+    },
+    {
+      &quot;actualDiagnosticCodes&quot;: [
+        &quot;RUNTIME_REVIEW_REQUIRED&quot;
+      ],
+      &quot;actualPhase&quot;: &quot;runtime-review&quot;,
+      &quot;actualPromotionStatus&quot;: &quot;review_required&quot;,
+      &quot;actualStage&quot;: &quot;runtime-boundary&quot;,
+      &quot;actualValidationResult&quot;: &quot;review_required&quot;,
+      &quot;artifactPath&quot;: &quot;artifacts/p1/runtime-adapter-report.json&quot;,
+      &quot;expectedDiagnosticCodes&quot;: [
+        &quot;RUNTIME_REVIEW_REQUIRED&quot;
+      ],
+      &quot;expectedPhase&quot;: &quot;runtime-review&quot;,
+      &quot;expectedPromotionStatus&quot;: &quot;review_required&quot;,
+      &quot;expectedStage&quot;: &quot;runtime-boundary&quot;,
+      &quot;expectedValidationResult&quot;: &quot;review_required&quot;,
+      &quot;fixtureKind&quot;: &quot;review&quot;,
+      &quot;fixturePath&quot;: &quot;fixtures/p1/review/review-required-action.surface-ir.json&quot;,
+      &quot;jsonPointer&quot;: &quot;/root/actions/confirm/execute&quot;,
+      &quot;matched&quot;: true,
+      &quot;renderPlanPath&quot;: null,
+      &quot;sourceRef&quot;: &quot;fixture://p1/review/review-required-action#/root/actions/confirm&quot;
+    },
+    {
+      &quot;actualDiagnosticCodes&quot;: [
+        &quot;CATALOG_UNKNOWN_COMPONENT&quot;
+      ],
+      &quot;actualPhase&quot;: &quot;runtime-invalid&quot;,
+      &quot;actualPromotionStatus&quot;: &quot;blocked&quot;,
+      &quot;actualStage&quot;: &quot;runtime-boundary&quot;,
+      &quot;actualValidationResult&quot;: &quot;invalid&quot;,
+      &quot;artifactPath&quot;: &quot;artifacts/p1/runtime-adapter-report.json&quot;,
+      &quot;expectedDiagnosticCodes&quot;: [
+        &quot;CATALOG_UNKNOWN_COMPONENT&quot;
+      ],
+      &quot;expectedPhase&quot;: &quot;runtime-invalid&quot;,
+      &quot;expectedPromotionStatus&quot;: &quot;blocked&quot;,
+      &quot;expectedStage&quot;: &quot;runtime-boundary&quot;,
+      &quot;expectedValidationResult&quot;: &quot;invalid&quot;,
+      &quot;fixtureKind&quot;: &quot;invalid&quot;,
+      &quot;fixturePath&quot;: &quot;fixtures/p1/invalid/unknown-component.surface-ir.json&quot;,
+      &quot;jsonPointer&quot;: &quot;/root/component&quot;,
+      &quot;matched&quot;: true,
+      &quot;renderPlanPath&quot;: null,
+      &quot;sourceRef&quot;: &quot;fixture://p1/invalid/unknown-component#/root&quot;
+    },
+    {
+      &quot;actualDiagnosticCodes&quot;: [
+        &quot;CATALOG_UNKNOWN_PROP&quot;
+      ],
+      &quot;actualPhase&quot;: &quot;runtime-invalid&quot;,
+      &quot;actualPromotionStatus&quot;: &quot;blocked&quot;,
+      &quot;actualStage&quot;: &quot;runtime-boundary&quot;,
+      &quot;actualValidationResult&quot;: &quot;invalid&quot;,
+      &quot;artifactPath&quot;: &quot;artifacts/p1/runtime-adapter-report.json&quot;,
+      &quot;expectedDiagnosticCodes&quot;: [
+        &quot;CATALOG_UNKNOWN_PROP&quot;
+      ],
+      &quot;expectedPhase&quot;: &quot;runtime-invalid&quot;,
+      &quot;expectedPromotionStatus&quot;: &quot;blocked&quot;,
+      &quot;expectedStage&quot;: &quot;runtime-boundary&quot;,
+      &quot;expectedValidationResult&quot;: &quot;invalid&quot;,
+      &quot;fixtureKind&quot;: &quot;invalid&quot;,
+      &quot;fixturePath&quot;: &quot;fixtures/p1/invalid/unknown-prop.surface-ir.json&quot;,
+      &quot;jsonPointer&quot;: &quot;/root/props/eyebrow&quot;,
+      &quot;matched&quot;: true,
+      &quot;renderPlanPath&quot;: null,
+      &quot;sourceRef&quot;: &quot;fixture://p1/invalid/unknown-prop#/root/props/eyebrow&quot;
+    },
+    {
+      &quot;actualDiagnosticCodes&quot;: [
+        &quot;CATALOG_INVALID_VALUE&quot;
+      ],
+      &quot;actualPhase&quot;: &quot;runtime-invalid&quot;,
+      &quot;actualPromotionStatus&quot;: &quot;blocked&quot;,
+      &quot;actualStage&quot;: &quot;runtime-boundary&quot;,
+      &quot;actualValidationResult&quot;: &quot;invalid&quot;,
+      &quot;artifactPath&quot;: &quot;artifacts/p1/runtime-adapter-report.json&quot;,
+      &quot;expectedDiagnosticCodes&quot;: [
+        &quot;CATALOG_INVALID_VALUE&quot;
+      ],
+      &quot;expectedPhase&quot;: &quot;runtime-invalid&quot;,
+      &quot;expectedPromotionStatus&quot;: &quot;blocked&quot;,
+      &quot;expectedStage&quot;: &quot;runtime-boundary&quot;,
+      &quot;expectedValidationResult&quot;: &quot;invalid&quot;,
+      &quot;fixtureKind&quot;: &quot;invalid&quot;,
+      &quot;fixturePath&quot;: &quot;fixtures/p1/invalid/unsafe-markup.surface-ir.json&quot;,
+      &quot;jsonPointer&quot;: &quot;/instances/secondaryAction/props/label&quot;,
+      &quot;matched&quot;: true,
+      &quot;renderPlanPath&quot;: null,
+      &quot;sourceRef&quot;: &quot;fixture://p1/invalid/unsafe-markup#/instances/secondaryAction/props/label&quot;
+    },
+    {
+      &quot;actualDiagnosticCodes&quot;: [
+        &quot;RUNTIME_ACTION_EXECUTION_BLOCKED&quot;
+      ],
+      &quot;actualPhase&quot;: &quot;runtime-invalid&quot;,
+      &quot;actualPromotionStatus&quot;: &quot;blocked&quot;,
+      &quot;actualStage&quot;: &quot;runtime-boundary&quot;,
+      &quot;actualValidationResult&quot;: &quot;invalid&quot;,
+      &quot;artifactPath&quot;: &quot;artifacts/p1/runtime-adapter-report.json&quot;,
+      &quot;expectedDiagnosticCodes&quot;: [
+        &quot;RUNTIME_ACTION_EXECUTION_BLOCKED&quot;
+      ],
+      &quot;expectedPhase&quot;: &quot;runtime-invalid&quot;,
+      &quot;expectedPromotionStatus&quot;: &quot;blocked&quot;,
+      &quot;expectedStage&quot;: &quot;runtime-boundary&quot;,
+      &quot;expectedValidationResult&quot;: &quot;invalid&quot;,
+      &quot;fixtureKind&quot;: &quot;invalid&quot;,
+      &quot;fixturePath&quot;: &quot;fixtures/p1/invalid/disabled-action-execution.surface-ir.json&quot;,
+      &quot;jsonPointer&quot;: &quot;/instances/secondaryAction/actions/dismiss/execute&quot;,
+      &quot;matched&quot;: true,
+      &quot;renderPlanPath&quot;: null,
+      &quot;sourceRef&quot;: &quot;fixture://p1/invalid/disabled-action-execution#/instances/secondaryAction/actions/dismiss&quot;
+    },
+    {
+      &quot;actualDiagnosticCodes&quot;: [
+        &quot;ACCESSIBILITY_MODAL_UNSUPPORTED&quot;
+      ],
+      &quot;actualPhase&quot;: &quot;runtime-invalid&quot;,
+      &quot;actualPromotionStatus&quot;: &quot;blocked&quot;,
+      &quot;actualStage&quot;: &quot;runtime-boundary&quot;,
+      &quot;actualValidationResult&quot;: &quot;invalid&quot;,
+      &quot;artifactPath&quot;: &quot;artifacts/p1/runtime-adapter-report.json&quot;,
+      &quot;expectedDiagnosticCodes&quot;: [
+        &quot;ACCESSIBILITY_MODAL_UNSUPPORTED&quot;
+      ],
+      &quot;expectedPhase&quot;: &quot;runtime-invalid&quot;,
+      &quot;expectedPromotionStatus&quot;: &quot;blocked&quot;,
+      &quot;expectedStage&quot;: &quot;runtime-boundary&quot;,
+      &quot;expectedValidationResult&quot;: &quot;invalid&quot;,
+      &quot;fixtureKind&quot;: &quot;invalid&quot;,
+      &quot;fixturePath&quot;: &quot;fixtures/p1/invalid/modal-role-not-supported.surface-ir.json&quot;,
+      &quot;jsonPointer&quot;: &quot;/root/accessibility/role&quot;,
+      &quot;matched&quot;: true,
+      &quot;renderPlanPath&quot;: null,
+      &quot;sourceRef&quot;: &quot;fixture://p1/invalid/modal-role-not-supported#/root/accessibility&quot;
+    },
+    {
+      &quot;actualDiagnosticCodes&quot;: [
+        &quot;PROJECTION_CATALOG_REF_MISSING&quot;
+      ],
+      &quot;actualPhase&quot;: &quot;projection-mutation&quot;,
+      &quot;actualPromotionStatus&quot;: &quot;blocked&quot;,
+      &quot;actualStage&quot;: &quot;projection&quot;,
+      &quot;actualValidationResult&quot;: &quot;invalid&quot;,
+      &quot;artifactPath&quot;: &quot;fixtures/p1/mutations/missing-catalog-ref.runtime-projection.json&quot;,
+      &quot;expectedDiagnosticCodes&quot;: [
+        &quot;PROJECTION_CATALOG_REF_MISSING&quot;
+      ],
+      &quot;expectedPhase&quot;: &quot;projection-mutation&quot;,
+      &quot;expectedPromotionStatus&quot;: &quot;blocked&quot;,
+      &quot;expectedStage&quot;: &quot;projection&quot;,
+      &quot;expectedValidationResult&quot;: &quot;invalid&quot;,
+      &quot;fixtureKind&quot;: &quot;mutation&quot;,
+      &quot;fixturePath&quot;: &quot;fixtures/p1/mutations/missing-catalog-ref.runtime-projection.json&quot;,
+      &quot;jsonPointer&quot;: &quot;/catalogRef&quot;,
+      &quot;matched&quot;: true,
+      &quot;renderPlanPath&quot;: null,
+      &quot;sourceRef&quot;: null
+    },
+    {
+      &quot;actualDiagnosticCodes&quot;: [
+        &quot;PROJECTION_SOURCE_HASH_MISMATCH&quot;
+      ],
+      &quot;actualPhase&quot;: &quot;projection-mutation&quot;,
+      &quot;actualPromotionStatus&quot;: &quot;blocked&quot;,
+      &quot;actualStage&quot;: &quot;projection&quot;,
+      &quot;actualValidationResult&quot;: &quot;invalid&quot;,
+      &quot;artifactPath&quot;: &quot;fixtures/p1/mutations/catalog-hash-mismatch.runtime-projection.json&quot;,
+      &quot;expectedDiagnosticCodes&quot;: [
+        &quot;PROJECTION_SOURCE_HASH_MISMATCH&quot;
+      ],
+      &quot;expectedPhase&quot;: &quot;projection-mutation&quot;,
+      &quot;expectedPromotionStatus&quot;: &quot;blocked&quot;,
+      &quot;expectedStage&quot;: &quot;projection&quot;,
+      &quot;expectedValidationResult&quot;: &quot;invalid&quot;,
+      &quot;fixtureKind&quot;: &quot;mutation&quot;,
+      &quot;fixturePath&quot;: &quot;fixtures/p1/mutations/catalog-hash-mismatch.runtime-projection.json&quot;,
+      &quot;jsonPointer&quot;: &quot;/catalogRef/hash&quot;,
+      &quot;matched&quot;: true,
+      &quot;renderPlanPath&quot;: null,
+      &quot;sourceRef&quot;: &quot;fixture://p1/mutations/catalog-hash-mismatch.runtime-projection#/catalogRef&quot;
+    },
+    {
+      &quot;actualDiagnosticCodes&quot;: [
+        &quot;PROJECTION_AUTHORITY_ESCALATION&quot;
+      ],
+      &quot;actualPhase&quot;: &quot;projection-mutation&quot;,
+      &quot;actualPromotionStatus&quot;: &quot;blocked&quot;,
+      &quot;actualStage&quot;: &quot;projection&quot;,
+      &quot;actualValidationResult&quot;: &quot;invalid&quot;,
+      &quot;artifactPath&quot;: &quot;fixtures/p1/mutations/projection-authority-escalation.runtime-projection.json&quot;,
+      &quot;expectedDiagnosticCodes&quot;: [
+        &quot;PROJECTION_AUTHORITY_ESCALATION&quot;
+      ],
+      &quot;expectedPhase&quot;: &quot;projection-mutation&quot;,
+      &quot;expectedPromotionStatus&quot;: &quot;blocked&quot;,
+      &quot;expectedStage&quot;: &quot;projection&quot;,
+      &quot;expectedValidationResult&quot;: &quot;invalid&quot;,
+      &quot;fixtureKind&quot;: &quot;mutation&quot;,
+      &quot;fixturePath&quot;: &quot;fixtures/p1/mutations/projection-authority-escalation.runtime-projection.json&quot;,
+      &quot;jsonPointer&quot;: &quot;/components/ConfirmPanel/actions/escalate&quot;,
+      &quot;matched&quot;: true,
+      &quot;renderPlanPath&quot;: null,
+      &quot;sourceRef&quot;: &quot;fixture://p1/mutations/projection-authority-escalation.runtime-projection#/components/ConfirmPanel/actions/escalate&quot;
+    },
+    {
+      &quot;actualDiagnosticCodes&quot;: [
+        &quot;RUNTIME_RENDER_PLAN_PROVENANCE_MISSING&quot;
+      ],
+      &quot;actualPhase&quot;: &quot;runtime-adapter&quot;,
+      &quot;actualPromotionStatus&quot;: &quot;blocked&quot;,
+      &quot;actualStage&quot;: &quot;runtime-boundary&quot;,
+      &quot;actualValidationResult&quot;: &quot;invalid&quot;,
+      &quot;artifactPath&quot;: &quot;fixtures/p1/mutations/missing-render-plan-provenance.render-plan.json&quot;,
+      &quot;expectedDiagnosticCodes&quot;: [
+        &quot;RUNTIME_RENDER_PLAN_PROVENANCE_MISSING&quot;
+      ],
+      &quot;expectedPhase&quot;: &quot;runtime-adapter&quot;,
+      &quot;expectedPromotionStatus&quot;: &quot;blocked&quot;,
+      &quot;expectedStage&quot;: &quot;runtime-boundary&quot;,
+      &quot;expectedValidationResult&quot;: &quot;invalid&quot;,
+      &quot;fixtureKind&quot;: &quot;mutation&quot;,
+      &quot;fixturePath&quot;: &quot;fixtures/p1/mutations/missing-render-plan-provenance.render-plan.json&quot;,
+      &quot;jsonPointer&quot;: &quot;/provenance&quot;,
+      &quot;matched&quot;: true,
+      &quot;renderPlanPath&quot;: null,
+      &quot;sourceRef&quot;: &quot;fixture://p1/valid/confirm-panel#/root&quot;
+    },
+    {
+      &quot;actualDiagnosticCodes&quot;: [
+        &quot;RUNTIME_PROJECTION_HASH_MISMATCH&quot;
+      ],
+      &quot;actualPhase&quot;: &quot;runtime-adapter&quot;,
+      &quot;actualPromotionStatus&quot;: &quot;blocked&quot;,
+      &quot;actualStage&quot;: &quot;runtime-boundary&quot;,
+      &quot;actualValidationResult&quot;: &quot;invalid&quot;,
+      &quot;artifactPath&quot;: &quot;fixtures/p1/mutations/runtime-projection-hash-mismatch.runtime-adapter-report.json&quot;,
+      &quot;expectedDiagnosticCodes&quot;: [
+        &quot;RUNTIME_PROJECTION_HASH_MISMATCH&quot;
+      ],
+      &quot;expectedPhase&quot;: &quot;runtime-adapter&quot;,
+      &quot;expectedPromotionStatus&quot;: &quot;blocked&quot;,
+      &quot;expectedStage&quot;: &quot;runtime-boundary&quot;,
+      &quot;expectedValidationResult&quot;: &quot;invalid&quot;,
+      &quot;fixtureKind&quot;: &quot;mutation&quot;,
+      &quot;fixturePath&quot;: &quot;fixtures/p1/mutations/runtime-projection-hash-mismatch.runtime-adapter-report.json&quot;,
+      &quot;jsonPointer&quot;: &quot;/runtimeProjectionRef/hash&quot;,
+      &quot;matched&quot;: true,
+      &quot;renderPlanPath&quot;: null,
+      &quot;sourceRef&quot;: &quot;fixture://p1/mutations/runtime-projection-hash-mismatch.runtime-adapter-report#/runtimeProjectionRef&quot;
+    },
+    {
+      &quot;actualDiagnosticCodes&quot;: [
+        &quot;RUNTIME_EVIDENCE_HASH_MISMATCH&quot;
+      ],
+      &quot;actualPhase&quot;: &quot;runtime-evidence&quot;,
+      &quot;actualPromotionStatus&quot;: &quot;blocked&quot;,
+      &quot;actualStage&quot;: &quot;evidence&quot;,
+      &quot;actualValidationResult&quot;: &quot;invalid&quot;,
+      &quot;artifactPath&quot;: &quot;fixtures/p1/mutations/hash-mismatch.runtime-adapter-evidence.json&quot;,
+      &quot;expectedDiagnosticCodes&quot;: [
+        &quot;RUNTIME_EVIDENCE_HASH_MISMATCH&quot;
+      ],
+      &quot;expectedPhase&quot;: &quot;runtime-evidence&quot;,
+      &quot;expectedPromotionStatus&quot;: &quot;blocked&quot;,
+      &quot;expectedStage&quot;: &quot;evidence&quot;,
+      &quot;expectedValidationResult&quot;: &quot;invalid&quot;,
+      &quot;fixtureKind&quot;: &quot;mutation&quot;,
+      &quot;fixturePath&quot;: &quot;fixtures/p1/mutations/hash-mismatch.runtime-adapter-evidence.json&quot;,
+      &quot;jsonPointer&quot;: &quot;/artifacts/0/hash&quot;,
+      &quot;matched&quot;: true,
+      &quot;renderPlanPath&quot;: null,
+      &quot;sourceRef&quot;: null
+    }
+  ],
+  &quot;runId&quot;: &quot;p1-2c5ea1809d6528f2fde3d3b4e207b51a&quot;,
+  &quot;runtimeProjectionRef&quot;: {
+    &quot;hash&quot;: &quot;83257c17a1077960c71588c747241413cf09b54877f5870d28d8e98133546d82&quot;,
+    &quot;hashAlgorithm&quot;: &quot;sha256&quot;,
+    &quot;path&quot;: &quot;artifacts/p1/runtime-projection.json&quot;,
+    &quot;schemaId&quot;: &quot;runtime-projection.v0&quot;
+  },
+  &quot;schemaId&quot;: &quot;runtime-adapter-report.v0&quot;,
+  &quot;status&quot;: &quot;pass&quot;,
+  &quot;version&quot;: &quot;0.0.0&quot;
+}</pre></div>
+      </article>
+    </section>
+  </main>
+</body>
+</html>

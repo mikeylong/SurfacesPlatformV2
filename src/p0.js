@@ -81,6 +81,15 @@ const SCHEMA_FILES = [
   "diagnostics.v0.schema.json"
 ];
 
+const OPTIONAL_P1_SCHEMA_FILES = [
+  "runtime-projection.v0.schema.json",
+  "render-plan.v0.schema.json",
+  "runtime-adapter-report.v0.schema.json",
+  "runtime-adapter-evidence.v0.schema.json",
+  "runtime-adapter-expectations.v0.schema.json",
+  "runtime-adapter-diagnostics.v0.schema.json"
+];
+
 const SCHEMA_IDS = {
   "runtime-catalog.v0.schema.json": "runtime-catalog.v0",
   "surface-ir.v0.schema.json": "surface-ir.v0",
@@ -601,8 +610,13 @@ const REGISTRY_BY_COVERAGE = new Map(REGISTRY_ROWS.map((entry) => [entry.coverag
 const REGISTRY_BY_ARTIFACT = new Map(REGISTRY_ROWS.map((entry) => [entry.artifactPath, entry]));
 
 export async function runInterfacectl(argv, io) {
+  if (argv[0] === "surfaces" && argv[1] === "adapter" && argv[2] === "proof") {
+    const { runP1Interfacectl } = await import("./p1-proof.js");
+    return runP1Interfacectl(argv.slice(3), io);
+  }
+
   if (argv[0] !== "surfaces" || argv[1] !== "proof") {
-    io.stderr.write("usage: interfacectl surfaces proof --fixture fixtures/p0 --out artifacts/p0\n");
+    io.stderr.write("usage: interfacectl surfaces proof --fixture fixtures/p0 --out artifacts/p0\nusage: interfacectl surfaces adapter proof --catalog artifacts/p0/governed-catalog.json --fixture fixtures/p1 --out artifacts/p1\n");
     return 2;
   }
 
@@ -922,12 +936,19 @@ async function assertManifestCompleteness(cwd, fixtureRoot, outRoot, manifest) {
 
 async function assertSchemaDirectoryCompleteness(cwd) {
   const expectedSchemaFiles = SCHEMA_FILES.map((file) => `${SCHEMA_ROOT}/${file}`).sort();
-  const expectedSchemaEntries = [
+  const allowedSchemaEntries = new Set([
     ...expectedSchemaFiles,
-    ...expectedDirectoryEntries(expectedSchemaFiles, SCHEMA_ROOT)
-  ].sort();
+    ...OPTIONAL_P1_SCHEMA_FILES.map((file) => `${SCHEMA_ROOT}/${file}`)
+  ]);
   const actualSchemaEntries = (await listTreeEntries(path.join(cwd, SCHEMA_ROOT), SCHEMA_ROOT)).sort();
-  assertPathSet("schema directory contents", actualSchemaEntries, expectedSchemaEntries);
+  const missing = expectedSchemaFiles.filter((entry) => !actualSchemaEntries.includes(entry));
+  const extra = actualSchemaEntries.filter((entry) => !allowedSchemaEntries.has(entry));
+  if (missing.length > 0 || extra.length > 0) {
+    const parts = [];
+    if (missing.length > 0) parts.push(`missing ${missing.join(", ")}`);
+    if (extra.length > 0) parts.push(`extra ${extra.join(", ")}`);
+    throw contractError(`schema directory contents drift: ${parts.join("; ")}`, 1);
+  }
 }
 
 function assertRunExpectation(manifest, evidence) {

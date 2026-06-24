@@ -1,8 +1,8 @@
 # SurfacesPlatformV2 Subplans
 
-These subplans define the P0 docs/spec contract. They specify exact schema paths, fixture paths, output artifacts, diagnostic codes, and pass/fail gates. They do not introduce implementation scaffolds, package files, live Figma ingestion, renderer work, or copied legacy artifacts.
+These subplans define the Surfaces Platform proof contracts. P0 specifies the first executable catalog, validation, adapter-diagnostics, and evidence proof. P1 specifies the first runtime projection and adapter proof without turning the demo into an unaudited product mock.
 
-## Dependency Order
+## P0 Dependency Order
 1. [Runtime Catalog v0](runtime-catalog-v0.md)
 2. [Product Boundaries](product-boundaries.md)
 3. [P0 Fixture](p0-fixture.md)
@@ -13,6 +13,15 @@ These subplans define the P0 docs/spec contract. They specify exact schema paths
 8. [Adapter Conformance](adapter-conformance.md)
 9. [Validation and Evidence](validation-evidence.md)
 10. [Runtime Adapter](runtime-adapter.md)
+
+## P1 Dependency Order
+1. [P1 Subplan Index](p1/README.md)
+2. [P1 Product Boundaries](p1/product-boundaries.md)
+3. [Runtime Projection v0](p1/runtime-projection-v0.md)
+4. [P1 Fixture](p1/p1-fixture.md)
+5. [Runtime Adapter Proof](p1/runtime-adapter-proof.md)
+6. [P1 Validation And Evidence](p1/validation-evidence.md)
+7. [Demo And CI](p1/demo-ci.md)
 
 ## P0 Contract Layout
 
@@ -153,3 +162,20 @@ Given the P0 fixture, the proof command emits all expected artifacts, valid Surf
 - The expected P0 output set is exactly `extract.json`, `catalog.json`, `governed-catalog.json`, `adapter-diagnostics.json`, and `evidence.json` directly under `--out`. Before writing, the command enumerates `--out`; expected files are replaced, but any other file or directory is stale unexpected output, causes exit `1`, and is excluded from evidence.
 - The command writes a concise stage summary to stdout and machine-readable artifacts to `--out`.
 - The command writes diagnostics to stderr only for command/runtime failure, not expected invalid fixture failures.
+
+## P1 Contract Summary
+P1 proves a governed product surface through a `web-static` runtime projection and deterministic render-plan proof. The governed catalog remains the source of truth. The runtime projection is a derived, hash-bound adapter subset. The generated demo is proof output, not a hand-authored product mock.
+
+P1 source of truth:
+
+- [P1 Subplan Index](p1/README.md) defines the P1 artifact tree, command contract, diagnostics additions, pass condition, and non-goals.
+- [Runtime Projection v0](p1/runtime-projection-v0.md) defines the adapter-facing projection.
+- [P1 Fixture](p1/p1-fixture.md) defines the fixture and manifest contract.
+- [Runtime Adapter Proof](p1/runtime-adapter-proof.md) defines render-plan and report behavior.
+- [P1 Validation And Evidence](p1/validation-evidence.md) defines evidence, hashing, diagnostics, and aggregation.
+
+P1 proof command:
+
+```bash
+interfacectl surfaces adapter proof --catalog artifacts/p0/governed-catalog.json --fixture fixtures/p1 --out artifacts/p1
+```

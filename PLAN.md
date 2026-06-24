@@ -133,6 +133,57 @@ Define the Surfaces Catalog as the governed design-system contract that decides 
 - Evidence canonicalization follows RFC 8785/JCS with I-JSON numeric input constraints.
 - The proof command rejects stale unexpected files or directories under `--out` before writing the exact P0 artifact set.
 
+## P1 Focus
+P1 proves a governed product surface through a `web-static` runtime projection and deterministic render-plan proof. It is not a product mock, general DOM runtime, React package, native adapter, A2UI adapter, SurfaceOps console, JudgmentKit evaluator, or public Surface IR protocol.
+
+The P1 proof path is:
+
+```text
+artifacts/p0/evidence.json
+artifacts/p0/governed-catalog.json
+artifacts/p0/adapter-diagnostics.json
+  -> artifacts/p1/runtime-projection.json
+fixtures/p1/expectations.manifest.json
+  -> validate fixtures/p1/mutations/*.json against expected projection/evidence failures
+  -> validate fixtures/p1/valid/*.json, fixtures/p1/invalid/*.json, and fixtures/p1/review/*.json
+  -> artifacts/p1/render-plan.confirm-panel.json
+  -> artifacts/p1/render-plan.status-callout.json
+  -> artifacts/p1/render-plan.button-defaults.json
+  -> artifacts/p1/runtime-adapter-report.json
+  -> artifacts/p1/evidence.json
+  -> demo/p1/index.html
+```
+
+## P1 Proof Command
+
+```bash
+interfacectl surfaces adapter proof --catalog artifacts/p0/governed-catalog.json --fixture fixtures/p1 --out artifacts/p1
+```
+
+## P1 Pass Condition
+Given a valid P0 proof and the P1 fixture set, the adapter proof command emits the exact P1 artifacts, creates a hash-bound `web-static` runtime projection from the governed catalog, validates every P1 fixture against the manifest, emits deterministic render plans for allowed surfaces only, blocks invalid and review-required usage without executing actions, records adapter diagnostics before final evidence, and writes reproducible evidence with hashes and provenance for every P1 schema, fixture, input artifact, generated proof artifact under `artifacts/p1`, and final evidence artifact.
+
+## P1 Architecture
+1. Product Boundaries
+2. Runtime Projection v0
+3. P1 Fixture
+4. Runtime Adapter Proof
+5. Validation And Evidence
+6. Demo And CI
+
+## P1 Acceptance Criteria
+- P0 proof still passes unchanged before and after P1 work.
+- `runtime-projection.json` is derived from `artifacts/p0/governed-catalog.json` and hash-verified against P0 evidence.
+- Runtime projection cannot introduce components, props, actions, token refs, data bindings, governance rules, or promotion statuses absent from the governed catalog.
+- Valid P1 fixtures produce deterministic render plans.
+- Invalid P1 fixtures and inherited P0 invalid behavior remain blocked with expected diagnostics.
+- Review-required fixtures remain structurally valid, record `review_required`, execute no actions, and block unattended promotion.
+- Render plans contain inert action descriptors only: no callbacks, RPC, workflow triggers, network calls, or side effects.
+- `runtime-adapter-report.json` records every expected and actual result before final P1 evidence.
+- P1 evidence hashes upstream P0 artifacts, P1 schemas, P1 fixtures, generated P1 artifacts, and itself under the same canonicalization discipline as P0.
+- `demo/p1/index.html` is generated from P1 proof artifacts and does not count as proof unless the underlying P1 evidence passes.
+- Review-required P1 fixtures are report/evidence-only and must not produce render-plan artifacts.
+
 ## Subplans
 - [Subplan Index](plans/README.md)
 - [Runtime Catalog v0](plans/runtime-catalog-v0.md)
@@ -145,6 +196,13 @@ Define the Surfaces Catalog as the governed design-system contract that decides 
 - [Adapter Conformance](plans/adapter-conformance.md)
 - [Validation and Evidence](plans/validation-evidence.md)
 - [Runtime Adapter](plans/runtime-adapter.md)
+- [P1 Subplan Index](plans/p1/README.md)
+- [P1 Product Boundaries](plans/p1/product-boundaries.md)
+- [Runtime Projection v0](plans/p1/runtime-projection-v0.md)
+- [P1 Fixture](plans/p1/p1-fixture.md)
+- [Runtime Adapter Proof](plans/p1/runtime-adapter-proof.md)
+- [P1 Validation and Evidence](plans/p1/validation-evidence.md)
+- [P1 Demo and CI](plans/p1/demo-ci.md)
 
 ## P0 Decisions
 - Runtime catalog name and boundary: Surfaces Catalog / `runtime-catalog.v0`, a governed design-system catalog/compiler artifact.
@@ -153,6 +211,14 @@ Define the Surfaces Catalog as the governed design-system contract that decides 
 - Surface IR role: internal P0 validation fixture, not a public protocol.
 - Proof command: `interfacectl surfaces proof --fixture fixtures/p0 --out artifacts/p0`.
 - Promotion statuses: `allowed`, `review_required`, and `blocked`.
+
+## P1 Decisions
+- First runtime target: `web-static`.
+- First runtime boundary: adapter-specific `runtime-projection.v0`, not direct renderer consumption of the full governed catalog.
+- First product-visible output: generated static demo from proof artifacts, not hand-authored product UI.
+- A2UI remains a downstream projection target, not the P1 adapter or data model.
+- Actions remain inert descriptors in P1; no live execution is allowed.
+- Demo output is checked by drift and generated from evidence, but final P1 proof authority stays in `artifacts/p1/evidence.json`.
 
 ## Non-Goals For First Pass
 - No full product scaffold.
