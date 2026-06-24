@@ -1,16 +1,16 @@
 # Surfaces Platform V2 P1 Subplans
 
 ## Decision
-P1 proves a governed product surface through a `web-static` runtime projection and deterministic render-plan proof. It does not build a general DOM runtime, React package, native adapter, A2UI adapter, SurfaceOps console, JudgmentKit evaluator, or public Surface IR protocol.
+P1 proves a governed product surface through a `web-static` runtime projection and deterministic render-plan proof. It does not build a general DOM runtime, React package, native adapter, P5 A2UI adapter, SurfaceOps console, JudgmentKit evaluator, or public Surface IR protocol.
 
-P1 extends the P0 contract by proving that the governed Surfaces Catalog can cross into an adapter-visible, product-visible surface without becoming a second source of authority. The product-visible demo is an output of the proof contract, not a hand-authored mock.
+P1 extends the P0 contract by proving that the governed Surfaces Catalog can cross into an adapter-visible, product-visible surface without creating a second authority source. The product-visible demo is an output of the proof contract, not a hand-authored mock.
 
 P1 Surface IR fixture files are internal proof material only. They are not an adapter API, public protocol, or product integration contract, and projection generation must not derive authority from fixture contents.
 
 ## Mission Fit
 Surfaces Platform turns design-system source material into governed, versioned UI contracts that agents and runtimes can use to generate, validate, reject, review, and render UI safely.
 
-P1 must preserve this mission by requiring every adapter, projection, review, demo, and evidence artifact to consume the Surfaces Catalog contract. The Surfaces Catalog remains the source of truth for what agents may emit and what runtime adapters may render, reject, or send to review.
+P1 must preserve this mission by requiring every adapter, projection, review, demo, and evidence artifact to consume the Surfaces Catalog contract. The Surfaces Catalog remains the P1 contract authority for what agents may emit and what runtime adapters may render, reject, or send to review.
 
 ## P1 Dependency Order
 1. [Product Boundaries](product-boundaries.md)
@@ -105,7 +105,7 @@ P1 proves a governed product surface, not a product mock.
 - P1 diagnostics preserve P0 diagnostic meaning for shared failures and add only registry-backed P1 rows for projection, render-plan, adapter, and evidence failures.
 
 ## P1 Diagnostic Additions
-P1 introduces a strict extension registry for adapter proof failures. The evidence-grade source of truth is [Validation And Evidence](validation-evidence.md), where each row includes canonical message, severity, diagnostic source, stage, phase, artifact path, JSON Pointer, source ref, validation result, promotion status, suggested action, and fixture coverage. Each row must be represented in `runtime-adapter-diagnostics.v0.schema.json`, `fixtures/p1/expectations.manifest.json`, and this P1 subplan set.
+P1 introduces a strict extension registry for adapter proof failures. The evidence-grade diagnostic reference is [Validation And Evidence](validation-evidence.md), where each row includes canonical message, severity, diagnostic source, stage, phase, artifact path, JSON Pointer, source ref, validation result, promotion status, suggested action, and fixture coverage. Each row must be represented in `runtime-adapter-diagnostics.v0.schema.json`, `fixtures/p1/expectations.manifest.json`, and this P1 subplan set.
 
 | Code | Trigger | Stage | Promotion status | Fixture coverage |
 | --- | --- | --- | --- | --- |
@@ -127,7 +127,7 @@ P1 introduces a strict extension registry for adapter proof failures. The eviden
 - `--catalog` must point to the governed P0 catalog artifact recorded in P0 evidence.
 - The command verifies the upstream hashes for `artifacts/p0/evidence.json`, `artifacts/p0/governed-catalog.json`, and `artifacts/p0/adapter-diagnostics.json` before projection.
 - Upstream P0 preflight failures stop before projection and before writing any P1 output.
-- `fixtures/p1/expectations.manifest.json` is the source of truth for fixture comparisons.
+- `fixtures/p1/expectations.manifest.json` is the machine-readable fixture comparison reference.
 - Exit `0`: all P1 expectations match, all render plans are schema-valid, final evidence is reproducible, `evidence.status` is `pass`, and aggregate `evidence.promotionStatus` is `review_required` when review fixtures are present.
 - Exit `1`: contract validation fails, manifest expectations do not match, invalid usage is not blocked, review-required usage is rendered as allowed, hashes/provenance are missing, actions execute, or stale unexpected output exists under `--out`.
 - Exit `2`: command usage, missing catalog path, missing fixture path, unreadable schema path, or output path error.
@@ -140,7 +140,7 @@ P1 introduces a strict extension registry for adapter proof failures. The eviden
 - No live Figma ingestion.
 - No general renderer.
 - No React, native, or web-component adapter package.
-- No A2UI compatibility claim.
+- No A2UI compatibility claim before P5.
 - No modal or `alertdialog` runtime support; that support is deferred beyond P1.
 - No live action execution, callbacks, RPC commands, workflow triggers, network calls, or secret access.
 - No SurfaceOps review console.

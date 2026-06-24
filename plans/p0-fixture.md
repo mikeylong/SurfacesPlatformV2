@@ -84,7 +84,7 @@ artifacts/p0/
 - `ConfirmPanel`: non-modal group only; slots for `heading`, `body`, `primaryAction`, `secondaryAction`, and `supportingContent`; allowed child components `Button` and `StatusCallout`; event support for `confirm` and `cancel`; one destructive/review-required action case.
 
 ## Mutation Fixture Matrix
-Mutation fixtures exercise non-Surface-IR failure paths. Each mutation starts from the golden source or artifact named in the file and violates one rule. This table is explanatory; `fixtures/p0/expectations.manifest.json` is the machine-readable source of truth.
+Mutation fixtures exercise non-Surface-IR failure paths. Each mutation starts from the golden source or artifact named in the file and violates one rule. This table is explanatory; `fixtures/p0/expectations.manifest.json` is the machine-readable comparison reference.
 
 Compile mutation coverage is intentionally limited to duplicate component ids through `CATALOG_DUPLICATE_ID` and generated artifact provenance through `PROVENANCE_MISSING`. Validate-stage failures, including unknown token refs, invalid values, accessibility failures, and invalid Surface IR paths, are covered under `invalid/`. Member-level duplicate ids are deferred beyond P1 unless a later phase adds dedicated mutation fixtures and registry rows.
 
@@ -107,7 +107,7 @@ Compile mutation coverage is intentionally limited to duplicate component ids th
 | `mutations/hash-mismatch.evidence.json` | `validate` | `artifact-mutation` | `ARTIFACT_HASH_MISMATCH` |
 
 ## Invalid Fixture Matrix
-Each invalid fixture violates one rule and must fail with the expected code. This table is explanatory; `fixtures/p0/expectations.manifest.json` is the machine-readable source of truth.
+Each invalid fixture violates one rule and must fail with the expected code. This table is explanatory; `fixtures/p0/expectations.manifest.json` is the machine-readable comparison reference.
 
 | Fixture | Expected phase | Expected code |
 | --- | --- | --- |
@@ -186,7 +186,7 @@ The fixture compiles deterministically through `artifacts/p0/extract.json`, `art
 - No live Figma file.
 - No Storybook scraping.
 - No renderer implementation.
-- No A2UI compatibility fixture.
+- No A2UI compatibility fixture before P5.
 - No deprecated-entry or warning-only fixture behavior.
 - No modal dialog or `alertdialog` behavior.
 

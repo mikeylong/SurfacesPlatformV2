@@ -1,10 +1,12 @@
 # SurfacesPlatformV2 Subplans
 
+For product vision, authority taxonomy, roadmap sequence, surface roles, and agent operating rules, read [Surfaces Platform Vision And Roadmap](../VISION.md) first. This index is the mechanical contract reference for phase subplans. Phase subplans add phase-local deltas and mechanics only. Developer and agent documentation obligations for `surfaces.dev` are tracked in [Surfaces.dev Documentation Tracking](surfaces-dev.md).
+
 These subplans define the Surfaces Platform proof contracts and their materialized schemas, fixtures, artifacts, demos, scripts, and tests. P0 specifies the first executable catalog, validation, adapter-diagnostics, and evidence proof. P1 specifies the first runtime projection and adapter proof without turning the demo into an unaudited product mock.
 
 ## P0 Dependency Order
 1. [Runtime Catalog v0](runtime-catalog-v0.md)
-2. [Product Boundaries](product-boundaries.md)
+2. [P0/P1 Product Boundaries](product-boundaries.md)
 3. [P0 Fixture](p0-fixture.md)
 4. [Design-System Extractor](design-system-extractor.md)
 5. [Catalog Compiler](catalog-compiler.md)
@@ -22,6 +24,26 @@ These subplans define the Surfaces Platform proof contracts and their materializ
 5. [Runtime Adapter Proof](p1/runtime-adapter-proof.md)
 6. [P1 Validation And Evidence](p1/validation-evidence.md)
 7. [Demo And CI](p1/demo-ci.md)
+
+## P2 Dependency Order
+1. [P2 Subplan Index](p2/README.md)
+2. [P2 Product Boundaries](p2/product-boundaries.md)
+3. [Source Strategy](p2/source-strategy.md)
+4. [Ingestion Fixture](p2/ingestion-fixture.md)
+5. [Ingestion Proof](p2/ingestion-proof.md)
+6. [P2 Validation And Evidence](p2/validation-evidence.md)
+7. [P2 Demo And CI](p2/demo-ci.md)
+
+## P3 Dependency Order
+1. [P3 Subplan Index](p3/README.md)
+2. [P3 Product Boundaries](p3/product-boundaries.md)
+3. [Agent Capability Registry v0](p3/agent-capability-registry-v0.md)
+4. [Recruitment Policy](p3/recruitment-policy.md)
+5. [Orchestration Fixture](p3/orchestration-fixture.md)
+6. [Orchestration Proof](p3/orchestration-proof.md)
+7. [Review Queue v0](p3/review-queue-v0.md)
+8. [P3 Validation And Evidence](p3/validation-evidence.md)
+9. [P3 Demo And CI](p3/demo-ci.md)
 
 ## P0 Contract Layout
 
@@ -99,8 +121,8 @@ interfacectl surfaces proof --fixture fixtures/p0 --out artifacts/p0
 ## Pass Condition
 Given the P0 fixture, the proof command emits all expected artifacts, valid Surface IR passes, source/artifact mutations fail in their expected stage, invalid Surface IR fixtures fail in their expected phase with expected diagnostic codes, review fixtures are structurally valid but block unattended promotion, adapter diagnostics are produced before final evidence, and evidence contains reproducible hashes and provenance for every artifact.
 
-## Source Of Truth
-`runtime-catalog-v0.md` is the source of truth for the P0 catalog shape. `validation-evidence.md` is the source of truth for evidence and diagnostic requirements. Other subplans may reference those contracts, but they must not redefine them.
+## P0 Mechanical Sources
+`runtime-catalog-v0.md` defines the P0 catalog shape. `validation-evidence.md` defines P0 evidence and diagnostic requirements. Other subplans may reference those contracts, but they must not redefine them. Product authority, surface roles, and roadmap sequence remain canonical in [Surfaces Platform Vision And Roadmap](../VISION.md).
 
 ## Diagnostics Registry
 `schemas/diagnostics.v0.schema.json` must encode this registry. Codes not listed here are invalid in P0. Each row defines the exact default diagnostic fields; artifact-specific paths may be more precise but must use the same artifact root and JSON Pointer form. `canonicalMessage` is row-specific, even when multiple rows share a code, and is the only diagnostic wording used for golden evidence hashing or manifest comparison.
@@ -154,7 +176,7 @@ Given the P0 fixture, the proof command emits all expected artifacts, valid Surf
 - The command is run from the workspace root.
 - `--fixture` and `--out` are POSIX-style paths relative to the workspace root.
 - The schema directory is fixed at `schemas/` relative to the workspace root; P0 has no `--schemas` flag.
-- `fixtures/p0/expectations.manifest.json` is the source of truth for fixture comparisons.
+- `fixtures/p0/expectations.manifest.json` is the machine-readable fixture comparison reference.
 - Exit `0`: all valid fixtures are allowed, all mutation and invalid fixtures are blocked in the expected phase with expected codes, all review fixtures are `review_required`, final evidence is reproducible, `evidence.status` is `pass`, and the P0 fixture set produces aggregate `evidence.promotionStatus: review_required`.
 - Exit `1`: contract validation fails, invalid fixture expectations do not match, review fixtures do not block unattended promotion, hashes/provenance are missing, or stale unexpected output exists under `--out`.
 - Exit `2`: command usage, missing fixture path, unreadable schema path, or output path error.
@@ -164,9 +186,9 @@ Given the P0 fixture, the proof command emits all expected artifacts, valid Surf
 - The command writes diagnostics to stderr only for command/runtime failure, not expected invalid fixture failures.
 
 ## P1 Contract Summary
-P1 proves a governed product surface through a `web-static` runtime projection and deterministic render-plan proof. The governed catalog remains the source of truth. The runtime projection is a derived, hash-bound adapter subset. The generated demo is proof output, not a hand-authored product mock.
+P1 proves a governed product surface through a `web-static` runtime projection and deterministic render-plan proof. The governed catalog remains the contract authority. The runtime projection is a derived, hash-bound adapter subset. The generated demo is proof output, not a hand-authored product mock.
 
-P1 source of truth:
+P1 contract references:
 
 - [P1 Subplan Index](p1/README.md) defines the P1 artifact tree, command contract, diagnostics additions, pass condition, and non-goals.
 - [Runtime Projection v0](p1/runtime-projection-v0.md) defines the adapter-facing projection.
@@ -178,4 +200,42 @@ P1 proof command:
 
 ```bash
 interfacectl surfaces adapter proof --catalog artifacts/p0/governed-catalog.json --fixture fixtures/p1 --out artifacts/p1
+```
+
+## P2 Contract Summary
+P2 proves real design-system ingestion. It consumes a declared local source bundle from `sources/p2/design-system-source`, materializes source inventory and mapping artifacts, extracts normalized design-system material with source refs, compiles catalog and governed catalog artifacts, records an ingestion report, and finalizes evidence. P2 does not call live source APIs, crawl docs, build a runtime adapter, recruit agents, persist review decisions, or run JudgmentKit.
+
+P2 contract references:
+
+- [P2 Subplan Index](p2/README.md) defines the P2 artifact tree, command contract, diagnostics additions, pass condition, and non-goals.
+- [P2 Product Boundaries](p2/product-boundaries.md) defines what the ingestion proof may and may not own.
+- [Source Strategy](p2/source-strategy.md) defines the first source family and target-selection gate.
+- [Ingestion Fixture](p2/ingestion-fixture.md) defines fixture and manifest expectations.
+- [Ingestion Proof](p2/ingestion-proof.md) defines source inventory, mapping, extraction, catalog compilation, and report behavior.
+- [P2 Validation And Evidence](p2/validation-evidence.md) defines evidence, hashing, diagnostics, and aggregation.
+
+P2 proof command:
+
+```bash
+interfacectl surfaces ingest proof --source sources/p2/design-system-source --fixture fixtures/p2 --out artifacts/p2
+```
+
+## P3 Contract Summary
+P3 proves governed agent recruitment and orchestration after P2 ingestion evidence passes. It consumes P2 evidence boundaries, materializes an agent capability registry, selects registered capabilities for structured task fixtures, emits deterministic scoped work orders, routes review-required work to a non-executable review queue, records an orchestration report, and finalizes evidence. P3 does not execute agents, call tools, edit files, persist review decisions, or run JudgmentKit.
+
+P3 contract references:
+
+- [P3 Subplan Index](p3/README.md) defines the P3 artifact tree, command contract, diagnostics additions, pass condition, and non-goals.
+- [P3 Product Boundaries](p3/product-boundaries.md) defines what the orchestration proof may and may not own.
+- [Agent Capability Registry v0](p3/agent-capability-registry-v0.md) defines the recruitable agent/capability registry contract.
+- [Recruitment Policy](p3/recruitment-policy.md) defines deterministic selection, review routing, and invalid handling.
+- [Orchestration Fixture](p3/orchestration-fixture.md) defines fixture and manifest expectations.
+- [Orchestration Proof](p3/orchestration-proof.md) defines task DAG, work-order, review queue, and report behavior.
+- [Review Queue v0](p3/review-queue-v0.md) defines the review queue envelope and row contract.
+- [P3 Validation And Evidence](p3/validation-evidence.md) defines evidence, hashing, diagnostics, and aggregation.
+
+P3 proof command:
+
+```bash
+interfacectl surfaces agents proof --ingestion-evidence artifacts/p2/evidence.json --catalog artifacts/p2/governed-catalog.json --fixture fixtures/p3 --out artifacts/p3
 ```

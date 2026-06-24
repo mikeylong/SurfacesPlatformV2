@@ -1,7 +1,7 @@
 # Runtime Catalog v0
 
 ## Decision
-The central P0 artifact is the Surfaces Catalog, with schema/artifact id `runtime-catalog.v0`. It is a governed design-system catalog/compiler artifact, not an A2UI catalog and not a public runtime protocol in P0.
+The central P0 artifact is the Surfaces Catalog, with schema/artifact id `runtime-catalog.v0`. It is a governed design-system catalog/compiler artifact, not a P5 A2UI catalog and not a public runtime protocol in P0.
 
 ## Goal
 Define the smallest versioned contract that lets a fixture source compile into governed UI instructions that Surface IR fixtures can validate against, evidence can record, and adapter conformance can reject when usage is outside the contract.
@@ -50,7 +50,7 @@ All P0 schemas must use JSON Schema Draft 2020-12 and must include:
 | `governance` | object | yes | Exact empty shape for `catalog`; populated rule/result maps for `governed-catalog` |
 | `provenance` | object | yes | Reproducibility metadata |
 | `diagnostics` | array | yes | Diagnostics v0 objects |
-| `compatibility` | object | yes | P0 value is A2UI reference-only |
+| `compatibility` | object | yes | P0 value is A2UI reference-only before the P5 gate |
 
 `surface-ir.v0.schema.json` must require:
 
@@ -192,7 +192,7 @@ When `artifactKind` is `governed-catalog`, `governance.rules` and `governance.re
 
 `diagnostics` must conform to `schemas/diagnostics.v0.schema.json` and record code, severity, message, path, source ref, stage, promotion status, and suggested action.
 
-`compatibility` may mention A2UI only as reference-only in P0. It must not claim adapter compatibility.
+`compatibility` may mention A2UI only as reference-only before the P5 gate. It must not claim adapter compatibility.
 
 ## P0 Proof
 The golden fixture compiles into deterministic `artifacts/p0/catalog.json` and `artifacts/p0/governed-catalog.json`. `fixtures/p0/valid.surface-ir.json` passes against the governed catalog. Every invalid fixture fails with its expected diagnostic code. Review fixtures are structurally valid and produce `review_required`. Adapter conformance consumes the governed catalog without requiring a renderer.
@@ -200,7 +200,7 @@ The golden fixture compiles into deterministic `artifacts/p0/catalog.json` and `
 ## Non-Goals
 - No live Figma ingestion.
 - No renderer implementation.
-- No broad A2UI compatibility layer.
+- No broad A2UI compatibility layer before P5.
 - No multi-framework or multi-product catalog schema.
 - No theming system beyond fixture token refs.
 - No governance workflow beyond fields required by P0 enforcement.
@@ -210,4 +210,4 @@ The golden fixture compiles into deterministic `artifacts/p0/catalog.json` and `
 - `runtime-catalog.v0` is internal until P0 proves the contract.
 - Surface IR is an internal validation fixture for P0.
 - Diagnostics codes are shared across compiler, governance, validation, and adapter conformance.
-- P1 resolves the first post-P0 adapter proof target as `web-static` over `runtime-projection.v0`; additional adapter target selection remains deferred, and A2UI remains reference-only in P0.
+- P1 resolves the first adapter proof target as `web-static` over `runtime-projection.v0`; additional adapter target selection remains deferred, and A2UI remains gated to P5.

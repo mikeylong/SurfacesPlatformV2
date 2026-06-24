@@ -136,4 +136,4 @@ One evidence file records successful validation for the valid Surface IR, expect
 ## Closed P0 Decisions
 - Evidence status values are `pass` and `fail`; review state is represented by aggregate `promotionStatus: review_required` only when proof correctness passes and at least one structurally valid fixture or governed result requires review.
 - Evidence hashes cover every schema, fixture, and artifact.
-- JudgmentKit becomes an evaluator candidate after P0, not during P0.
+- JudgmentKit is outside P0 and remains a deferred evaluator candidate.

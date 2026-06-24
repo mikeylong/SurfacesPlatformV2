@@ -4,7 +4,7 @@
 P1 evidence extends P0 evidence for runtime projection and adapter proof. It preserves P0 canonicalization, hash, provenance, diagnostic, and stale-output rules while adding upstream P0 input refs and adapter-boundary artifacts.
 
 ## Goal
-Create one P1 evidence artifact that can prove the runtime projection and adapter proof without coupling P1 to a product UI, SurfaceOps, JudgmentKit, or A2UI.
+Create one P1 evidence artifact that can prove the runtime projection and adapter proof without coupling P1 to a product UI, SurfaceOps, JudgmentKit, or a P5 A2UI target.
 
 ## Inputs
 - P1 schemas.

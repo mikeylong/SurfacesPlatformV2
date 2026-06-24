@@ -60,20 +60,20 @@ Projection generation fails with `PROJECTION_SOURCE_HASH_MISMATCH` if the govern
 
 Projection generation fails with `PROJECTION_CATALOG_REF_MISSING` if catalog refs are missing, malformed, absolute, or not POSIX-relative workspace paths.
 
-## A2UI Position
-P1 projection artifacts must not be named `a2ui-*` and must not claim A2UI compatibility. A future A2UI export may be a separate projection target with its own schema, fixture set, conformance proof, and evidence.
+## P5 A2UI Position
+P1 projection artifacts must not be named `a2ui-*` and must not claim A2UI compatibility. A P5 A2UI export may be a separate projection target with its own schema, fixture set, conformance proof, and evidence.
 
 ## P1 Proof
 The P1 proof emits `artifacts/p1/runtime-projection.json`, validates it against `schemas/runtime-projection.v0.schema.json`, compares its authority against the governed catalog, records diagnostics in the adapter report, and includes the projection hash in final evidence.
 
 ## Non-Goals
 - No direct renderer consumption of the full governed catalog.
-- No A2UI projection.
+- No P5 A2UI projection.
 - No public runtime protocol.
 - No live theming engine.
 - No runtime state manager.
 
 ## Closed P1 Decisions
 - `web-static` consumes `runtime-projection.v0`, not `runtime-catalog.v0`.
-- Projection is a derived contract subset, not a new source of truth.
+- Projection is a derived contract subset, not a new authority source.
 - Projection hashes are evidence-bound before render-plan generation.

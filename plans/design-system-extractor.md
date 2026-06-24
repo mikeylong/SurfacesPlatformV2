@@ -1,7 +1,9 @@
-# Design-System Extractor
+# P0 Fixture Design-System Extractor
 
 ## Decision
 The P0 extractor reads `fixtures/p0/source.fixture.json` only. It does not call the Figma API, scrape Storybook, read Code Connect files, or crawl docs.
+
+Real design-system ingestion is a separate P2 proof defined in [P2 Subplans](p2/README.md). P0 proves extractor mechanics against a synthetic fixture; it must not be described as having extracted a real product design system.
 
 ## Goal
 Turn fixture source material into deterministic `artifacts/p0/extract.json` while preserving source refs and enough structure for the compiler to produce the Surfaces Catalog.
