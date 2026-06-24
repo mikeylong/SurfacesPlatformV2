@@ -1,0 +1,20 @@
+{
+  "schemaId": "design-source-mapping.v0",
+  "fixtureId": "mapping-authority-escalation",
+  "fixtureKind": "mutation",
+  "description": "Mappings may narrow declared source material but may not add catalog authority.",
+  "mappingRows": [
+    {
+      "mappingId": "invented-action",
+      "mappingKind": "action",
+      "sourceRefs": [
+        "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/button.json#/"
+      ],
+      "targetRefs": ["catalog://p2/components/Button/actions/submit-payment"],
+      "authorityScope": "mapping-adds-authority"
+    }
+  ],
+  "expectedDiagnosticCode": "INGEST_MAPPING_AUTHORITY_ESCALATION",
+  "expectedResult": "invalid",
+  "promotionStatus": "blocked"
+}

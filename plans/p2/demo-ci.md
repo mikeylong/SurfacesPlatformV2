@@ -28,7 +28,15 @@ Make the ingestion proof inspectable without weakening the proof boundary. A rev
 - Demo output is not included in P2 evidence hashes.
 
 ## CI Gate
-P2 is not implementation-complete until `package.json` exposes:
+P2 currently exposes only a planning guard:
+
+```bash
+npm run check:p2:planning
+```
+
+That guard validates the draft schemas, source-plan files, valid Spectrum planning fixtures, invalid/review/mutation fixture presence, diagnostic-code coverage, source and mapping ref normalization, planned evidence closure, the fact that the ingest proof command is still not implemented, and the `check:p2:untracked` guard for P2 planning files. It is not proof evidence and must not be described as `check:p2:ci`.
+
+P2 is not implementation-complete until `package.json` exposes future proof-bearing commands:
 
 ```bash
 npm run materialize:p2
@@ -37,6 +45,14 @@ npm run build:p2-demo
 npm run check:p2
 npm run check:p2:ci
 ```
+
+`proof:p2` and any test helper that eventually executes the ingest proof must invoke:
+
+```bash
+node bin/interfacectl.js surfaces ingest proof --source sources/p2/design-system-source --fixture fixtures/p2 --out artifacts/p2
+```
+
+The command is planned, not runnable, until P2 CLI implementation lands. The evidence artifact may record `interfacectl surfaces ingest proof` as the logical command string if that remains the cross-phase evidence convention.
 
 `check:p2:ci` must:
 
@@ -54,6 +70,9 @@ P2 CI must treat `git diff --exit-code -- schemas fixtures artifacts demo` as ne
 
 ## P2 Proof
 The demo/CI layer passes only when P2 evidence passes, demo output rebuilds deterministically from evidence, tests cover the P2 ingestion proof contract and tamper cases, and drift checks confirm generated artifacts are current.
+
+## Allowed Claims
+Before a proof-bearing P2 CI gate exists and passes, P2 may be described only as planned, with Adobe Spectrum Design Data selected/proposed/pinned as the pilot target. After passing evidence exists, claims are still scoped to deterministic local npm package ingestion for `@adobe/spectrum-design-data@0.7.0`, initial components `button` and `in-line-alert`, and the declared source snapshot. P2 must not claim full Spectrum support, live ingestion, runtime adapter rendering, A2UI support, SurfaceOps operation, JudgmentKit evaluation, P3 orchestration, or Adobe endorsement.
 
 ## Non-Goals
 - No public docs deployment.

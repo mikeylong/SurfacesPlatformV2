@@ -1,0 +1,10 @@
+{
+  "schemaId": "design-system-ingestion-mutation-fixture.v0",
+  "fixtureId": "invalid-source-ref",
+  "fixtureKind": "mutation",
+  "description": "Bare hash fragments and traversal-like package paths are invalid source refs.",
+  "sourceRef": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/../button.json#",
+  "expectedDiagnosticCode": "INGEST_SOURCE_REF_INVALID",
+  "expectedResult": "invalid",
+  "promotionStatus": "blocked"
+}

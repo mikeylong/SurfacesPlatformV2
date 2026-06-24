@@ -1,0 +1,372 @@
+{
+  "$id": "https://surfaces.dev/schemas/p2/design-system-ingestion-diagnostics.v0.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["schemaId", "version", "diagnostics"],
+  "properties": {
+    "schemaId": { "const": "design-system-ingestion-diagnostics.v0" },
+    "version": { "type": "string" },
+    "diagnostics": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/diagnostic" }
+    }
+  },
+  "$defs": {
+    "diagnosticCode": {
+      "enum": [
+        "INGEST_SOURCE_MANIFEST_MISSING",
+        "INGEST_PACKAGE_INTEGRITY_MISMATCH",
+        "INGEST_SOURCE_PATH_UNDECLARED",
+        "INGEST_SOURCE_REF_INVALID",
+        "INGEST_SOURCE_HASH_MISMATCH",
+        "INGEST_SOURCE_REF_MISSING",
+        "INGEST_COMPONENT_UNMAPPED",
+        "INGEST_TOKEN_UNSUPPORTED",
+        "INGEST_TOKEN_MODE_UNSUPPORTED",
+        "INGEST_VARIANT_AMBIGUOUS",
+        "INGEST_GOVERNANCE_POLICY_MISSING",
+        "INGEST_MAPPING_REVIEW_REQUIRED",
+        "INGEST_MAPPING_AUTHORITY_ESCALATION",
+        "INGEST_NORMALIZED_ID_DUPLICATE",
+        "INGEST_MAPPING_ROW_REF_INVALID",
+        "INGEST_MAPPING_CARDINALITY_INVALID",
+        "INGEST_SCHEMA_HASH_MISMATCH",
+        "INGEST_EVIDENCE_HASH_MISMATCH"
+      ]
+    },
+    "diagnostic": {
+      "type": "object",
+      "required": [
+        "code",
+        "message",
+        "severity",
+        "diagnosticSource",
+        "stage",
+        "phase",
+        "artifactPath",
+        "jsonPointer",
+        "validationResult",
+        "promotionStatus"
+      ],
+      "properties": {
+        "code": { "$ref": "#/$defs/diagnosticCode" },
+        "message": { "type": "string", "minLength": 1 },
+        "severity": { "enum": ["error", "review"] },
+        "diagnosticSource": { "type": "string", "minLength": 1 },
+        "stage": {
+          "enum": ["source-inventory", "mapping", "extract", "compile", "govern", "report", "evidence"]
+        },
+        "phase": {
+          "enum": [
+            "source-manifest",
+            "source-inventory",
+            "source-mapping",
+            "source-extraction",
+            "catalog-compile",
+            "catalog-governance",
+            "ingestion-report",
+            "ingestion-evidence"
+          ]
+        },
+        "artifactPath": { "type": "string" },
+        "jsonPointer": { "type": "string" },
+        "sourceRef": { "type": ["string", "null"] },
+        "validationResult": { "enum": ["valid", "invalid", "review_required"] },
+        "promotionStatus": { "enum": ["allowed", "blocked", "review_required"] },
+        "suggestedAction": { "type": "string" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "code": { "const": "INGEST_SOURCE_MANIFEST_MISSING" } }, "required": ["code"] },
+          "then": {
+            "properties": {
+              "message": { "const": "Design-system source manifest is missing or unreadable." },
+              "severity": { "const": "error" },
+              "diagnosticSource": { "const": "source-preflight-validator" },
+              "stage": { "const": "source-inventory" },
+              "phase": { "const": "source-manifest" },
+              "artifactPath": { "const": "fixtures/p2/mutations/missing-source-manifest.design-source.json" },
+              "jsonPointer": { "const": "/manifest" },
+              "validationResult": { "const": "invalid" },
+              "promotionStatus": { "const": "blocked" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "code": { "const": "INGEST_PACKAGE_INTEGRITY_MISMATCH" } }, "required": ["code"] },
+          "then": {
+            "properties": {
+              "message": { "const": "Spectrum package integrity does not match the pinned npm package." },
+              "severity": { "const": "error" },
+              "diagnosticSource": { "const": "source-preflight-validator" },
+              "stage": { "const": "source-inventory" },
+              "phase": { "const": "source-manifest" },
+              "artifactPath": { "const": "fixtures/p2/mutations/package-integrity-mismatch.design-source.json" },
+              "jsonPointer": { "const": "/packageIntegrity" },
+              "validationResult": { "const": "invalid" },
+              "promotionStatus": { "const": "blocked" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "code": { "const": "INGEST_SOURCE_PATH_UNDECLARED" } }, "required": ["code"] },
+          "then": {
+            "properties": {
+              "message": { "const": "Design-system source path is not declared by the manifest." },
+              "severity": { "const": "error" },
+              "diagnosticSource": { "const": "source-preflight-validator" },
+              "stage": { "const": "source-inventory" },
+              "phase": { "const": "source-manifest" },
+              "artifactPath": { "const": "fixtures/p2/mutations/source-path-undeclared.design-source.json" },
+              "jsonPointer": { "const": "/sourceFiles/0/path" },
+              "validationResult": { "const": "invalid" },
+              "promotionStatus": { "const": "blocked" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "code": { "const": "INGEST_SOURCE_REF_INVALID" } }, "required": ["code"] },
+          "then": {
+            "properties": {
+              "message": { "const": "Design-system source reference does not match the required source-ref grammar." },
+              "severity": { "const": "error" },
+              "diagnosticSource": { "const": "source-preflight-validator" },
+              "stage": { "const": "source-inventory" },
+              "phase": { "const": "source-manifest" },
+              "artifactPath": { "const": "fixtures/p2/mutations/invalid-source-ref.design-source.json" },
+              "jsonPointer": { "const": "/sourceFiles/0/sourceRefRoot" },
+              "validationResult": { "const": "invalid" },
+              "promotionStatus": { "const": "blocked" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "code": { "const": "INGEST_SOURCE_HASH_MISMATCH" } }, "required": ["code"] },
+          "then": {
+            "properties": {
+              "message": { "const": "Design-system source hash does not match the declared manifest." },
+              "severity": { "const": "error" },
+              "diagnosticSource": { "const": "source-inventory-validator" },
+              "stage": { "const": "source-inventory" },
+              "phase": { "const": "source-inventory" },
+              "artifactPath": { "const": "fixtures/p2/mutations/source-hash-mismatch.design-source-inventory.json" },
+              "jsonPointer": { "const": "/sourceFiles/0/hash" },
+              "validationResult": { "const": "invalid" },
+              "promotionStatus": { "const": "blocked" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "code": { "const": "INGEST_SOURCE_REF_MISSING" } }, "required": ["code"] },
+          "then": {
+            "properties": {
+              "message": { "const": "Extracted design-system material is missing required source refs." },
+              "severity": { "const": "error" },
+              "diagnosticSource": { "const": "extract-validator" },
+              "stage": { "const": "extract" },
+              "phase": { "const": "source-extraction" },
+              "artifactPath": { "const": "fixtures/p2/mutations/missing-source-ref.extract.json" },
+              "jsonPointer": { "const": "/components/0/sourceRef" },
+              "validationResult": { "const": "invalid" },
+              "promotionStatus": { "const": "blocked" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "code": { "const": "INGEST_COMPONENT_UNMAPPED" } }, "required": ["code"] },
+          "then": {
+            "properties": {
+              "message": { "const": "Source component is missing a required catalog mapping." },
+              "severity": { "const": "error" },
+              "diagnosticSource": { "const": "mapping-validator" },
+              "stage": { "const": "mapping" },
+              "phase": { "const": "source-mapping" },
+              "artifactPath": { "const": "fixtures/p2/invalid/unmapped-component.design-source.json" },
+              "jsonPointer": { "const": "/mappingRows" },
+              "validationResult": { "const": "invalid" },
+              "promotionStatus": { "const": "blocked" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "code": { "const": "INGEST_TOKEN_UNSUPPORTED" } }, "required": ["code"] },
+          "then": {
+            "properties": {
+              "message": { "const": "Source token is unsupported by the current catalog token contract." },
+              "severity": { "const": "error" },
+              "diagnosticSource": { "const": "extract-validator" },
+              "stage": { "const": "extract" },
+              "phase": { "const": "source-extraction" },
+              "artifactPath": { "const": "fixtures/p2/invalid/unsupported-token.design-source.json" },
+              "jsonPointer": { "const": "/tokens" },
+              "validationResult": { "const": "invalid" },
+              "promotionStatus": { "const": "blocked" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "code": { "const": "INGEST_TOKEN_MODE_UNSUPPORTED" } }, "required": ["code"] },
+          "then": {
+            "properties": {
+              "message": { "const": "Source token mode is unsupported by the current catalog token contract." },
+              "severity": { "const": "error" },
+              "diagnosticSource": { "const": "extract-validator" },
+              "stage": { "const": "extract" },
+              "phase": { "const": "source-extraction" },
+              "artifactPath": { "const": "fixtures/p2/invalid/unsupported-mode.design-source.json" },
+              "jsonPointer": { "const": "/tokens/modes" },
+              "validationResult": { "const": "invalid" },
+              "promotionStatus": { "const": "blocked" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "code": { "const": "INGEST_VARIANT_AMBIGUOUS" } }, "required": ["code"] },
+          "then": {
+            "properties": {
+              "message": { "const": "Source variant mapping is ambiguous." },
+              "severity": { "const": "error" },
+              "diagnosticSource": { "const": "mapping-validator" },
+              "stage": { "const": "mapping" },
+              "phase": { "const": "source-mapping" },
+              "artifactPath": { "const": "fixtures/p2/invalid/ambiguous-variant.design-source.json" },
+              "jsonPointer": { "const": "/mappingRows" },
+              "validationResult": { "const": "invalid" },
+              "promotionStatus": { "const": "blocked" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "code": { "const": "INGEST_GOVERNANCE_POLICY_MISSING" } }, "required": ["code"] },
+          "then": {
+            "properties": {
+              "message": { "const": "Required governance policy is missing for sensitive source usage." },
+              "severity": { "const": "error" },
+              "diagnosticSource": { "const": "governance-validator" },
+              "stage": { "const": "govern" },
+              "phase": { "const": "catalog-governance" },
+              "artifactPath": { "const": "fixtures/p2/invalid/governance-policy-missing.design-source.json" },
+              "jsonPointer": { "const": "/policyRefs" },
+              "validationResult": { "const": "invalid" },
+              "promotionStatus": { "const": "blocked" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "code": { "const": "INGEST_MAPPING_REVIEW_REQUIRED" } }, "required": ["code"] },
+          "then": {
+            "properties": {
+              "message": { "const": "Source mapping requires review before unattended promotion." },
+              "severity": { "const": "review" },
+              "diagnosticSource": { "const": "mapping-validator" },
+              "stage": { "const": "mapping" },
+              "phase": { "const": "source-mapping" },
+              "artifactPath": { "const": "fixtures/p2/review/manual-mapping-required.design-source.json" },
+              "jsonPointer": { "const": "/reviewRequired" },
+              "validationResult": { "const": "review_required" },
+              "promotionStatus": { "const": "review_required" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "code": { "const": "INGEST_MAPPING_AUTHORITY_ESCALATION" } }, "required": ["code"] },
+          "then": {
+            "properties": {
+              "message": { "const": "Source mapping attempted to promote catalog behavior absent from the design-system source." },
+              "severity": { "const": "error" },
+              "diagnosticSource": { "const": "mapping-validator" },
+              "stage": { "const": "mapping" },
+              "phase": { "const": "source-mapping" },
+              "artifactPath": { "const": "fixtures/p2/mutations/mapping-authority-escalation.design-source-mapping.json" },
+              "jsonPointer": { "const": "/mappingRows/0" },
+              "validationResult": { "const": "invalid" },
+              "promotionStatus": { "const": "blocked" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "code": { "const": "INGEST_NORMALIZED_ID_DUPLICATE" } }, "required": ["code"] },
+          "then": {
+            "properties": {
+              "message": { "const": "Source mapping contains a duplicate normalized id without an accepted conflict rule." },
+              "severity": { "const": "error" },
+              "diagnosticSource": { "const": "mapping-validator" },
+              "stage": { "const": "mapping" },
+              "phase": { "const": "source-mapping" },
+              "artifactPath": { "const": "fixtures/p2/invalid/duplicate-normalized-id.design-source-mapping.json" },
+              "jsonPointer": { "const": "/mappingRows/1/normalizedId" },
+              "validationResult": { "const": "invalid" },
+              "promotionStatus": { "const": "blocked" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "code": { "const": "INGEST_MAPPING_ROW_REF_INVALID" } }, "required": ["code"] },
+          "then": {
+            "properties": {
+              "message": { "const": "Source mapping row references are missing or invalid." },
+              "severity": { "const": "error" },
+              "diagnosticSource": { "const": "mapping-validator" },
+              "stage": { "const": "mapping" },
+              "phase": { "const": "source-mapping" },
+              "artifactPath": { "const": "fixtures/p2/invalid/mapping-row-ref-invalid.design-source-mapping.json" },
+              "jsonPointer": { "const": "/mappingRows/0/sourceRefs" },
+              "validationResult": { "const": "invalid" },
+              "promotionStatus": { "const": "blocked" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "code": { "const": "INGEST_MAPPING_CARDINALITY_INVALID" } }, "required": ["code"] },
+          "then": {
+            "properties": {
+              "message": { "const": "Source mapping row cardinality is invalid." },
+              "severity": { "const": "error" },
+              "diagnosticSource": { "const": "mapping-validator" },
+              "stage": { "const": "mapping" },
+              "phase": { "const": "source-mapping" },
+              "artifactPath": { "const": "fixtures/p2/invalid/mapping-cardinality-invalid.design-source-mapping.json" },
+              "jsonPointer": { "const": "/mappingRows/0/cardinality" },
+              "validationResult": { "const": "invalid" },
+              "promotionStatus": { "const": "blocked" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "code": { "const": "INGEST_SCHEMA_HASH_MISMATCH" } }, "required": ["code"] },
+          "then": {
+            "properties": {
+              "message": { "const": "Design-system ingestion schema hash does not match the evidence manifest." },
+              "severity": { "const": "error" },
+              "diagnosticSource": { "const": "evidence-validator" },
+              "stage": { "const": "evidence" },
+              "phase": { "const": "ingestion-evidence" },
+              "artifactPath": { "const": "fixtures/p2/mutations/schema-hash-mismatch.design-system-ingestion-evidence.json" },
+              "jsonPointer": { "const": "/schemaClosure/0/hash" },
+              "validationResult": { "const": "invalid" },
+              "promotionStatus": { "const": "blocked" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "code": { "const": "INGEST_EVIDENCE_HASH_MISMATCH" } }, "required": ["code"] },
+          "then": {
+            "properties": {
+              "message": { "const": "Design-system ingestion evidence hash does not match the manifest or self-hash rule." },
+              "severity": { "const": "error" },
+              "diagnosticSource": { "const": "evidence-validator" },
+              "stage": { "const": "evidence" },
+              "phase": { "const": "ingestion-evidence" },
+              "artifactPath": { "const": "fixtures/p2/mutations/hash-mismatch.design-system-ingestion-evidence.json" },
+              "jsonPointer": { "const": "/artifactRefs/6/hash" },
+              "validationResult": { "const": "invalid" },
+              "promotionStatus": { "const": "blocked" }
+            }
+          }
+        }
+      ],
+      "unevaluatedProperties": false
+    }
+  },
+  "unevaluatedProperties": false
+}

@@ -1,0 +1,11 @@
+{
+  "schemaId": "design-system-ingestion-mutation-fixture.v0",
+  "fixtureId": "hash-mismatch",
+  "fixtureKind": "mutation",
+  "description": "The final evidence artifact hash must follow the null-placeholder self-hash rule.",
+  "mutatedPath": "artifacts/p2/evidence.json",
+  "jsonPointer": "/artifactRefs/6/hash",
+  "expectedDiagnosticCode": "INGEST_EVIDENCE_HASH_MISMATCH",
+  "expectedResult": "invalid",
+  "promotionStatus": "blocked"
+}

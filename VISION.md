@@ -124,7 +124,7 @@ If source material is ambiguous, the correct output is a diagnostic, review requ
 If a product surface consumes evidence, it may explain, evaluate, route, or display the result. It may not override the catalog, rewrite policy, or promote work without an explicit review contract.
 
 ## Open Decisions
-- Which real design-system source should be first: Figma, Storybook/code docs, Figma Code Connect, structured docs, or a deliberately small combination?
-- Which design system should be the first ingestion target?
+- First real design-system source family: selected for the planned P2 pilot as a local npm package source snapshot, with companion local mappings and policy refs as needed. This is not implemented source ingestion until the P2 manifest, snapshot, schemas, fixtures, proof command, artifacts, demo, CI gate, and evidence exist and pass.
+- First design-system ingestion target: selected for the planned P2 pilot as Adobe Spectrum Design Data, pinned to `@adobe/spectrum-design-data@0.7.0`, initially scoped to `button` and `in-line-alert`. This is not a claim of full Spectrum support, live ingestion, Adobe endorsement, or implemented P2 evidence.
 - What is the first JudgmentKit evaluation contract over Surfaces evidence?
 - What minimum SurfaceOps decision model is needed before review-required artifacts can be promoted or rejected?

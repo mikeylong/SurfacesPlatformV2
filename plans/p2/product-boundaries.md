@@ -40,12 +40,28 @@ The complete cross-phase surface-role taxonomy lives in [VISION](../../VISION.md
 - Source file hashes must be recorded before extraction and copied into evidence.
 - Every extracted token, component, prop, variant, state, slot, action, accessibility rule, example, and governance rule must preserve a source ref.
 - Mapping files may narrow or explain how manifest-declared source material maps to current catalog contracts. They must not create components, props, variants, actions, policies, or catalog behavior absent from source material.
+- For the Spectrum pilot, mapping files may normalize, rename, narrow, or require review for declared `@adobe/spectrum-design-data@0.7.0` facts only. They cannot create actions, variants, accessibility rules, governance rules, token values, allowed props, or catalog behavior absent from the declared Spectrum snapshot.
 - Ambiguous source material must block, require review, or require explicit mapping. It must not be silently inferred.
 - P2 may update catalog proof artifacts under `artifacts/p2`; it must not rewrite P0/P1 artifacts.
 - P2 may prepare evidence that `surfaces.dev`, SurfaceOps, and JudgmentKit can consume later, but none of those products executes in P2.
 
 ## P2 Proof
 The proof can be completed with a declared source bundle, P2 fixtures, P2 schemas, source inventory, source mapping, extract, catalog, governed catalog, ingestion report, final evidence, and a generated demo.
+
+## Spectrum Authority Matrix
+The first P2 pilot is planned around Adobe Spectrum Design Data, pinned as `@adobe/spectrum-design-data@0.7.0`. This matrix is phase-local and does not redefine the canonical authority taxonomy in [VISION](../../VISION.md#canonical-authority-model).
+
+| Contract area | Spectrum source authority | P2 boundary |
+| --- | --- | --- |
+| Source eligibility | npm package name, version, tarball, package integrity, local snapshot paths, per-file SHA-256s in the source manifest | Missing or mismatched package/source hashes block before extraction |
+| Components | `components/button.json`, `components/in-line-alert.json`, `registry/components.json` | Only `button` and `in-line-alert` are in the initial subset |
+| Props/options | Component JSON plus `registry/property-terms.json` and declared `fields/*.json` vocabularies | Mappings can normalize names but cannot add props/options absent from source |
+| Variants/states | Component JSON, `registry/variants.json`, `registry/states.json`, `fields/variant.json`, `fields/state.json` | Ambiguous or unsupported variants/states block or require review |
+| Slots/anatomy | Component JSON, `registry/anatomy-terms.json`, `fields/anatomy.json` | Slot cardinality must be explicit in mapping rows |
+| Tokens/modes | `tokens/*.tokens.json`, `registry/token-terminology.json`, `registry/token-objects.json`, `mode-sets/*.json` | Unsupported token types or modes block; mappings cannot invent values |
+| Accessibility/examples/policy | Declared component entries and `guidelines/*.json` or local `docs/usage-policy.json` policy refs | Missing governance or accessibility refs block sensitive governed behavior |
+| Governed catalog | Extracted Spectrum source refs plus P2 mapping refs | The catalog is the governed contract output; it cannot exceed declared source authority |
+| Evidence | P2-owned schemas, consumed shared schemas, source hashes, fixture results, artifact hashes, and self-hash | Passing evidence is required before any implemented P2 claim |
 
 ## Non-Goals
 - No live connector implementation.

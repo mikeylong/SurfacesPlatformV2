@@ -1,0 +1,11 @@
+{
+  "schemaId": "design-system-ingestion-mutation-fixture.v0",
+  "fixtureId": "schema-hash-mismatch",
+  "fixtureKind": "mutation",
+  "description": "P2 evidence must fail closed when any owned or consumed schema hash differs from schema closure.",
+  "mutatedPath": "artifacts/p2/evidence.json",
+  "jsonPointer": "/schemaClosure/0/hash",
+  "expectedDiagnosticCode": "INGEST_SCHEMA_HASH_MISMATCH",
+  "expectedResult": "invalid",
+  "promotionStatus": "blocked"
+}

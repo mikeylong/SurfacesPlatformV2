@@ -1,0 +1,16 @@
+{
+  "schemaId": "design-system-ingestion-invalid-fixture.v0",
+  "fixtureId": "unsupported-token",
+  "fixtureKind": "invalid",
+  "description": "A Spectrum token type that cannot be represented by the current catalog token contract must block extraction.",
+  "sourceRefs": [
+    "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/tokens/color-component.tokens.json#/unsupportedToken"
+  ],
+  "token": {
+    "type": "spectrum-gradient",
+    "sourceRef": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/tokens/color-component.tokens.json#/unsupportedToken"
+  },
+  "expectedDiagnosticCode": "INGEST_TOKEN_UNSUPPORTED",
+  "expectedResult": "invalid",
+  "promotionStatus": "blocked"
+}

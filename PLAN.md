@@ -208,6 +208,7 @@ fixtures/p2/expectations.manifest.json
   -> artifacts/p2/extract.json
   -> artifacts/p2/catalog.json
   -> artifacts/p2/governed-catalog.json
+  -> validate fixtures/p2/valid/*.json
   -> validate fixtures/p2/mutations/*.json against expected source/mapping/extraction/evidence failures
   -> validate fixtures/p2/invalid/*.json and fixtures/p2/review/*.json
   -> artifacts/p2/ingestion-report.json
@@ -215,14 +216,16 @@ fixtures/p2/expectations.manifest.json
   -> demo/p2/index.html
 ```
 
-## P2 Proof Command
+## P2 Planned Proof Command
 
-```bash
+```text
 interfacectl surfaces ingest proof --source sources/p2/design-system-source --fixture fixtures/p2 --out artifacts/p2
 ```
 
+This is the planned command contract, not a currently runnable proof command. Until the P2 implementation wires `surfaces ingest proof`, the current CLI exits with usage status for this command. Package scripts and tests that eventually execute the command must invoke `node bin/interfacectl.js surfaces ingest proof ...`. P2 evidence may record the logical command string above to preserve the P0/P1 evidence convention.
+
 ## P2 Pass Condition
-Given a declared design-system source bundle and the P2 fixture set, the ingest proof command emits the exact P2 artifacts, verifies source hashes, creates deterministic source inventory and mapping artifacts, extracts normalized design-system material with source refs, compiles catalog and governed catalog artifacts, blocks invalid and mutation cases with registry-backed diagnostics, preserves review-required manual mapping cases without promotion, records ingestion diagnostics before final evidence, and writes reproducible evidence with hashes and provenance for every P2 schema, source input, fixture, generated artifact, and final evidence artifact.
+Given a declared design-system source bundle and the P2 fixture set, the ingest proof command emits the exact P2 artifacts, verifies source hashes, creates deterministic source inventory and mapping artifacts, extracts normalized design-system material with source refs, compiles catalog and governed catalog artifacts, validates positive Spectrum coverage, blocks invalid and mutation cases with registry-backed diagnostics, preserves review-required manual mapping cases without promotion, records ingestion diagnostics before final evidence, and writes reproducible evidence with hashes and provenance for every P2-owned schema, consumed shared schema, source input, fixture, generated artifact, and final evidence artifact.
 
 ## P2 Architecture
 1. P2 Product Boundaries
@@ -234,13 +237,13 @@ Given a declared design-system source bundle and the P2 fixture set, the ingest 
 
 ## P2 Acceptance Criteria
 - P0 and P1 proof gates still pass unchanged before and after P2 work.
-- `sources/p2/design-system-source/manifest.json` declares a real target design system, source family, source files, required mappings, policy refs, and source hashes.
+- `sources/p2/design-system-source/manifest.json` declares the first pilot target as Adobe Spectrum Design Data, `@adobe/spectrum-design-data@0.7.0`, with npm package integrity, source snapshot paths, source-ref grammar, required mappings, policy refs, source hashes, and the initial component subset `button` and `in-line-alert`.
 - P2 preflight validates the declared source manifest and hashes before extraction.
 - Source inventory and source mapping cannot read outside the declared source bundle or promote catalog behavior absent from declared source material.
 - Every extracted token, component, prop, variant, state, slot, action, accessibility rule, example, and governance rule preserves source refs.
 - Unsupported, ambiguous, unmapped, or governance-incomplete source material blocks or routes to review according to `fixtures/p2/expectations.manifest.json`.
 - `ingestion-report.json` records every expected and actual source, mapping, extraction, governance, fixture, and diagnostic result before final P2 evidence.
-- P2 evidence hashes P2 schemas, source inputs, P2 fixtures, generated P2 artifacts, and itself under the same canonicalization discipline as P0/P1.
+- P2 evidence hashes P2-owned schemas, every shared schema it consumes for extract/catalog/diagnostics/expectations/evidence/governed-catalog behavior, source inputs, P2 fixtures, generated P2 artifacts, and itself under the same canonicalization discipline as P0/P1.
 - `demo/p2/index.html` is generated from P2 proof artifacts and does not count as proof unless the underlying P2 evidence passes.
 
 ## P3 Focus
@@ -352,11 +355,13 @@ Given valid P2 ingestion evidence and the P3 fixture set, the agents proof comma
 - Demo output is checked by drift and generated from evidence, but final P1 proof authority stays in `artifacts/p1/evidence.json`.
 
 ## P2 Decisions
-- First real-ingestion target: `design-system-source-bundle.v0`, a local hash-bound source bundle exported from the real design-system target named in the P2 source manifest.
+- First real-ingestion target: Adobe Spectrum Design Data, pinned as `@adobe/spectrum-design-data@0.7.0` with npm integrity `sha512-mSdmQn6fNEzKVo6W5xS4gO1EXCpC4ojiEm3GqTlSjhh26lC9siMgQSWi33ODvWe8ssfrxXX0unzVnL5VBt4+CA==`.
+- Initial component subset: Spectrum `button` and `in-line-alert`.
 - First source boundary: `sources/p2/design-system-source/manifest.json`, source inventory, source mapping, extract, catalog, governed catalog, ingestion report, and evidence.
 - P2 chooses a declared source bundle over live source APIs so the first real-ingestion proof remains deterministic.
 - P2 may preserve review-required mapping rows, but it does not build SurfaceOps persistence.
 - JudgmentKit remains evaluation metadata only unless a later proof defines evaluator execution.
+- Until a proof-bearing P2 CI gate runs the ingest proof and passes with schemas, manifest, source snapshot, fixtures, artifacts, demo, and evidence, P2 may only be described as planned, with Spectrum selected/proposed/pinned as the pilot.
 
 ## P3 Decisions
 - First agent-control target: deterministic agent orchestration proof.

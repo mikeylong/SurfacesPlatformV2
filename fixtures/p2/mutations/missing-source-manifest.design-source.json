@@ -1,0 +1,11 @@
+{
+  "schemaId": "design-system-ingestion-mutation-fixture.v0",
+  "fixtureId": "missing-source-manifest",
+  "fixtureKind": "mutation",
+  "description": "The source preflight gate must fail before inventory when the source manifest is absent.",
+  "mutatedPath": "sources/p2/design-system-source/manifest.json",
+  "mutation": "missing-file",
+  "expectedDiagnosticCode": "INGEST_SOURCE_MANIFEST_MISSING",
+  "expectedResult": "invalid",
+  "promotionStatus": "blocked"
+}

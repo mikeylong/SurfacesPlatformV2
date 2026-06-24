@@ -1,0 +1,2555 @@
+{
+  "$id": "https://surfaces.dev/schemas/p2/design-system-ingestion-evidence.v0.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": [
+    "schemaId",
+    "version",
+    "runId",
+    "command",
+    "arguments",
+    "environment",
+    "sourceManifestRef",
+    "sourceFileRefs",
+    "schemaClosure",
+    "fixtureRefs",
+    "artifactRefs",
+    "diagnostics",
+    "validationResults",
+    "status",
+    "promotionStatus"
+  ],
+  "properties": {
+    "schemaId": {
+      "const": "design-system-ingestion-evidence.v0"
+    },
+    "version": {
+      "type": "string"
+    },
+    "runId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "command": {
+      "const": "interfacectl surfaces ingest proof"
+    },
+    "arguments": {
+      "type": "array",
+      "prefixItems": [
+        {
+          "const": "--source"
+        },
+        {
+          "const": "sources/p2/design-system-source"
+        },
+        {
+          "const": "--fixture"
+        },
+        {
+          "const": "fixtures/p2"
+        },
+        {
+          "const": "--out"
+        },
+        {
+          "const": "artifacts/p2"
+        }
+      ],
+      "minItems": 6,
+      "maxItems": 6,
+      "items": false
+    },
+    "environment": {
+      "type": "object",
+      "required": [
+        "generatedAt",
+        "host"
+      ],
+      "properties": {
+        "generatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "host": {
+          "type": "null"
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "sourceManifestRef": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/artifactRef"
+        },
+        {
+          "properties": {
+            "path": {
+              "const": "sources/p2/design-system-source/manifest.json"
+            },
+            "schemaId": {
+              "const": "design-source-manifest.v0"
+            }
+          }
+        }
+      ]
+    },
+    "sourceFileRefs": {
+      "type": "array",
+      "prefixItems": [
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/sourceFileRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "sources/p2/design-system-source/npm/@adobe/spectrum-design-data/0.7.0/package/package.json"
+                },
+                "sourceRef": {
+                  "const": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/package.json#/"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/sourceFileRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "sources/p2/design-system-source/npm/@adobe/spectrum-design-data/0.7.0/package/README.md"
+                },
+                "sourceRef": {
+                  "const": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/README.md#/"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/sourceFileRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "sources/p2/design-system-source/npm/@adobe/spectrum-design-data/0.7.0/package/LICENSE"
+                },
+                "sourceRef": {
+                  "const": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/LICENSE#/"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/sourceFileRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "sources/p2/design-system-source/npm/@adobe/spectrum-design-data/0.7.0/package/components/button.json"
+                },
+                "sourceRef": {
+                  "const": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/button.json#/"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/sourceFileRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "sources/p2/design-system-source/npm/@adobe/spectrum-design-data/0.7.0/package/components/in-line-alert.json"
+                },
+                "sourceRef": {
+                  "const": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/in-line-alert.json#/"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/sourceFileRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "sources/p2/design-system-source/npm/@adobe/spectrum-design-data/0.7.0/package/registry/components.json"
+                },
+                "sourceRef": {
+                  "const": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/registry/components.json#/"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/sourceFileRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "sources/p2/design-system-source/npm/@adobe/spectrum-design-data/0.7.0/package/registry/property-terms.json"
+                },
+                "sourceRef": {
+                  "const": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/registry/property-terms.json#/"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/sourceFileRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "sources/p2/design-system-source/npm/@adobe/spectrum-design-data/0.7.0/package/registry/variants.json"
+                },
+                "sourceRef": {
+                  "const": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/registry/variants.json#/"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/sourceFileRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "sources/p2/design-system-source/npm/@adobe/spectrum-design-data/0.7.0/package/registry/states.json"
+                },
+                "sourceRef": {
+                  "const": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/registry/states.json#/"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/sourceFileRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "sources/p2/design-system-source/npm/@adobe/spectrum-design-data/0.7.0/package/registry/anatomy-terms.json"
+                },
+                "sourceRef": {
+                  "const": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/registry/anatomy-terms.json#/"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/sourceFileRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "sources/p2/design-system-source/npm/@adobe/spectrum-design-data/0.7.0/package/registry/token-terminology.json"
+                },
+                "sourceRef": {
+                  "const": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/registry/token-terminology.json#/"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/sourceFileRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "sources/p2/design-system-source/npm/@adobe/spectrum-design-data/0.7.0/package/registry/token-objects.json"
+                },
+                "sourceRef": {
+                  "const": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/registry/token-objects.json#/"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/sourceFileRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "sources/p2/design-system-source/npm/@adobe/spectrum-design-data/0.7.0/package/tokens/color-component.tokens.json"
+                },
+                "sourceRef": {
+                  "const": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/tokens/color-component.tokens.json#/"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/sourceFileRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "sources/p2/design-system-source/npm/@adobe/spectrum-design-data/0.7.0/package/tokens/color-aliases.tokens.json"
+                },
+                "sourceRef": {
+                  "const": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/tokens/color-aliases.tokens.json#/"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/sourceFileRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "sources/p2/design-system-source/npm/@adobe/spectrum-design-data/0.7.0/package/tokens/color-palette.tokens.json"
+                },
+                "sourceRef": {
+                  "const": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/tokens/color-palette.tokens.json#/"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/sourceFileRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "sources/p2/design-system-source/npm/@adobe/spectrum-design-data/0.7.0/package/tokens/layout-component.tokens.json"
+                },
+                "sourceRef": {
+                  "const": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/tokens/layout-component.tokens.json#/"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/sourceFileRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "sources/p2/design-system-source/npm/@adobe/spectrum-design-data/0.7.0/package/tokens/layout.tokens.json"
+                },
+                "sourceRef": {
+                  "const": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/tokens/layout.tokens.json#/"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/sourceFileRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "sources/p2/design-system-source/npm/@adobe/spectrum-design-data/0.7.0/package/tokens/typography.tokens.json"
+                },
+                "sourceRef": {
+                  "const": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/tokens/typography.tokens.json#/"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/sourceFileRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "sources/p2/design-system-source/npm/@adobe/spectrum-design-data/0.7.0/package/mode-sets/color-scheme.json"
+                },
+                "sourceRef": {
+                  "const": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/mode-sets/color-scheme.json#/"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/sourceFileRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "sources/p2/design-system-source/npm/@adobe/spectrum-design-data/0.7.0/package/mode-sets/contrast.json"
+                },
+                "sourceRef": {
+                  "const": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/mode-sets/contrast.json#/"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/sourceFileRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "sources/p2/design-system-source/npm/@adobe/spectrum-design-data/0.7.0/package/mode-sets/scale.json"
+                },
+                "sourceRef": {
+                  "const": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/mode-sets/scale.json#/"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/sourceFileRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "sources/p2/design-system-source/npm/@adobe/spectrum-design-data/0.7.0/package/fields/variant.json"
+                },
+                "sourceRef": {
+                  "const": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/fields/variant.json#/"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/sourceFileRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "sources/p2/design-system-source/npm/@adobe/spectrum-design-data/0.7.0/package/fields/state.json"
+                },
+                "sourceRef": {
+                  "const": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/fields/state.json#/"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/sourceFileRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "sources/p2/design-system-source/npm/@adobe/spectrum-design-data/0.7.0/package/fields/size.json"
+                },
+                "sourceRef": {
+                  "const": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/fields/size.json#/"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/sourceFileRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "sources/p2/design-system-source/npm/@adobe/spectrum-design-data/0.7.0/package/fields/property.json"
+                },
+                "sourceRef": {
+                  "const": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/fields/property.json#/"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/sourceFileRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "sources/p2/design-system-source/npm/@adobe/spectrum-design-data/0.7.0/package/fields/anatomy.json"
+                },
+                "sourceRef": {
+                  "const": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/fields/anatomy.json#/"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/sourceFileRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "sources/p2/design-system-source/npm/@adobe/spectrum-design-data/0.7.0/package/guidelines/developer-overview.json"
+                },
+                "sourceRef": {
+                  "const": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/guidelines/developer-overview.json#/"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/sourceFileRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "sources/p2/design-system-source/npm/@adobe/spectrum-design-data/0.7.0/package/guidelines/states.json"
+                },
+                "sourceRef": {
+                  "const": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/guidelines/states.json#/"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/sourceFileRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "sources/p2/design-system-source/npm/@adobe/spectrum-design-data/0.7.0/package/guidelines/colors.json"
+                },
+                "sourceRef": {
+                  "const": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/guidelines/colors.json#/"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/sourceFileRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "sources/p2/design-system-source/npm/@adobe/spectrum-design-data/0.7.0/package/guidelines/spacing.json"
+                },
+                "sourceRef": {
+                  "const": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/guidelines/spacing.json#/"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/sourceFileRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "sources/p2/design-system-source/npm/@adobe/spectrum-design-data/0.7.0/package/guidelines/typography-fundamentals.json"
+                },
+                "sourceRef": {
+                  "const": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/guidelines/typography-fundamentals.json#/"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/sourceFileRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "sources/p2/design-system-source/docs/usage-policy.json"
+                },
+                "sourceRef": {
+                  "const": "source://p2/docs/usage-policy.json#/"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/sourceFileRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "sources/p2/design-system-source/mappings/component-map.json"
+                },
+                "sourceRef": {
+                  "const": null
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/sourceFileRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "sources/p2/design-system-source/mappings/token-map.json"
+                },
+                "sourceRef": {
+                  "const": null
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/sourceFileRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "sources/p2/design-system-source/mappings/policy-map.json"
+                },
+                "sourceRef": {
+                  "const": null
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "minItems": 35,
+      "maxItems": 35,
+      "items": false
+    },
+    "schemaClosure": {
+      "type": "array",
+      "prefixItems": [
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/schemaRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "schemas/design-source-manifest.v0.schema.json"
+                },
+                "schemaId": {
+                  "const": "design-source-manifest.v0"
+                },
+                "ownership": {
+                  "const": "p2-owned"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/schemaRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "schemas/design-source-inventory.v0.schema.json"
+                },
+                "schemaId": {
+                  "const": "design-source-inventory.v0"
+                },
+                "ownership": {
+                  "const": "p2-owned"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/schemaRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "schemas/design-source-mapping.v0.schema.json"
+                },
+                "schemaId": {
+                  "const": "design-source-mapping.v0"
+                },
+                "ownership": {
+                  "const": "p2-owned"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/schemaRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "schemas/design-system-ingestion-report.v0.schema.json"
+                },
+                "schemaId": {
+                  "const": "design-system-ingestion-report.v0"
+                },
+                "ownership": {
+                  "const": "p2-owned"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/schemaRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "schemas/design-system-ingestion-evidence.v0.schema.json"
+                },
+                "schemaId": {
+                  "const": "design-system-ingestion-evidence.v0"
+                },
+                "ownership": {
+                  "const": "p2-owned"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/schemaRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "schemas/design-system-ingestion-expectations.v0.schema.json"
+                },
+                "schemaId": {
+                  "const": "design-system-ingestion-expectations.v0"
+                },
+                "ownership": {
+                  "const": "p2-owned"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/schemaRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "schemas/design-system-ingestion-diagnostics.v0.schema.json"
+                },
+                "schemaId": {
+                  "const": "design-system-ingestion-diagnostics.v0"
+                },
+                "ownership": {
+                  "const": "p2-owned"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/schemaRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "schemas/design-system-ingestion-valid-fixture.v0.schema.json"
+                },
+                "schemaId": {
+                  "const": "design-system-ingestion-valid-fixture.v0"
+                },
+                "ownership": {
+                  "const": "p2-owned"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/schemaRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "schemas/extract.v0.schema.json"
+                },
+                "schemaId": {
+                  "const": "extract.v0"
+                },
+                "ownership": {
+                  "const": "shared-consumed"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/schemaRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "schemas/runtime-catalog.v0.schema.json"
+                },
+                "schemaId": {
+                  "const": "runtime-catalog.v0"
+                },
+                "ownership": {
+                  "const": "shared-consumed"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/schemaRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "schemas/diagnostics.v0.schema.json"
+                },
+                "schemaId": {
+                  "const": "diagnostics.v0"
+                },
+                "ownership": {
+                  "const": "shared-consumed"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/schemaRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "schemas/fixture-expectations.v0.schema.json"
+                },
+                "schemaId": {
+                  "const": "fixture-expectations.v0"
+                },
+                "ownership": {
+                  "const": "shared-consumed"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/schemaRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "schemas/evidence.v0.schema.json"
+                },
+                "schemaId": {
+                  "const": "evidence.v0"
+                },
+                "ownership": {
+                  "const": "shared-consumed"
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "minItems": 13,
+      "maxItems": 13,
+      "items": false
+    },
+    "fixtureRefs": {
+      "type": "array",
+      "prefixItems": [
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/fixtureRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "fixtures/p2/expectations.manifest.json"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/fixtureRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "fixtures/p2/valid/spectrum-button.design-source.json"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/fixtureRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "fixtures/p2/valid/spectrum-in-line-alert.design-source.json"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/fixtureRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "fixtures/p2/valid/spectrum-subset.source-mapping.json"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/fixtureRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "fixtures/p2/review/manual-mapping-required.design-source.json"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/fixtureRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "fixtures/p2/invalid/unmapped-component.design-source.json"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/fixtureRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "fixtures/p2/invalid/unsupported-token.design-source.json"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/fixtureRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "fixtures/p2/invalid/unsupported-mode.design-source.json"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/fixtureRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "fixtures/p2/invalid/ambiguous-variant.design-source.json"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/fixtureRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "fixtures/p2/invalid/governance-policy-missing.design-source.json"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/fixtureRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "fixtures/p2/invalid/duplicate-normalized-id.design-source-mapping.json"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/fixtureRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "fixtures/p2/invalid/mapping-row-ref-invalid.design-source-mapping.json"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/fixtureRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "fixtures/p2/invalid/mapping-cardinality-invalid.design-source-mapping.json"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/fixtureRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "fixtures/p2/mutations/missing-source-manifest.design-source.json"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/fixtureRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "fixtures/p2/mutations/package-integrity-mismatch.design-source.json"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/fixtureRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "fixtures/p2/mutations/source-path-undeclared.design-source.json"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/fixtureRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "fixtures/p2/mutations/invalid-source-ref.design-source.json"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/fixtureRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "fixtures/p2/mutations/source-hash-mismatch.design-source-inventory.json"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/fixtureRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "fixtures/p2/mutations/missing-source-ref.extract.json"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/fixtureRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "fixtures/p2/mutations/mapping-authority-escalation.design-source-mapping.json"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/fixtureRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "fixtures/p2/mutations/schema-hash-mismatch.design-system-ingestion-evidence.json"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/fixtureRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "fixtures/p2/mutations/hash-mismatch.design-system-ingestion-evidence.json"
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "minItems": 22,
+      "maxItems": 22,
+      "items": false
+    },
+    "artifactRefs": {
+      "type": "array",
+      "prefixItems": [
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/artifactRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "artifacts/p2/source-inventory.json"
+                },
+                "schemaId": {
+                  "const": "design-source-inventory.v0"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/artifactRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "artifacts/p2/source-mapping.json"
+                },
+                "schemaId": {
+                  "const": "design-source-mapping.v0"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/artifactRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "artifacts/p2/extract.json"
+                },
+                "schemaId": {
+                  "const": "extract.v0"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/artifactRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "artifacts/p2/catalog.json"
+                },
+                "schemaId": {
+                  "const": "runtime-catalog.v0"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/artifactRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "artifacts/p2/governed-catalog.json"
+                },
+                "schemaId": {
+                  "const": "runtime-catalog.v0"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/artifactRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "artifacts/p2/ingestion-report.json"
+                },
+                "schemaId": {
+                  "const": "design-system-ingestion-report.v0"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/finalEvidenceArtifactRef"
+            },
+            {
+              "properties": {
+                "path": {
+                  "const": "artifacts/p2/evidence.json"
+                },
+                "schemaId": {
+                  "const": "design-system-ingestion-evidence.v0"
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "minItems": 7,
+      "maxItems": 7,
+      "items": false
+    },
+    "diagnostics": {
+      "type": "array",
+      "items": {
+        "$ref": "https://surfaces.dev/schemas/p2/design-system-ingestion-diagnostics.v0.schema.json#/$defs/diagnostic"
+      }
+    },
+    "validationResults": {
+      "type": "array",
+      "prefixItems": [
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/validationResult"
+            },
+            {
+              "properties": {
+                "fixturePath": {
+                  "const": "fixtures/p2/valid/spectrum-button.design-source.json"
+                },
+                "kind": {
+                  "const": "valid"
+                },
+                "stage": {
+                  "const": "extract"
+                },
+                "phase": {
+                  "const": "source-extraction"
+                },
+                "expectedResult": {
+                  "const": "valid"
+                },
+                "promotionStatus": {
+                  "const": "allowed"
+                },
+                "artifactPath": {
+                  "const": "artifacts/p2/ingestion-report.json"
+                },
+                "diagnosticCodes": {
+                  "maxItems": 0
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/validationResult"
+            },
+            {
+              "properties": {
+                "fixturePath": {
+                  "const": "fixtures/p2/valid/spectrum-in-line-alert.design-source.json"
+                },
+                "kind": {
+                  "const": "valid"
+                },
+                "stage": {
+                  "const": "extract"
+                },
+                "phase": {
+                  "const": "source-extraction"
+                },
+                "expectedResult": {
+                  "const": "valid"
+                },
+                "promotionStatus": {
+                  "const": "allowed"
+                },
+                "artifactPath": {
+                  "const": "artifacts/p2/ingestion-report.json"
+                },
+                "diagnosticCodes": {
+                  "maxItems": 0
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/validationResult"
+            },
+            {
+              "properties": {
+                "fixturePath": {
+                  "const": "fixtures/p2/valid/spectrum-subset.source-mapping.json"
+                },
+                "kind": {
+                  "const": "valid"
+                },
+                "stage": {
+                  "const": "mapping"
+                },
+                "phase": {
+                  "const": "source-mapping"
+                },
+                "expectedResult": {
+                  "const": "valid"
+                },
+                "promotionStatus": {
+                  "const": "allowed"
+                },
+                "artifactPath": {
+                  "const": "artifacts/p2/source-mapping.json"
+                },
+                "diagnosticCodes": {
+                  "maxItems": 0
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/validationResult"
+            },
+            {
+              "properties": {
+                "fixturePath": {
+                  "const": "fixtures/p2/review/manual-mapping-required.design-source.json"
+                },
+                "kind": {
+                  "const": "review"
+                },
+                "stage": {
+                  "const": "mapping"
+                },
+                "phase": {
+                  "const": "source-mapping"
+                },
+                "expectedResult": {
+                  "const": "review_required"
+                },
+                "promotionStatus": {
+                  "const": "review_required"
+                },
+                "artifactPath": {
+                  "const": "artifacts/p2/ingestion-report.json"
+                },
+                "diagnosticCodes": {
+                  "prefixItems": [
+                    {
+                      "const": "INGEST_MAPPING_REVIEW_REQUIRED"
+                    }
+                  ],
+                  "minItems": 1,
+                  "maxItems": 1,
+                  "items": false
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/validationResult"
+            },
+            {
+              "properties": {
+                "fixturePath": {
+                  "const": "fixtures/p2/invalid/unmapped-component.design-source.json"
+                },
+                "kind": {
+                  "const": "invalid"
+                },
+                "stage": {
+                  "const": "mapping"
+                },
+                "phase": {
+                  "const": "source-mapping"
+                },
+                "expectedResult": {
+                  "const": "invalid"
+                },
+                "promotionStatus": {
+                  "const": "blocked"
+                },
+                "artifactPath": {
+                  "const": "artifacts/p2/ingestion-report.json"
+                },
+                "diagnosticCodes": {
+                  "prefixItems": [
+                    {
+                      "const": "INGEST_COMPONENT_UNMAPPED"
+                    }
+                  ],
+                  "minItems": 1,
+                  "maxItems": 1,
+                  "items": false
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/validationResult"
+            },
+            {
+              "properties": {
+                "fixturePath": {
+                  "const": "fixtures/p2/invalid/unsupported-token.design-source.json"
+                },
+                "kind": {
+                  "const": "invalid"
+                },
+                "stage": {
+                  "const": "extract"
+                },
+                "phase": {
+                  "const": "source-extraction"
+                },
+                "expectedResult": {
+                  "const": "invalid"
+                },
+                "promotionStatus": {
+                  "const": "blocked"
+                },
+                "artifactPath": {
+                  "const": "artifacts/p2/ingestion-report.json"
+                },
+                "diagnosticCodes": {
+                  "prefixItems": [
+                    {
+                      "const": "INGEST_TOKEN_UNSUPPORTED"
+                    }
+                  ],
+                  "minItems": 1,
+                  "maxItems": 1,
+                  "items": false
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/validationResult"
+            },
+            {
+              "properties": {
+                "fixturePath": {
+                  "const": "fixtures/p2/invalid/unsupported-mode.design-source.json"
+                },
+                "kind": {
+                  "const": "invalid"
+                },
+                "stage": {
+                  "const": "extract"
+                },
+                "phase": {
+                  "const": "source-extraction"
+                },
+                "expectedResult": {
+                  "const": "invalid"
+                },
+                "promotionStatus": {
+                  "const": "blocked"
+                },
+                "artifactPath": {
+                  "const": "artifacts/p2/ingestion-report.json"
+                },
+                "diagnosticCodes": {
+                  "prefixItems": [
+                    {
+                      "const": "INGEST_TOKEN_MODE_UNSUPPORTED"
+                    }
+                  ],
+                  "minItems": 1,
+                  "maxItems": 1,
+                  "items": false
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/validationResult"
+            },
+            {
+              "properties": {
+                "fixturePath": {
+                  "const": "fixtures/p2/invalid/ambiguous-variant.design-source.json"
+                },
+                "kind": {
+                  "const": "invalid"
+                },
+                "stage": {
+                  "const": "mapping"
+                },
+                "phase": {
+                  "const": "source-mapping"
+                },
+                "expectedResult": {
+                  "const": "invalid"
+                },
+                "promotionStatus": {
+                  "const": "blocked"
+                },
+                "artifactPath": {
+                  "const": "artifacts/p2/ingestion-report.json"
+                },
+                "diagnosticCodes": {
+                  "prefixItems": [
+                    {
+                      "const": "INGEST_VARIANT_AMBIGUOUS"
+                    }
+                  ],
+                  "minItems": 1,
+                  "maxItems": 1,
+                  "items": false
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/validationResult"
+            },
+            {
+              "properties": {
+                "fixturePath": {
+                  "const": "fixtures/p2/invalid/governance-policy-missing.design-source.json"
+                },
+                "kind": {
+                  "const": "invalid"
+                },
+                "stage": {
+                  "const": "govern"
+                },
+                "phase": {
+                  "const": "catalog-governance"
+                },
+                "expectedResult": {
+                  "const": "invalid"
+                },
+                "promotionStatus": {
+                  "const": "blocked"
+                },
+                "artifactPath": {
+                  "const": "artifacts/p2/ingestion-report.json"
+                },
+                "diagnosticCodes": {
+                  "prefixItems": [
+                    {
+                      "const": "INGEST_GOVERNANCE_POLICY_MISSING"
+                    }
+                  ],
+                  "minItems": 1,
+                  "maxItems": 1,
+                  "items": false
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/validationResult"
+            },
+            {
+              "properties": {
+                "fixturePath": {
+                  "const": "fixtures/p2/invalid/duplicate-normalized-id.design-source-mapping.json"
+                },
+                "kind": {
+                  "const": "invalid"
+                },
+                "stage": {
+                  "const": "mapping"
+                },
+                "phase": {
+                  "const": "source-mapping"
+                },
+                "expectedResult": {
+                  "const": "invalid"
+                },
+                "promotionStatus": {
+                  "const": "blocked"
+                },
+                "artifactPath": {
+                  "const": "artifacts/p2/source-mapping.json"
+                },
+                "diagnosticCodes": {
+                  "prefixItems": [
+                    {
+                      "const": "INGEST_NORMALIZED_ID_DUPLICATE"
+                    }
+                  ],
+                  "minItems": 1,
+                  "maxItems": 1,
+                  "items": false
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/validationResult"
+            },
+            {
+              "properties": {
+                "fixturePath": {
+                  "const": "fixtures/p2/invalid/mapping-row-ref-invalid.design-source-mapping.json"
+                },
+                "kind": {
+                  "const": "invalid"
+                },
+                "stage": {
+                  "const": "mapping"
+                },
+                "phase": {
+                  "const": "source-mapping"
+                },
+                "expectedResult": {
+                  "const": "invalid"
+                },
+                "promotionStatus": {
+                  "const": "blocked"
+                },
+                "artifactPath": {
+                  "const": "artifacts/p2/source-mapping.json"
+                },
+                "diagnosticCodes": {
+                  "prefixItems": [
+                    {
+                      "const": "INGEST_MAPPING_ROW_REF_INVALID"
+                    }
+                  ],
+                  "minItems": 1,
+                  "maxItems": 1,
+                  "items": false
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/validationResult"
+            },
+            {
+              "properties": {
+                "fixturePath": {
+                  "const": "fixtures/p2/invalid/mapping-cardinality-invalid.design-source-mapping.json"
+                },
+                "kind": {
+                  "const": "invalid"
+                },
+                "stage": {
+                  "const": "mapping"
+                },
+                "phase": {
+                  "const": "source-mapping"
+                },
+                "expectedResult": {
+                  "const": "invalid"
+                },
+                "promotionStatus": {
+                  "const": "blocked"
+                },
+                "artifactPath": {
+                  "const": "artifacts/p2/source-mapping.json"
+                },
+                "diagnosticCodes": {
+                  "prefixItems": [
+                    {
+                      "const": "INGEST_MAPPING_CARDINALITY_INVALID"
+                    }
+                  ],
+                  "minItems": 1,
+                  "maxItems": 1,
+                  "items": false
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/validationResult"
+            },
+            {
+              "properties": {
+                "fixturePath": {
+                  "const": "fixtures/p2/mutations/missing-source-manifest.design-source.json"
+                },
+                "kind": {
+                  "const": "mutation"
+                },
+                "stage": {
+                  "const": "source-inventory"
+                },
+                "phase": {
+                  "const": "source-manifest"
+                },
+                "expectedResult": {
+                  "const": "invalid"
+                },
+                "promotionStatus": {
+                  "const": "blocked"
+                },
+                "artifactPath": {
+                  "const": "fixtures/p2/mutations/missing-source-manifest.design-source.json"
+                },
+                "diagnosticCodes": {
+                  "prefixItems": [
+                    {
+                      "const": "INGEST_SOURCE_MANIFEST_MISSING"
+                    }
+                  ],
+                  "minItems": 1,
+                  "maxItems": 1,
+                  "items": false
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/validationResult"
+            },
+            {
+              "properties": {
+                "fixturePath": {
+                  "const": "fixtures/p2/mutations/package-integrity-mismatch.design-source.json"
+                },
+                "kind": {
+                  "const": "mutation"
+                },
+                "stage": {
+                  "const": "source-inventory"
+                },
+                "phase": {
+                  "const": "source-manifest"
+                },
+                "expectedResult": {
+                  "const": "invalid"
+                },
+                "promotionStatus": {
+                  "const": "blocked"
+                },
+                "artifactPath": {
+                  "const": "fixtures/p2/mutations/package-integrity-mismatch.design-source.json"
+                },
+                "diagnosticCodes": {
+                  "prefixItems": [
+                    {
+                      "const": "INGEST_PACKAGE_INTEGRITY_MISMATCH"
+                    }
+                  ],
+                  "minItems": 1,
+                  "maxItems": 1,
+                  "items": false
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/validationResult"
+            },
+            {
+              "properties": {
+                "fixturePath": {
+                  "const": "fixtures/p2/mutations/source-path-undeclared.design-source.json"
+                },
+                "kind": {
+                  "const": "mutation"
+                },
+                "stage": {
+                  "const": "source-inventory"
+                },
+                "phase": {
+                  "const": "source-manifest"
+                },
+                "expectedResult": {
+                  "const": "invalid"
+                },
+                "promotionStatus": {
+                  "const": "blocked"
+                },
+                "artifactPath": {
+                  "const": "fixtures/p2/mutations/source-path-undeclared.design-source.json"
+                },
+                "diagnosticCodes": {
+                  "prefixItems": [
+                    {
+                      "const": "INGEST_SOURCE_PATH_UNDECLARED"
+                    }
+                  ],
+                  "minItems": 1,
+                  "maxItems": 1,
+                  "items": false
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/validationResult"
+            },
+            {
+              "properties": {
+                "fixturePath": {
+                  "const": "fixtures/p2/mutations/invalid-source-ref.design-source.json"
+                },
+                "kind": {
+                  "const": "mutation"
+                },
+                "stage": {
+                  "const": "source-inventory"
+                },
+                "phase": {
+                  "const": "source-manifest"
+                },
+                "expectedResult": {
+                  "const": "invalid"
+                },
+                "promotionStatus": {
+                  "const": "blocked"
+                },
+                "artifactPath": {
+                  "const": "fixtures/p2/mutations/invalid-source-ref.design-source.json"
+                },
+                "diagnosticCodes": {
+                  "prefixItems": [
+                    {
+                      "const": "INGEST_SOURCE_REF_INVALID"
+                    }
+                  ],
+                  "minItems": 1,
+                  "maxItems": 1,
+                  "items": false
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/validationResult"
+            },
+            {
+              "properties": {
+                "fixturePath": {
+                  "const": "fixtures/p2/mutations/source-hash-mismatch.design-source-inventory.json"
+                },
+                "kind": {
+                  "const": "mutation"
+                },
+                "stage": {
+                  "const": "source-inventory"
+                },
+                "phase": {
+                  "const": "source-inventory"
+                },
+                "expectedResult": {
+                  "const": "invalid"
+                },
+                "promotionStatus": {
+                  "const": "blocked"
+                },
+                "artifactPath": {
+                  "const": "fixtures/p2/mutations/source-hash-mismatch.design-source-inventory.json"
+                },
+                "diagnosticCodes": {
+                  "prefixItems": [
+                    {
+                      "const": "INGEST_SOURCE_HASH_MISMATCH"
+                    }
+                  ],
+                  "minItems": 1,
+                  "maxItems": 1,
+                  "items": false
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/validationResult"
+            },
+            {
+              "properties": {
+                "fixturePath": {
+                  "const": "fixtures/p2/mutations/missing-source-ref.extract.json"
+                },
+                "kind": {
+                  "const": "mutation"
+                },
+                "stage": {
+                  "const": "extract"
+                },
+                "phase": {
+                  "const": "source-extraction"
+                },
+                "expectedResult": {
+                  "const": "invalid"
+                },
+                "promotionStatus": {
+                  "const": "blocked"
+                },
+                "artifactPath": {
+                  "const": "fixtures/p2/mutations/missing-source-ref.extract.json"
+                },
+                "diagnosticCodes": {
+                  "prefixItems": [
+                    {
+                      "const": "INGEST_SOURCE_REF_MISSING"
+                    }
+                  ],
+                  "minItems": 1,
+                  "maxItems": 1,
+                  "items": false
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/validationResult"
+            },
+            {
+              "properties": {
+                "fixturePath": {
+                  "const": "fixtures/p2/mutations/mapping-authority-escalation.design-source-mapping.json"
+                },
+                "kind": {
+                  "const": "mutation"
+                },
+                "stage": {
+                  "const": "mapping"
+                },
+                "phase": {
+                  "const": "source-mapping"
+                },
+                "expectedResult": {
+                  "const": "invalid"
+                },
+                "promotionStatus": {
+                  "const": "blocked"
+                },
+                "artifactPath": {
+                  "const": "fixtures/p2/mutations/mapping-authority-escalation.design-source-mapping.json"
+                },
+                "diagnosticCodes": {
+                  "prefixItems": [
+                    {
+                      "const": "INGEST_MAPPING_AUTHORITY_ESCALATION"
+                    }
+                  ],
+                  "minItems": 1,
+                  "maxItems": 1,
+                  "items": false
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/validationResult"
+            },
+            {
+              "properties": {
+                "fixturePath": {
+                  "const": "fixtures/p2/mutations/schema-hash-mismatch.design-system-ingestion-evidence.json"
+                },
+                "kind": {
+                  "const": "mutation"
+                },
+                "stage": {
+                  "const": "evidence"
+                },
+                "phase": {
+                  "const": "ingestion-evidence"
+                },
+                "expectedResult": {
+                  "const": "invalid"
+                },
+                "promotionStatus": {
+                  "const": "blocked"
+                },
+                "artifactPath": {
+                  "const": "fixtures/p2/mutations/schema-hash-mismatch.design-system-ingestion-evidence.json"
+                },
+                "diagnosticCodes": {
+                  "prefixItems": [
+                    {
+                      "const": "INGEST_SCHEMA_HASH_MISMATCH"
+                    }
+                  ],
+                  "minItems": 1,
+                  "maxItems": 1,
+                  "items": false
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/validationResult"
+            },
+            {
+              "properties": {
+                "fixturePath": {
+                  "const": "fixtures/p2/mutations/hash-mismatch.design-system-ingestion-evidence.json"
+                },
+                "kind": {
+                  "const": "mutation"
+                },
+                "stage": {
+                  "const": "evidence"
+                },
+                "phase": {
+                  "const": "ingestion-evidence"
+                },
+                "expectedResult": {
+                  "const": "invalid"
+                },
+                "promotionStatus": {
+                  "const": "blocked"
+                },
+                "artifactPath": {
+                  "const": "fixtures/p2/mutations/hash-mismatch.design-system-ingestion-evidence.json"
+                },
+                "diagnosticCodes": {
+                  "prefixItems": [
+                    {
+                      "const": "INGEST_EVIDENCE_HASH_MISMATCH"
+                    }
+                  ],
+                  "minItems": 1,
+                  "maxItems": 1,
+                  "items": false
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "minItems": 21,
+      "maxItems": 21,
+      "items": false
+    },
+    "status": {
+      "enum": [
+        "pass",
+        "fail"
+      ]
+    },
+    "promotionStatus": {
+      "enum": [
+        "allowed",
+        "blocked",
+        "review_required"
+      ]
+    }
+  },
+  "$defs": {
+    "hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "path": {
+      "type": "string",
+      "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*(?:^|/)\\.(?:/|$))(?!.*//)[A-Za-z0-9._@-]+(?:/[A-Za-z0-9._@-]+)*$"
+    },
+    "sourceRef": {
+      "oneOf": [
+        {
+          "type": "string",
+          "pattern": "^spectrum-design-data://npm/@adobe/spectrum-design-data@0\\.7\\.0/package/(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*(?:^|/)\\.(?:/|$))(?!.*//)[A-Za-z0-9._@-]+(?:/[A-Za-z0-9._@-]+)*#/(?:[A-Za-z0-9._~-]+(?:/[A-Za-z0-9._~-]+)*)?$"
+        },
+        {
+          "type": "string",
+          "pattern": "^source://p2/docs/usage-policy\\.json#/(?:[A-Za-z0-9._~-]+(?:/[A-Za-z0-9._~-]+)*)?$"
+        }
+      ]
+    },
+    "artifactRef": {
+      "type": "object",
+      "required": [
+        "path",
+        "schemaId",
+        "hashAlgorithm",
+        "hash"
+      ],
+      "properties": {
+        "path": {
+          "$ref": "#/$defs/path"
+        },
+        "schemaId": {
+          "type": "string"
+        },
+        "hashAlgorithm": {
+          "const": "sha256"
+        },
+        "hash": {
+          "$ref": "#/$defs/hash"
+        },
+        "sourceRef": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/sourceRef"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "finalEvidenceArtifactRef": {
+      "type": "object",
+      "required": [
+        "path",
+        "schemaId",
+        "hashAlgorithm",
+        "hash"
+      ],
+      "properties": {
+        "path": {
+          "$ref": "#/$defs/path"
+        },
+        "schemaId": {
+          "type": "string"
+        },
+        "hashAlgorithm": {
+          "const": "sha256"
+        },
+        "hash": {
+          "$ref": "#/$defs/hash"
+        },
+        "sourceRef": {
+          "type": "null"
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "sourceFileRef": {
+      "type": "object",
+      "required": [
+        "path",
+        "hashAlgorithm",
+        "hash",
+        "sourceRef"
+      ],
+      "properties": {
+        "path": {
+          "$ref": "#/$defs/path"
+        },
+        "schemaId": {
+          "type": "string"
+        },
+        "hashAlgorithm": {
+          "const": "sha256"
+        },
+        "hash": {
+          "$ref": "#/$defs/hash"
+        },
+        "sourceRef": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/sourceRef"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "fixtureRef": {
+      "type": "object",
+      "required": [
+        "path",
+        "hashAlgorithm",
+        "hash"
+      ],
+      "properties": {
+        "path": {
+          "$ref": "#/$defs/path"
+        },
+        "schemaId": {
+          "type": "string"
+        },
+        "hashAlgorithm": {
+          "const": "sha256"
+        },
+        "hash": {
+          "$ref": "#/$defs/hash"
+        },
+        "sourceRef": {
+          "type": "null"
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "schemaRef": {
+      "type": "object",
+      "required": [
+        "path",
+        "schemaId",
+        "hashAlgorithm",
+        "hash",
+        "ownership"
+      ],
+      "properties": {
+        "path": {
+          "$ref": "#/$defs/path"
+        },
+        "schemaId": {
+          "type": "string"
+        },
+        "hashAlgorithm": {
+          "const": "sha256"
+        },
+        "hash": {
+          "$ref": "#/$defs/hash"
+        },
+        "ownership": {
+          "enum": [
+            "p2-owned",
+            "shared-consumed"
+          ]
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "validationResult": {
+      "type": "object",
+      "required": [
+        "fixturePath",
+        "kind",
+        "stage",
+        "phase",
+        "expectedResult",
+        "actualResult",
+        "promotionStatus",
+        "diagnosticCodes",
+        "artifactPath"
+      ],
+      "properties": {
+        "fixturePath": {
+          "$ref": "#/$defs/path"
+        },
+        "kind": {
+          "enum": [
+            "valid",
+            "review",
+            "invalid",
+            "mutation"
+          ]
+        },
+        "stage": {
+          "enum": [
+            "source-inventory",
+            "mapping",
+            "extract",
+            "compile",
+            "govern",
+            "report",
+            "evidence"
+          ]
+        },
+        "phase": {
+          "enum": [
+            "source-manifest",
+            "source-inventory",
+            "source-mapping",
+            "source-extraction",
+            "catalog-compile",
+            "catalog-governance",
+            "ingestion-report",
+            "ingestion-evidence"
+          ]
+        },
+        "expectedResult": {
+          "enum": [
+            "valid",
+            "invalid",
+            "review_required"
+          ]
+        },
+        "actualResult": {
+          "enum": [
+            "valid",
+            "invalid",
+            "review_required"
+          ]
+        },
+        "promotionStatus": {
+          "enum": [
+            "allowed",
+            "blocked",
+            "review_required"
+          ]
+        },
+        "diagnosticCodes": {
+          "type": "array",
+          "items": {
+            "$ref": "https://surfaces.dev/schemas/p2/design-system-ingestion-diagnostics.v0.schema.json#/$defs/diagnosticCode"
+          }
+        },
+        "artifactPath": {
+          "$ref": "#/$defs/path"
+        }
+      },
+      "unevaluatedProperties": false
+    }
+  },
+  "unevaluatedProperties": false
+}

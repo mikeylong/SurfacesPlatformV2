@@ -1,0 +1,11 @@
+{
+  "schemaId": "design-system-ingestion-mutation-fixture.v0",
+  "fixtureId": "source-hash-mismatch",
+  "fixtureKind": "mutation",
+  "description": "Inventory hashes must match the manifest-declared source hash.",
+  "mutatedPath": "artifacts/p2/source-inventory.json",
+  "sourceFile": "npm/@adobe/spectrum-design-data/0.7.0/package/components/button.json",
+  "expectedDiagnosticCode": "INGEST_SOURCE_HASH_MISMATCH",
+  "expectedResult": "invalid",
+  "promotionStatus": "blocked"
+}

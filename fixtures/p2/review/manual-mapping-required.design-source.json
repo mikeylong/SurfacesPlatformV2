@@ -1,0 +1,21 @@
+{
+  "schemaId": "design-system-ingestion-review-fixture.v0",
+  "fixtureId": "manual-mapping-required",
+  "fixtureKind": "review",
+  "description": "Structurally valid Spectrum source material requires a human mapping decision before unattended promotion.",
+  "reviewRequired": [
+    {
+      "mappingId": "button-action-review",
+      "sourceRefs": [
+        "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/button.json#/actions/0"
+      ],
+      "mappingRefs": [
+        "mapping://p2/spectrum/policy-map.json#/mappingRows/button-action-review"
+      ],
+      "reason": "Action semantics are policy-sensitive and need explicit human mapping review.",
+      "diagnosticCodes": ["INGEST_MAPPING_REVIEW_REQUIRED"]
+    }
+  ],
+  "expectedResult": "review_required",
+  "promotionStatus": "review_required"
+}

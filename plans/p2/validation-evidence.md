@@ -7,7 +7,8 @@ P2 evidence proves real design-system ingestion without coupling the phase to li
 Create one P2 evidence artifact that can prove source inventory, mapping, extraction, catalog compilation, governance, diagnostics, review routing, and report behavior.
 
 ## Inputs
-- P2 schemas.
+- P2-owned schemas.
+- Shared schemas consumed by P2 extraction, catalog compilation, diagnostics, expectations, evidence, and governed catalog behavior.
 - `sources/p2/design-system-source/manifest.json`.
 - Declared source files under `sources/p2/design-system-source/`.
 - P2 fixtures and expectations manifest.
@@ -21,6 +22,7 @@ Create one P2 evidence artifact that can prove source inventory, mapping, extrac
 ## Outputs
 - `schemas/design-system-ingestion-evidence.v0.schema.json`.
 - `schemas/design-system-ingestion-diagnostics.v0.schema.json`.
+- `schemas/design-system-ingestion-valid-fixture.v0.schema.json`.
 - `artifacts/p2/evidence.json`.
 
 ## Evidence Shape
@@ -30,7 +32,8 @@ Create one P2 evidence artifact that can prove source inventory, mapping, extrac
 - proof command and arguments;
 - source manifest ref;
 - source file refs and hashes;
-- P2 schema refs;
+- P2-owned schema refs;
+- consumed shared schema refs;
 - P2 fixture refs;
 - source inventory ref;
 - source mapping ref;
@@ -50,34 +53,50 @@ Required preflight checks:
 
 1. `sources/p2/design-system-source/manifest.json` exists at the exact POSIX-relative path.
 2. The manifest conforms to `design-source-manifest.v0`.
-3. Every source file declared by the manifest exists, is a regular file, and has bytes matching the declared SHA-256 hash.
-4. No source file outside the manifest is read.
-5. No absolute path, symlinked path, `..` traversal, alternate source root, or extra source input is accepted.
-6. The manifest declares `designSystemId`, `designSystemName`, `sourceFamily`, source files, required mappings, and policy refs.
+3. The manifest package metadata matches `@adobe/spectrum-design-data@0.7.0`, the declared npm tarball, and package integrity `sha512-mSdmQn6fNEzKVo6W5xS4gO1EXCpC4ojiEm3GqTlSjhh26lC9siMgQSWi33ODvWe8ssfrxXX0unzVnL5VBt4+CA==`.
+4. Every source file declared by the manifest exists, is a regular file, has bytes matching the declared SHA-256 hash, and lives under `sources/p2/design-system-source/npm/@adobe/spectrum-design-data/0.7.0/package/` or a declared local `docs/` or `mappings/` path.
+5. No source file outside the manifest is read.
+6. No absolute path, symlinked path, `..` traversal, alternate source root, or extra source input is accepted.
+7. The manifest declares `designSystemId`, `designSystemName`, `sourceFamily`, source files, required mappings, policy refs, source-ref grammar, and initial components `button` and `in-line-alert`.
+8. Every source ref in manifest, mapping, extraction, catalog, report, and evidence artifacts conforms to the P2 source-ref grammar and points at a manifest-declared source file.
 
 P2 evidence must copy accepted source refs into `boundaryRefs[]` without rewriting paths, hashes, run ids, schema ids, source ids, or source ref roots.
 
 ## Artifact Ordering
 P2 evidence artifact order is:
 
-1. P2 schemas.
-2. P2 source manifest.
-3. Declared source files.
-4. P2 expectations manifest.
-5. P2 review fixtures.
-6. P2 invalid fixtures.
-7. P2 mutation fixtures.
-8. Source inventory.
-9. Source mapping.
-10. Extract.
-11. Catalog.
-12. Governed catalog.
-13. Ingestion report.
-14. Final P2 evidence.
+1. P2-owned schemas.
+2. Consumed shared schemas.
+3. P2 source manifest.
+4. Declared source files.
+5. P2 expectations manifest.
+6. P2 valid fixtures.
+7. P2 review fixtures.
+8. P2 invalid fixtures.
+9. P2 mutation fixtures.
+10. Source inventory.
+11. Source mapping.
+12. Extract.
+13. Catalog.
+14. Governed catalog.
+15. Ingestion report.
+16. Final P2 evidence.
 
-The `artifacts` entry for `artifacts/p2/evidence.json` is required and ordered last. Its persisted `hash` is the lowercase SHA-256 hex digest of the canonical evidence object after replacing only that entry's `hash` field with JSON `null`.
+The `artifactRefs` entry for `artifacts/p2/evidence.json` is required and ordered last. Its persisted `hash` is the lowercase SHA-256 hex digest of the canonical evidence object after replacing only that entry's `hash` field with JSON `null`.
 
 Demo files under `demo/p2` are generated presentation output, not evidence-hashed proof artifacts.
+
+## Schema Closure
+P2 evidence is closed over every schema it consumes. The schema closure must include:
+
+| Schema group | Required files |
+| --- | --- |
+| P2-owned source contracts | `schemas/design-source-manifest.v0.schema.json`, `schemas/design-source-inventory.v0.schema.json`, `schemas/design-source-mapping.v0.schema.json` |
+| P2-owned proof contracts | `schemas/design-system-ingestion-report.v0.schema.json`, `schemas/design-system-ingestion-evidence.v0.schema.json`, `schemas/design-system-ingestion-expectations.v0.schema.json`, `schemas/design-system-ingestion-diagnostics.v0.schema.json`, `schemas/design-system-ingestion-valid-fixture.v0.schema.json` |
+| Shared extraction and catalog contracts | `schemas/extract.v0.schema.json`, `schemas/runtime-catalog.v0.schema.json` |
+| Shared diagnostic, expectation, and evidence behavior | `schemas/diagnostics.v0.schema.json`, `schemas/fixture-expectations.v0.schema.json`, `schemas/evidence.v0.schema.json` |
+
+Missing, extra, or hash-mismatched required schema refs fail P2 evidence with `INGEST_SCHEMA_HASH_MISMATCH`. Future phase-owned schema files may exist under `schemas/`, but P2 evidence must hash only this consumed schema closure.
 
 ## Diagnostics
 P2 diagnostics must use canonical registry messages. Validator-native messages are non-normative and must not be used in golden evidence hashing or manifest comparison.
@@ -89,15 +108,23 @@ P2 diagnostics are sorted by artifact path, stage order (`source-inventory`, `ma
 | Code | Trigger | `canonicalMessage` | Severity | Diagnostic source | Stage | Phase | Artifact path | JSON Pointer | Validation result | Promotion status | Fixture coverage |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | `INGEST_SOURCE_MANIFEST_MISSING` | Source bundle manifest is absent or unreadable | Design-system source manifest is missing or unreadable. | `error` | `source-preflight-validator` | `source-inventory` | `source-manifest` | `fixtures/p2/mutations/missing-source-manifest.design-source.json` | `/manifest` | `invalid` | `blocked` | `mutations/missing-source-manifest.design-source.json` |
+| `INGEST_PACKAGE_INTEGRITY_MISMATCH` | Spectrum package metadata differs from the pinned npm target | Spectrum package integrity does not match the pinned npm package. | `error` | `source-preflight-validator` | `source-inventory` | `source-manifest` | `fixtures/p2/mutations/package-integrity-mismatch.design-source.json` | `/packageIntegrity` | `invalid` | `blocked` | `mutations/package-integrity-mismatch.design-source.json` |
+| `INGEST_SOURCE_PATH_UNDECLARED` | Source path is outside the manifest or outside the allowed snapshot roots | Design-system source path is not declared by the manifest. | `error` | `source-preflight-validator` | `source-inventory` | `source-manifest` | `fixtures/p2/mutations/source-path-undeclared.design-source.json` | `/sourceFiles/0/path` | `invalid` | `blocked` | `mutations/source-path-undeclared.design-source.json` |
+| `INGEST_SOURCE_REF_INVALID` | Source ref grammar is malformed or points outside manifest-declared source files | Design-system source reference does not match the required source-ref grammar. | `error` | `source-preflight-validator` | `source-inventory` | `source-manifest` | `fixtures/p2/mutations/invalid-source-ref.design-source.json` | `/sourceFiles/0/sourceRefRoot` | `invalid` | `blocked` | `mutations/invalid-source-ref.design-source.json` |
 | `INGEST_SOURCE_HASH_MISMATCH` | Source file hash differs from manifest or inventory | Design-system source hash does not match the declared manifest. | `error` | `source-inventory-validator` | `source-inventory` | `source-inventory` | `fixtures/p2/mutations/source-hash-mismatch.design-source-inventory.json` | `/sourceFiles/0/hash` | `invalid` | `blocked` | `mutations/source-hash-mismatch.design-source-inventory.json` |
 | `INGEST_SOURCE_REF_MISSING` | Extracted source material lacks source refs | Extracted design-system material is missing required source refs. | `error` | `extract-validator` | `extract` | `source-extraction` | `fixtures/p2/mutations/missing-source-ref.extract.json` | `/components/0/sourceRef` | `invalid` | `blocked` | `mutations/missing-source-ref.extract.json` |
-| `INGEST_COMPONENT_UNMAPPED` | Source component lacks an accepted catalog mapping | Source component is missing a required catalog mapping. | `error` | `mapping-validator` | `mapping` | `source-mapping` | `fixtures/p2/invalid/unmapped-component.design-source.json` | `/componentMappings` | `invalid` | `blocked` | `invalid/unmapped-component.design-source.json` |
+| `INGEST_COMPONENT_UNMAPPED` | Source component lacks an accepted catalog mapping | Source component is missing a required catalog mapping. | `error` | `mapping-validator` | `mapping` | `source-mapping` | `fixtures/p2/invalid/unmapped-component.design-source.json` | `/mappingRows` | `invalid` | `blocked` | `invalid/unmapped-component.design-source.json` |
 | `INGEST_TOKEN_UNSUPPORTED` | Source token cannot be represented by current token contract | Source token is unsupported by the current catalog token contract. | `error` | `extract-validator` | `extract` | `source-extraction` | `fixtures/p2/invalid/unsupported-token.design-source.json` | `/tokens` | `invalid` | `blocked` | `invalid/unsupported-token.design-source.json` |
-| `INGEST_VARIANT_AMBIGUOUS` | Source variants cannot be deterministically mapped | Source variant mapping is ambiguous. | `error` | `mapping-validator` | `mapping` | `source-mapping` | `fixtures/p2/invalid/ambiguous-variant.design-source.json` | `/componentMappings/variants` | `invalid` | `blocked` | `invalid/ambiguous-variant.design-source.json` |
+| `INGEST_TOKEN_MODE_UNSUPPORTED` | Source token mode or color mode cannot be represented by current token contract | Source token mode is unsupported by the current catalog token contract. | `error` | `extract-validator` | `extract` | `source-extraction` | `fixtures/p2/invalid/unsupported-mode.design-source.json` | `/tokens/modes` | `invalid` | `blocked` | `invalid/unsupported-mode.design-source.json` |
+| `INGEST_VARIANT_AMBIGUOUS` | Source variants cannot be deterministically mapped | Source variant mapping is ambiguous. | `error` | `mapping-validator` | `mapping` | `source-mapping` | `fixtures/p2/invalid/ambiguous-variant.design-source.json` | `/mappingRows` | `invalid` | `blocked` | `invalid/ambiguous-variant.design-source.json` |
 | `INGEST_GOVERNANCE_POLICY_MISSING` | Sensitive usage lacks a declared governance policy | Required governance policy is missing for sensitive source usage. | `error` | `governance-validator` | `govern` | `catalog-governance` | `fixtures/p2/invalid/governance-policy-missing.design-source.json` | `/policyRefs` | `invalid` | `blocked` | `invalid/governance-policy-missing.design-source.json` |
 | `INGEST_MAPPING_REVIEW_REQUIRED` | Source material is structurally valid but requires human mapping review | Source mapping requires review before unattended promotion. | `review` | `mapping-validator` | `mapping` | `source-mapping` | `fixtures/p2/review/manual-mapping-required.design-source.json` | `/reviewRequired` | `review_required` | `review_required` | `review/manual-mapping-required.design-source.json` |
-| `INGEST_MAPPING_AUTHORITY_ESCALATION` | Mapping attempts to promote catalog behavior absent from source material | Source mapping attempted to promote catalog behavior absent from the design-system source. | `error` | `mapping-validator` | `mapping` | `source-mapping` | `fixtures/p2/mutations/mapping-authority-escalation.design-source-mapping.json` | `/componentMappings/0` | `invalid` | `blocked` | `mutations/mapping-authority-escalation.design-source-mapping.json` |
-| `INGEST_EVIDENCE_HASH_MISMATCH` | Ingestion evidence hash differs from manifest or self-hash rule | Design-system ingestion evidence hash does not match the manifest or self-hash rule. | `error` | `evidence-validator` | `evidence` | `ingestion-evidence` | `fixtures/p2/mutations/hash-mismatch.design-system-ingestion-evidence.json` | `/artifacts/0/hash` | `invalid` | `blocked` | `mutations/hash-mismatch.design-system-ingestion-evidence.json` |
+| `INGEST_MAPPING_AUTHORITY_ESCALATION` | Mapping attempts to promote catalog behavior absent from source material | Source mapping attempted to promote catalog behavior absent from the design-system source. | `error` | `mapping-validator` | `mapping` | `source-mapping` | `fixtures/p2/mutations/mapping-authority-escalation.design-source-mapping.json` | `/mappingRows/0` | `invalid` | `blocked` | `mutations/mapping-authority-escalation.design-source-mapping.json` |
+| `INGEST_NORMALIZED_ID_DUPLICATE` | Multiple mapping rows emit the same normalized id without an explicit conflict rule | Source mapping contains a duplicate normalized id without an accepted conflict rule. | `error` | `mapping-validator` | `mapping` | `source-mapping` | `fixtures/p2/invalid/duplicate-normalized-id.design-source-mapping.json` | `/mappingRows/1/normalizedId` | `invalid` | `blocked` | `invalid/duplicate-normalized-id.design-source-mapping.json` |
+| `INGEST_MAPPING_ROW_REF_INVALID` | Mapping row source refs, mapping refs, or target refs are missing, malformed, or outside declared refs | Source mapping row references are missing or invalid. | `error` | `mapping-validator` | `mapping` | `source-mapping` | `fixtures/p2/invalid/mapping-row-ref-invalid.design-source-mapping.json` | `/mappingRows/0/sourceRefs` | `invalid` | `blocked` | `invalid/mapping-row-ref-invalid.design-source-mapping.json` |
+| `INGEST_MAPPING_CARDINALITY_INVALID` | Mapping row cardinality is missing or incompatible with source and target refs | Source mapping row cardinality is invalid. | `error` | `mapping-validator` | `mapping` | `source-mapping` | `fixtures/p2/invalid/mapping-cardinality-invalid.design-source-mapping.json` | `/mappingRows/0/cardinality` | `invalid` | `blocked` | `invalid/mapping-cardinality-invalid.design-source-mapping.json` |
+| `INGEST_SCHEMA_HASH_MISMATCH` | P2-owned schema or consumed shared schema hash differs from evidence closure | Design-system ingestion schema hash does not match the evidence manifest. | `error` | `evidence-validator` | `evidence` | `ingestion-evidence` | `fixtures/p2/mutations/schema-hash-mismatch.design-system-ingestion-evidence.json` | `/schemaClosure/0/hash` | `invalid` | `blocked` | `mutations/schema-hash-mismatch.design-system-ingestion-evidence.json` |
+| `INGEST_EVIDENCE_HASH_MISMATCH` | Ingestion evidence hash differs from manifest or self-hash rule | Design-system ingestion evidence hash does not match the manifest or self-hash rule. | `error` | `evidence-validator` | `evidence` | `ingestion-evidence` | `fixtures/p2/mutations/hash-mismatch.design-system-ingestion-evidence.json` | `/artifactRefs/6/hash` | `invalid` | `blocked` | `mutations/hash-mismatch.design-system-ingestion-evidence.json` |
 
 ## Aggregation Rules
 1. If any expectation is unmatched, `status` is `fail` and `promotionStatus` is `blocked`.

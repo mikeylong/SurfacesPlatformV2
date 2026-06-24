@@ -1,0 +1,340 @@
+{
+  "schemaId": "design-source-manifest.v0",
+  "version": "0.0.0",
+  "templateStatus": "planned-not-proof-input",
+  "designSystemId": "adobe-spectrum",
+  "designSystemName": "Adobe Spectrum Design Data",
+  "sourceFamily": "design-system-source-bundle.v0",
+  "packageName": "@adobe/spectrum-design-data",
+  "packageVersion": "0.7.0",
+  "packageTarball": "https://registry.npmjs.org/@adobe/spectrum-design-data/-/spectrum-design-data-0.7.0.tgz",
+  "packageIntegrity": "sha512-mSdmQn6fNEzKVo6W5xS4gO1EXCpC4ojiEm3GqTlSjhh26lC9siMgQSWi33ODvWe8ssfrxXX0unzVnL5VBt4+CA==",
+  "snapshotRoot": "sources/p2/design-system-source/npm/@adobe/spectrum-design-data/0.7.0/package",
+  "sourceRefGrammar": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/<posix-package-path>#<rfc6901-json-pointer>",
+  "initialComponents": [
+    "button",
+    "in-line-alert"
+  ],
+  "sourceFiles": [
+    {
+      "path": "npm/@adobe/spectrum-design-data/0.7.0/package/package.json",
+      "packagePath": "package.json",
+      "sourceType": "package",
+      "sourceSystem": "npm:@adobe/spectrum-design-data",
+      "hashAlgorithm": "sha256",
+      "sha256": "TO_BE_REPLACED_WITH_LOWERCASE_SHA256",
+      "sourceRefRoot": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/package.json#/"
+    },
+    {
+      "path": "npm/@adobe/spectrum-design-data/0.7.0/package/README.md",
+      "packagePath": "README.md",
+      "sourceType": "package",
+      "sourceSystem": "npm:@adobe/spectrum-design-data",
+      "hashAlgorithm": "sha256",
+      "sha256": "TO_BE_REPLACED_WITH_LOWERCASE_SHA256",
+      "sourceRefRoot": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/README.md#/"
+    },
+    {
+      "path": "npm/@adobe/spectrum-design-data/0.7.0/package/LICENSE",
+      "packagePath": "LICENSE",
+      "sourceType": "package",
+      "sourceSystem": "npm:@adobe/spectrum-design-data",
+      "hashAlgorithm": "sha256",
+      "sha256": "TO_BE_REPLACED_WITH_LOWERCASE_SHA256",
+      "sourceRefRoot": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/LICENSE#/"
+    },
+    {
+      "path": "npm/@adobe/spectrum-design-data/0.7.0/package/components/button.json",
+      "packagePath": "components/button.json",
+      "sourceType": "component",
+      "sourceSystem": "npm:@adobe/spectrum-design-data",
+      "hashAlgorithm": "sha256",
+      "sha256": "TO_BE_REPLACED_WITH_LOWERCASE_SHA256",
+      "sourceRefRoot": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/button.json#/"
+    },
+    {
+      "path": "npm/@adobe/spectrum-design-data/0.7.0/package/components/in-line-alert.json",
+      "packagePath": "components/in-line-alert.json",
+      "sourceType": "component",
+      "sourceSystem": "npm:@adobe/spectrum-design-data",
+      "hashAlgorithm": "sha256",
+      "sha256": "TO_BE_REPLACED_WITH_LOWERCASE_SHA256",
+      "sourceRefRoot": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/in-line-alert.json#/"
+    },
+    {
+      "path": "npm/@adobe/spectrum-design-data/0.7.0/package/registry/components.json",
+      "packagePath": "registry/components.json",
+      "sourceType": "registry",
+      "sourceSystem": "npm:@adobe/spectrum-design-data",
+      "hashAlgorithm": "sha256",
+      "sha256": "TO_BE_REPLACED_WITH_LOWERCASE_SHA256",
+      "sourceRefRoot": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/registry/components.json#/"
+    },
+    {
+      "path": "npm/@adobe/spectrum-design-data/0.7.0/package/registry/property-terms.json",
+      "packagePath": "registry/property-terms.json",
+      "sourceType": "registry",
+      "sourceSystem": "npm:@adobe/spectrum-design-data",
+      "hashAlgorithm": "sha256",
+      "sha256": "TO_BE_REPLACED_WITH_LOWERCASE_SHA256",
+      "sourceRefRoot": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/registry/property-terms.json#/"
+    },
+    {
+      "path": "npm/@adobe/spectrum-design-data/0.7.0/package/registry/variants.json",
+      "packagePath": "registry/variants.json",
+      "sourceType": "registry",
+      "sourceSystem": "npm:@adobe/spectrum-design-data",
+      "hashAlgorithm": "sha256",
+      "sha256": "TO_BE_REPLACED_WITH_LOWERCASE_SHA256",
+      "sourceRefRoot": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/registry/variants.json#/"
+    },
+    {
+      "path": "npm/@adobe/spectrum-design-data/0.7.0/package/registry/states.json",
+      "packagePath": "registry/states.json",
+      "sourceType": "registry",
+      "sourceSystem": "npm:@adobe/spectrum-design-data",
+      "hashAlgorithm": "sha256",
+      "sha256": "TO_BE_REPLACED_WITH_LOWERCASE_SHA256",
+      "sourceRefRoot": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/registry/states.json#/"
+    },
+    {
+      "path": "npm/@adobe/spectrum-design-data/0.7.0/package/registry/anatomy-terms.json",
+      "packagePath": "registry/anatomy-terms.json",
+      "sourceType": "registry",
+      "sourceSystem": "npm:@adobe/spectrum-design-data",
+      "hashAlgorithm": "sha256",
+      "sha256": "TO_BE_REPLACED_WITH_LOWERCASE_SHA256",
+      "sourceRefRoot": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/registry/anatomy-terms.json#/"
+    },
+    {
+      "path": "npm/@adobe/spectrum-design-data/0.7.0/package/registry/token-terminology.json",
+      "packagePath": "registry/token-terminology.json",
+      "sourceType": "registry",
+      "sourceSystem": "npm:@adobe/spectrum-design-data",
+      "hashAlgorithm": "sha256",
+      "sha256": "TO_BE_REPLACED_WITH_LOWERCASE_SHA256",
+      "sourceRefRoot": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/registry/token-terminology.json#/"
+    },
+    {
+      "path": "npm/@adobe/spectrum-design-data/0.7.0/package/registry/token-objects.json",
+      "packagePath": "registry/token-objects.json",
+      "sourceType": "registry",
+      "sourceSystem": "npm:@adobe/spectrum-design-data",
+      "hashAlgorithm": "sha256",
+      "sha256": "TO_BE_REPLACED_WITH_LOWERCASE_SHA256",
+      "sourceRefRoot": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/registry/token-objects.json#/"
+    },
+    {
+      "path": "npm/@adobe/spectrum-design-data/0.7.0/package/tokens/color-component.tokens.json",
+      "packagePath": "tokens/color-component.tokens.json",
+      "sourceType": "token",
+      "sourceSystem": "npm:@adobe/spectrum-design-data",
+      "hashAlgorithm": "sha256",
+      "sha256": "TO_BE_REPLACED_WITH_LOWERCASE_SHA256",
+      "sourceRefRoot": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/tokens/color-component.tokens.json#/"
+    },
+    {
+      "path": "npm/@adobe/spectrum-design-data/0.7.0/package/tokens/color-aliases.tokens.json",
+      "packagePath": "tokens/color-aliases.tokens.json",
+      "sourceType": "token",
+      "sourceSystem": "npm:@adobe/spectrum-design-data",
+      "hashAlgorithm": "sha256",
+      "sha256": "TO_BE_REPLACED_WITH_LOWERCASE_SHA256",
+      "sourceRefRoot": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/tokens/color-aliases.tokens.json#/"
+    },
+    {
+      "path": "npm/@adobe/spectrum-design-data/0.7.0/package/tokens/color-palette.tokens.json",
+      "packagePath": "tokens/color-palette.tokens.json",
+      "sourceType": "token",
+      "sourceSystem": "npm:@adobe/spectrum-design-data",
+      "hashAlgorithm": "sha256",
+      "sha256": "TO_BE_REPLACED_WITH_LOWERCASE_SHA256",
+      "sourceRefRoot": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/tokens/color-palette.tokens.json#/"
+    },
+    {
+      "path": "npm/@adobe/spectrum-design-data/0.7.0/package/tokens/layout-component.tokens.json",
+      "packagePath": "tokens/layout-component.tokens.json",
+      "sourceType": "token",
+      "sourceSystem": "npm:@adobe/spectrum-design-data",
+      "hashAlgorithm": "sha256",
+      "sha256": "TO_BE_REPLACED_WITH_LOWERCASE_SHA256",
+      "sourceRefRoot": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/tokens/layout-component.tokens.json#/"
+    },
+    {
+      "path": "npm/@adobe/spectrum-design-data/0.7.0/package/tokens/layout.tokens.json",
+      "packagePath": "tokens/layout.tokens.json",
+      "sourceType": "token",
+      "sourceSystem": "npm:@adobe/spectrum-design-data",
+      "hashAlgorithm": "sha256",
+      "sha256": "TO_BE_REPLACED_WITH_LOWERCASE_SHA256",
+      "sourceRefRoot": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/tokens/layout.tokens.json#/"
+    },
+    {
+      "path": "npm/@adobe/spectrum-design-data/0.7.0/package/tokens/typography.tokens.json",
+      "packagePath": "tokens/typography.tokens.json",
+      "sourceType": "token",
+      "sourceSystem": "npm:@adobe/spectrum-design-data",
+      "hashAlgorithm": "sha256",
+      "sha256": "TO_BE_REPLACED_WITH_LOWERCASE_SHA256",
+      "sourceRefRoot": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/tokens/typography.tokens.json#/"
+    },
+    {
+      "path": "npm/@adobe/spectrum-design-data/0.7.0/package/mode-sets/color-scheme.json",
+      "packagePath": "mode-sets/color-scheme.json",
+      "sourceType": "mode",
+      "sourceSystem": "npm:@adobe/spectrum-design-data",
+      "hashAlgorithm": "sha256",
+      "sha256": "TO_BE_REPLACED_WITH_LOWERCASE_SHA256",
+      "sourceRefRoot": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/mode-sets/color-scheme.json#/"
+    },
+    {
+      "path": "npm/@adobe/spectrum-design-data/0.7.0/package/mode-sets/contrast.json",
+      "packagePath": "mode-sets/contrast.json",
+      "sourceType": "mode",
+      "sourceSystem": "npm:@adobe/spectrum-design-data",
+      "hashAlgorithm": "sha256",
+      "sha256": "TO_BE_REPLACED_WITH_LOWERCASE_SHA256",
+      "sourceRefRoot": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/mode-sets/contrast.json#/"
+    },
+    {
+      "path": "npm/@adobe/spectrum-design-data/0.7.0/package/mode-sets/scale.json",
+      "packagePath": "mode-sets/scale.json",
+      "sourceType": "mode",
+      "sourceSystem": "npm:@adobe/spectrum-design-data",
+      "hashAlgorithm": "sha256",
+      "sha256": "TO_BE_REPLACED_WITH_LOWERCASE_SHA256",
+      "sourceRefRoot": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/mode-sets/scale.json#/"
+    },
+    {
+      "path": "npm/@adobe/spectrum-design-data/0.7.0/package/fields/variant.json",
+      "packagePath": "fields/variant.json",
+      "sourceType": "field",
+      "sourceSystem": "npm:@adobe/spectrum-design-data",
+      "hashAlgorithm": "sha256",
+      "sha256": "TO_BE_REPLACED_WITH_LOWERCASE_SHA256",
+      "sourceRefRoot": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/fields/variant.json#/"
+    },
+    {
+      "path": "npm/@adobe/spectrum-design-data/0.7.0/package/fields/state.json",
+      "packagePath": "fields/state.json",
+      "sourceType": "field",
+      "sourceSystem": "npm:@adobe/spectrum-design-data",
+      "hashAlgorithm": "sha256",
+      "sha256": "TO_BE_REPLACED_WITH_LOWERCASE_SHA256",
+      "sourceRefRoot": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/fields/state.json#/"
+    },
+    {
+      "path": "npm/@adobe/spectrum-design-data/0.7.0/package/fields/size.json",
+      "packagePath": "fields/size.json",
+      "sourceType": "field",
+      "sourceSystem": "npm:@adobe/spectrum-design-data",
+      "hashAlgorithm": "sha256",
+      "sha256": "TO_BE_REPLACED_WITH_LOWERCASE_SHA256",
+      "sourceRefRoot": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/fields/size.json#/"
+    },
+    {
+      "path": "npm/@adobe/spectrum-design-data/0.7.0/package/fields/property.json",
+      "packagePath": "fields/property.json",
+      "sourceType": "field",
+      "sourceSystem": "npm:@adobe/spectrum-design-data",
+      "hashAlgorithm": "sha256",
+      "sha256": "TO_BE_REPLACED_WITH_LOWERCASE_SHA256",
+      "sourceRefRoot": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/fields/property.json#/"
+    },
+    {
+      "path": "npm/@adobe/spectrum-design-data/0.7.0/package/fields/anatomy.json",
+      "packagePath": "fields/anatomy.json",
+      "sourceType": "field",
+      "sourceSystem": "npm:@adobe/spectrum-design-data",
+      "hashAlgorithm": "sha256",
+      "sha256": "TO_BE_REPLACED_WITH_LOWERCASE_SHA256",
+      "sourceRefRoot": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/fields/anatomy.json#/"
+    },
+    {
+      "path": "npm/@adobe/spectrum-design-data/0.7.0/package/guidelines/developer-overview.json",
+      "packagePath": "guidelines/developer-overview.json",
+      "sourceType": "guideline",
+      "sourceSystem": "npm:@adobe/spectrum-design-data",
+      "hashAlgorithm": "sha256",
+      "sha256": "TO_BE_REPLACED_WITH_LOWERCASE_SHA256",
+      "sourceRefRoot": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/guidelines/developer-overview.json#/"
+    },
+    {
+      "path": "npm/@adobe/spectrum-design-data/0.7.0/package/guidelines/states.json",
+      "packagePath": "guidelines/states.json",
+      "sourceType": "guideline",
+      "sourceSystem": "npm:@adobe/spectrum-design-data",
+      "hashAlgorithm": "sha256",
+      "sha256": "TO_BE_REPLACED_WITH_LOWERCASE_SHA256",
+      "sourceRefRoot": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/guidelines/states.json#/"
+    },
+    {
+      "path": "npm/@adobe/spectrum-design-data/0.7.0/package/guidelines/colors.json",
+      "packagePath": "guidelines/colors.json",
+      "sourceType": "guideline",
+      "sourceSystem": "npm:@adobe/spectrum-design-data",
+      "hashAlgorithm": "sha256",
+      "sha256": "TO_BE_REPLACED_WITH_LOWERCASE_SHA256",
+      "sourceRefRoot": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/guidelines/colors.json#/"
+    },
+    {
+      "path": "npm/@adobe/spectrum-design-data/0.7.0/package/guidelines/spacing.json",
+      "packagePath": "guidelines/spacing.json",
+      "sourceType": "guideline",
+      "sourceSystem": "npm:@adobe/spectrum-design-data",
+      "hashAlgorithm": "sha256",
+      "sha256": "TO_BE_REPLACED_WITH_LOWERCASE_SHA256",
+      "sourceRefRoot": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/guidelines/spacing.json#/"
+    },
+    {
+      "path": "npm/@adobe/spectrum-design-data/0.7.0/package/guidelines/typography-fundamentals.json",
+      "packagePath": "guidelines/typography-fundamentals.json",
+      "sourceType": "guideline",
+      "sourceSystem": "npm:@adobe/spectrum-design-data",
+      "hashAlgorithm": "sha256",
+      "sha256": "TO_BE_REPLACED_WITH_LOWERCASE_SHA256",
+      "sourceRefRoot": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/guidelines/typography-fundamentals.json#/"
+    },
+    {
+      "path": "docs/usage-policy.json",
+      "packagePath": null,
+      "sourceType": "policy",
+      "sourceSystem": "local:p2-docs",
+      "hashAlgorithm": "sha256",
+      "sha256": "TO_BE_REPLACED_WITH_LOWERCASE_SHA256",
+      "sourceRefRoot": "source://p2/docs/usage-policy.json#/"
+    }
+  ],
+  "requiredMappings": [
+    {
+      "path": "mappings/component-map.json",
+      "mappingRefRoot": "mapping://p2/spectrum/component-map.json#/",
+      "hashAlgorithm": "sha256",
+      "sha256": "TO_BE_REPLACED_WITH_LOWERCASE_SHA256"
+    },
+    {
+      "path": "mappings/token-map.json",
+      "mappingRefRoot": "mapping://p2/spectrum/token-map.json#/",
+      "hashAlgorithm": "sha256",
+      "sha256": "TO_BE_REPLACED_WITH_LOWERCASE_SHA256"
+    },
+    {
+      "path": "mappings/policy-map.json",
+      "mappingRefRoot": "mapping://p2/spectrum/policy-map.json#/",
+      "hashAlgorithm": "sha256",
+      "sha256": "TO_BE_REPLACED_WITH_LOWERCASE_SHA256"
+    }
+  ],
+  "policyRefs": [
+    "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/guidelines/developer-overview.json#/",
+    "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/guidelines/states.json#/",
+    "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/guidelines/colors.json#/",
+    "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/guidelines/spacing.json#/",
+    "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/guidelines/typography-fundamentals.json#/",
+    "source://p2/docs/usage-policy.json#/"
+  ],
+  "generatedAt": "1970-01-01T00:00:00.000Z",
+  "environment": {
+    "host": null
+  }
+}

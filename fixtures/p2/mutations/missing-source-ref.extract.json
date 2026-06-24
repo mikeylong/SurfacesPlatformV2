@@ -1,0 +1,11 @@
+{
+  "schemaId": "design-system-ingestion-mutation-fixture.v0",
+  "fixtureId": "missing-source-ref",
+  "fixtureKind": "mutation",
+  "description": "Every extracted design-system item must preserve a source ref.",
+  "mutatedPath": "artifacts/p2/extract.json",
+  "jsonPointer": "/components/0/sourceRef",
+  "expectedDiagnosticCode": "INGEST_SOURCE_REF_MISSING",
+  "expectedResult": "invalid",
+  "promotionStatus": "blocked"
+}

@@ -1,0 +1,196 @@
+{
+  "$id": "https://surfaces.dev/schemas/p2/design-system-ingestion-valid-fixture.v0.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": [
+    "schemaId",
+    "fixtureId",
+    "fixtureKind",
+    "target",
+    "sourceRefs",
+    "mappingRefs",
+    "expectedCatalogRefs",
+    "expectedNormalizedIds",
+    "expectedExtraction",
+    "expectedResult",
+    "promotionStatus",
+    "diagnosticCodes"
+  ],
+  "properties": {
+    "schemaId": { "const": "design-system-ingestion-valid-fixture.v0" },
+    "fixtureId": { "type": "string", "minLength": 1 },
+    "fixtureKind": { "const": "valid" },
+    "target": {
+      "type": "object",
+      "required": ["designSystemId", "packageName", "packageVersion", "component"],
+      "properties": {
+        "designSystemId": { "const": "adobe-spectrum" },
+        "packageName": { "const": "@adobe/spectrum-design-data" },
+        "packageVersion": { "const": "0.7.0" },
+        "component": { "enum": ["button", "in-line-alert"] }
+      },
+      "unevaluatedProperties": false
+    },
+    "sourceRefs": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/sourceRef" }
+    },
+    "mappingRefs": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/mappingRef" }
+    },
+    "expectedCatalogRefs": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/catalogRef" }
+    },
+    "expectedNormalizedIds": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^[A-Za-z][A-Za-z0-9.-]*$" }
+    },
+    "expectedExtraction": { "$ref": "#/$defs/expectedExtraction" },
+    "expectedResult": { "const": "valid" },
+    "promotionStatus": { "const": "allowed" },
+    "diagnosticCodes": {
+      "type": "array",
+      "maxItems": 0
+    }
+  },
+  "$defs": {
+    "packagePath": {
+      "type": "string",
+      "pattern": "^(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*(?:^|/)\\.(?:/|$))(?!.*//)[A-Za-z0-9._@-]+(?:/[A-Za-z0-9._@-]+)*$"
+    },
+    "jsonPointerFragment": {
+      "type": "string",
+      "pattern": "#/(?:[A-Za-z0-9._~-]+(?:/[A-Za-z0-9._~-]+)*)?$"
+    },
+    "sourceRef": {
+      "type": "string",
+      "pattern": "^spectrum-design-data://npm/@adobe/spectrum-design-data@0\\.7\\.0/package/(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*(?:^|/)\\.(?:/|$))(?!.*//)[A-Za-z0-9._@-]+(?:/[A-Za-z0-9._@-]+)*#/(?:[A-Za-z0-9._~-]+(?:/[A-Za-z0-9._~-]+)*)?$"
+    },
+    "mappingRef": {
+      "type": "string",
+      "pattern": "^mapping://p2/spectrum/(component-map|token-map|policy-map)\\.json#/(?:[A-Za-z0-9._~-]+(?:/[A-Za-z0-9._~-]+)*)?$"
+    },
+    "catalogRef": {
+      "type": "string",
+      "pattern": "^catalog://p2/[A-Za-z0-9._-]+(?:/[A-Za-z0-9._-]+)*$"
+    },
+    "extractionRef": {
+      "type": "object",
+      "required": ["sourceRef", "catalogRef"],
+      "properties": {
+        "sourceRef": { "$ref": "#/$defs/sourceRef" },
+        "catalogRef": { "$ref": "#/$defs/catalogRef" }
+      },
+      "unevaluatedProperties": false
+    },
+    "coverageArray": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/extractionRef" }
+    },
+    "sourceAbsentCoverage": {
+      "type": "object",
+      "required": ["coverageStatus", "sourceRef"],
+      "properties": {
+        "coverageStatus": { "const": "source-absent" },
+        "sourceRef": { "$ref": "#/$defs/sourceRef" }
+      },
+      "unevaluatedProperties": false
+    },
+    "coverageOrAbsent": {
+      "oneOf": [
+        { "$ref": "#/$defs/coverageArray" },
+        { "$ref": "#/$defs/sourceAbsentCoverage" }
+      ]
+    },
+    "expectedExtraction": {
+      "type": "object",
+      "required": [
+        "component",
+        "propsOptions",
+        "variants",
+        "states",
+        "slots",
+        "accessibility",
+        "examples",
+        "tokenRefs"
+      ],
+      "properties": {
+        "component": { "$ref": "#/$defs/extractionRef" },
+        "propsOptions": { "$ref": "#/$defs/coverageArray" },
+        "variants": { "$ref": "#/$defs/coverageArray" },
+        "states": { "$ref": "#/$defs/coverageOrAbsent" },
+        "slots": { "$ref": "#/$defs/coverageOrAbsent" },
+        "accessibility": { "$ref": "#/$defs/coverageArray" },
+        "examples": { "$ref": "#/$defs/coverageArray" },
+        "tokenRefs": { "$ref": "#/$defs/coverageArray" }
+      },
+      "unevaluatedProperties": false
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "target": {
+            "properties": { "component": { "const": "button" } },
+            "required": ["component"]
+          }
+        },
+        "required": ["target"]
+      },
+      "then": {
+        "properties": {
+          "fixtureId": { "const": "spectrum-button-valid" },
+          "expectedCatalogRefs": {
+            "prefixItems": [{ "const": "catalog://p2/components/Button" }],
+            "minItems": 1,
+            "maxItems": 1
+          },
+          "expectedNormalizedIds": {
+            "prefixItems": [{ "const": "Button" }],
+            "minItems": 1,
+            "maxItems": 1
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "target": {
+            "properties": { "component": { "const": "in-line-alert" } },
+            "required": ["component"]
+          }
+        },
+        "required": ["target"]
+      },
+      "then": {
+        "properties": {
+          "fixtureId": { "const": "spectrum-in-line-alert-valid" },
+          "expectedCatalogRefs": {
+            "prefixItems": [{ "const": "catalog://p2/components/InLineAlert" }],
+            "minItems": 1,
+            "maxItems": 1
+          },
+          "expectedNormalizedIds": {
+            "prefixItems": [{ "const": "InLineAlert" }],
+            "minItems": 1,
+            "maxItems": 1
+          }
+        }
+      }
+    }
+  ],
+  "unevaluatedProperties": false
+}

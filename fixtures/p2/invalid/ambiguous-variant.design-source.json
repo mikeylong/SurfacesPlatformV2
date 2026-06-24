@@ -1,0 +1,16 @@
+{
+  "schemaId": "design-system-ingestion-invalid-fixture.v0",
+  "fixtureId": "ambiguous-variant",
+  "fixtureKind": "invalid",
+  "description": "A source variant with multiple possible catalog targets must block unless a deterministic mapping resolves it.",
+  "sourceRefs": [
+    "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/button.json#/options/variant"
+  ],
+  "candidateTargetRefs": [
+    "catalog://p2/components/Button/variants/accent",
+    "catalog://p2/components/Button/variants/primary"
+  ],
+  "expectedDiagnosticCode": "INGEST_VARIANT_AMBIGUOUS",
+  "expectedResult": "invalid",
+  "promotionStatus": "blocked"
+}

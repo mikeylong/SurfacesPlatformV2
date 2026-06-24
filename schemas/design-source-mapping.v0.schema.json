@@ -1,0 +1,481 @@
+{
+  "$id": "https://surfaces.dev/schemas/p2/design-source-mapping.v0.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": [
+    "schemaId",
+    "version",
+    "sourceInventoryRef",
+    "mappingRows",
+    "reviewRequired",
+    "diagnostics",
+    "provenance"
+  ],
+  "properties": {
+    "schemaId": { "const": "design-source-mapping.v0" },
+    "version": { "type": "string" },
+    "sourceInventoryRef": {
+      "allOf": [
+        { "$ref": "#/$defs/artifactRef" },
+        {
+          "properties": {
+            "path": { "const": "artifacts/p2/source-inventory.json" },
+            "schemaId": { "const": "design-source-inventory.v0" }
+          }
+        }
+      ]
+    },
+    "mappingRows": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/mappingRow" }
+    },
+    "reviewRequired": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["mappingId", "reason", "diagnosticCodes"],
+        "properties": {
+          "mappingId": { "type": "string" },
+          "reason": { "type": "string", "minLength": 1 },
+          "diagnosticCodes": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        },
+        "unevaluatedProperties": false
+      }
+    },
+    "diagnostics": {
+      "type": "array",
+      "items": {
+        "$ref": "https://surfaces.dev/schemas/p2/design-system-ingestion-diagnostics.v0.schema.json#/$defs/diagnostic"
+      }
+    },
+    "provenance": { "$ref": "#/$defs/provenance" }
+  },
+  "$defs": {
+    "artifactRef": {
+      "type": "object",
+      "required": ["path", "schemaId", "hashAlgorithm", "hash"],
+      "properties": {
+        "path": {
+          "type": "string",
+          "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*(?:^|/)\\.(?:/|$))(?!.*//)[A-Za-z0-9._@-]+(?:/[A-Za-z0-9._@-]+)*$"
+        },
+        "schemaId": { "type": "string" },
+        "hashAlgorithm": { "const": "sha256" },
+        "hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+      },
+      "unevaluatedProperties": false
+    },
+    "sourceRef": {
+      "oneOf": [
+        {
+          "type": "string",
+          "pattern": "^spectrum-design-data://npm/@adobe/spectrum-design-data@0\\.7\\.0/package/(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*(?:^|/)\\.(?:/|$))(?!.*//)[A-Za-z0-9._@-]+(?:/[A-Za-z0-9._@-]+)*#/(?:[A-Za-z0-9._~-]+(?:/[A-Za-z0-9._~-]+)*)?$"
+        },
+        {
+          "type": "string",
+          "pattern": "^source://p2/docs/usage-policy\\.json#/(?:[A-Za-z0-9._~-]+(?:/[A-Za-z0-9._~-]+)*)?$"
+        }
+      ]
+    },
+    "mappingRef": {
+      "type": "string",
+      "pattern": "^mapping://p2/spectrum/(component-map|token-map|policy-map)\\.json#/(?:[A-Za-z0-9._~-]+(?:/[A-Za-z0-9._~-]+)*)?$"
+    },
+    "targetRef": {
+      "type": "string",
+      "pattern": "^catalog://p2/[A-Za-z0-9._-]+(?:/[A-Za-z0-9._-]+)*$"
+    },
+    "cardinality": {
+      "type": "object",
+      "required": ["sourceMin", "sourceMax", "targetMin", "targetMax"],
+      "properties": {
+        "sourceMin": { "type": "integer", "minimum": 0 },
+        "sourceMax": { "type": ["integer", "null"], "minimum": 0 },
+        "targetMin": { "type": "integer", "minimum": 0 },
+        "targetMax": { "type": ["integer", "null"], "minimum": 0 }
+      },
+      "unevaluatedProperties": false
+    },
+    "conflictRule": {
+      "type": "object",
+      "required": ["ruleId", "when", "resolution"],
+      "properties": {
+        "ruleId": { "type": "string", "minLength": 1 },
+        "when": {
+          "enum": ["duplicate-normalized-id", "source-precedence", "requires-review"]
+        },
+        "resolution": { "type": "string", "minLength": 1 }
+      },
+      "unevaluatedProperties": false
+    },
+    "mappingRow": {
+      "type": "object",
+      "required": [
+        "mappingId",
+        "mappingKind",
+        "sourceRefs",
+        "mappingRefs",
+        "targetRefs",
+        "normalizedId",
+        "rationale",
+        "cardinality",
+        "conflictRules",
+        "authorityScope",
+        "reviewStatus"
+      ],
+      "properties": {
+        "mappingId": { "type": "string", "minLength": 1 },
+        "mappingKind": {
+          "enum": [
+            "component",
+            "token",
+            "prop",
+            "variant",
+            "state",
+            "slot",
+            "accessibility",
+            "example",
+            "action",
+            "dataBinding",
+            "governance"
+          ]
+        },
+        "sourceRefs": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/sourceRef" }
+        },
+        "mappingRefs": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/mappingRef" }
+        },
+        "targetRefs": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/targetRef" }
+        },
+        "normalizedId": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9.-]*$"
+        },
+        "rationale": { "type": "string", "minLength": 1 },
+        "cardinality": { "$ref": "#/$defs/cardinality" },
+        "conflictRules": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/conflictRule" }
+        },
+        "authorityScope": {
+          "enum": ["source-only", "mapping-narrows-source", "review-required"]
+        },
+        "reviewStatus": {
+          "enum": ["accepted", "review_required", "rejected"]
+        }
+      },
+      "allOf": [
+        { "$ref": "#/$defs/componentMappingKind" },
+        { "$ref": "#/$defs/tokenMappingKind" },
+        { "$ref": "#/$defs/propMappingKind" },
+        { "$ref": "#/$defs/variantMappingKind" },
+        { "$ref": "#/$defs/stateMappingKind" },
+        { "$ref": "#/$defs/slotMappingKind" },
+        { "$ref": "#/$defs/accessibilityMappingKind" },
+        { "$ref": "#/$defs/exampleMappingKind" },
+        { "$ref": "#/$defs/actionMappingKind" },
+        { "$ref": "#/$defs/dataBindingMappingKind" },
+        { "$ref": "#/$defs/governanceMappingKind" }
+      ],
+      "unevaluatedProperties": false
+    },
+    "componentMappingKind": {
+      "if": { "properties": { "mappingKind": { "const": "component" } }, "required": ["mappingKind"] },
+      "then": {
+        "properties": {
+          "sourceRefs": {
+            "items": {
+              "type": "string",
+              "pattern": "^spectrum-design-data://npm/@adobe/spectrum-design-data@0\\.7\\.0/package/(components/(button|in-line-alert)\\.json|registry/components\\.json)#/(?:[A-Za-z0-9._~-]+(?:/[A-Za-z0-9._~-]+)*)?$"
+            }
+          },
+          "mappingRefs": {
+            "items": {
+              "type": "string",
+              "pattern": "^mapping://p2/spectrum/component-map\\.json#/(?:[A-Za-z0-9._~-]+(?:/[A-Za-z0-9._~-]+)*)?$"
+            }
+          },
+          "targetRefs": {
+            "items": {
+              "type": "string",
+              "pattern": "^catalog://p2/components/(Button|InLineAlert)$"
+            }
+          }
+        }
+      }
+    },
+    "tokenMappingKind": {
+      "if": { "properties": { "mappingKind": { "const": "token" } }, "required": ["mappingKind"] },
+      "then": {
+        "properties": {
+          "sourceRefs": {
+            "items": {
+              "type": "string",
+              "pattern": "^spectrum-design-data://npm/@adobe/spectrum-design-data@0\\.7\\.0/package/(tokens/[A-Za-z0-9._-]+\\.tokens\\.json#/|registry/(token-terminology|token-objects)\\.json#/|components/(button|in-line-alert)\\.json#/(?:[A-Za-z0-9._~-]+/)*tokenBindings)[A-Za-z0-9._~/-]*$"
+            }
+          },
+          "mappingRefs": {
+            "items": {
+              "type": "string",
+              "pattern": "^mapping://p2/spectrum/token-map\\.json#/(?:[A-Za-z0-9._~-]+(?:/[A-Za-z0-9._~-]+)*)?$"
+            }
+          },
+          "targetRefs": {
+            "items": {
+              "type": "string",
+              "pattern": "^catalog://p2/(tokens|components/(Button|InLineAlert)/tokenRefs)/[A-Za-z0-9._-]+$"
+            }
+          }
+        }
+      }
+    },
+    "propMappingKind": {
+      "if": { "properties": { "mappingKind": { "const": "prop" } }, "required": ["mappingKind"] },
+      "then": {
+        "properties": {
+          "sourceRefs": {
+            "items": {
+              "type": "string",
+              "pattern": "^spectrum-design-data://npm/@adobe/spectrum-design-data@0\\.7\\.0/package/(components/(button|in-line-alert)\\.json#/options|registry/property-terms\\.json#/|fields/(variant|size)\\.json#/)[A-Za-z0-9._~/-]*$"
+            }
+          },
+          "mappingRefs": {
+            "items": {
+              "type": "string",
+              "pattern": "^mapping://p2/spectrum/component-map\\.json#/(?:[A-Za-z0-9._~-]+(?:/[A-Za-z0-9._~-]+)*)?$"
+            }
+          },
+          "targetRefs": {
+            "items": {
+              "type": "string",
+              "pattern": "^catalog://p2/components/(Button|InLineAlert)/props/[A-Za-z0-9._-]+$"
+            }
+          }
+        }
+      }
+    },
+    "variantMappingKind": {
+      "if": { "properties": { "mappingKind": { "const": "variant" } }, "required": ["mappingKind"] },
+      "then": {
+        "properties": {
+          "sourceRefs": {
+            "items": {
+              "type": "string",
+              "pattern": "^spectrum-design-data://npm/@adobe/spectrum-design-data@0\\.7\\.0/package/(components/(button|in-line-alert)\\.json#/options/variant|registry/variants\\.json#/|fields/variant\\.json#/)[A-Za-z0-9._~/-]*$"
+            }
+          },
+          "mappingRefs": {
+            "items": {
+              "type": "string",
+              "pattern": "^mapping://p2/spectrum/component-map\\.json#/(?:[A-Za-z0-9._~-]+(?:/[A-Za-z0-9._~-]+)*)?$"
+            }
+          },
+          "targetRefs": {
+            "items": {
+              "type": "string",
+              "pattern": "^catalog://p2/components/(Button|InLineAlert)/variants/[A-Za-z0-9._-]+$"
+            }
+          }
+        }
+      }
+    },
+    "stateMappingKind": {
+      "if": { "properties": { "mappingKind": { "const": "state" } }, "required": ["mappingKind"] },
+      "then": {
+        "properties": {
+          "sourceRefs": {
+            "items": {
+              "type": "string",
+              "pattern": "^spectrum-design-data://npm/@adobe/spectrum-design-data@0\\.7\\.0/package/(components/(button|in-line-alert)\\.json#/states|registry/states\\.json#/|fields/state\\.json#/|guidelines/states\\.json#/)[A-Za-z0-9._~/-]*$"
+            }
+          },
+          "mappingRefs": {
+            "items": {
+              "type": "string",
+              "pattern": "^mapping://p2/spectrum/component-map\\.json#/(?:[A-Za-z0-9._~-]+(?:/[A-Za-z0-9._~-]+)*)?$"
+            }
+          },
+          "targetRefs": {
+            "items": {
+              "type": "string",
+              "pattern": "^catalog://p2/components/(Button|InLineAlert)/states/[A-Za-z0-9._-]+$"
+            }
+          }
+        }
+      }
+    },
+    "slotMappingKind": {
+      "if": { "properties": { "mappingKind": { "const": "slot" } }, "required": ["mappingKind"] },
+      "then": {
+        "properties": {
+          "sourceRefs": {
+            "items": {
+              "type": "string",
+              "pattern": "^spectrum-design-data://npm/@adobe/spectrum-design-data@0\\.7\\.0/package/(components/(button|in-line-alert)\\.json#/(slots|anatomy)|registry/anatomy-terms\\.json#/|fields/anatomy\\.json#/)[A-Za-z0-9._~/-]*$"
+            }
+          },
+          "mappingRefs": {
+            "items": {
+              "type": "string",
+              "pattern": "^mapping://p2/spectrum/component-map\\.json#/(?:[A-Za-z0-9._~-]+(?:/[A-Za-z0-9._~-]+)*)?$"
+            }
+          },
+          "targetRefs": {
+            "items": {
+              "type": "string",
+              "pattern": "^catalog://p2/components/(Button|InLineAlert)/slots/[A-Za-z0-9._-]+$"
+            }
+          }
+        }
+      }
+    },
+    "accessibilityMappingKind": {
+      "if": { "properties": { "mappingKind": { "const": "accessibility" } }, "required": ["mappingKind"] },
+      "then": {
+        "properties": {
+          "sourceRefs": {
+            "items": {
+              "type": "string",
+              "pattern": "^(spectrum-design-data://npm/@adobe/spectrum-design-data@0\\.7\\.0/package/(components/(button|in-line-alert)\\.json#/accessibility|guidelines/[A-Za-z0-9._-]+\\.json#/)[A-Za-z0-9._~/-]*|source://p2/docs/usage-policy\\.json#/[A-Za-z0-9._~/-]*)$"
+            }
+          },
+          "mappingRefs": {
+            "items": {
+              "type": "string",
+              "pattern": "^mapping://p2/spectrum/(component-map|policy-map)\\.json#/(?:[A-Za-z0-9._~-]+(?:/[A-Za-z0-9._~-]+)*)?$"
+            }
+          },
+          "targetRefs": {
+            "items": {
+              "type": "string",
+              "pattern": "^catalog://p2/components/(Button|InLineAlert)/accessibility$"
+            }
+          }
+        }
+      }
+    },
+    "exampleMappingKind": {
+      "if": { "properties": { "mappingKind": { "const": "example" } }, "required": ["mappingKind"] },
+      "then": {
+        "properties": {
+          "sourceRefs": {
+            "items": {
+              "type": "string",
+              "pattern": "^spectrum-design-data://npm/@adobe/spectrum-design-data@0\\.7\\.0/package/(components/(button|in-line-alert)\\.json#/documentBlocks|README\\.md#/|guidelines/[A-Za-z0-9._-]+\\.json#/)[A-Za-z0-9._~/-]*$"
+            }
+          },
+          "mappingRefs": {
+            "items": {
+              "type": "string",
+              "pattern": "^mapping://p2/spectrum/component-map\\.json#/(?:[A-Za-z0-9._~-]+(?:/[A-Za-z0-9._~-]+)*)?$"
+            }
+          },
+          "targetRefs": {
+            "items": {
+              "type": "string",
+              "pattern": "^catalog://p2/components/(Button|InLineAlert)/examples/[A-Za-z0-9._-]+$"
+            }
+          }
+        }
+      }
+    },
+    "actionMappingKind": {
+      "if": { "properties": { "mappingKind": { "const": "action" } }, "required": ["mappingKind"] },
+      "then": {
+        "properties": {
+          "sourceRefs": {
+            "items": {
+              "type": "string",
+              "pattern": "^(spectrum-design-data://npm/@adobe/spectrum-design-data@0\\.7\\.0/package/components/(button|in-line-alert)\\.json#/(actions|events)[A-Za-z0-9._~/-]*|source://p2/docs/usage-policy\\.json#/[A-Za-z0-9._~/-]*)$"
+            }
+          },
+          "mappingRefs": {
+            "items": {
+              "type": "string",
+              "pattern": "^mapping://p2/spectrum/policy-map\\.json#/(?:[A-Za-z0-9._~-]+(?:/[A-Za-z0-9._~-]+)*)?$"
+            }
+          },
+          "targetRefs": {
+            "items": {
+              "type": "string",
+              "pattern": "^catalog://p2/components/(Button|InLineAlert)/actions/[A-Za-z0-9._-]+$"
+            }
+          }
+        }
+      }
+    },
+    "dataBindingMappingKind": {
+      "if": { "properties": { "mappingKind": { "const": "dataBinding" } }, "required": ["mappingKind"] },
+      "then": {
+        "properties": {
+          "sourceRefs": {
+            "items": {
+              "type": "string",
+              "pattern": "^spectrum-design-data://npm/@adobe/spectrum-design-data@0\\.7\\.0/package/components/(button|in-line-alert)\\.json#/dataBindings[A-Za-z0-9._~/-]*$"
+            }
+          },
+          "mappingRefs": {
+            "items": {
+              "type": "string",
+              "pattern": "^mapping://p2/spectrum/component-map\\.json#/(?:[A-Za-z0-9._~-]+(?:/[A-Za-z0-9._~-]+)*)?$"
+            }
+          },
+          "targetRefs": {
+            "items": {
+              "type": "string",
+              "pattern": "^catalog://p2/components/(Button|InLineAlert)/dataBindings/[A-Za-z0-9._-]+$"
+            }
+          }
+        }
+      }
+    },
+    "governanceMappingKind": {
+      "if": { "properties": { "mappingKind": { "const": "governance" } }, "required": ["mappingKind"] },
+      "then": {
+        "properties": {
+          "sourceRefs": {
+            "items": {
+              "type": "string",
+              "pattern": "^(spectrum-design-data://npm/@adobe/spectrum-design-data@0\\.7\\.0/package/guidelines/[A-Za-z0-9._-]+\\.json#/[A-Za-z0-9._~/-]*|source://p2/docs/usage-policy\\.json#/[A-Za-z0-9._~/-]*)$"
+            }
+          },
+          "mappingRefs": {
+            "items": {
+              "type": "string",
+              "pattern": "^mapping://p2/spectrum/policy-map\\.json#/(?:[A-Za-z0-9._~-]+(?:/[A-Za-z0-9._~-]+)*)?$"
+            }
+          },
+          "targetRefs": {
+            "items": {
+              "type": "string",
+              "pattern": "^catalog://p2/governance/[A-Za-z0-9._-]+$"
+            }
+          }
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "required": ["generatedAt", "generator", "sourceRefs"],
+      "properties": {
+        "generatedAt": { "type": "string", "format": "date-time" },
+        "generator": { "type": "string" },
+        "sourceRefs": { "type": "array", "items": { "$ref": "#/$defs/sourceRef" } }
+      },
+      "unevaluatedProperties": false
+    }
+  },
+  "unevaluatedProperties": false
+}

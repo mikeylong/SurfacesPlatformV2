@@ -1,0 +1,87 @@
+{
+  "schemaId": "design-system-ingestion-valid-fixture.v0",
+  "fixtureId": "spectrum-in-line-alert-valid",
+  "fixtureKind": "valid",
+  "target": {
+    "designSystemId": "adobe-spectrum",
+    "packageName": "@adobe/spectrum-design-data",
+    "packageVersion": "0.7.0",
+    "component": "in-line-alert"
+  },
+  "sourceRefs": [
+    "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/in-line-alert.json#/",
+    "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/in-line-alert.json#/options/variant",
+    "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/in-line-alert.json#/options/style",
+    "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/in-line-alert.json#/options/heading",
+    "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/in-line-alert.json#/accessibility",
+    "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/in-line-alert.json#/documentBlocks/0",
+    "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/in-line-alert.json#/tokenBindings/0",
+    "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/registry/components.json#/",
+    "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/registry/variants.json#/",
+    "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/registry/states.json#/"
+  ],
+  "mappingRefs": [
+    "mapping://p2/spectrum/component-map.json#/mappingRows/in-line-alert-component"
+  ],
+  "expectedCatalogRefs": [
+    "catalog://p2/components/InLineAlert"
+  ],
+  "expectedNormalizedIds": [
+    "InLineAlert"
+  ],
+  "expectedExtraction": {
+    "component": {
+      "sourceRef": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/in-line-alert.json#/",
+      "catalogRef": "catalog://p2/components/InLineAlert"
+    },
+    "propsOptions": [
+      {
+        "sourceRef": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/in-line-alert.json#/options/variant",
+        "catalogRef": "catalog://p2/components/InLineAlert/props/variant"
+      },
+      {
+        "sourceRef": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/in-line-alert.json#/options/style",
+        "catalogRef": "catalog://p2/components/InLineAlert/props/style"
+      },
+      {
+        "sourceRef": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/in-line-alert.json#/options/heading",
+        "catalogRef": "catalog://p2/components/InLineAlert/props/heading"
+      }
+    ],
+    "variants": [
+      {
+        "sourceRef": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/in-line-alert.json#/options/variant/values/0",
+        "catalogRef": "catalog://p2/components/InLineAlert/variants/neutral"
+      }
+    ],
+    "states": {
+      "coverageStatus": "source-absent",
+      "sourceRef": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/in-line-alert.json#/"
+    },
+    "slots": {
+      "coverageStatus": "source-absent",
+      "sourceRef": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/in-line-alert.json#/"
+    },
+    "accessibility": [
+      {
+        "sourceRef": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/in-line-alert.json#/accessibility",
+        "catalogRef": "catalog://p2/components/InLineAlert/accessibility"
+      }
+    ],
+    "examples": [
+      {
+        "sourceRef": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/in-line-alert.json#/documentBlocks/0",
+        "catalogRef": "catalog://p2/components/InLineAlert/examples/purpose"
+      }
+    ],
+    "tokenRefs": [
+      {
+        "sourceRef": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/in-line-alert.json#/tokenBindings/0",
+        "catalogRef": "catalog://p2/components/InLineAlert/tokenRefs/border-width-200"
+      }
+    ]
+  },
+  "expectedResult": "valid",
+  "promotionStatus": "allowed",
+  "diagnosticCodes": []
+}

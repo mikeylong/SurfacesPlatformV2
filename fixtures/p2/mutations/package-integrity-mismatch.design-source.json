@@ -1,0 +1,11 @@
+{
+  "schemaId": "design-system-ingestion-mutation-fixture.v0",
+  "fixtureId": "package-integrity-mismatch",
+  "fixtureKind": "mutation",
+  "description": "Pinned Spectrum package integrity is immutable for the P2 pilot.",
+  "mutatedPath": "sources/p2/design-system-source/manifest.json",
+  "mutation": "packageIntegrity changed",
+  "expectedDiagnosticCode": "INGEST_PACKAGE_INTEGRITY_MISMATCH",
+  "expectedResult": "invalid",
+  "promotionStatus": "blocked"
+}

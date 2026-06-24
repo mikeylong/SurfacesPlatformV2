@@ -1,0 +1,39 @@
+{
+  "$id": "https://surfaces.dev/schemas/p2/design-system-ingestion-report.v0.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": [
+    "schemaId",
+    "version",
+    "sourceManifest",
+    "sourceInventory",
+    "sourceMapping",
+    "extraction",
+    "catalogCompilation",
+    "governance",
+    "fixtureResults",
+    "diagnostics",
+    "status",
+    "promotionStatus"
+  ],
+  "properties": {
+    "schemaId": { "const": "design-system-ingestion-report.v0" },
+    "version": { "type": "string" },
+    "sourceManifest": { "type": "object" },
+    "sourceInventory": { "type": "object" },
+    "sourceMapping": { "type": "object" },
+    "extraction": { "type": "object" },
+    "catalogCompilation": { "type": "object" },
+    "governance": { "type": "object" },
+    "fixtureResults": { "type": "array", "items": { "type": "object" } },
+    "diagnostics": {
+      "type": "array",
+      "items": {
+        "$ref": "https://surfaces.dev/schemas/p2/design-system-ingestion-diagnostics.v0.schema.json#/$defs/diagnostic"
+      }
+    },
+    "status": { "enum": ["pass", "fail"] },
+    "promotionStatus": { "enum": ["allowed", "blocked", "review_required"] }
+  },
+  "unevaluatedProperties": false
+}

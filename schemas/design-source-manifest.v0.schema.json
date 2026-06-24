@@ -1,0 +1,1110 @@
+{
+  "$id": "https://surfaces.dev/schemas/p2/design-source-manifest.v0.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": [
+    "schemaId",
+    "version",
+    "designSystemId",
+    "designSystemName",
+    "sourceFamily",
+    "packageName",
+    "packageVersion",
+    "packageTarball",
+    "packageIntegrity",
+    "snapshotRoot",
+    "sourceRefGrammar",
+    "initialComponents",
+    "sourceFiles",
+    "requiredMappings",
+    "policyRefs",
+    "generatedAt",
+    "environment"
+  ],
+  "properties": {
+    "schemaId": { "const": "design-source-manifest.v0" },
+    "version": { "type": "string" },
+    "designSystemId": { "const": "adobe-spectrum" },
+    "designSystemName": { "const": "Adobe Spectrum Design Data" },
+    "sourceFamily": { "const": "design-system-source-bundle.v0" },
+    "packageName": { "const": "@adobe/spectrum-design-data" },
+    "packageVersion": { "const": "0.7.0" },
+    "packageTarball": { "const": "https://registry.npmjs.org/@adobe/spectrum-design-data/-/spectrum-design-data-0.7.0.tgz" },
+    "packageIntegrity": {
+      "const": "sha512-mSdmQn6fNEzKVo6W5xS4gO1EXCpC4ojiEm3GqTlSjhh26lC9siMgQSWi33ODvWe8ssfrxXX0unzVnL5VBt4+CA=="
+    },
+    "snapshotRoot": {
+      "const": "sources/p2/design-system-source/npm/@adobe/spectrum-design-data/0.7.0/package"
+    },
+    "sourceRefGrammar": {
+      "const": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/<posix-package-path>#<rfc6901-json-pointer>"
+    },
+    "initialComponents": {
+      "type": "array",
+      "prefixItems": [
+        { "const": "button" },
+        { "const": "in-line-alert" }
+      ],
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "sourceFiles": {
+      "type": "array",
+      "minItems": 32,
+      "items": { "$ref": "#/$defs/sourceFile" }
+    },
+    "requiredMappings": {
+      "type": "array",
+      "minItems": 3,
+      "items": { "$ref": "#/$defs/requiredMapping" }
+    },
+    "policyRefs": {
+      "type": "array",
+      "minItems": 6,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/sourceRef" }
+    },
+    "generatedAt": { "type": "string", "format": "date-time" },
+    "environment": {
+      "type": "object",
+      "required": ["host"],
+      "properties": {
+        "host": { "type": "null" }
+      },
+      "unevaluatedProperties": false
+    }
+  },
+  "$defs": {
+    "sourceRef": {
+      "oneOf": [
+        {
+          "type": "string",
+          "pattern": "^spectrum-design-data://npm/@adobe/spectrum-design-data@0\\.7\\.0/package/(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*(?:^|/)\\.(?:/|$))(?!.*//)[A-Za-z0-9._@-]+(?:/[A-Za-z0-9._@-]+)*#/(?:[A-Za-z0-9._~-]+(?:/[A-Za-z0-9._~-]+)*)?$"
+        },
+        {
+          "type": "string",
+          "pattern": "^source://p2/docs/usage-policy\\.json#/(?:[A-Za-z0-9._~-]+(?:/[A-Za-z0-9._~-]+)*)?$"
+        }
+      ]
+    },
+    "mappingRef": {
+      "type": "string",
+      "pattern": "^mapping://p2/spectrum/(component-map|token-map|policy-map)\\.json#/(?:[A-Za-z0-9._~-]+(?:/[A-Za-z0-9._~-]+)*)?$"
+    },
+    "sourceFile": {
+      "type": "object",
+      "required": [
+        "path",
+        "packagePath",
+        "sourceType",
+        "sourceSystem",
+        "hashAlgorithm",
+        "sha256",
+        "sourceRefRoot"
+      ],
+      "oneOf": [
+        {
+          "properties": {
+            "path": {
+              "type": "string",
+              "pattern": "^npm/@adobe/spectrum-design-data/0\\.7\\.0/package/(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*(?:^|/)\\.(?:/|$))(?!.*//)[A-Za-z0-9._@-]+(?:/[A-Za-z0-9._@-]+)*$"
+            },
+            "packagePath": {
+              "type": "string",
+              "pattern": "^(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*(?:^|/)\\.(?:/|$))(?!.*//)[A-Za-z0-9._@-]+(?:/[A-Za-z0-9._@-]+)*$"
+            },
+            "sourceSystem": { "const": "npm:@adobe/spectrum-design-data" },
+            "sourceRefRoot": {
+              "type": "string",
+              "pattern": "^spectrum-design-data://npm/@adobe/spectrum-design-data@0\\.7\\.0/package/(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*(?:^|/)\\.(?:/|$))(?!.*//)[A-Za-z0-9._@-]+(?:/[A-Za-z0-9._@-]+)*#/$"
+            }
+          }
+        },
+        {
+          "properties": {
+            "path": {
+              "type": "string",
+              "const": "docs/usage-policy.json"
+            },
+            "packagePath": { "type": "null" },
+            "sourceSystem": { "const": "local:p2-docs" },
+            "sourceRefRoot": {
+              "type": "string",
+              "const": "source://p2/docs/usage-policy.json#/"
+            }
+          }
+        }
+      ],
+      "properties": {
+        "sourceType": {
+          "enum": ["package", "component", "token", "registry", "field", "mode", "guideline", "policy"]
+        },
+        "hashAlgorithm": { "const": "sha256" },
+        "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+      },
+      "unevaluatedProperties": false
+    },
+    "requiredMapping": {
+      "type": "object",
+      "required": ["path", "mappingRefRoot", "hashAlgorithm", "sha256"],
+      "properties": {
+        "path": {
+          "type": "string",
+          "pattern": "^mappings/(component-map|token-map|policy-map)\\.json$"
+        },
+        "mappingRefRoot": { "$ref": "#/$defs/mappingRef" },
+        "hashAlgorithm": { "const": "sha256" },
+        "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+      },
+      "unevaluatedProperties": false
+    },
+    "requiredSourcePackageJson": {
+      "properties": {
+        "sourceFiles": {
+          "contains": { "$ref": "#/$defs/sourceFilePackageJson" },
+          "minContains": 1,
+          "maxContains": 1
+        }
+      }
+    },
+    "requiredSourceReadme": {
+      "properties": {
+        "sourceFiles": {
+          "contains": { "$ref": "#/$defs/sourceFileReadme" },
+          "minContains": 1,
+          "maxContains": 1
+        }
+      }
+    },
+    "requiredSourceLicense": {
+      "properties": {
+        "sourceFiles": {
+          "contains": { "$ref": "#/$defs/sourceFileLicense" },
+          "minContains": 1,
+          "maxContains": 1
+        }
+      }
+    },
+    "requiredSourceButton": { "$ref": "#/$defs/requiredSourceComponentsButtonJson" },
+    "requiredSourceInLineAlert": { "$ref": "#/$defs/requiredSourceComponentsInLineAlertJson" },
+    "requiredSourceRegistryComponents": { "$ref": "#/$defs/requiredSourceRegistryComponentsJson" },
+    "requiredSourceRegistryPropertyTerms": { "$ref": "#/$defs/requiredSourceRegistryPropertyTermsJson" },
+    "requiredSourceRegistryVariants": { "$ref": "#/$defs/requiredSourceRegistryVariantsJson" },
+    "requiredSourceRegistryStates": { "$ref": "#/$defs/requiredSourceRegistryStatesJson" },
+    "requiredSourceRegistryAnatomyTerms": { "$ref": "#/$defs/requiredSourceRegistryAnatomyTermsJson" },
+    "requiredSourceRegistryTokenTerminology": { "$ref": "#/$defs/requiredSourceRegistryTokenTerminologyJson" },
+    "requiredSourceRegistryTokenObjects": { "$ref": "#/$defs/requiredSourceRegistryTokenObjectsJson" },
+    "requiredSourceTokensColorComponent": { "$ref": "#/$defs/requiredSourceTokensColorComponentTokensJson" },
+    "requiredSourceTokensColorAliases": { "$ref": "#/$defs/requiredSourceTokensColorAliasesTokensJson" },
+    "requiredSourceTokensColorPalette": { "$ref": "#/$defs/requiredSourceTokensColorPaletteTokensJson" },
+    "requiredSourceTokensLayoutComponent": { "$ref": "#/$defs/requiredSourceTokensLayoutComponentTokensJson" },
+    "requiredSourceTokensLayout": { "$ref": "#/$defs/requiredSourceTokensLayoutTokensJson" },
+    "requiredSourceTokensTypography": { "$ref": "#/$defs/requiredSourceTokensTypographyTokensJson" },
+    "requiredSourceModeColorScheme": { "$ref": "#/$defs/requiredSourceModeSetsColorSchemeJson" },
+    "requiredSourceModeContrast": { "$ref": "#/$defs/requiredSourceModeSetsContrastJson" },
+    "requiredSourceModeScale": { "$ref": "#/$defs/requiredSourceModeSetsScaleJson" },
+    "requiredSourceFieldVariant": { "$ref": "#/$defs/requiredSourceFieldsVariantJson" },
+    "requiredSourceFieldState": { "$ref": "#/$defs/requiredSourceFieldsStateJson" },
+    "requiredSourceFieldSize": { "$ref": "#/$defs/requiredSourceFieldsSizeJson" },
+    "requiredSourceFieldProperty": { "$ref": "#/$defs/requiredSourceFieldsPropertyJson" },
+    "requiredSourceFieldAnatomy": { "$ref": "#/$defs/requiredSourceFieldsAnatomyJson" },
+    "requiredSourceGuidelineDeveloperOverview": { "$ref": "#/$defs/requiredSourceGuidelinesDeveloperOverviewJson" },
+    "requiredSourceGuidelineStates": { "$ref": "#/$defs/requiredSourceGuidelinesStatesJson" },
+    "requiredSourceGuidelineColors": { "$ref": "#/$defs/requiredSourceGuidelinesColorsJson" },
+    "requiredSourceGuidelineSpacing": { "$ref": "#/$defs/requiredSourceGuidelinesSpacingJson" },
+    "requiredSourceGuidelineTypographyFundamentals": {
+      "$ref": "#/$defs/requiredSourceGuidelinesTypographyFundamentalsJson"
+    },
+    "requiredSourceDocsUsagePolicy": {
+      "properties": {
+        "sourceFiles": {
+          "contains": { "$ref": "#/$defs/sourceFileDocsUsagePolicy" },
+          "minContains": 1,
+          "maxContains": 1
+        }
+      }
+    },
+    "sourceFilePackageJson": { "$ref": "#/$defs/sourceFilePackage__package_json__package" },
+    "sourceFileReadme": { "$ref": "#/$defs/sourceFilePackage__README_md__package" },
+    "sourceFileLicense": { "$ref": "#/$defs/sourceFilePackage__LICENSE__package" },
+    "sourceFileDocsUsagePolicy": {
+      "type": "object",
+      "required": ["path", "packagePath", "sourceType", "sourceRefRoot"],
+      "properties": {
+        "path": { "const": "docs/usage-policy.json" },
+        "packagePath": { "type": "null" },
+        "sourceType": { "const": "policy" },
+        "sourceRefRoot": { "const": "source://p2/docs/usage-policy.json#/" }
+      }
+    },
+    "sourceFilePackage__package_json__package": {
+      "type": "object",
+      "required": ["path", "packagePath", "sourceType", "sourceRefRoot"],
+      "properties": {
+        "path": { "const": "npm/@adobe/spectrum-design-data/0.7.0/package/package.json" },
+        "packagePath": { "const": "package.json" },
+        "sourceType": { "const": "package" },
+        "sourceRefRoot": {
+          "const": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/package.json#/"
+        }
+      }
+    },
+    "sourceFilePackage__README_md__package": {
+      "type": "object",
+      "required": ["path", "packagePath", "sourceType", "sourceRefRoot"],
+      "properties": {
+        "path": { "const": "npm/@adobe/spectrum-design-data/0.7.0/package/README.md" },
+        "packagePath": { "const": "README.md" },
+        "sourceType": { "const": "package" },
+        "sourceRefRoot": {
+          "const": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/README.md#/"
+        }
+      }
+    },
+    "sourceFilePackage__LICENSE__package": {
+      "type": "object",
+      "required": ["path", "packagePath", "sourceType", "sourceRefRoot"],
+      "properties": {
+        "path": { "const": "npm/@adobe/spectrum-design-data/0.7.0/package/LICENSE" },
+        "packagePath": { "const": "LICENSE" },
+        "sourceType": { "const": "package" },
+        "sourceRefRoot": {
+          "const": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/LICENSE#/"
+        }
+      }
+    },
+    "requiredSourceComponentsButtonJson": {
+      "properties": {
+        "sourceFiles": {
+          "contains": { "$ref": "#/$defs/sourceFilePackage__components_button_json__component" },
+          "minContains": 1,
+          "maxContains": 1
+        }
+      }
+    },
+    "requiredSourceComponentsInLineAlertJson": {
+      "properties": {
+        "sourceFiles": {
+          "contains": { "$ref": "#/$defs/sourceFilePackage__components_in_line_alert_json__component" },
+          "minContains": 1,
+          "maxContains": 1
+        }
+      }
+    },
+    "requiredSourceRegistryComponentsJson": {
+      "properties": {
+        "sourceFiles": {
+          "contains": { "$ref": "#/$defs/sourceFilePackage__registry_components_json__registry" },
+          "minContains": 1,
+          "maxContains": 1
+        }
+      }
+    },
+    "requiredSourceRegistryPropertyTermsJson": {
+      "properties": {
+        "sourceFiles": {
+          "contains": { "$ref": "#/$defs/sourceFilePackage__registry_property_terms_json__registry" },
+          "minContains": 1,
+          "maxContains": 1
+        }
+      }
+    },
+    "requiredSourceRegistryVariantsJson": {
+      "properties": {
+        "sourceFiles": {
+          "contains": { "$ref": "#/$defs/sourceFilePackage__registry_variants_json__registry" },
+          "minContains": 1,
+          "maxContains": 1
+        }
+      }
+    },
+    "requiredSourceRegistryStatesJson": {
+      "properties": {
+        "sourceFiles": {
+          "contains": { "$ref": "#/$defs/sourceFilePackage__registry_states_json__registry" },
+          "minContains": 1,
+          "maxContains": 1
+        }
+      }
+    },
+    "requiredSourceRegistryAnatomyTermsJson": {
+      "properties": {
+        "sourceFiles": {
+          "contains": { "$ref": "#/$defs/sourceFilePackage__registry_anatomy_terms_json__registry" },
+          "minContains": 1,
+          "maxContains": 1
+        }
+      }
+    },
+    "requiredSourceRegistryTokenTerminologyJson": {
+      "properties": {
+        "sourceFiles": {
+          "contains": { "$ref": "#/$defs/sourceFilePackage__registry_token_terminology_json__registry" },
+          "minContains": 1,
+          "maxContains": 1
+        }
+      }
+    },
+    "requiredSourceRegistryTokenObjectsJson": {
+      "properties": {
+        "sourceFiles": {
+          "contains": { "$ref": "#/$defs/sourceFilePackage__registry_token_objects_json__registry" },
+          "minContains": 1,
+          "maxContains": 1
+        }
+      }
+    },
+    "requiredSourceTokensColorComponentTokensJson": {
+      "properties": {
+        "sourceFiles": {
+          "contains": { "$ref": "#/$defs/sourceFilePackage__tokens_color_component_tokens_json__token" },
+          "minContains": 1,
+          "maxContains": 1
+        }
+      }
+    },
+    "requiredSourceTokensColorAliasesTokensJson": {
+      "properties": {
+        "sourceFiles": {
+          "contains": { "$ref": "#/$defs/sourceFilePackage__tokens_color_aliases_tokens_json__token" },
+          "minContains": 1,
+          "maxContains": 1
+        }
+      }
+    },
+    "requiredSourceTokensColorPaletteTokensJson": {
+      "properties": {
+        "sourceFiles": {
+          "contains": { "$ref": "#/$defs/sourceFilePackage__tokens_color_palette_tokens_json__token" },
+          "minContains": 1,
+          "maxContains": 1
+        }
+      }
+    },
+    "requiredSourceTokensLayoutComponentTokensJson": {
+      "properties": {
+        "sourceFiles": {
+          "contains": { "$ref": "#/$defs/sourceFilePackage__tokens_layout_component_tokens_json__token" },
+          "minContains": 1,
+          "maxContains": 1
+        }
+      }
+    },
+    "requiredSourceTokensLayoutTokensJson": {
+      "properties": {
+        "sourceFiles": {
+          "contains": { "$ref": "#/$defs/sourceFilePackage__tokens_layout_tokens_json__token" },
+          "minContains": 1,
+          "maxContains": 1
+        }
+      }
+    },
+    "requiredSourceTokensTypographyTokensJson": {
+      "properties": {
+        "sourceFiles": {
+          "contains": { "$ref": "#/$defs/sourceFilePackage__tokens_typography_tokens_json__token" },
+          "minContains": 1,
+          "maxContains": 1
+        }
+      }
+    },
+    "requiredSourceModeSetsColorSchemeJson": {
+      "properties": {
+        "sourceFiles": {
+          "contains": { "$ref": "#/$defs/sourceFilePackage__mode_sets_color_scheme_json__mode" },
+          "minContains": 1,
+          "maxContains": 1
+        }
+      }
+    },
+    "requiredSourceModeSetsContrastJson": {
+      "properties": {
+        "sourceFiles": {
+          "contains": { "$ref": "#/$defs/sourceFilePackage__mode_sets_contrast_json__mode" },
+          "minContains": 1,
+          "maxContains": 1
+        }
+      }
+    },
+    "requiredSourceModeSetsScaleJson": {
+      "properties": {
+        "sourceFiles": {
+          "contains": { "$ref": "#/$defs/sourceFilePackage__mode_sets_scale_json__mode" },
+          "minContains": 1,
+          "maxContains": 1
+        }
+      }
+    },
+    "requiredSourceFieldsVariantJson": {
+      "properties": {
+        "sourceFiles": {
+          "contains": { "$ref": "#/$defs/sourceFilePackage__fields_variant_json__field" },
+          "minContains": 1,
+          "maxContains": 1
+        }
+      }
+    },
+    "requiredSourceFieldsStateJson": {
+      "properties": {
+        "sourceFiles": {
+          "contains": { "$ref": "#/$defs/sourceFilePackage__fields_state_json__field" },
+          "minContains": 1,
+          "maxContains": 1
+        }
+      }
+    },
+    "requiredSourceFieldsSizeJson": {
+      "properties": {
+        "sourceFiles": {
+          "contains": { "$ref": "#/$defs/sourceFilePackage__fields_size_json__field" },
+          "minContains": 1,
+          "maxContains": 1
+        }
+      }
+    },
+    "requiredSourceFieldsPropertyJson": {
+      "properties": {
+        "sourceFiles": {
+          "contains": { "$ref": "#/$defs/sourceFilePackage__fields_property_json__field" },
+          "minContains": 1,
+          "maxContains": 1
+        }
+      }
+    },
+    "requiredSourceFieldsAnatomyJson": {
+      "properties": {
+        "sourceFiles": {
+          "contains": { "$ref": "#/$defs/sourceFilePackage__fields_anatomy_json__field" },
+          "minContains": 1,
+          "maxContains": 1
+        }
+      }
+    },
+    "requiredSourceGuidelinesDeveloperOverviewJson": {
+      "properties": {
+        "sourceFiles": {
+          "contains": { "$ref": "#/$defs/sourceFilePackage__guidelines_developer_overview_json__guideline" },
+          "minContains": 1,
+          "maxContains": 1
+        }
+      }
+    },
+    "requiredSourceGuidelinesStatesJson": {
+      "properties": {
+        "sourceFiles": {
+          "contains": { "$ref": "#/$defs/sourceFilePackage__guidelines_states_json__guideline" },
+          "minContains": 1,
+          "maxContains": 1
+        }
+      }
+    },
+    "requiredSourceGuidelinesColorsJson": {
+      "properties": {
+        "sourceFiles": {
+          "contains": { "$ref": "#/$defs/sourceFilePackage__guidelines_colors_json__guideline" },
+          "minContains": 1,
+          "maxContains": 1
+        }
+      }
+    },
+    "requiredSourceGuidelinesSpacingJson": {
+      "properties": {
+        "sourceFiles": {
+          "contains": { "$ref": "#/$defs/sourceFilePackage__guidelines_spacing_json__guideline" },
+          "minContains": 1,
+          "maxContains": 1
+        }
+      }
+    },
+    "requiredSourceGuidelinesTypographyFundamentalsJson": {
+      "properties": {
+        "sourceFiles": {
+          "contains": { "$ref": "#/$defs/sourceFilePackage__guidelines_typography_fundamentals_json__guideline" },
+          "minContains": 1,
+          "maxContains": 1
+        }
+      }
+    },
+    "sourceFilePackage__components_button_json__component": {
+      "$ref": "#/$defs/sourceFileConst__components_button_json__component"
+    },
+    "sourceFilePackage__components_in_line_alert_json__component": {
+      "$ref": "#/$defs/sourceFileConst__components_in_line_alert_json__component"
+    },
+    "sourceFilePackage__registry_components_json__registry": {
+      "$ref": "#/$defs/sourceFileConst__registry_components_json__registry"
+    },
+    "sourceFilePackage__registry_property_terms_json__registry": {
+      "$ref": "#/$defs/sourceFileConst__registry_property_terms_json__registry"
+    },
+    "sourceFilePackage__registry_variants_json__registry": {
+      "$ref": "#/$defs/sourceFileConst__registry_variants_json__registry"
+    },
+    "sourceFilePackage__registry_states_json__registry": {
+      "$ref": "#/$defs/sourceFileConst__registry_states_json__registry"
+    },
+    "sourceFilePackage__registry_anatomy_terms_json__registry": {
+      "$ref": "#/$defs/sourceFileConst__registry_anatomy_terms_json__registry"
+    },
+    "sourceFilePackage__registry_token_terminology_json__registry": {
+      "$ref": "#/$defs/sourceFileConst__registry_token_terminology_json__registry"
+    },
+    "sourceFilePackage__registry_token_objects_json__registry": {
+      "$ref": "#/$defs/sourceFileConst__registry_token_objects_json__registry"
+    },
+    "sourceFilePackage__tokens_color_component_tokens_json__token": {
+      "$ref": "#/$defs/sourceFileConst__tokens_color_component_tokens_json__token"
+    },
+    "sourceFilePackage__tokens_color_aliases_tokens_json__token": {
+      "$ref": "#/$defs/sourceFileConst__tokens_color_aliases_tokens_json__token"
+    },
+    "sourceFilePackage__tokens_color_palette_tokens_json__token": {
+      "$ref": "#/$defs/sourceFileConst__tokens_color_palette_tokens_json__token"
+    },
+    "sourceFilePackage__tokens_layout_component_tokens_json__token": {
+      "$ref": "#/$defs/sourceFileConst__tokens_layout_component_tokens_json__token"
+    },
+    "sourceFilePackage__tokens_layout_tokens_json__token": {
+      "$ref": "#/$defs/sourceFileConst__tokens_layout_tokens_json__token"
+    },
+    "sourceFilePackage__tokens_typography_tokens_json__token": {
+      "$ref": "#/$defs/sourceFileConst__tokens_typography_tokens_json__token"
+    },
+    "sourceFilePackage__mode_sets_color_scheme_json__mode": {
+      "$ref": "#/$defs/sourceFileConst__mode_sets_color_scheme_json__mode"
+    },
+    "sourceFilePackage__mode_sets_contrast_json__mode": {
+      "$ref": "#/$defs/sourceFileConst__mode_sets_contrast_json__mode"
+    },
+    "sourceFilePackage__mode_sets_scale_json__mode": {
+      "$ref": "#/$defs/sourceFileConst__mode_sets_scale_json__mode"
+    },
+    "sourceFilePackage__fields_variant_json__field": {
+      "$ref": "#/$defs/sourceFileConst__fields_variant_json__field"
+    },
+    "sourceFilePackage__fields_state_json__field": {
+      "$ref": "#/$defs/sourceFileConst__fields_state_json__field"
+    },
+    "sourceFilePackage__fields_size_json__field": {
+      "$ref": "#/$defs/sourceFileConst__fields_size_json__field"
+    },
+    "sourceFilePackage__fields_property_json__field": {
+      "$ref": "#/$defs/sourceFileConst__fields_property_json__field"
+    },
+    "sourceFilePackage__fields_anatomy_json__field": {
+      "$ref": "#/$defs/sourceFileConst__fields_anatomy_json__field"
+    },
+    "sourceFilePackage__guidelines_developer_overview_json__guideline": {
+      "$ref": "#/$defs/sourceFileConst__guidelines_developer_overview_json__guideline"
+    },
+    "sourceFilePackage__guidelines_states_json__guideline": {
+      "$ref": "#/$defs/sourceFileConst__guidelines_states_json__guideline"
+    },
+    "sourceFilePackage__guidelines_colors_json__guideline": {
+      "$ref": "#/$defs/sourceFileConst__guidelines_colors_json__guideline"
+    },
+    "sourceFilePackage__guidelines_spacing_json__guideline": {
+      "$ref": "#/$defs/sourceFileConst__guidelines_spacing_json__guideline"
+    },
+    "sourceFilePackage__guidelines_typography_fundamentals_json__guideline": {
+      "$ref": "#/$defs/sourceFileConst__guidelines_typography_fundamentals_json__guideline"
+    },
+    "sourceFileConst__components_button_json__component": {
+      "type": "object",
+      "required": ["path", "packagePath", "sourceType", "sourceRefRoot"],
+      "properties": {
+        "path": { "const": "npm/@adobe/spectrum-design-data/0.7.0/package/components/button.json" },
+        "packagePath": { "const": "components/button.json" },
+        "sourceType": { "const": "component" },
+        "sourceRefRoot": {
+          "const": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/button.json#/"
+        }
+      }
+    },
+    "sourceFileConst__components_in_line_alert_json__component": {
+      "type": "object",
+      "required": ["path", "packagePath", "sourceType", "sourceRefRoot"],
+      "properties": {
+        "path": { "const": "npm/@adobe/spectrum-design-data/0.7.0/package/components/in-line-alert.json" },
+        "packagePath": { "const": "components/in-line-alert.json" },
+        "sourceType": { "const": "component" },
+        "sourceRefRoot": {
+          "const": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/in-line-alert.json#/"
+        }
+      }
+    },
+    "sourceFileConst__registry_components_json__registry": {
+      "type": "object",
+      "required": ["path", "packagePath", "sourceType", "sourceRefRoot"],
+      "properties": {
+        "path": { "const": "npm/@adobe/spectrum-design-data/0.7.0/package/registry/components.json" },
+        "packagePath": { "const": "registry/components.json" },
+        "sourceType": { "const": "registry" },
+        "sourceRefRoot": {
+          "const": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/registry/components.json#/"
+        }
+      }
+    },
+    "sourceFileConst__registry_property_terms_json__registry": {
+      "type": "object",
+      "required": ["path", "packagePath", "sourceType", "sourceRefRoot"],
+      "properties": {
+        "path": { "const": "npm/@adobe/spectrum-design-data/0.7.0/package/registry/property-terms.json" },
+        "packagePath": { "const": "registry/property-terms.json" },
+        "sourceType": { "const": "registry" },
+        "sourceRefRoot": {
+          "const": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/registry/property-terms.json#/"
+        }
+      }
+    },
+    "sourceFileConst__registry_variants_json__registry": {
+      "type": "object",
+      "required": ["path", "packagePath", "sourceType", "sourceRefRoot"],
+      "properties": {
+        "path": { "const": "npm/@adobe/spectrum-design-data/0.7.0/package/registry/variants.json" },
+        "packagePath": { "const": "registry/variants.json" },
+        "sourceType": { "const": "registry" },
+        "sourceRefRoot": {
+          "const": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/registry/variants.json#/"
+        }
+      }
+    },
+    "sourceFileConst__registry_states_json__registry": {
+      "type": "object",
+      "required": ["path", "packagePath", "sourceType", "sourceRefRoot"],
+      "properties": {
+        "path": { "const": "npm/@adobe/spectrum-design-data/0.7.0/package/registry/states.json" },
+        "packagePath": { "const": "registry/states.json" },
+        "sourceType": { "const": "registry" },
+        "sourceRefRoot": {
+          "const": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/registry/states.json#/"
+        }
+      }
+    },
+    "sourceFileConst__registry_anatomy_terms_json__registry": {
+      "type": "object",
+      "required": ["path", "packagePath", "sourceType", "sourceRefRoot"],
+      "properties": {
+        "path": { "const": "npm/@adobe/spectrum-design-data/0.7.0/package/registry/anatomy-terms.json" },
+        "packagePath": { "const": "registry/anatomy-terms.json" },
+        "sourceType": { "const": "registry" },
+        "sourceRefRoot": {
+          "const": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/registry/anatomy-terms.json#/"
+        }
+      }
+    },
+    "sourceFileConst__registry_token_terminology_json__registry": {
+      "type": "object",
+      "required": ["path", "packagePath", "sourceType", "sourceRefRoot"],
+      "properties": {
+        "path": { "const": "npm/@adobe/spectrum-design-data/0.7.0/package/registry/token-terminology.json" },
+        "packagePath": { "const": "registry/token-terminology.json" },
+        "sourceType": { "const": "registry" },
+        "sourceRefRoot": {
+          "const": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/registry/token-terminology.json#/"
+        }
+      }
+    },
+    "sourceFileConst__registry_token_objects_json__registry": {
+      "type": "object",
+      "required": ["path", "packagePath", "sourceType", "sourceRefRoot"],
+      "properties": {
+        "path": { "const": "npm/@adobe/spectrum-design-data/0.7.0/package/registry/token-objects.json" },
+        "packagePath": { "const": "registry/token-objects.json" },
+        "sourceType": { "const": "registry" },
+        "sourceRefRoot": {
+          "const": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/registry/token-objects.json#/"
+        }
+      }
+    },
+    "sourceFileConst__tokens_color_component_tokens_json__token": {
+      "type": "object",
+      "required": ["path", "packagePath", "sourceType", "sourceRefRoot"],
+      "properties": {
+        "path": { "const": "npm/@adobe/spectrum-design-data/0.7.0/package/tokens/color-component.tokens.json" },
+        "packagePath": { "const": "tokens/color-component.tokens.json" },
+        "sourceType": { "const": "token" },
+        "sourceRefRoot": {
+          "const": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/tokens/color-component.tokens.json#/"
+        }
+      }
+    },
+    "sourceFileConst__tokens_color_aliases_tokens_json__token": {
+      "type": "object",
+      "required": ["path", "packagePath", "sourceType", "sourceRefRoot"],
+      "properties": {
+        "path": { "const": "npm/@adobe/spectrum-design-data/0.7.0/package/tokens/color-aliases.tokens.json" },
+        "packagePath": { "const": "tokens/color-aliases.tokens.json" },
+        "sourceType": { "const": "token" },
+        "sourceRefRoot": {
+          "const": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/tokens/color-aliases.tokens.json#/"
+        }
+      }
+    },
+    "sourceFileConst__tokens_color_palette_tokens_json__token": {
+      "type": "object",
+      "required": ["path", "packagePath", "sourceType", "sourceRefRoot"],
+      "properties": {
+        "path": { "const": "npm/@adobe/spectrum-design-data/0.7.0/package/tokens/color-palette.tokens.json" },
+        "packagePath": { "const": "tokens/color-palette.tokens.json" },
+        "sourceType": { "const": "token" },
+        "sourceRefRoot": {
+          "const": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/tokens/color-palette.tokens.json#/"
+        }
+      }
+    },
+    "sourceFileConst__tokens_layout_component_tokens_json__token": {
+      "type": "object",
+      "required": ["path", "packagePath", "sourceType", "sourceRefRoot"],
+      "properties": {
+        "path": { "const": "npm/@adobe/spectrum-design-data/0.7.0/package/tokens/layout-component.tokens.json" },
+        "packagePath": { "const": "tokens/layout-component.tokens.json" },
+        "sourceType": { "const": "token" },
+        "sourceRefRoot": {
+          "const": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/tokens/layout-component.tokens.json#/"
+        }
+      }
+    },
+    "sourceFileConst__tokens_layout_tokens_json__token": {
+      "type": "object",
+      "required": ["path", "packagePath", "sourceType", "sourceRefRoot"],
+      "properties": {
+        "path": { "const": "npm/@adobe/spectrum-design-data/0.7.0/package/tokens/layout.tokens.json" },
+        "packagePath": { "const": "tokens/layout.tokens.json" },
+        "sourceType": { "const": "token" },
+        "sourceRefRoot": {
+          "const": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/tokens/layout.tokens.json#/"
+        }
+      }
+    },
+    "sourceFileConst__tokens_typography_tokens_json__token": {
+      "type": "object",
+      "required": ["path", "packagePath", "sourceType", "sourceRefRoot"],
+      "properties": {
+        "path": { "const": "npm/@adobe/spectrum-design-data/0.7.0/package/tokens/typography.tokens.json" },
+        "packagePath": { "const": "tokens/typography.tokens.json" },
+        "sourceType": { "const": "token" },
+        "sourceRefRoot": {
+          "const": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/tokens/typography.tokens.json#/"
+        }
+      }
+    },
+    "sourceFileConst__mode_sets_color_scheme_json__mode": {
+      "type": "object",
+      "required": ["path", "packagePath", "sourceType", "sourceRefRoot"],
+      "properties": {
+        "path": { "const": "npm/@adobe/spectrum-design-data/0.7.0/package/mode-sets/color-scheme.json" },
+        "packagePath": { "const": "mode-sets/color-scheme.json" },
+        "sourceType": { "const": "mode" },
+        "sourceRefRoot": {
+          "const": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/mode-sets/color-scheme.json#/"
+        }
+      }
+    },
+    "sourceFileConst__mode_sets_contrast_json__mode": {
+      "type": "object",
+      "required": ["path", "packagePath", "sourceType", "sourceRefRoot"],
+      "properties": {
+        "path": { "const": "npm/@adobe/spectrum-design-data/0.7.0/package/mode-sets/contrast.json" },
+        "packagePath": { "const": "mode-sets/contrast.json" },
+        "sourceType": { "const": "mode" },
+        "sourceRefRoot": {
+          "const": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/mode-sets/contrast.json#/"
+        }
+      }
+    },
+    "sourceFileConst__mode_sets_scale_json__mode": {
+      "type": "object",
+      "required": ["path", "packagePath", "sourceType", "sourceRefRoot"],
+      "properties": {
+        "path": { "const": "npm/@adobe/spectrum-design-data/0.7.0/package/mode-sets/scale.json" },
+        "packagePath": { "const": "mode-sets/scale.json" },
+        "sourceType": { "const": "mode" },
+        "sourceRefRoot": {
+          "const": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/mode-sets/scale.json#/"
+        }
+      }
+    },
+    "sourceFileConst__fields_variant_json__field": {
+      "type": "object",
+      "required": ["path", "packagePath", "sourceType", "sourceRefRoot"],
+      "properties": {
+        "path": { "const": "npm/@adobe/spectrum-design-data/0.7.0/package/fields/variant.json" },
+        "packagePath": { "const": "fields/variant.json" },
+        "sourceType": { "const": "field" },
+        "sourceRefRoot": {
+          "const": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/fields/variant.json#/"
+        }
+      }
+    },
+    "sourceFileConst__fields_state_json__field": {
+      "type": "object",
+      "required": ["path", "packagePath", "sourceType", "sourceRefRoot"],
+      "properties": {
+        "path": { "const": "npm/@adobe/spectrum-design-data/0.7.0/package/fields/state.json" },
+        "packagePath": { "const": "fields/state.json" },
+        "sourceType": { "const": "field" },
+        "sourceRefRoot": {
+          "const": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/fields/state.json#/"
+        }
+      }
+    },
+    "sourceFileConst__fields_size_json__field": {
+      "type": "object",
+      "required": ["path", "packagePath", "sourceType", "sourceRefRoot"],
+      "properties": {
+        "path": { "const": "npm/@adobe/spectrum-design-data/0.7.0/package/fields/size.json" },
+        "packagePath": { "const": "fields/size.json" },
+        "sourceType": { "const": "field" },
+        "sourceRefRoot": {
+          "const": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/fields/size.json#/"
+        }
+      }
+    },
+    "sourceFileConst__fields_property_json__field": {
+      "type": "object",
+      "required": ["path", "packagePath", "sourceType", "sourceRefRoot"],
+      "properties": {
+        "path": { "const": "npm/@adobe/spectrum-design-data/0.7.0/package/fields/property.json" },
+        "packagePath": { "const": "fields/property.json" },
+        "sourceType": { "const": "field" },
+        "sourceRefRoot": {
+          "const": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/fields/property.json#/"
+        }
+      }
+    },
+    "sourceFileConst__fields_anatomy_json__field": {
+      "type": "object",
+      "required": ["path", "packagePath", "sourceType", "sourceRefRoot"],
+      "properties": {
+        "path": { "const": "npm/@adobe/spectrum-design-data/0.7.0/package/fields/anatomy.json" },
+        "packagePath": { "const": "fields/anatomy.json" },
+        "sourceType": { "const": "field" },
+        "sourceRefRoot": {
+          "const": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/fields/anatomy.json#/"
+        }
+      }
+    },
+    "sourceFileConst__guidelines_developer_overview_json__guideline": {
+      "type": "object",
+      "required": ["path", "packagePath", "sourceType", "sourceRefRoot"],
+      "properties": {
+        "path": { "const": "npm/@adobe/spectrum-design-data/0.7.0/package/guidelines/developer-overview.json" },
+        "packagePath": { "const": "guidelines/developer-overview.json" },
+        "sourceType": { "const": "guideline" },
+        "sourceRefRoot": {
+          "const": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/guidelines/developer-overview.json#/"
+        }
+      }
+    },
+    "sourceFileConst__guidelines_states_json__guideline": {
+      "type": "object",
+      "required": ["path", "packagePath", "sourceType", "sourceRefRoot"],
+      "properties": {
+        "path": { "const": "npm/@adobe/spectrum-design-data/0.7.0/package/guidelines/states.json" },
+        "packagePath": { "const": "guidelines/states.json" },
+        "sourceType": { "const": "guideline" },
+        "sourceRefRoot": {
+          "const": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/guidelines/states.json#/"
+        }
+      }
+    },
+    "sourceFileConst__guidelines_colors_json__guideline": {
+      "type": "object",
+      "required": ["path", "packagePath", "sourceType", "sourceRefRoot"],
+      "properties": {
+        "path": { "const": "npm/@adobe/spectrum-design-data/0.7.0/package/guidelines/colors.json" },
+        "packagePath": { "const": "guidelines/colors.json" },
+        "sourceType": { "const": "guideline" },
+        "sourceRefRoot": {
+          "const": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/guidelines/colors.json#/"
+        }
+      }
+    },
+    "sourceFileConst__guidelines_spacing_json__guideline": {
+      "type": "object",
+      "required": ["path", "packagePath", "sourceType", "sourceRefRoot"],
+      "properties": {
+        "path": { "const": "npm/@adobe/spectrum-design-data/0.7.0/package/guidelines/spacing.json" },
+        "packagePath": { "const": "guidelines/spacing.json" },
+        "sourceType": { "const": "guideline" },
+        "sourceRefRoot": {
+          "const": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/guidelines/spacing.json#/"
+        }
+      }
+    },
+    "sourceFileConst__guidelines_typography_fundamentals_json__guideline": {
+      "type": "object",
+      "required": ["path", "packagePath", "sourceType", "sourceRefRoot"],
+      "properties": {
+        "path": {
+          "const": "npm/@adobe/spectrum-design-data/0.7.0/package/guidelines/typography-fundamentals.json"
+        },
+        "packagePath": { "const": "guidelines/typography-fundamentals.json" },
+        "sourceType": { "const": "guideline" },
+        "sourceRefRoot": {
+          "const": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/guidelines/typography-fundamentals.json#/"
+        }
+      }
+    },
+    "requiredMappingComponentMap": {
+      "properties": {
+        "requiredMappings": {
+          "contains": { "$ref": "#/$defs/mappingComponentMap" },
+          "minContains": 1,
+          "maxContains": 1
+        }
+      }
+    },
+    "requiredMappingTokenMap": {
+      "properties": {
+        "requiredMappings": {
+          "contains": { "$ref": "#/$defs/mappingTokenMap" },
+          "minContains": 1,
+          "maxContains": 1
+        }
+      }
+    },
+    "requiredMappingPolicyMap": {
+      "properties": {
+        "requiredMappings": {
+          "contains": { "$ref": "#/$defs/mappingPolicyMap" },
+          "minContains": 1,
+          "maxContains": 1
+        }
+      }
+    },
+    "mappingComponentMap": {
+      "type": "object",
+      "required": ["path", "mappingRefRoot"],
+      "properties": {
+        "path": { "const": "mappings/component-map.json" },
+        "mappingRefRoot": { "const": "mapping://p2/spectrum/component-map.json#/" }
+      }
+    },
+    "mappingTokenMap": {
+      "type": "object",
+      "required": ["path", "mappingRefRoot"],
+      "properties": {
+        "path": { "const": "mappings/token-map.json" },
+        "mappingRefRoot": { "const": "mapping://p2/spectrum/token-map.json#/" }
+      }
+    },
+    "mappingPolicyMap": {
+      "type": "object",
+      "required": ["path", "mappingRefRoot"],
+      "properties": {
+        "path": { "const": "mappings/policy-map.json" },
+        "mappingRefRoot": { "const": "mapping://p2/spectrum/policy-map.json#/" }
+      }
+    },
+    "requiredPolicyDeveloperOverview": {
+      "properties": {
+        "policyRefs": {
+          "contains": {
+            "const": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/guidelines/developer-overview.json#/"
+          },
+          "minContains": 1,
+          "maxContains": 1
+        }
+      }
+    },
+    "requiredPolicyStates": {
+      "properties": {
+        "policyRefs": {
+          "contains": {
+            "const": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/guidelines/states.json#/"
+          },
+          "minContains": 1,
+          "maxContains": 1
+        }
+      }
+    },
+    "requiredPolicyColors": {
+      "properties": {
+        "policyRefs": {
+          "contains": {
+            "const": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/guidelines/colors.json#/"
+          },
+          "minContains": 1,
+          "maxContains": 1
+        }
+      }
+    },
+    "requiredPolicySpacing": {
+      "properties": {
+        "policyRefs": {
+          "contains": {
+            "const": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/guidelines/spacing.json#/"
+          },
+          "minContains": 1,
+          "maxContains": 1
+        }
+      }
+    },
+    "requiredPolicyTypographyFundamentals": {
+      "properties": {
+        "policyRefs": {
+          "contains": {
+            "const": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/guidelines/typography-fundamentals.json#/"
+          },
+          "minContains": 1,
+          "maxContains": 1
+        }
+      }
+    },
+    "requiredPolicyUsagePolicy": {
+      "properties": {
+        "policyRefs": {
+          "contains": { "const": "source://p2/docs/usage-policy.json#/" },
+          "minContains": 1,
+          "maxContains": 1
+        }
+      }
+    }
+  },
+  "allOf": [
+    { "$ref": "#/$defs/requiredSourcePackageJson" },
+    { "$ref": "#/$defs/requiredSourceReadme" },
+    { "$ref": "#/$defs/requiredSourceLicense" },
+    { "$ref": "#/$defs/requiredSourceButton" },
+    { "$ref": "#/$defs/requiredSourceInLineAlert" },
+    { "$ref": "#/$defs/requiredSourceRegistryComponents" },
+    { "$ref": "#/$defs/requiredSourceRegistryPropertyTerms" },
+    { "$ref": "#/$defs/requiredSourceRegistryVariants" },
+    { "$ref": "#/$defs/requiredSourceRegistryStates" },
+    { "$ref": "#/$defs/requiredSourceRegistryAnatomyTerms" },
+    { "$ref": "#/$defs/requiredSourceRegistryTokenTerminology" },
+    { "$ref": "#/$defs/requiredSourceRegistryTokenObjects" },
+    { "$ref": "#/$defs/requiredSourceTokensColorComponent" },
+    { "$ref": "#/$defs/requiredSourceTokensColorAliases" },
+    { "$ref": "#/$defs/requiredSourceTokensColorPalette" },
+    { "$ref": "#/$defs/requiredSourceTokensLayoutComponent" },
+    { "$ref": "#/$defs/requiredSourceTokensLayout" },
+    { "$ref": "#/$defs/requiredSourceTokensTypography" },
+    { "$ref": "#/$defs/requiredSourceModeColorScheme" },
+    { "$ref": "#/$defs/requiredSourceModeContrast" },
+    { "$ref": "#/$defs/requiredSourceModeScale" },
+    { "$ref": "#/$defs/requiredSourceFieldVariant" },
+    { "$ref": "#/$defs/requiredSourceFieldState" },
+    { "$ref": "#/$defs/requiredSourceFieldSize" },
+    { "$ref": "#/$defs/requiredSourceFieldProperty" },
+    { "$ref": "#/$defs/requiredSourceFieldAnatomy" },
+    { "$ref": "#/$defs/requiredSourceGuidelineDeveloperOverview" },
+    { "$ref": "#/$defs/requiredSourceGuidelineStates" },
+    { "$ref": "#/$defs/requiredSourceGuidelineColors" },
+    { "$ref": "#/$defs/requiredSourceGuidelineSpacing" },
+    { "$ref": "#/$defs/requiredSourceGuidelineTypographyFundamentals" },
+    { "$ref": "#/$defs/requiredSourceDocsUsagePolicy" },
+    { "$ref": "#/$defs/requiredMappingComponentMap" },
+    { "$ref": "#/$defs/requiredMappingTokenMap" },
+    { "$ref": "#/$defs/requiredMappingPolicyMap" },
+    { "$ref": "#/$defs/requiredPolicyDeveloperOverview" },
+    { "$ref": "#/$defs/requiredPolicyStates" },
+    { "$ref": "#/$defs/requiredPolicyColors" },
+    { "$ref": "#/$defs/requiredPolicySpacing" },
+    { "$ref": "#/$defs/requiredPolicyTypographyFundamentals" },
+    { "$ref": "#/$defs/requiredPolicyUsagePolicy" }
+  ],
+  "unevaluatedProperties": false
+}

@@ -1,0 +1,13 @@
+{
+  "schemaId": "design-system-ingestion-invalid-fixture.v0",
+  "fixtureId": "unmapped-component",
+  "fixtureKind": "invalid",
+  "description": "A manifest-declared source component cannot enter the catalog without an accepted mapping row.",
+  "sourceRefs": [
+    "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/button.json#/"
+  ],
+  "mappingRows": [],
+  "expectedDiagnosticCode": "INGEST_COMPONENT_UNMAPPED",
+  "expectedResult": "invalid",
+  "promotionStatus": "blocked"
+}

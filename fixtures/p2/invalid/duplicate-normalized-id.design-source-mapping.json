@@ -1,0 +1,21 @@
+{
+  "schemaId": "design-source-mapping.v0",
+  "fixtureId": "duplicate-normalized-id",
+  "fixtureKind": "invalid",
+  "description": "Two mapping rows emit the same normalized id without a shared accepted conflict rule.",
+  "mappingRows": [
+    {
+      "mappingId": "button-component",
+      "mappingKind": "component",
+      "normalizedId": "Button"
+    },
+    {
+      "mappingId": "button-component-duplicate",
+      "mappingKind": "component",
+      "normalizedId": "Button"
+    }
+  ],
+  "expectedDiagnosticCode": "INGEST_NORMALIZED_ID_DUPLICATE",
+  "expectedResult": "invalid",
+  "promotionStatus": "blocked"
+}

@@ -1,0 +1,384 @@
+{
+  "schemaId": "design-source-mapping.v0",
+  "version": "0.0.0",
+  "sourceInventoryRef": {
+    "path": "artifacts/p2/source-inventory.json",
+    "schemaId": "design-source-inventory.v0",
+    "hashAlgorithm": "sha256",
+    "hash": "0000000000000000000000000000000000000000000000000000000000000000"
+  },
+  "mappingRows": [
+    {
+      "mappingId": "button-component",
+      "mappingKind": "component",
+      "sourceRefs": [
+        "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/button.json#/"
+      ],
+      "mappingRefs": [
+        "mapping://p2/spectrum/component-map.json#/mappingRows/button-component"
+      ],
+      "targetRefs": [
+        "catalog://p2/components/Button"
+      ],
+      "normalizedId": "Button",
+      "rationale": "Normalize Spectrum button to the governed catalog Button component for the initial P2 subset.",
+      "cardinality": {
+        "sourceMin": 1,
+        "sourceMax": 1,
+        "targetMin": 1,
+        "targetMax": 1
+      },
+      "conflictRules": [],
+      "authorityScope": "mapping-narrows-source",
+      "reviewStatus": "accepted"
+    },
+    {
+      "mappingId": "in-line-alert-component",
+      "mappingKind": "component",
+      "sourceRefs": [
+        "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/in-line-alert.json#/"
+      ],
+      "mappingRefs": [
+        "mapping://p2/spectrum/component-map.json#/mappingRows/in-line-alert-component"
+      ],
+      "targetRefs": [
+        "catalog://p2/components/InLineAlert"
+      ],
+      "normalizedId": "InLineAlert",
+      "rationale": "Normalize Spectrum in-line-alert to the governed catalog InLineAlert component for the initial P2 subset.",
+      "cardinality": {
+        "sourceMin": 1,
+        "sourceMax": 1,
+        "targetMin": 1,
+        "targetMax": 1
+      },
+      "conflictRules": [],
+      "authorityScope": "mapping-narrows-source",
+      "reviewStatus": "accepted"
+    },
+    {
+      "mappingId": "button-variant-prop",
+      "mappingKind": "prop",
+      "sourceRefs": [
+        "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/button.json#/options/variant"
+      ],
+      "mappingRefs": [
+        "mapping://p2/spectrum/component-map.json#/mappingRows/button-variant-prop"
+      ],
+      "targetRefs": [
+        "catalog://p2/components/Button/props/variant"
+      ],
+      "normalizedId": "Button.variant",
+      "rationale": "Map Spectrum button variant option to the governed Button variant prop.",
+      "cardinality": {
+        "sourceMin": 1,
+        "sourceMax": 1,
+        "targetMin": 1,
+        "targetMax": 1
+      },
+      "conflictRules": [],
+      "authorityScope": "mapping-narrows-source",
+      "reviewStatus": "accepted"
+    },
+    {
+      "mappingId": "button-accent-variant",
+      "mappingKind": "variant",
+      "sourceRefs": [
+        "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/button.json#/options/variant/values/0"
+      ],
+      "mappingRefs": [
+        "mapping://p2/spectrum/component-map.json#/mappingRows/button-accent-variant"
+      ],
+      "targetRefs": [
+        "catalog://p2/components/Button/variants/accent"
+      ],
+      "normalizedId": "Button.variants.accent",
+      "rationale": "Map the Spectrum accent button variant to a governed catalog variant.",
+      "cardinality": {
+        "sourceMin": 1,
+        "sourceMax": 1,
+        "targetMin": 1,
+        "targetMax": 1
+      },
+      "conflictRules": [],
+      "authorityScope": "mapping-narrows-source",
+      "reviewStatus": "accepted"
+    },
+    {
+      "mappingId": "button-hover-state",
+      "mappingKind": "state",
+      "sourceRefs": [
+        "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/button.json#/states/0"
+      ],
+      "mappingRefs": [
+        "mapping://p2/spectrum/component-map.json#/mappingRows/button-hover-state"
+      ],
+      "targetRefs": [
+        "catalog://p2/components/Button/states/hover"
+      ],
+      "normalizedId": "Button.states.hover",
+      "rationale": "Map the Spectrum button hover state to the governed catalog hover state.",
+      "cardinality": {
+        "sourceMin": 1,
+        "sourceMax": 1,
+        "targetMin": 1,
+        "targetMax": 1
+      },
+      "conflictRules": [],
+      "authorityScope": "mapping-narrows-source",
+      "reviewStatus": "accepted"
+    },
+    {
+      "mappingId": "button-icon-slot",
+      "mappingKind": "slot",
+      "sourceRefs": [
+        "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/button.json#/slots/0",
+        "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/button.json#/anatomy/0"
+      ],
+      "mappingRefs": [
+        "mapping://p2/spectrum/component-map.json#/mappingRows/button-icon-slot"
+      ],
+      "targetRefs": [
+        "catalog://p2/components/Button/slots/icon"
+      ],
+      "normalizedId": "Button.slots.icon",
+      "rationale": "Map Spectrum button icon slot and anatomy to the governed Button icon slot.",
+      "cardinality": {
+        "sourceMin": 1,
+        "sourceMax": 1,
+        "targetMin": 0,
+        "targetMax": 1
+      },
+      "conflictRules": [],
+      "authorityScope": "mapping-narrows-source",
+      "reviewStatus": "accepted"
+    },
+    {
+      "mappingId": "button-accessibility",
+      "mappingKind": "accessibility",
+      "sourceRefs": [
+        "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/button.json#/accessibility"
+      ],
+      "mappingRefs": [
+        "mapping://p2/spectrum/component-map.json#/mappingRows/button-accessibility"
+      ],
+      "targetRefs": [
+        "catalog://p2/components/Button/accessibility"
+      ],
+      "normalizedId": "Button.accessibility",
+      "rationale": "Preserve Spectrum button role, focusability, keyboard intent, and WCAG refs.",
+      "cardinality": {
+        "sourceMin": 1,
+        "sourceMax": 1,
+        "targetMin": 1,
+        "targetMax": 1
+      },
+      "conflictRules": [],
+      "authorityScope": "source-only",
+      "reviewStatus": "accepted"
+    },
+    {
+      "mappingId": "button-purpose-example",
+      "mappingKind": "example",
+      "sourceRefs": [
+        "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/button.json#/documentBlocks/0"
+      ],
+      "mappingRefs": [
+        "mapping://p2/spectrum/component-map.json#/mappingRows/button-purpose-example"
+      ],
+      "targetRefs": [
+        "catalog://p2/components/Button/examples/purpose"
+      ],
+      "normalizedId": "Button.examples.purpose",
+      "rationale": "Preserve the Spectrum button purpose block as example coverage only.",
+      "cardinality": {
+        "sourceMin": 1,
+        "sourceMax": 1,
+        "targetMin": 1,
+        "targetMax": 1
+      },
+      "conflictRules": [],
+      "authorityScope": "source-only",
+      "reviewStatus": "accepted"
+    },
+    {
+      "mappingId": "button-height-token",
+      "mappingKind": "token",
+      "sourceRefs": [
+        "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/button.json#/tokenBindings/0"
+      ],
+      "mappingRefs": [
+        "mapping://p2/spectrum/token-map.json#/mappingRows/button-height-token"
+      ],
+      "targetRefs": [
+        "catalog://p2/components/Button/tokenRefs/component-height-75"
+      ],
+      "normalizedId": "Button.tokenRefs.component-height-75",
+      "rationale": "Map the first declared Spectrum button token binding to a governed token ref.",
+      "cardinality": {
+        "sourceMin": 1,
+        "sourceMax": 1,
+        "targetMin": 1,
+        "targetMax": 1
+      },
+      "conflictRules": [],
+      "authorityScope": "mapping-narrows-source",
+      "reviewStatus": "accepted"
+    },
+    {
+      "mappingId": "in-line-alert-variant-prop",
+      "mappingKind": "prop",
+      "sourceRefs": [
+        "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/in-line-alert.json#/options/variant"
+      ],
+      "mappingRefs": [
+        "mapping://p2/spectrum/component-map.json#/mappingRows/in-line-alert-variant-prop"
+      ],
+      "targetRefs": [
+        "catalog://p2/components/InLineAlert/props/variant"
+      ],
+      "normalizedId": "InLineAlert.variant",
+      "rationale": "Map Spectrum in-line-alert variant option to the governed InLineAlert variant prop.",
+      "cardinality": {
+        "sourceMin": 1,
+        "sourceMax": 1,
+        "targetMin": 1,
+        "targetMax": 1
+      },
+      "conflictRules": [],
+      "authorityScope": "mapping-narrows-source",
+      "reviewStatus": "accepted"
+    },
+    {
+      "mappingId": "in-line-alert-neutral-variant",
+      "mappingKind": "variant",
+      "sourceRefs": [
+        "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/in-line-alert.json#/options/variant/values/0"
+      ],
+      "mappingRefs": [
+        "mapping://p2/spectrum/component-map.json#/mappingRows/in-line-alert-neutral-variant"
+      ],
+      "targetRefs": [
+        "catalog://p2/components/InLineAlert/variants/neutral"
+      ],
+      "normalizedId": "InLineAlert.variants.neutral",
+      "rationale": "Map the Spectrum neutral in-line-alert variant to a governed catalog variant.",
+      "cardinality": {
+        "sourceMin": 1,
+        "sourceMax": 1,
+        "targetMin": 1,
+        "targetMax": 1
+      },
+      "conflictRules": [],
+      "authorityScope": "mapping-narrows-source",
+      "reviewStatus": "accepted"
+    },
+    {
+      "mappingId": "in-line-alert-accessibility",
+      "mappingKind": "accessibility",
+      "sourceRefs": [
+        "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/in-line-alert.json#/accessibility"
+      ],
+      "mappingRefs": [
+        "mapping://p2/spectrum/component-map.json#/mappingRows/in-line-alert-accessibility"
+      ],
+      "targetRefs": [
+        "catalog://p2/components/InLineAlert/accessibility"
+      ],
+      "normalizedId": "InLineAlert.accessibility",
+      "rationale": "Preserve Spectrum in-line-alert status-message accessibility refs.",
+      "cardinality": {
+        "sourceMin": 1,
+        "sourceMax": 1,
+        "targetMin": 1,
+        "targetMax": 1
+      },
+      "conflictRules": [],
+      "authorityScope": "source-only",
+      "reviewStatus": "accepted"
+    },
+    {
+      "mappingId": "in-line-alert-purpose-example",
+      "mappingKind": "example",
+      "sourceRefs": [
+        "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/in-line-alert.json#/documentBlocks/0"
+      ],
+      "mappingRefs": [
+        "mapping://p2/spectrum/component-map.json#/mappingRows/in-line-alert-purpose-example"
+      ],
+      "targetRefs": [
+        "catalog://p2/components/InLineAlert/examples/purpose"
+      ],
+      "normalizedId": "InLineAlert.examples.purpose",
+      "rationale": "Preserve the Spectrum in-line-alert purpose block as example coverage only.",
+      "cardinality": {
+        "sourceMin": 1,
+        "sourceMax": 1,
+        "targetMin": 1,
+        "targetMax": 1
+      },
+      "conflictRules": [],
+      "authorityScope": "source-only",
+      "reviewStatus": "accepted"
+    },
+    {
+      "mappingId": "in-line-alert-border-token",
+      "mappingKind": "token",
+      "sourceRefs": [
+        "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/in-line-alert.json#/tokenBindings/0"
+      ],
+      "mappingRefs": [
+        "mapping://p2/spectrum/token-map.json#/mappingRows/in-line-alert-border-token"
+      ],
+      "targetRefs": [
+        "catalog://p2/components/InLineAlert/tokenRefs/border-width-200"
+      ],
+      "normalizedId": "InLineAlert.tokenRefs.border-width-200",
+      "rationale": "Map the first declared Spectrum in-line-alert token binding to a governed token ref.",
+      "cardinality": {
+        "sourceMin": 1,
+        "sourceMax": 1,
+        "targetMin": 1,
+        "targetMax": 1
+      },
+      "conflictRules": [],
+      "authorityScope": "mapping-narrows-source",
+      "reviewStatus": "accepted"
+    },
+    {
+      "mappingId": "button-color-component-token",
+      "mappingKind": "token",
+      "sourceRefs": [
+        "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/tokens/color-component.tokens.json#/component/button"
+      ],
+      "mappingRefs": [
+        "mapping://p2/spectrum/token-map.json#/mappingRows/button-color-component-token"
+      ],
+      "targetRefs": [
+        "catalog://p2/tokens/component-button-color"
+      ],
+      "normalizedId": "tokens.component-button-color",
+      "rationale": "Map a declared Spectrum token file entry to a governed token authority ref.",
+      "cardinality": {
+        "sourceMin": 1,
+        "sourceMax": 1,
+        "targetMin": 1,
+        "targetMax": 1
+      },
+      "conflictRules": [],
+      "authorityScope": "mapping-narrows-source",
+      "reviewStatus": "accepted"
+    }
+  ],
+  "reviewRequired": [],
+  "diagnostics": [],
+  "provenance": {
+    "generatedAt": "1970-01-01T00:00:00.000Z",
+    "generator": "interfacectl-p2-source-mapping-plan",
+    "sourceRefs": [
+      "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/button.json#/",
+      "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/in-line-alert.json#/",
+      "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/tokens/color-component.tokens.json#/"
+    ]
+  }
+}

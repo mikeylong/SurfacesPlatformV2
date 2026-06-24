@@ -1,0 +1,155 @@
+{
+  "$id": "https://surfaces.dev/schemas/p2/design-system-ingestion-expectations.v0.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": [
+    "schemaId",
+    "version",
+    "sourceRoot",
+    "fixtureRoot",
+    "artifactRoot",
+    "schemaRoot",
+    "validCoverage",
+    "inputs",
+    "artifactOrder",
+    "expectations",
+    "runExpectation"
+  ],
+  "properties": {
+    "schemaId": { "const": "design-system-ingestion-expectations.v0" },
+    "version": { "type": "string" },
+    "sourceRoot": { "const": "sources/p2/design-system-source" },
+    "fixtureRoot": { "const": "fixtures/p2" },
+    "artifactRoot": { "const": "artifacts/p2" },
+    "schemaRoot": { "const": "schemas" },
+    "validCoverage": {
+      "type": "array",
+      "minItems": 3,
+      "items": { "$ref": "#/$defs/validCoverageRow" }
+    },
+    "inputs": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "artifactOrder": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "expectations": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/expectation" }
+    },
+    "runExpectation": {
+      "type": "object",
+      "required": ["status", "promotionStatus"],
+      "properties": {
+        "status": { "enum": ["pass", "fail"] },
+        "promotionStatus": { "enum": ["allowed", "blocked", "review_required"] }
+      },
+      "unevaluatedProperties": false
+    }
+  },
+  "$defs": {
+    "validCoverageRow": {
+      "type": "object",
+      "required": ["fixturePath", "coverageKind", "sourceRefs", "expectedCatalogRefs", "expectedNormalizedIds"],
+      "properties": {
+        "fixturePath": { "type": "string", "pattern": "^fixtures/p2/valid/.+\\.json$" },
+        "coverageKind": { "enum": ["component", "source-mapping"] },
+        "component": { "enum": ["button", "in-line-alert"] },
+        "mappingKinds": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "enum": [
+              "component",
+              "token",
+              "prop",
+              "variant",
+              "state",
+              "slot",
+              "accessibility",
+              "example",
+              "action",
+              "dataBinding",
+              "governance"
+            ]
+          }
+        },
+        "sourceRefs": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/sourceRef" } },
+        "expectedCatalogRefs": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/catalogRef" } },
+        "expectedNormalizedIds": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "coverageKind": { "const": "component" } }, "required": ["coverageKind"] },
+          "then": { "required": ["component"] }
+        },
+        {
+          "if": { "properties": { "coverageKind": { "const": "source-mapping" } }, "required": ["coverageKind"] },
+          "then": { "required": ["mappingKinds"] }
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "expectation": {
+      "type": "object",
+      "required": [
+        "fixturePath",
+        "kind",
+        "stage",
+        "phase",
+        "expectedResult",
+        "promotionStatus",
+        "diagnosticCodes",
+        "artifactPath"
+      ],
+      "properties": {
+        "fixturePath": { "type": "string" },
+        "kind": { "enum": ["valid", "review", "invalid", "mutation"] },
+        "stage": {
+          "enum": ["source-inventory", "mapping", "extract", "compile", "govern", "report", "evidence"]
+        },
+        "phase": {
+          "enum": [
+            "source-manifest",
+            "source-inventory",
+            "source-mapping",
+            "source-extraction",
+            "catalog-compile",
+            "catalog-governance",
+            "ingestion-report",
+            "ingestion-evidence"
+          ]
+        },
+        "expectedResult": { "enum": ["valid", "invalid", "review_required"] },
+        "promotionStatus": { "enum": ["allowed", "blocked", "review_required"] },
+        "diagnosticCodes": {
+          "type": "array",
+          "items": {
+            "$ref": "https://surfaces.dev/schemas/p2/design-system-ingestion-diagnostics.v0.schema.json#/$defs/diagnosticCode"
+          }
+        },
+        "artifactPath": { "type": "string" },
+        "jsonPointer": { "type": ["string", "null"] },
+        "requiredSourceRef": {
+          "oneOf": [
+            { "$ref": "#/$defs/sourceRef" },
+            { "type": "null" }
+          ]
+        },
+        "reviewQueueRequired": { "type": "boolean" }
+      },
+      "unevaluatedProperties": false
+    },
+    "sourceRef": {
+      "type": "string",
+      "pattern": "^spectrum-design-data://npm/@adobe/spectrum-design-data@0\\.7\\.0/package/(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*(?:^|/)\\.(?:/|$))(?!.*//)[A-Za-z0-9._@-]+(?:/[A-Za-z0-9._@-]+)*#/(?:[A-Za-z0-9._~-]+(?:/[A-Za-z0-9._~-]+)*)?$"
+    },
+    "catalogRef": {
+      "type": "string",
+      "pattern": "^catalog://p2/[A-Za-z0-9._-]+(?:/[A-Za-z0-9._-]+)*$"
+    }
+  },
+  "unevaluatedProperties": false
+}

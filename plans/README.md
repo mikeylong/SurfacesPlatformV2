@@ -218,11 +218,15 @@ P2 contract references:
 - [Ingestion Proof](p2/ingestion-proof.md) defines source inventory, mapping, extraction, catalog compilation, and report behavior.
 - [P2 Validation And Evidence](p2/validation-evidence.md) defines evidence, hashing, diagnostics, and aggregation.
 
-P2 proof command:
+P2 planned proof command:
 
-```bash
+```text
 interfacectl surfaces ingest proof --source sources/p2/design-system-source --fixture fixtures/p2 --out artifacts/p2
 ```
+
+This command is not runnable until the P2 ingest proof is implemented; the current CLI exits usage for it. Future package scripts and tests must execute this as `node bin/interfacectl.js surfaces ingest proof --source sources/p2/design-system-source --fixture fixtures/p2 --out artifacts/p2`. Evidence may keep recording the logical command string above.
+
+The selected pilot target is Adobe Spectrum Design Data, pinned to `@adobe/spectrum-design-data@0.7.0` with npm integrity `sha512-mSdmQn6fNEzKVo6W5xS4gO1EXCpC4ojiEm3GqTlSjhh26lC9siMgQSWi33ODvWe8ssfrxXX0unzVnL5VBt4+CA==`. The first component subset is `button` and `in-line-alert`. Until a proof-bearing P2 CI gate passes with the manifest, source snapshot, fixtures, proof command, artifacts, demo, and evidence, this remains a planned target selection and not an implemented ingestion claim. The current `check:p2:planning` guard validates planning files only.
 
 ## P3 Contract Summary
 P3 proves governed agent recruitment and orchestration after P2 ingestion evidence passes. It consumes P2 evidence boundaries, materializes an agent capability registry, selects registered capabilities for structured task fixtures, emits deterministic scoped work orders, routes review-required work to a non-executable review queue, records an orchestration report, and finalizes evidence. P3 does not execute agents, call tools, edit files, persist review decisions, or run JudgmentKit.

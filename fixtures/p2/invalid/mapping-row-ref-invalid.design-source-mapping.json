@@ -1,0 +1,20 @@
+{
+  "schemaId": "design-source-mapping.v0",
+  "fixtureId": "mapping-row-ref-invalid",
+  "fixtureKind": "invalid",
+  "description": "Mapping refs must be present, normalized, and inside the declared source bundle.",
+  "mappingRows": [
+    {
+      "mappingId": "invalid-ref",
+      "mappingKind": "component",
+      "sourceRefs": [
+        "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/../components/button.json#/"
+      ],
+      "mappingRefs": ["mapping://p2/spectrum/component-map.json#"],
+      "targetRefs": ["catalog://p2/components/Button"]
+    }
+  ],
+  "expectedDiagnosticCode": "INGEST_MAPPING_ROW_REF_INVALID",
+  "expectedResult": "invalid",
+  "promotionStatus": "blocked"
+}

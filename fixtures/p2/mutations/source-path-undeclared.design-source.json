@@ -1,0 +1,10 @@
+{
+  "schemaId": "design-system-ingestion-mutation-fixture.v0",
+  "fixtureId": "source-path-undeclared",
+  "fixtureKind": "mutation",
+  "description": "The ingest proof must reject source paths outside the manifest and allowed snapshot roots.",
+  "sourcePath": "npm/@adobe/spectrum-design-data/0.7.0/package/components/undocumented.json",
+  "expectedDiagnosticCode": "INGEST_SOURCE_PATH_UNDECLARED",
+  "expectedResult": "invalid",
+  "promotionStatus": "blocked"
+}

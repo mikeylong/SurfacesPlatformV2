@@ -1,0 +1,78 @@
+{
+  "$id": "https://surfaces.dev/schemas/p2/design-source-inventory.v0.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": [
+    "schemaId",
+    "version",
+    "sourceManifestRef",
+    "sourceFiles",
+    "sourceCoverage",
+    "diagnostics",
+    "provenance"
+  ],
+  "properties": {
+    "schemaId": { "const": "design-source-inventory.v0" },
+    "version": { "type": "string" },
+    "sourceManifestRef": { "$ref": "#/$defs/artifactRef" },
+    "sourceFiles": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/sourceFileRef" }
+    },
+    "sourceCoverage": {
+      "type": "object",
+      "required": ["components", "tokens", "registries", "policies", "mappings"],
+      "properties": {
+        "components": { "type": "array", "items": { "type": "string" } },
+        "tokens": { "type": "array", "items": { "type": "string" } },
+        "registries": { "type": "array", "items": { "type": "string" } },
+        "policies": { "type": "array", "items": { "type": "string" } },
+        "mappings": { "type": "array", "items": { "type": "string" } }
+      },
+      "unevaluatedProperties": false
+    },
+    "diagnostics": {
+      "type": "array",
+      "items": {
+        "$ref": "https://surfaces.dev/schemas/p2/design-system-ingestion-diagnostics.v0.schema.json#/$defs/diagnostic"
+      }
+    },
+    "provenance": { "$ref": "#/$defs/provenance" }
+  },
+  "$defs": {
+    "artifactRef": {
+      "type": "object",
+      "required": ["path", "schemaId", "hashAlgorithm", "hash"],
+      "properties": {
+        "path": { "type": "string" },
+        "schemaId": { "type": "string" },
+        "hashAlgorithm": { "const": "sha256" },
+        "hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+      },
+      "unevaluatedProperties": false
+    },
+    "sourceFileRef": {
+      "type": "object",
+      "required": ["path", "sourceType", "hashAlgorithm", "hash", "sourceRefRoot"],
+      "properties": {
+        "path": { "type": "string" },
+        "sourceType": { "type": "string" },
+        "hashAlgorithm": { "const": "sha256" },
+        "hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "sourceRefRoot": { "type": "string" }
+      },
+      "unevaluatedProperties": false
+    },
+    "provenance": {
+      "type": "object",
+      "required": ["generatedAt", "generator", "sourceRefs"],
+      "properties": {
+        "generatedAt": { "type": "string", "format": "date-time" },
+        "generator": { "type": "string" },
+        "sourceRefs": { "type": "array", "items": { "type": "string" } }
+      },
+      "unevaluatedProperties": false
+    }
+  },
+  "unevaluatedProperties": false
+}

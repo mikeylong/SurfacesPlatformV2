@@ -28,7 +28,7 @@ Each phase update must include:
 | --- | --- | --- |
 | P0 | Planned and implemented in proof docs | Explain catalog proof, fixture-only extraction, diagnostics, evidence, and no real design-system ingestion claim |
 | P1 | Planned and implemented in proof docs | Explain `web-static` runtime projection, render plans, generated demo, review-required behavior, and no runtime authority expansion |
-| P2 | Planned as real design-system ingestion | Explain source bundle requirements, source refs, mapping review, ingestion diagnostics, evidence, and the selected target design system once chosen |
+| P2 | Planned as real design-system ingestion; Adobe Spectrum Design Data is selected/proposed/pinned as the pilot through `@adobe/spectrum-design-data@0.7.0` scoped first to `button` and `in-line-alert` | Explain the local source bundle requirements, npm package integrity, full Spectrum source authority set, source snapshot paths, source-ref grammar, mapping review, ingestion diagnostics, `design-system-ingestion-valid-fixture.v0`, exact invalid/review/mutation fixture coverage, valid Spectrum fixture coverage, consumed-schema evidence closure, exact ordered source/fixture/artifact/evidence refs, `node bin/interfacectl.js` script/test invocation, current `check:p2:planning` guard scope, future proof-bearing CI requirements, evidence authority, and the allowed-claims limit before proof evidence passes |
 | P3 | Parked as agent orchestration draft | Explain capability registry, inert work orders, review queue, report, and no live agent execution in P3; any later live execution requires a separate proof or explicit authorization |
 
 ## Non-Goals
