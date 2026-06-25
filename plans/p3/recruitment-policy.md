@@ -27,7 +27,7 @@ Each P3 task fixture must declare:
 | `taskKind` | yes | Declared task category, not inferred from prose |
 | `requiredCapabilities` | yes | Capability ids that must exist in the registry |
 | `allowedInputs` | yes | Exact artifact paths or source refs the selected agent may consume |
-| `allowedOutputs` | yes | Exact future artifact paths the selected work order may authorize for a later executor proof |
+| `allowedOutputs` | yes | Candidate artifact paths recorded for validation by a later executor proof; P3 authorizes no emission or execution |
 | `dependencies` | yes | Other task ids or upstream artifact refs required before handoff |
 | `reviewPolicy` | yes | `allowed`, `review_required`, or `blocked` |
 | `evidenceObligations` | yes | Required hashes, provenance, diagnostics, and report rows |

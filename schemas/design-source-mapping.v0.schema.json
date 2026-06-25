@@ -248,7 +248,7 @@
           "sourceRefs": {
             "items": {
               "type": "string",
-              "pattern": "^spectrum-design-data://npm/@adobe/spectrum-design-data@0\\.7\\.0/package/(components/(button|in-line-alert)\\.json#/options|registry/property-terms\\.json#/|fields/(variant|size)\\.json#/)[A-Za-z0-9._~/-]*$"
+              "pattern": "^spectrum-design-data://npm/@adobe/spectrum-design-data@0\\.7\\.0/package/(components/(button|in-line-alert)\\.json#/options|registry/property-terms\\.json#/|fields/(property|variant|size)\\.json#/)[A-Za-z0-9._~/-]*$"
             }
           },
           "mappingRefs": {

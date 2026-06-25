@@ -195,13 +195,13 @@ Given a valid P0 proof and the P1 fixture set, the adapter proof command emits t
 - Review-required P1 fixtures are report/evidence-only and must not produce render-plan artifacts.
 
 ## P2 Focus
-P2 proves real design-system ingestion from a bounded, authoritative source bundle. It is a deterministic ingestion proof, not a live Figma integration, Storybook crawler, docs crawler, production sync service, runtime adapter, SurfaceOps workflow, JudgmentKit evaluator, or agent orchestration proof.
+P2 proves deterministic local ingestion for the pinned `@adobe/spectrum-design-data@0.7.0` source snapshot, scoped to `button` and `in-line-alert`. It is a deterministic ingestion proof, not a live Figma integration, Storybook crawler, docs crawler, production sync service, runtime adapter, SurfaceOps workflow, JudgmentKit evaluator, or agent orchestration proof.
 
 The P2 proof path is:
 
 ```text
 sources/p2/design-system-source/manifest.json
-sources/p2/design-system-source/**/*
+manifest-declared source files, required mappings, and policy refs
 fixtures/p2/expectations.manifest.json
   -> artifacts/p2/source-inventory.json
   -> artifacts/p2/source-mapping.json
@@ -216,16 +216,16 @@ fixtures/p2/expectations.manifest.json
   -> demo/p2/index.html
 ```
 
-## P2 Planned Proof Command
+## P2 Proof Command
 
-```text
+```bash
 interfacectl surfaces ingest proof --source sources/p2/design-system-source --fixture fixtures/p2 --out artifacts/p2
 ```
 
-This is the planned command contract, not a currently runnable proof command. Until the P2 implementation wires `surfaces ingest proof`, the current CLI exits with usage status for this command. Package scripts and tests that eventually execute the command must invoke `node bin/interfacectl.js surfaces ingest proof ...`. P2 evidence may record the logical command string above to preserve the P0/P1 evidence convention.
+Package scripts and tests execute this as `node bin/interfacectl.js surfaces ingest proof --source sources/p2/design-system-source --fixture fixtures/p2 --out artifacts/p2`. P2 evidence records the logical command string above to preserve the P0/P1 evidence convention.
 
 ## P2 Pass Condition
-Given a declared design-system source bundle and the P2 fixture set, the ingest proof command emits the exact P2 artifacts, verifies source hashes, creates deterministic source inventory and mapping artifacts, extracts normalized design-system material with source refs, compiles catalog and governed catalog artifacts, validates positive Spectrum coverage, blocks invalid and mutation cases with registry-backed diagnostics, preserves review-required manual mapping cases without promotion, records ingestion diagnostics before final evidence, and writes reproducible evidence with hashes and provenance for every P2-owned schema, consumed shared schema, source input, fixture, generated artifact, and final evidence artifact.
+Given a declared design-system source bundle and the P2 fixture set, the ingest proof command emits the exact P2 artifacts, verifies source hashes, creates deterministic source inventory and mapping artifacts, extracts normalized design-system material with source refs, compiles catalog and governed catalog artifacts, validates positive Spectrum coverage for `button` and `in-line-alert`, blocks invalid and mutation cases with registry-backed diagnostics, preserves review-required manual mapping cases without promotion, records ingestion diagnostics before final evidence, and writes reproducible evidence with hashes and provenance for every P2-owned schema, consumed shared schema, source input, fixture, generated artifact, and final evidence artifact.
 
 ## P2 Architecture
 1. P2 Product Boundaries
@@ -274,6 +274,8 @@ fixtures/p3/expectations.manifest.json
 ```bash
 interfacectl surfaces agents proof --ingestion-evidence artifacts/p2/evidence.json --catalog artifacts/p2/governed-catalog.json --fixture fixtures/p3 --out artifacts/p3
 ```
+
+This remains a planned P3 command until that phase adds its schemas, fixtures, diagnostics, command implementation, artifacts, report, demo, and evidence.
 
 ## P3 Pass Condition
 Given valid P2 ingestion evidence and the P3 fixture set, the agents proof command emits the exact P3 artifacts, creates a hash-bound agent capability registry, recruits only registered capabilities for declared task requirements, produces deterministic scoped work orders, blocks unregistered capabilities and scope escalation, routes review-required work to a non-executable review queue, records orchestration diagnostics before final evidence, and writes reproducible evidence with hashes and provenance for every P3 schema, fixture, input artifact, generated proof artifact under `artifacts/p3`, and final evidence artifact.
@@ -361,7 +363,8 @@ Given valid P2 ingestion evidence and the P3 fixture set, the agents proof comma
 - P2 chooses a declared source bundle over live source APIs so the first real-ingestion proof remains deterministic.
 - P2 may preserve review-required mapping rows, but it does not build SurfaceOps persistence.
 - JudgmentKit remains evaluation metadata only unless a later proof defines evaluator execution.
-- Until a proof-bearing P2 CI gate runs the ingest proof and passes with schemas, manifest, source snapshot, fixtures, artifacts, demo, and evidence, P2 may only be described as planned, with Spectrum selected/proposed/pinned as the pilot.
+- P2 may be described as implemented or shipped only for deterministic local npm package ingestion from the declared `@adobe/spectrum-design-data@0.7.0` source snapshot, initially scoped to `button` and `in-line-alert`, when `artifacts/p2/evidence.json` passes. It must not be described as full Spectrum support, live ingestion, runtime adapter rendering, SurfaceOps operation, JudgmentKit evaluation, P3 orchestration, or Adobe endorsement.
+- P2 merge evidence lives with the PR or merge record: preserve the proof-bearing gate logs, commit SHA, and final `artifacts/p2/evidence.json` hash there. Do not add gate logs or merge records under `artifacts/p2`.
 
 ## P3 Decisions
 - First agent-control target: deterministic agent orchestration proof.
@@ -380,9 +383,9 @@ Given valid P2 ingestion evidence and the P3 fixture set, the agents proof comma
 - No production product implementation or live operational surface in P0/P1 beyond proof tooling, generated artifacts, generated demos, and tests.
 
 ## Non-Goals For P2
-- No live Figma API call.
-- No Storybook server scraping.
-- No Code Connect parser beyond declared local mapping input.
+- No Figma export ingestion.
+- No Storybook server scraping or code-doc metadata ingestion.
+- No Code Connect parser or Code Connect mapping ingestion.
 - No docs crawler.
 - No production HTML extraction or source input in P2.
 - No agent recruitment or work-order generation.

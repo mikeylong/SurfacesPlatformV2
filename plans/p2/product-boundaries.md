@@ -9,7 +9,7 @@ Prove the platform can ingest a bounded real design-system source without weaken
 ## Inputs
 - [VISION](../../VISION.md), P0/P1 decisions, and P2 source strategy.
 - `sources/p2/design-system-source/manifest.json`.
-- Declared local source exports under `sources/p2/design-system-source/`.
+- Declared local Spectrum snapshot files, mapping files, and policy files under `sources/p2/design-system-source/`.
 - P2 fixtures and expectations manifest.
 - Existing P0/P1 schemas and evidence discipline.
 
@@ -23,7 +23,7 @@ The complete cross-phase surface-role taxonomy lives in [VISION](../../VISION.md
 
 | Surface | P2 role | Consumes | Emits | Must not do |
 | --- | --- | --- | --- | --- |
-| Design-system source bundle | Manifest-declared source input | Figma exports, Storybook/code metadata, mappings, structured docs | Declared local source files | Change after hashing or bypass manifest refs |
+| Design-system source bundle | Manifest-declared source input | Pinned local `@adobe/spectrum-design-data@0.7.0` snapshot, local mappings, local policy refs | Declared local package, mapping, and policy files | Accept Figma exports, Storybook/code metadata, Code Connect mappings, docs crawlers, production HTML, or other source-family inputs; change after hashing or bypass manifest refs |
 | Source inventory | P2-local provenance and hash record | Source manifest and files | `source-inventory.json` | Invent missing source material or expand source eligibility |
 | Source mapping | P2-local reconciliation record | Source inventory and mapping files | `source-mapping.json` | Add catalog behavior absent from source or expand source eligibility |
 | Surfaces Catalog | Governed contract output | Extracted design-system material | `catalog.json`, `governed-catalog.json` | Become a source crawler or runtime projection |
@@ -37,6 +37,7 @@ The complete cross-phase surface-role taxonomy lives in [VISION](../../VISION.md
 
 ## Boundary Rules
 - P2 may read only files declared by `sources/p2/design-system-source/manifest.json`.
+- The current P2 manifest may authorize only the pinned local `@adobe/spectrum-design-data@0.7.0` snapshot, local mappings, and local policy refs for `button` and `in-line-alert`; Figma exports, Storybook/code metadata, Code Connect mappings, docs crawlers, production HTML, and other source families require later connector-specific proofs.
 - Source file hashes must be recorded before extraction and copied into evidence.
 - Every extracted token, component, prop, variant, state, slot, action, accessibility rule, example, and governance rule must preserve a source ref.
 - Mapping files may narrow or explain how manifest-declared source material maps to current catalog contracts. They must not create components, props, variants, actions, policies, or catalog behavior absent from source material.
@@ -49,7 +50,7 @@ The complete cross-phase surface-role taxonomy lives in [VISION](../../VISION.md
 The proof can be completed with a declared source bundle, P2 fixtures, P2 schemas, source inventory, source mapping, extract, catalog, governed catalog, ingestion report, final evidence, and a generated demo.
 
 ## Spectrum Authority Matrix
-The first P2 pilot is planned around Adobe Spectrum Design Data, pinned as `@adobe/spectrum-design-data@0.7.0`. This matrix is phase-local and does not redefine the canonical authority taxonomy in [VISION](../../VISION.md#canonical-authority-model).
+The first P2 pilot uses Adobe Spectrum Design Data, pinned as `@adobe/spectrum-design-data@0.7.0`. This matrix is phase-local and does not redefine the canonical authority taxonomy in [VISION](../../VISION.md#canonical-authority-model).
 
 | Contract area | Spectrum source authority | P2 boundary |
 | --- | --- | --- |
@@ -65,6 +66,7 @@ The first P2 pilot is planned around Adobe Spectrum Design Data, pinned as `@ado
 
 ## Non-Goals
 - No live connector implementation.
+- No Figma export, Storybook/code metadata, Code Connect mapping, docs crawler, production HTML, or other source-family input in P2.
 - No public docs site implementation.
 - No runtime projection or renderer.
 - No SurfaceOps review-decision persistence.

@@ -14,6 +14,8 @@ P3 preserves this mission by making agent work itself a governed artifact. Agent
 
 P3 must run only after P2 real design-system ingestion evidence passes. Agent orchestration over the old P0 synthetic fixture catalog is not a product-readiness proof.
 
+P3 implementation starts only from clean post-merge `main` after the P0, P1, and P2 proof gates pass on that branch. A dirty worktree, feature branch, or locally generated P2 artifact set is not enough to open P3 product work.
+
 ## P3 Dependency Order
 1. [Product Boundaries](product-boundaries.md)
 2. [Agent Capability Registry v0](agent-capability-registry-v0.md)
@@ -87,6 +89,8 @@ interfacectl surfaces agents proof \
 ```
 
 The command must verify upstream P2 ingestion hashes before reading the P3 registry or task fixtures. It must fail closed before writing P3 artifacts when upstream evidence is missing, failing, hash-mismatched, stale, or not the exact declared input.
+
+This remains a planned P3 command until that phase adds its schemas, fixtures, diagnostics, command implementation, artifacts, report, demo, and evidence from the clean post-merge start gate above.
 
 ## Pass Condition
 Given valid P2 ingestion evidence and the P3 fixture set, the agents proof command emits the exact P3 artifacts, creates a hash-bound agent capability registry, recruits only registered capabilities for declared task requirements, emits deterministic scoped work orders, blocks invalid and mutation cases with registry-backed diagnostics, records review-required work without execution, records orchestration diagnostics before final evidence, and writes reproducible evidence with hashes and provenance for every P3 schema, fixture, input artifact, generated proof artifact under `artifacts/p3`, and final evidence artifact.

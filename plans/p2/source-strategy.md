@@ -30,18 +30,19 @@ Define how real design-system source material becomes eligible for P2 extraction
 
 The manifest is the source eligibility gate. Files absent from the manifest must not be read. Files present in the manifest but missing or hash-mismatched must block before extraction.
 
-The manifest must identify the real pilot target before implementation begins. If source files, required mappings, policy refs, or per-file hashes are placeholders, P2 remains planned-only and no actual source bundle, generated artifacts, demo, CI success claim, or implemented ingestion evidence should be created.
+The manifest identifies the real pilot target. If source files, required mappings, policy refs, or per-file hashes become placeholders, the P2 proof is invalid and no source bundle, generated artifacts, demo, CI success claim, or ingestion evidence claim should be accepted.
 
-## Initial Source Types
-The first P2 source bundle may include:
+## Current P2 Source Inputs
+The current P2 source bundle is limited to:
 
-- Figma variable exports for token source material;
-- Figma component exports for component, variant, and component-property source material;
-- Storybook or code-doc metadata for props, examples, states, and runtime constraints;
-- structured usage-policy docs for accessibility, governance, and review requirements;
-- explicit component mappings for source-to-catalog decisions.
+- the pinned local `@adobe/spectrum-design-data@0.7.0` snapshot under `sources/p2/design-system-source/npm/@adobe/spectrum-design-data/0.7.0/package/`;
+- local `mappings/component-map.json`, `mappings/token-map.json`, and `mappings/policy-map.json` reconciliation files;
+- local `docs/usage-policy.json` policy input plus declared Spectrum `guidelines/*.json` package files.
 
-P2 does not require every source type to exist. The manifest must declare which source types are in scope for the selected design system, and the proof must block when required source classes are absent.
+Only Spectrum `button` and `in-line-alert` may be extracted in current P2. The manifest records this closed file set and its hashes; it does not make other source types eligible.
+
+## Future Source-Family Options
+Figma exports, Storybook or code-doc metadata, Code Connect mappings, docs crawlers, production HTML, and any other source family require later connector-specific proofs before becoming source inputs. P2 may mention those families only as future options; they cannot appear as current P2 bundle inputs even if copied under the source directory.
 
 ## Target Design System
 The target design system is Adobe Spectrum Design Data. The source manifest selects:
@@ -53,10 +54,10 @@ The target design system is Adobe Spectrum Design Data. The source manifest sele
 - `packageIntegrity`: `sha512-mSdmQn6fNEzKVo6W5xS4gO1EXCpC4ojiEm3GqTlSjhh26lC9siMgQSWi33ODvWe8ssfrxXX0unzVnL5VBt4+CA==`;
 - first components: `button` and `in-line-alert`.
 
-P2 implementation must not begin until the declared package files are copied into the local snapshot root with hashes. The manifest selects the P2 pilot target only; it is not a product-wide source policy or source-family taxonomy.
+The declared package files are copied into the local snapshot root with hashes before proof execution. The manifest selects the P2 pilot target only; it is not a product-wide source policy or source-family taxonomy.
 
 ## Spectrum Source Snapshot Plan
-The planned local snapshot root is:
+The local snapshot root is:
 
 ```text
 sources/p2/design-system-source/npm/@adobe/spectrum-design-data/0.7.0/package/
@@ -97,13 +98,20 @@ Mapping refs use this grammar:
 mapping://p2/spectrum/<mapping-file>#<rfc6901-json-pointer>
 ```
 
+Local policy refs use this grammar:
+
+```text
+source://p2/docs/usage-policy.json#<rfc6901-json-pointer>
+```
+
+Local policy refs must point to manifest-declared policy files under `sources/p2/design-system-source/docs/`. They may provide usage, accessibility, and governance policy refs for mapped Spectrum source material, but they do not authorize components, tokens, variants, states, slots, actions, or catalog behavior absent from the declared Spectrum snapshot.
+
 ## P2 Eligibility Rules
-- Figma exports may provide declared design variables, component variants, component properties, and design provenance when present in the manifest.
-- Storybook or code-doc metadata may provide declared component API shape, prop types, examples, and runtime constraints when present in the manifest.
-- Structured docs may provide usage, accessibility, governance, and review policy when present in the manifest.
+- P2 source eligibility is limited to the pinned local `@adobe/spectrum-design-data@0.7.0` snapshot, local mappings, and local policy files declared by the manifest.
+- The eligible component subset is limited to Spectrum `button` and `in-line-alert`.
+- Figma exports, Storybook or code-doc metadata, Code Connect mappings, docs crawlers, production HTML, and any other source family are future connector-specific proof targets, not current eligible inputs.
 - Mapping files are P2-local reconciliation records for declared source material. They must explain the mapping and preserve refs to the source entries they map.
 - Mapping files must not add components, props, variants, actions, policies, or catalog behavior absent from manifest-declared source material.
-- Production HTML can be used only as observed usage evidence in a later phase. It is not a P2 source input.
 
 ## Spectrum Authority Matrix
 This matrix defines which Spectrum package files may authorize each extraction class for the first subset. Mapping files can narrow or explain these rows, but cannot authorize behavior absent from the declared Spectrum files.
@@ -119,12 +127,15 @@ This matrix defines which Spectrum package files may authorize each extraction c
 | Accessibility | Component JSON accessibility entries when present plus declared `guidelines/*.json` policy refs | Preserve source refs and block missing required accessibility policy |
 | Examples | Component JSON examples when present plus package README or declared guidelines | Examples are evidence and fixture coverage only; they cannot add catalog behavior |
 | Actions | Component JSON event/action affordances when present plus governance policy refs | Actions remain inert descriptors and require explicit source and policy refs |
-| Data bindings | Component/code metadata only when manifest-declared; absent for the initial npm-only subset unless source files declare them | Mapping cannot invent bindings absent from source |
+| Data bindings | None in the current P2 source set | Not authorized in P2; future Storybook/code metadata would require a later connector-specific proof |
 | Governance | Declared policy refs in `guidelines/*.json` and local `docs/usage-policy.json` | Mapping may attach policy refs to catalog rules; missing policy blocks sensitive behavior |
 
 ## Non-Goals
 - No remote source calls.
-- No source crawling.
+- No Figma export ingestion.
+- No Storybook or code-doc metadata ingestion.
+- No Code Connect mapping ingestion.
+- No source crawling or docs crawling.
 - No inference-only mapping.
 - No production HTML extraction.
 - No multi-design-system merge.

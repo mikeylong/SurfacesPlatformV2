@@ -38,7 +38,7 @@ P0 proves the catalog contract with a synthetic golden fixture. It materializes 
 
 P1 proves the first runtime-facing surface. It derives a `web-static` runtime projection and deterministic render plans from the governed catalog, then writes adapter report and evidence artifacts.
 
-The current `plans/p2/` contract defines the real design-system ingestion proof. The former agent-orchestration draft has moved to `plans/p3/` and should run only after P2 ingestion evidence passes.
+P2 implements the first bounded real design-system ingestion proof from a manifest-declared local source bundle: the pinned `@adobe/spectrum-design-data@0.7.0` snapshot scoped to `button` and `in-line-alert`. The former agent-orchestration draft has moved to `plans/p3/` and should run only after P2 ingestion evidence passes.
 
 ## Roadmap
 This roadmap is the accepted product sequence for the current plan.
@@ -56,9 +56,9 @@ P4: Review and judgment proof. Let SurfaceOps and JudgmentKit consume evidence. 
 P5: Production adapters and protocol boundaries. Add additional runtime projections, A2UI exports or conformance proofs, production APIs, and broader adapter support only after each target has its own schema, fixtures, diagnostics, command contract, and evidence.
 
 ## Real Design-System Extraction
-The platform has not yet extracted an actual design system. The current extractor reads `fixtures/p0/source.fixture.json` only. It does not call Figma, scrape Storybook, parse Code Connect, crawl docs, or inspect production HTML.
+P0 remains a synthetic fixture proof, and P1 remains a derived runtime projection proof. P2 is the first bounded real-source ingestion proof: it reads only the manifest-declared local `@adobe/spectrum-design-data@0.7.0` source snapshot, companion local mappings, and local usage policy under `sources/p2/design-system-source`, scoped to `button` and `in-line-alert`. It does not call Figma, scrape Storybook, parse Code Connect, crawl docs, inspect production HTML, or claim full Spectrum support.
 
-Surfaces can claim real design-system extraction only when a phase proves all of the following:
+Surfaces can claim a real design-system ingestion capability only for source families and targets that prove all of the following:
 
 - the input source is an authoritative design-system source, not a hand-authored fixture shaped for the proof;
 - extraction preserves source references for every token, component, prop, variant, state, slot, action, accessibility rule, example, and governance rule it emits;
@@ -74,7 +74,7 @@ Likely source families:
 - Design-system docs can provide usage rules, accessibility guidance, do/don't policy, and governance context. They need structured references to become reliable proof input.
 - Production HTML pages can provide observed usage examples and regression signals. They should not become the design-system authority unless the project explicitly declares them canonical.
 
-P2 should pick one bounded source strategy and prove it end to end before expanding to multiple source families.
+P2 picks one bounded local source-bundle strategy and proves it end to end before expanding to multiple source families.
 
 ## Surface Roles
 Surfaces Catalog is the governed contract artifact. It is the authority for what agents may emit and what runtime projections, proof consumers, future adapters, and review tools may render, reject, or send to review. Evaluators consume catalog-backed evidence to assess activity fit, contract quality, evidence quality, and handoff quality; they do not render surfaces, route review, promote work, or become enforcement authority.
@@ -111,6 +111,7 @@ Agents working in this repo should follow these rules:
 - Do not let runtime projections, review queues, docs, or product surfaces add authority absent from the governed catalog.
 - Keep phase subplans limited to phase-local deltas and mechanics; link back here for product vision, authority taxonomy, roadmap sequence, surface roles, and agent operating rules.
 - Preserve source refs, provenance, hashes, diagnostic codes, promotion status, and review semantics when changing any proof layer.
+- Preserve proof-bearing gate logs, commit SHA, and final evidence hash with the PR or merge record for shipped claims. Do not store merge records or gate logs under generated artifact roots such as `artifacts/p2`.
 - If a new capability lacks a schema, fixture, proof command, diagnostics, report or evidence path, it is not implemented yet.
 - Keep live execution, network calls, tool calls, secret access, autonomous edits, and persistent review decisions out of a phase until that phase has a deterministic proof contract.
 
@@ -124,7 +125,7 @@ If source material is ambiguous, the correct output is a diagnostic, review requ
 If a product surface consumes evidence, it may explain, evaluate, route, or display the result. It may not override the catalog, rewrite policy, or promote work without an explicit review contract.
 
 ## Open Decisions
-- First real design-system source family: selected for the planned P2 pilot as a local npm package source snapshot, with companion local mappings and policy refs as needed. This is not implemented source ingestion until the P2 manifest, snapshot, schemas, fixtures, proof command, artifacts, demo, CI gate, and evidence exist and pass.
-- First design-system ingestion target: selected for the planned P2 pilot as Adobe Spectrum Design Data, pinned to `@adobe/spectrum-design-data@0.7.0`, initially scoped to `button` and `in-line-alert`. This is not a claim of full Spectrum support, live ingestion, Adobe endorsement, or implemented P2 evidence.
+- Broader real design-system source families beyond the P2 local source bundle remain open. P2 does not settle Figma, Storybook, Code Connect, docs crawler, production HTML, or multi-source authority policy.
+- Broader Spectrum coverage remains open. The implemented P2 target is Adobe Spectrum Design Data, pinned to `@adobe/spectrum-design-data@0.7.0`, initially scoped to `button` and `in-line-alert`; this is not a claim of full Spectrum support, live ingestion, or Adobe endorsement.
 - What is the first JudgmentKit evaluation contract over Surfaces evidence?
 - What minimum SurfaceOps decision model is needed before review-required artifacts can be promoted or rejected?

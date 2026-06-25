@@ -13,13 +13,13 @@ P2 preserves this mission by replacing the synthetic P0 source fixture with a bo
 ## Source Strategy
 The accepted P2 pilot source container is `design-system-source-bundle.v0`: a local, versioned, hash-bound snapshot exported from Adobe Spectrum Design Data, pinned as `@adobe/spectrum-design-data@0.7.0` with npm integrity `sha512-mSdmQn6fNEzKVo6W5xS4gO1EXCpC4ojiEm3GqTlSjhh26lC9siMgQSWi33ODvWe8ssfrxXX0unzVnL5VBt4+CA==`. This is a phase-local ingestion and fixture strategy, not a universal product source policy decision, and not a synthetic replacement for the P0 fixture. Future source-family choices still follow [VISION source-selection rules and open decisions](../../VISION.md#open-decisions).
 
-The first component subset is Spectrum `button` and `in-line-alert`. The planned snapshot root is `sources/p2/design-system-source/npm/@adobe/spectrum-design-data/0.7.0/package/`, preserving tarball paths such as `components/button.json`, `components/in-line-alert.json`, `tokens/color-component.tokens.json`, `tokens/layout-component.tokens.json`, `tokens/typography.tokens.json`, `registry/components.json`, `registry/variants.json`, `registry/states.json`, and selected `guidelines/*.json` policy inputs.
+The first component subset is Spectrum `button` and `in-line-alert`. The snapshot root is `sources/p2/design-system-source/npm/@adobe/spectrum-design-data/0.7.0/package/`, preserving tarball paths such as `components/button.json`, `components/in-line-alert.json`, `tokens/color-component.tokens.json`, `tokens/layout-component.tokens.json`, `tokens/typography.tokens.json`, `registry/components.json`, `registry/variants.json`, `registry/states.json`, and selected `guidelines/*.json` policy inputs.
 
-The bundle may include npm package exports, Figma exports, Storybook or code-doc metadata, Code Connect mappings, and structured usage-policy docs, but P2 reads only the declared local bundle.
+The current P2 bundle input is limited to the pinned local `@adobe/spectrum-design-data@0.7.0` snapshot plus local `mappings/*.json` and `docs/usage-policy.json` policy files for `button` and `in-line-alert`. Figma exports, Storybook or code-doc metadata, Code Connect mappings, docs crawlers, production HTML, and other source families are not valid current P2 bundle inputs.
 
-P2 does not call remote APIs. Live Figma, Storybook, Code Connect, docs, and production HTML ingestion require later connector-specific proofs.
+P2 does not call remote APIs or broaden source families by manifest entry. Those source-family options require later connector-specific proofs before they can become eligible source inputs.
 
-The target design system must be named in `sources/p2/design-system-source/manifest.json` before implementation starts, with non-placeholder source files, required mappings, policy refs, and hashes. Without that manifest, the local source snapshot, implemented proof command, generated artifacts, demo, CI, and passing evidence, P2 is planned but not implementation-ready.
+The target design system is named in `sources/p2/design-system-source/manifest.json`, with source files, required mappings, policy refs, and hashes. The implemented proof remains scoped to that declared local snapshot and evidence.
 
 ## Source Ref Grammar
 P2 Spectrum source refs use this grammar:
@@ -41,6 +41,14 @@ mapping://p2/spectrum/<mapping-file>#<rfc6901-json-pointer>
 ```
 
 Mapping refs may reconcile or narrow declared Spectrum source material. They cannot create catalog behavior absent from manifest-declared Spectrum files.
+
+Local policy refs use:
+
+```text
+source://p2/docs/usage-policy.json#<rfc6901-json-pointer>
+```
+
+Local policy refs identify manifest-declared policy files only. They can supply governance, accessibility, and usage-policy evidence, but cannot broaden the eligible Spectrum source subset.
 
 ## P2 Dependency Order
 1. [Product Boundaries](product-boundaries.md)
@@ -154,16 +162,17 @@ artifacts/p2/
 
 demo/p2/
   README.md
+  data.json
   index.html
 ```
 
-## P2 Planned Proof Command
+## P2 Proof Command
 
-```text
+```bash
 interfacectl surfaces ingest proof --source sources/p2/design-system-source --fixture fixtures/p2 --out artifacts/p2
 ```
 
-This command is not runnable until the P2 ingest proof is implemented; the current CLI exits usage for it. When implemented, it must run from the workspace root. `--source`, `--fixture`, and `--out` are POSIX-style paths relative to the workspace root. The schema directory is fixed at `schemas/`.
+This command runs from the workspace root. `--source`, `--fixture`, and `--out` are POSIX-style paths relative to the workspace root. The schema directory is fixed at `schemas/`.
 
 Package scripts and tests must invoke `node bin/interfacectl.js surfaces ingest proof --source sources/p2/design-system-source --fixture fixtures/p2 --out artifacts/p2`. Evidence may record the logical command string above to match the existing proof-command convention.
 
@@ -209,12 +218,12 @@ These diagnostics enforce the canonical authority model by blocking source, mapp
 | `INGEST_EVIDENCE_HASH_MISMATCH` | Ingestion evidence hash differs from manifest or self-hash rule | `evidence` | `blocked` | `mutations/hash-mismatch.design-system-ingestion-evidence.json` |
 
 ## Allowed Claims
-Before a proof-bearing P2 CI gate exists and passes, repo text may claim only that P2 is planned and that Spectrum Design Data is selected, proposed, or pinned as the pilot. It must not claim implemented real ingestion, accepted source evidence, a generated P2 demo, or passing P2 proof authority. The current `check:p2:planning` script is a planning guard only.
+With passing P2 evidence, repo text may claim deterministic local ingestion for the declared `@adobe/spectrum-design-data@0.7.0` source snapshot, scoped to `button` and `in-line-alert`. It must not claim full Spectrum support, live ingestion, runtime adapter rendering, A2UI support, SurfaceOps operation, JudgmentKit evaluation, P3 orchestration, or Adobe endorsement. `check:p2:planning:validate` remains a non-mutating planning guard; `check:p2:ci` is the proof-bearing gate.
 
 ## Non-Goals
-- No live Figma API call.
-- No Storybook server scraping.
-- No Code Connect parser beyond declared local mapping input.
+- No Figma export ingestion.
+- No Storybook server scraping or code-doc metadata ingestion.
+- No Code Connect parser or Code Connect mapping ingestion.
 - No docs crawler.
 - No production HTML extraction or source input in P2.
 - No agent recruitment or work-order generation.

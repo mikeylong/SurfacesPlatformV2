@@ -603,13 +603,17 @@ const REGISTRY_BY_COVERAGE = new Map(REGISTRY_ROWS.map((entry) => [entry.coverag
 const REGISTRY_BY_ARTIFACT = new Map(REGISTRY_ROWS.map((entry) => [entry.artifactPath, entry]));
 
 export async function runInterfacectl(argv, io) {
+  if (argv[0] === "surfaces" && argv[1] === "ingest" && argv[2] === "proof") {
+    const { runP2Interfacectl } = await import("./p2-proof.js");
+    return runP2Interfacectl(argv.slice(3), io);
+  }
   if (argv[0] === "surfaces" && argv[1] === "adapter" && argv[2] === "proof") {
     const { runP1Interfacectl } = await import("./p1-proof.js");
     return runP1Interfacectl(argv.slice(3), io);
   }
 
   if (argv[0] !== "surfaces" || argv[1] !== "proof") {
-    io.stderr.write("usage: interfacectl surfaces proof --fixture fixtures/p0 --out artifacts/p0\nusage: interfacectl surfaces adapter proof --catalog artifacts/p0/governed-catalog.json --fixture fixtures/p1 --out artifacts/p1\n");
+    io.stderr.write("usage: interfacectl surfaces proof --fixture fixtures/p0 --out artifacts/p0\nusage: interfacectl surfaces adapter proof --catalog artifacts/p0/governed-catalog.json --fixture fixtures/p1 --out artifacts/p1\nusage: interfacectl surfaces ingest proof --source sources/p2/design-system-source --fixture fixtures/p2 --out artifacts/p2\n");
     return 2;
   }
 

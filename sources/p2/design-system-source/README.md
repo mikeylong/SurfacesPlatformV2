@@ -1,6 +1,6 @@
-# P2 Spectrum Source Plan
+# P2 Spectrum Source Bundle
 
-This directory is reserved for the planned P2 local source bundle. It is not a completed source snapshot and is not proof evidence.
+This directory contains the local, manifest-declared P2 source bundle for the deterministic ingestion proof. Proof authority still lives in `artifacts/p2/evidence.json`; source files here are bounded proof inputs, not runtime state or a live connector.
 
 The selected pilot target is Adobe Spectrum Design Data:
 
@@ -10,12 +10,12 @@ The selected pilot target is Adobe Spectrum Design Data:
 - npm integrity: `sha512-mSdmQn6fNEzKVo6W5xS4gO1EXCpC4ojiEm3GqTlSjhh26lC9siMgQSWi33ODvWe8ssfrxXX0unzVnL5VBt4+CA==`
 - first components: `button`, `in-line-alert`
 
-The future source snapshot root is:
+The source snapshot root is:
 
 ```text
 sources/p2/design-system-source/npm/@adobe/spectrum-design-data/0.7.0/package/
 ```
 
-The first manifest must declare the component files, reachable token files, registry files, mode/field files, mapping files, and policy refs named in `plans/p2/source-strategy.md`.
+`manifest.json` declares the component files, token files, registry files, mode/field files, mapping files, and policy refs named in `plans/p2/source-strategy.md`, with per-file SHA-256 hashes.
 
-`manifest.template.json` is a planning template only. P2 remains planned until `manifest.json`, the source snapshot, fixtures, proof command, artifacts, demo, CI, and passing evidence exist.
+`manifest.template.json` remains a non-proof template for path and ref review. The proof command consumes `manifest.json` and the declared local files only; it does not fetch npm, call source APIs, crawl docs, or expand beyond the declared `button` and `in-line-alert` subset.

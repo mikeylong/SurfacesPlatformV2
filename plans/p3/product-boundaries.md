@@ -34,9 +34,11 @@ This matrix is a P3 phase-local delta over [VISION.md Surface Roles](../../VISIO
 | JudgmentKit | Future evaluator | Evidence and evaluator metadata | Quality and handoff evaluation in a later phase | Override recruitment or orchestration proof |
 
 ## Boundary Rules
+- P3 starts only from clean post-merge `main` after the P0, P1, and P2 proof gates pass on that branch.
 - P3 orchestration is derived from P2 proof evidence, the P2 governed catalog, and P3 fixtures; it is not a new source of product, UI, runtime, or projection authority.
 - Agent selection must come from `agent-capability-registry.json`, not task text alone.
 - P3 applies VISION.md's canonical no-live-execution boundary; these rules do not define a separate execution policy.
+- Product P3 remains inert: no live agents, shell/tool/network calls, file edits, secrets, persistent review decisions, SurfaceOps, JudgmentKit, A2UI, or production adapters.
 - A work order is an inert descriptor. It must never contain executable callbacks, shell commands, connector calls, network calls, secrets, or file edits.
 - Each work order must declare allowed inputs, allowed output paths, denied capabilities, dependencies, source refs, and evidence obligations.
 - Task fixtures request exact inputs and outputs, the registry authorizes agent and capability scope, recruitment computes the allowed intersection, and `interfacectl` is the sole author of orchestration plan and work-order artifacts. Work orders must only echo resolved scope; they cannot widen or reinterpret it.
