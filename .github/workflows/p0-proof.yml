@@ -1,4 +1,4 @@
-name: P0 Proof
+name: Surfaces Proof Gates
 
 on:
   pull_request:
@@ -45,7 +45,7 @@ jobs:
       - name: Run P1 contract gate
         run: npm run check:p1:ci
 
-  p2-planning-guard:
+  p2-proof:
     runs-on: ubuntu-latest
 
     steps:
@@ -61,5 +61,5 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run P2 planning guard
-        run: npm run check:p2:planning
+      - name: Run P2 contract gate
+        run: npm run check:p2:ci

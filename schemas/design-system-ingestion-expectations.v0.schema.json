@@ -143,8 +143,16 @@
       "unevaluatedProperties": false
     },
     "sourceRef": {
-      "type": "string",
-      "pattern": "^spectrum-design-data://npm/@adobe/spectrum-design-data@0\\.7\\.0/package/(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*(?:^|/)\\.(?:/|$))(?!.*//)[A-Za-z0-9._@-]+(?:/[A-Za-z0-9._@-]+)*#/(?:[A-Za-z0-9._~-]+(?:/[A-Za-z0-9._~-]+)*)?$"
+      "oneOf": [
+        {
+          "type": "string",
+          "pattern": "^spectrum-design-data://npm/@adobe/spectrum-design-data@0\\.7\\.0/package/(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*(?:^|/)\\.(?:/|$))(?!.*//)[A-Za-z0-9._@-]+(?:/[A-Za-z0-9._@-]+)*#/(?:[A-Za-z0-9._~-]+(?:/[A-Za-z0-9._~-]+)*)?$"
+        },
+        {
+          "type": "string",
+          "pattern": "^source://p2/docs/usage-policy\\.json#/(?:[A-Za-z0-9._~-]+(?:/[A-Za-z0-9._~-]+)*)?$"
+        }
+      ]
     },
     "catalogRef": {
       "type": "string",

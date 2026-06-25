@@ -1,6 +1,5 @@
 import fs from "node:fs";
 import path from "node:path";
-import { spawnSync } from "node:child_process";
 import Ajv2020 from "ajv/dist/2020.js";
 
 const p2SchemaFiles = [
@@ -82,6 +81,11 @@ const p2Artifacts = [
   "artifacts/p2/evidence.json"
 ];
 
+const schemaClosurePaths = p2SchemaFiles.concat(sharedSchemaFiles);
+const expectedSourceRefPaths = sourceFiles.map((file) => `sources/p2/design-system-source/${file}`).concat(
+  requiredMappings.map((file) => `sources/p2/design-system-source/${file}`)
+);
+
 const fixtureFiles = [
   "fixtures/p2/valid/spectrum-button.design-source.json",
   "fixtures/p2/valid/spectrum-in-line-alert.design-source.json",
@@ -110,6 +114,7 @@ const requiredFiles = [
   ...p2SchemaFiles,
   "sources/p2/design-system-source/README.md",
   "sources/p2/design-system-source/manifest.template.json",
+  "sources/p2/design-system-source/manifest.json",
   "fixtures/p2/expectations.manifest.json",
   ...fixtureFiles
 ];
@@ -150,7 +155,9 @@ const assertNormalizedPath = (value, label) => {
   }
 };
 
-const parseSourceRef = (ref, label) => {
+const parseSourceRef = (ref, label) => parseSourceRefParts(ref, label).path;
+
+const parseSourceRefParts = (ref, label) => {
   const spectrumPrefix = "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/";
   const docsPrefix = "source://p2/docs/";
   if (ref.startsWith(spectrumPrefix)) {
@@ -161,7 +168,7 @@ const parseSourceRef = (ref, label) => {
     const fragment = rest.slice(hashIndex);
     assertNormalizedPath(packagePath, label);
     if (!pointerPattern.test(fragment)) fail(`${label} has invalid JSON Pointer fragment: ${ref}`);
-    return `npm/@adobe/spectrum-design-data/0.7.0/package/${packagePath}`;
+    return { path: `npm/@adobe/spectrum-design-data/0.7.0/package/${packagePath}`, pointer: fragment };
   }
   if (ref.startsWith(docsPrefix)) {
     const rest = ref.slice(docsPrefix.length);
@@ -172,12 +179,14 @@ const parseSourceRef = (ref, label) => {
     if (docsPath !== "usage-policy.json" || !pointerPattern.test(fragment)) {
       fail(`${label} has invalid docs source ref: ${ref}`);
     }
-    return `docs/${docsPath}`;
+    return { path: `docs/${docsPath}`, pointer: fragment };
   }
   fail(`${label} has unknown source ref scheme: ${ref}`);
 };
 
-const parseMappingRef = (ref, label) => {
+const parseMappingRef = (ref, label) => parseMappingRefParts(ref, label).path;
+
+const parseMappingRefParts = (ref, label) => {
   const prefix = "mapping://p2/spectrum/";
   if (!ref.startsWith(prefix)) fail(`${label} has unknown mapping ref scheme: ${ref}`);
   const rest = ref.slice(prefix.length);
@@ -188,7 +197,28 @@ const parseMappingRef = (ref, label) => {
   if (!["component-map.json", "token-map.json", "policy-map.json"].includes(mappingPath) || !pointerPattern.test(fragment)) {
     fail(`${label} has invalid mapping ref: ${ref}`);
   }
-  return `mappings/${mappingPath}`;
+  return { path: `mappings/${mappingPath}`, pointer: fragment };
+};
+
+const resolveJsonPointer = (document, pointerFragment, label, ref) => {
+  if (pointerFragment === "#/") return document;
+  const segments = pointerFragment.slice(2).split("/").map((segment) =>
+    segment.replaceAll("~1", "/").replaceAll("~0", "~")
+  );
+  let current = document;
+  for (const segment of segments) {
+    if (Array.isArray(current)) {
+      if (!/^(0|[1-9][0-9]*)$/.test(segment) || Number(segment) >= current.length) {
+        fail(`${label} points outside JSON array bounds: ${ref}`);
+      }
+      current = current[Number(segment)];
+    } else if (current && typeof current === "object" && Object.prototype.hasOwnProperty.call(current, segment)) {
+      current = current[segment];
+    } else {
+      fail(`${label} points at an unresolved JSON Pointer: ${ref}`);
+    }
+  }
+  return current;
 };
 
 for (const file of requiredFiles) {
@@ -236,11 +266,23 @@ if (!validateMapping(mapping)) {
 }
 
 const sourceManifestTemplate = readJson("sources/p2/design-system-source/manifest.template.json");
+const sourceManifest = readJson("sources/p2/design-system-source/manifest.json");
+const sourceDocuments = new Map(sourceManifest.sourceFiles.map((entry) => {
+  const fullPath = `sources/p2/design-system-source/${entry.path}`;
+  return [entry.path, fullPath.endsWith(".json") ? readJson(fullPath) : null];
+}));
+const mappingDocuments = new Map(sourceManifest.requiredMappings.map((entry) => [
+  entry.path,
+  readJson(`sources/p2/design-system-source/${entry.path}`)
+]));
 assertSetEquals(new Set(sourceManifestTemplate.sourceFiles.map((entry) => entry.path)), new Set(sourceFiles), "manifest template sourceFiles");
 assertSetEquals(new Set(sourceManifestTemplate.requiredMappings.map((entry) => entry.path)), new Set(requiredMappings), "manifest template requiredMappings");
 assertSetEquals(new Set(sourceManifestTemplate.policyRefs), new Set(requiredPolicyRefs), "manifest template policyRefs");
+assertSetEquals(new Set(sourceManifest.sourceFiles.map((entry) => entry.path)), new Set(sourceFiles), "manifest sourceFiles");
+assertSetEquals(new Set(sourceManifest.requiredMappings.map((entry) => entry.path)), new Set(requiredMappings), "manifest requiredMappings");
+assertSetEquals(new Set(sourceManifest.policyRefs), new Set(requiredPolicyRefs), "manifest policyRefs");
 
-for (const sourceFile of sourceManifestTemplate.sourceFiles) {
+for (const sourceFile of sourceManifest.sourceFiles) {
   assertNormalizedPath(sourceFile.path, `manifest source file ${sourceFile.path}`);
   if (sourceFile.packagePath !== null) {
     assertNormalizedPath(sourceFile.packagePath, `manifest package path ${sourceFile.packagePath}`);
@@ -255,7 +297,7 @@ for (const sourceFile of sourceManifestTemplate.sourceFiles) {
   }
 }
 
-for (const mappingRef of sourceManifestTemplate.requiredMappings) {
+for (const mappingRef of sourceManifest.requiredMappings) {
   assertNormalizedPath(mappingRef.path, `manifest mapping path ${mappingRef.path}`);
   const refPath = parseMappingRef(mappingRef.mappingRefRoot, `mappingRefRoot for ${mappingRef.path}`);
   if (refPath !== mappingRef.path) {
@@ -263,18 +305,24 @@ for (const mappingRef of sourceManifestTemplate.requiredMappings) {
   }
 }
 
-const declaredSourcePaths = new Set(sourceManifestTemplate.sourceFiles.map((entry) => entry.path));
-const declaredMappingPaths = new Set(sourceManifestTemplate.requiredMappings.map((entry) => entry.path));
+const declaredSourcePaths = new Set(sourceManifest.sourceFiles.map((entry) => entry.path));
+const declaredMappingPaths = new Set(sourceManifest.requiredMappings.map((entry) => entry.path));
 const assertDeclaredSourceRef = (ref, label) => {
-  const refPath = parseSourceRef(ref, label);
+  const parsed = parseSourceRefParts(ref, label);
+  const refPath = parsed.path;
   if (!declaredSourcePaths.has(refPath)) fail(`${label} points outside manifest-declared source files: ${ref}`);
+  const document = sourceDocuments.get(refPath);
+  if (document === null && parsed.pointer !== "#/") fail(`${label} points into a non-JSON source file: ${ref}`);
+  if (document !== null) resolveJsonPointer(document, parsed.pointer, label, ref);
 };
 const assertDeclaredMappingRef = (ref, label) => {
-  const refPath = parseMappingRef(ref, label);
+  const parsed = parseMappingRefParts(ref, label);
+  const refPath = parsed.path;
   if (!declaredMappingPaths.has(refPath)) fail(`${label} points outside manifest-declared mapping files: ${ref}`);
+  resolveJsonPointer(mappingDocuments.get(refPath), parsed.pointer, label, ref);
 };
 
-for (const policyRef of sourceManifestTemplate.policyRefs) {
+for (const policyRef of sourceManifest.policyRefs) {
   assertDeclaredSourceRef(policyRef, `policyRef ${policyRef}`);
 }
 
@@ -300,9 +348,39 @@ for (const [index, row] of mapping.mappingRows.entries()) {
 
 mapping.provenance.sourceRefs.forEach((ref, index) => assertDeclaredSourceRef(ref, `mapping provenance sourceRefs/${index}`));
 
+for (const [mappingPath, mappingDocument] of mappingDocuments) {
+  for (const [mappingId, row] of Object.entries(mappingDocument.mappingRows || {})) {
+    (row.sourceRefs || []).forEach((ref, refIndex) => assertDeclaredSourceRef(ref, `${mappingPath} mappingRows/${mappingId}/sourceRefs/${refIndex}`));
+    (row.mappingRefs || []).forEach((ref, refIndex) => {
+      assertDeclaredMappingRef(ref, `${mappingPath} mappingRows/${mappingId}/mappingRefs/${refIndex}`);
+      const resolved = resolveJsonPointer(mappingDocuments.get(parseMappingRef(ref, "mapping row ref")), parseMappingRefParts(ref, "mapping row ref").pointer, "mapping row ref", ref);
+      if (resolved.mappingId !== row.mappingId) fail(`${mappingPath} mapping ref does not resolve to row ${row.mappingId}: ${ref}`);
+    });
+  }
+  for (const [mappingId, row] of Object.entries(mappingDocument.reviewRequired || {})) {
+    (row.sourceRefs || []).forEach((ref, refIndex) => assertDeclaredSourceRef(ref, `${mappingPath} reviewRequired/${mappingId}/sourceRefs/${refIndex}`));
+    (row.mappingRefs || []).forEach((ref, refIndex) => {
+      assertDeclaredMappingRef(ref, `${mappingPath} reviewRequired/${mappingId}/mappingRefs/${refIndex}`);
+      const resolved = resolveJsonPointer(mappingDocuments.get(parseMappingRef(ref, "review mapping ref")), parseMappingRefParts(ref, "review mapping ref").pointer, "review mapping ref", ref);
+      if (resolved.mappingId !== row.mappingId) fail(`${mappingPath} review mapping ref does not resolve to row ${row.mappingId}: ${ref}`);
+    });
+  }
+}
+
 const physicalP2Fixtures = walkFiles("fixtures/p2").filter((file) => file.endsWith(".json")).sort();
 assertArrayEquals(physicalP2Fixtures, ["fixtures/p2/expectations.manifest.json", ...fixtureFiles].sort(), "physical P2 fixture files");
 assertArrayEquals(expectationsManifest.expectations.map((row) => row.fixturePath), fixtureFiles, "expectations fixture order");
+assertArrayEquals(
+  expectationsManifest.inputs,
+  [
+    "sources/p2/design-system-source/manifest.template.json",
+    "sources/p2/design-system-source/manifest.json",
+    ...expectedSourceRefPaths,
+    "fixtures/p2/expectations.manifest.json",
+    ...fixtureFiles
+  ],
+  "P2 expectations inputs"
+);
 
 const diagnosticsSchema = schemas.get("schemas/design-system-ingestion-diagnostics.v0.schema.json");
 const diagnosticCodes = diagnosticsSchema.$defs.diagnosticCode.enum;
@@ -338,10 +416,6 @@ for (const row of expectationsManifest.expectations) {
   }
 }
 
-const schemaClosurePaths = p2SchemaFiles.concat(sharedSchemaFiles);
-const expectedSourceRefPaths = sourceFiles.map((file) => `sources/p2/design-system-source/${file}`).concat(
-  requiredMappings.map((file) => `sources/p2/design-system-source/${file}`)
-);
 const expectedArtifactOrder = schemaClosurePaths
   .concat("sources/p2/design-system-source/manifest.json")
   .concat(expectedSourceRefPaths)
@@ -403,25 +477,11 @@ if (validateMapping(badTraversalSourceRef)) {
   fail("source ref grammar probe should reject traversal-like path segments");
 }
 
-const ingest = spawnSync(
-  "node",
-  [
-    "bin/interfacectl.js",
-    "surfaces",
-    "ingest",
-    "proof",
-    "--source",
-    "sources/p2/design-system-source",
-    "--fixture",
-    "fixtures/p2",
-    "--out",
-    "artifacts/p2"
-  ],
-  { encoding: "utf8" }
-);
-
-if (ingest.status !== 2) {
-  fail(`planned P2 ingest command should exit 2 until implemented; got ${ingest.status}`);
+const packageJson = readJson("package.json");
+for (const scriptName of ["materialize:p2", "proof:p2", "build:p2-demo", "check:p2", "check:p2:ci"]) {
+  if (typeof packageJson.scripts?.[scriptName] !== "string") {
+    fail(`missing implemented P2 package script: ${scriptName}`);
+  }
 }
 
 console.log("P2 planning guard: pass");

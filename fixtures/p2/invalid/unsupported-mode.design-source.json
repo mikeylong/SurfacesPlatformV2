@@ -1,13 +1,1 @@
-{
-  "schemaId": "design-system-ingestion-invalid-fixture.v0",
-  "fixtureId": "unsupported-mode",
-  "fixtureKind": "invalid",
-  "description": "A Spectrum token mode outside the declared mode-set boundary must block extraction.",
-  "sourceRefs": [
-    "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/mode-sets/color-scheme.json#/modes/experimental"
-  ],
-  "tokenMode": "experimental",
-  "expectedDiagnosticCode": "INGEST_TOKEN_MODE_UNSUPPORTED",
-  "expectedResult": "invalid",
-  "promotionStatus": "blocked"
-}
+{"description":"A Spectrum token mode outside the declared mode-set boundary must block extraction.","expectedDiagnosticCode":"INGEST_TOKEN_MODE_UNSUPPORTED","expectedResult":"invalid","fixtureId":"unsupported-mode","fixtureKind":"invalid","promotionStatus":"blocked","schemaId":"design-system-ingestion-invalid-fixture.v0","sourceRefs":["spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/mode-sets/color-scheme.json#/modes/0"],"tokenMode":"experimental"}

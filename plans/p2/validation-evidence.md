@@ -60,7 +60,8 @@ Required preflight checks:
 7. The manifest declares `designSystemId`, `designSystemName`, `sourceFamily`, source files, required mappings, policy refs, source-ref grammar, and initial components `button` and `in-line-alert`.
 8. Every source ref in manifest, mapping, extraction, catalog, report, and evidence artifacts conforms to the P2 source-ref grammar and points at a manifest-declared source file.
 
-P2 evidence must copy accepted source refs into `boundaryRefs[]` without rewriting paths, hashes, run ids, schema ids, source ids, or source ref roots.
+P2 evidence must preserve accepted source and proof refs through `sourceManifestRef`, `sourceFileRefs`, `schemaClosure`, `fixtureRefs`, `artifactRefs`, and `validationResults`; the accepted report is represented by the `artifactRefs` entry for `artifacts/p2/ingestion-report.json`.
+These refs and the final evidence self-hash must be recorded without rewriting paths, hashes, run ids, schema ids, source ids, or source ref roots.
 
 ## Artifact Ordering
 P2 evidence artifact order is:

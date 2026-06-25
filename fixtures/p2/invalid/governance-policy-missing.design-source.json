@@ -1,13 +1,1 @@
-{
-  "schemaId": "design-system-ingestion-invalid-fixture.v0",
-  "fixtureId": "governance-policy-missing",
-  "fixtureKind": "invalid",
-  "description": "Sensitive governed behavior requires a declared policy source ref.",
-  "sourceRefs": [
-    "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/button.json#/actions/0"
-  ],
-  "policyRefs": [],
-  "expectedDiagnosticCode": "INGEST_GOVERNANCE_POLICY_MISSING",
-  "expectedResult": "invalid",
-  "promotionStatus": "blocked"
-}
+{"description":"Sensitive governed behavior requires a declared policy source ref.","expectedDiagnosticCode":"INGEST_GOVERNANCE_POLICY_MISSING","expectedResult":"invalid","fixtureId":"governance-policy-missing","fixtureKind":"invalid","policyRefs":[],"promotionStatus":"blocked","schemaId":"design-system-ingestion-invalid-fixture.v0","sourceRefs":["source://p2/docs/usage-policy.json#/governanceRules/0"]}
