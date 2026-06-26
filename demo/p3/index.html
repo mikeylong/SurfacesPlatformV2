@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>P3 Agent Orchestration Proof</title>
+  <style>
+    :root { color-scheme: light; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #1c2430; background: #f6f7f9; }
+    body { margin: 0; }
+    main { max-width: 1180px; margin: 0 auto; padding: 32px 20px 48px; }
+    h1 { font-size: 28px; margin: 0 0 8px; letter-spacing: 0; }
+    h2 { font-size: 18px; margin: 28px 0 12px; letter-spacing: 0; }
+    p { color: #526070; }
+    .meta { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; margin: 20px 0; }
+    .tile { border: 1px solid #d6dce5; border-radius: 8px; background: white; padding: 14px; }
+    .label { color: #596675; font-size: 12px; text-transform: uppercase; }
+    .value { font-weight: 650; margin-top: 4px; overflow-wrap: anywhere; }
+    table { width: 100%; border-collapse: collapse; background: white; border: 1px solid #d6dce5; }
+    th, td { text-align: left; padding: 10px; border-bottom: 1px solid #e6ebf1; vertical-align: top; }
+    th { background: #edf1f5; font-size: 13px; }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; }
+    ul { background: white; border: 1px solid #d6dce5; border-radius: 8px; margin: 0; padding: 14px 14px 14px 30px; }
+    li { margin: 6px 0; overflow-wrap: anywhere; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>P3 Agent Orchestration Proof</h1>
+  <p>Generated view of the inert capability registry, task DAG, work orders, review queue, diagnostics, and evidence hashes.</p>
+  <section class="meta">
+    <div class="tile"><div class="label">Evidence</div><div class="value">pass / review_required</div></div>
+    <div class="tile"><div class="label">Run</div><div class="value">p3-43af60dfc6404966bf9a3910731feeb5</div></div>
+    <div class="tile"><div class="label">Work Orders</div><div class="value">3</div></div>
+    <div class="tile"><div class="label">Review Items</div><div class="value">1</div></div>
+  </section>
+  <h2>Registered Agents</h2>
+  <table><thead><tr><th>Agent</th><th>Role</th><th>Capabilities</th></tr></thead><tbody><tr><td><code>contract-architect</code></td><td>Defines or reviews plan/schema boundaries</td><td>plan-contracts, schema-boundaries, risk-review</td></tr><tr><td><code>evidence-reviewer</code></td><td>Reviews report/evidence completeness and drift gates</td><td>evidence-audit, hash-provenance, ci-gates</td></tr><tr><td><code>fixture-author</code></td><td>Defines proof fixtures and manifest expectations</td><td>fixture-design, diagnostics-mapping, negative-coverage</td></tr></tbody></table>
+  <h2>Task DAG</h2>
+  <table><thead><tr><th>Task</th><th>Selected Agents</th><th>Promotion</th><th>Dependencies</th></tr></thead><tbody><tr><td><code>runtime-adapter-plan</code></td><td>contract-architect</td><td>allowed</td><td>artifacts/p2/evidence.json, artifacts/p2/governed-catalog.json</td></tr><tr><td><code>fixture-authoring</code></td><td>fixture-author</td><td>allowed</td><td>runtime-adapter-plan</td></tr><tr><td><code>evidence-review</code></td><td>evidence-reviewer</td><td>allowed</td><td>fixture-authoring</td></tr><tr><td><code>review-required-work</code></td><td>contract-architect</td><td>review_required</td><td>runtime-adapter-plan</td></tr></tbody></table>
+  <h2>Inert Work Orders</h2>
+  <table><thead><tr><th>Work Order</th><th>Agent</th><th>Candidate Output</th><th>Execution Authorized</th></tr></thead><tbody><tr><td><code>work-order.contract-architect</code></td><td>contract-architect</td><td>artifacts/p3/work-order.contract-architect.json</td><td>false</td></tr><tr><td><code>work-order.fixture-author</code></td><td>fixture-author</td><td>artifacts/p3/work-order.fixture-author.json</td><td>false</td></tr><tr><td><code>work-order.evidence-reviewer</code></td><td>evidence-reviewer</td><td>artifacts/p3/work-order.evidence-reviewer.json</td><td>false</td></tr></tbody></table>
+  <h2>Review Queue</h2>
+  <table><thead><tr><th>Item</th><th>Task</th><th>Reviewer Role</th><th>Diagnostic</th></tr></thead><tbody><tr><td><code>review.review-required-work</code></td><td>review-required-work</td><td>surface-ops-reviewer</td><td>AGENT_REVIEW_REQUIRED</td></tr></tbody></table>
+  <h2>Diagnostics</h2>
+  <ul><li><code>AGENT_DEPENDENCY_CYCLE</code> Agent orchestration plan contains a dependency cycle.</li><li><code>AGENT_TOOL_DENIED</code> Agent task requests a denied tool or side effect.</li><li><code>AGENT_OUTPUT_HIDDEN</code> Agent task declares hidden output.</li><li><code>AGENT_DEPENDENCY_MISSING</code> Agent orchestration plan references a missing dependency.</li><li><code>AGENT_SCOPE_ESCALATION</code> Agent task exceeds declared scope.</li><li><code>AGENT_CAPABILITY_UNREGISTERED</code> Agent task requires an unregistered capability.</li><li><code>AGENT_TASK_DUPLICATE_ID</code> Agent orchestration plan contains a duplicate task id.</li><li><code>AGENT_WORK_ORDER_DUPLICATE_ID</code> Agent orchestration plan contains a duplicate work-order id.</li><li><code>AGENT_UPSTREAM_EVIDENCE_FAILED</code> P3 upstream evidence status is not pass.</li><li><code>AGENT_EVIDENCE_HASH_MISMATCH</code> Agent orchestration evidence hash does not match the manifest or self-hash rule.</li><li><code>AGENT_HANDOFF_HIDDEN</code> Agent orchestration plan contains a hidden handoff.</li><li><code>AGENT_REGISTRY_REF_MISSING</code> Agent orchestration plan registry reference is missing.</li><li><code>AGENT_UPSTREAM_EVIDENCE_MISSING</code> P3 upstream evidence input is missing.</li><li><code>AGENT_REGISTRY_HASH_MISMATCH</code> Agent orchestration plan registry hash does not match generated registry evidence.</li><li><code>AGENT_REPORT_PLAN_HASH_MISMATCH</code> Agent orchestration report plan hash does not match generated plan.</li><li><code>AGENT_UPSTREAM_EVIDENCE_STALE</code> P3 upstream evidence boundary is stale.</li><li><code>AGENT_UNREGISTERED</code> Agent orchestration plan selects an unregistered agent.</li><li><code>AGENT_UPSTREAM_EVIDENCE_HASH_MISMATCH</code> P3 upstream evidence hash does not match the accepted boundary.</li><li><code>AGENT_SCOPE_ESCALATION</code> Agent work order exceeds declared scope.</li><li><code>AGENT_REVIEW_REQUIRED</code> Agent work requires review before execution.</li></ul>
+  <h2>Evidence Hashes</h2>
+  <ul><li><code>artifacts/p3/agent-capability-registry.json</code> 6d0f27fc8965518f93413ccbec9b79ccefbc3fedc787f9285386684a7b28e027</li><li><code>artifacts/p3/orchestration-plan.json</code> cc00b23b1e5965302600d657ebb77f47abb97484a09f982f817b423fae7e1ee2</li><li><code>artifacts/p3/work-order.contract-architect.json</code> a32acc5b311b038e0633e010392a21c366c51933548c222b605e5e18a39eab53</li><li><code>artifacts/p3/work-order.fixture-author.json</code> aa107aecf936b16eb1e17ca0359356883272ada873cbb683f0a76bb70cd8f06d</li><li><code>artifacts/p3/work-order.evidence-reviewer.json</code> 5055e6ad031de8881bcf5927897b7645d8ceb340c3b802e93d0f78ddb91e9a61</li><li><code>artifacts/p3/review-queue.json</code> e42a0021dff38387da3f9a537d0b9c5e4b522a4f33b16084f5b5e2b77df07d02</li><li><code>artifacts/p3/agent-orchestration-report.json</code> c916c5bbd91b6333aedbaffa4ecdad5daeebe542693d9152ef6424c6f3788276</li><li><code>artifacts/p3/evidence.json</code> e9251d97a3561d3c7f62115a38f91c6584c35318d8f0dd09bba046717af02840</li></ul>
+  <h2>Report</h2>
+  <div class="tile"><div class="label">Report Status</div><div class="value">pass / review_required</div></div>
+</main>
+</body>
+</html>

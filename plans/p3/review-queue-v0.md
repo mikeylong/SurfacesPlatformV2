@@ -7,6 +7,8 @@ P3 defines `agent-review-queue.v0` as the schema for non-executable review recor
 
 The review queue is a derived proof artifact for later review surfaces to consume. It is not product, UI, runtime, projection, or review-decision authority, and it cannot authorize execution or persist human decisions in P3.
 
+The queue is generated after `artifacts/p3/orchestration-plan.json`. Its `orchestrationPlanRef` is a resolved backward ref with a hash pointing one way to the already-materialized plan. The plan's `reviewQueueRef` names the queue path, schema id, run id, and expected item count, but omits and forbids the queue hash so the artifacts can be produced deterministically without mutual pre-hashing.
+
 ## Goal
 Make review-required agent work inspectable without building SurfaceOps persistence or promoting review-required work as executable.
 
@@ -17,8 +19,8 @@ Make review-required agent work inspectable without building SurfaceOps persiste
 | --- | --- | --- | --- |
 | `schemaId` | const | yes | `agent-review-queue.v0` |
 | `version` | string | yes | Semver |
-| `runId` | string | yes | Same run id as orchestration report and evidence |
-| `orchestrationPlanRef` | object | yes | Path, schema id, and hash for `artifacts/p3/orchestration-plan.json` |
+| `runId` | string | yes | Same deterministic run id as orchestration plan, report, and evidence |
+| `orchestrationPlanRef` | object | yes | Resolved backward ref with path, schema id, and hash for the already-materialized `artifacts/p3/orchestration-plan.json` |
 | `items` | array | yes | Review rows sorted deterministically |
 | `diagnostics` | array | yes | P3 diagnostics objects |
 | `provenance` | object | yes | Source refs, generator metadata, deterministic environment |

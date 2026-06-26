@@ -10,11 +10,12 @@ Create the smallest agent-facing contract that can support deterministic P3 recr
 - `fixtures/p3/agent-capability-registry.fixture.json`.
 - `artifacts/p2/evidence.json`.
 - `artifacts/p2/governed-catalog.json`.
-- Schema constants from `schemas/agent-capability-registry.v0.schema.json`.
+- Schema constants from `schemas/agent-capability-registry-fixture.v0.schema.json` and `schemas/agent-capability-registry.v0.schema.json`.
 
-P3 valid, invalid, review, and mutation task fixtures are not registry inputs. Task fixtures may be read only after registry materialization for recruitment, orchestration, mutation, report, and evidence checks.
+P3 valid, invalid, review, and mutation task fixtures are not registry inputs. Task fixtures may be read only after command-level upstream preflight passes and registry materialization completes for recruitment, orchestration, mutation, report, and evidence checks.
 
 ## Outputs
+- `schemas/agent-capability-registry-fixture.v0.schema.json`.
 - `schemas/agent-capability-registry.v0.schema.json`.
 - `artifacts/p3/agent-capability-registry.json`.
 - Registry diagnostics recorded in `artifacts/p3/agent-orchestration-report.json` and final evidence.
@@ -51,16 +52,18 @@ P3 valid, invalid, review, and mutation task fixtures are not registry inputs. T
 - Review-required capabilities must emit review queue records instead of executable work orders.
 
 ## Registry Checks
-Registry materialization fails with `AGENT_UPSTREAM_EVIDENCE_MISSING` if required P2 ingestion refs are absent or not hash-verified.
+Command-level preflight fails before registry materialization when required P2 ingestion evidence is missing, failing, hash-mismatched, stale, or not the exact declared input. These failures use `AGENT_UPSTREAM_EVIDENCE_MISSING`, `AGENT_UPSTREAM_EVIDENCE_FAILED`, `AGENT_UPSTREAM_EVIDENCE_HASH_MISMATCH`, or `AGENT_UPSTREAM_EVIDENCE_STALE`.
+
+Orchestration validation fails with `AGENT_UNREGISTERED` if a generated plan or work order selects an agent id absent from the registry.
 
 Recruitment fails with `AGENT_CAPABILITY_UNREGISTERED` if a task requires a capability absent from the registry.
 
 Recruitment fails with `AGENT_TOOL_DENIED` if a task or work order requests shell, connector, network, secret, callback, or file-system execution.
 
-Work-order validation fails with `AGENT_SCOPE_ESCALATION` if the selected agent emits outputs outside the allowed artifact paths or tries to read undeclared inputs.
+Task or work-order validation fails with `AGENT_SCOPE_ESCALATION` if requested or resolved scope reads, writes, or emits outside the declared artifact bounds.
 
 ## P3 Proof
-The P3 proof emits `artifacts/p3/agent-capability-registry.json`, validates it against `schemas/agent-capability-registry.v0.schema.json`, compares selected capabilities against task requirements, records diagnostics in the orchestration report, and includes the registry hash in final evidence.
+The P3 proof validates `fixtures/p3/agent-capability-registry.fixture.json` against `schemas/agent-capability-registry-fixture.v0.schema.json`, emits `artifacts/p3/agent-capability-registry.json`, validates it against `schemas/agent-capability-registry.v0.schema.json`, compares selected capabilities against task requirements and resolved scope, records diagnostics in the orchestration report, and includes the registry hash in final evidence.
 
 ## Non-Goals
 - No dynamic agent discovery.

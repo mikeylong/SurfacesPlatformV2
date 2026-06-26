@@ -1,0 +1,1 @@
+{"artifacts":[{"hash":"0000000000000000000000000000000000000000000000000000000000000000","hashAlgorithm":"sha256","path":"artifacts/p3/agent-capability-registry.json","schemaId":"agent-capability-registry.v0"}],"promotionStatus":"allowed","runId":"p3-mutation","schemaId":"agent-orchestration-evidence.v0","status":"pass","version":"0.0.0"}

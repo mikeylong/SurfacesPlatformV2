@@ -11,6 +11,7 @@ Show that agents can be safely recruited and coordinated from governed contracts
 - `artifacts/p2/governed-catalog.json`.
 - `artifacts/p3/agent-capability-registry.json`.
 - P3 task fixtures and manifest.
+- Command-level upstream preflight mutation fixtures.
 
 ## Outputs
 - `schemas/agent-work-order.v0.schema.json`.
@@ -31,13 +32,23 @@ Show that agents can be safely recruited and coordinated from governed contracts
 | --- | --- | --- | --- |
 | `schemaId` | const | yes | `agent-orchestration-plan.v0` |
 | `version` | string | yes | Semver |
+| `runId` | string | yes | Deterministic run id shared by same-run P3 artifacts |
 | `registryRef` | object | yes | Path, schema id, and hash for `artifacts/p3/agent-capability-registry.json` |
 | `boundaryRefs` | array | yes | Accepted P2/P3 refs consumed by orchestration |
 | `tasks` | array | yes | Deterministic task DAG nodes |
 | `workOrders` | array | yes | Planned work-order refs for allowed tasks |
-| `reviewQueueRef` | object | yes | Path and hash for `artifacts/p3/review-queue.json`, always emitted |
+| `reviewQueueRef` | object | yes | Planned same-run ref for `artifacts/p3/review-queue.json`: path, schema id, run id, and expected item count only; `hash` is omitted and forbidden |
 | `diagnostics` | array | yes | P3 diagnostics objects |
 | `provenance` | object | yes | Source refs, generator metadata, deterministic environment |
+
+## Same-Run Artifact Reference Rule
+P3 generated artifacts use one-way hash references to avoid circular dependencies.
+
+Refs to upstream or already materialized artifacts include `path`, `schemaId`, `hash`, and provenance when applicable. Forward refs to later same-run artifacts include `path`, `schemaId`, deterministic `runId` or artifact role, and any deterministic summary fields required for validation; they must not include `hash`.
+
+`orchestration-plan.json` is generated before `review-queue.json`. It hash-binds `registryRef`, task inputs, work-order refs, and routing decisions, but its `reviewQueueRef` is a declared output reference containing the queue path, schema id, run id, and expected item count without a hash.
+
+`review-queue.json` is generated after the orchestration plan and includes `orchestrationPlanRef.hash` for the already-materialized plan. The queue validator must verify that each queue item matches the plan's review routing decisions, source fixture refs, selected agent ids, and report rows. Final evidence hashes both artifacts in artifact order, so queue tampering changes evidence and report validation without requiring the plan hash to include a future queue hash.
 
 ## Work Order Shape
 `agent-work-order.v0` must require:
@@ -50,7 +61,7 @@ Show that agents can be safely recruited and coordinated from governed contracts
 | `agentId` | string | yes | Registered agent id |
 | `capabilityIds` | array | yes | Registered capability ids used for selection |
 | `allowedInputs` | array | yes | Exact artifact paths/source refs the agent may consume |
-| `allowedOutputs` | array | yes | Exact future artifact paths the agent may be authorized to emit in a later executor proof |
+| `allowedOutputs` | array | yes | Candidate future artifact paths recorded for validation by a later executor proof; P3 authorizes no emission or execution |
 | `dependencies` | array | yes | Task and artifact dependencies |
 | `deniedCapabilities` | array | yes | Explicit forbidden tools, side effects, secret access, and execution paths |
 | `evidenceObligations` | array | yes | Required hashes, provenance, report rows, and diagnostics |
@@ -59,7 +70,7 @@ Show that agents can be safely recruited and coordinated from governed contracts
 
 ## Determinism Rules
 - Task ids, work-order ids, dependency ids, and artifact refs are sorted deterministically.
-- DAG validation fails on cycles, duplicate ids, missing dependencies, or references to undeclared tasks.
+- DAG validation fails on cycles, missing dependencies, references to undeclared tasks, hidden handoffs, duplicate task ids, or duplicate work-order ids.
 - Work orders are emitted only for allowed tasks.
 - Review-required tasks emit review queue rows and report rows, but no work-order artifact.
 - Invalid tasks emit report diagnostics, but no work-order artifact.
@@ -88,7 +99,8 @@ The review queue must require:
 | --- | --- | --- | --- |
 | `schemaId` | const | yes | `agent-review-queue.v0` |
 | `version` | string | yes | Semver |
-| `orchestrationPlanRef` | object | yes | Path, schema id, and hash for `artifacts/p3/orchestration-plan.json` |
+| `runId` | string | yes | Same deterministic run id as orchestration plan, report, and evidence |
+| `orchestrationPlanRef` | object | yes | Resolved backward ref with path, schema id, and hash for the already-materialized `artifacts/p3/orchestration-plan.json` |
 | `items` | array | yes | Review records sorted by task id, source fixture ref, then diagnostic code |
 | `diagnostics` | array | yes | P3 diagnostics objects |
 | `provenance` | object | yes | Source refs, generator metadata, deterministic environment |
@@ -98,6 +110,7 @@ Each `items[]` row must include `reviewItemId`, `taskId`, `sourceFixtureRef`, `s
 ## Report Behavior
 `agent-orchestration-report.json` records:
 
+- the same deterministic run id used by the orchestration plan, review queue, and evidence;
 - preflight results;
 - registry materialization results;
 - recruitment selections;
