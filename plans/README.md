@@ -2,7 +2,7 @@
 
 For product vision, authority taxonomy, roadmap sequence, surface roles, and agent operating rules, read [Surfaces Platform Vision And Roadmap](../VISION.md) first. This index is the mechanical contract reference for phase subplans. Phase subplans add phase-local deltas and mechanics only. Developer and agent documentation obligations for `surfaces.dev` are tracked in [Surfaces.dev Documentation Tracking](surfaces-dev.md).
 
-These subplans define the Surfaces Platform proof contracts and their materialized schemas, fixtures, artifacts, demos, scripts, and tests. P0 specifies the first executable catalog proof, P1 specifies the first runtime projection proof, P2 specifies bounded real design-system ingestion, P3 specifies inert agent orchestration proof, and P4 plans review and judgment proof without turning derived consumers into new authority.
+These subplans define the Surfaces Platform proof contracts and their materialized schemas, fixtures, artifacts, demos, scripts, and tests. P0 specifies the first executable catalog proof, P1 specifies the first runtime projection proof, P2 specifies bounded real design-system ingestion, P3 specifies inert agent orchestration proof, and P4 specifies review and judgment proof without turning derived consumers into new authority.
 
 ## P0 Dependency Order
 1. [Runtime Catalog v0](runtime-catalog-v0.md)
@@ -267,11 +267,11 @@ P3 generated artifact refs must be acyclic: forward refs to later same-run artif
 Command-level P3 upstream preflight mutation fixtures validate against `agent-preflight-mutation.v0` and model missing, failing, hash-mismatched, or stale P2 inputs before registry or task fixtures are read.
 
 ## P4 Contract Summary
-P4 plans governed review and judgment after P3 orchestration evidence passes. The planned proof consumes P3 evidence and review queue boundaries, materializes a deterministic SurfaceOps decision ledger, emits a JudgmentKit-shaped evaluation report, records a review/judgment report, and finalizes evidence. SurfaceOps owns approve, reject, request-changes, and defer decision records. JudgmentKit-shaped reports remain evaluation-only findings and cannot encode or override decision status. P4 does not execute work orders, persist live decisions, call live JudgmentKit tools, run agents, or create production adapter/A2UI scope.
+P4 implements governed review and judgment after P3 orchestration evidence passes. The deterministic proof consumes P3 evidence and review queue boundaries, materializes a deterministic SurfaceOps decision ledger, emits a JudgmentKit-shaped evaluation report, records a review/judgment report, and finalizes evidence. SurfaceOps owns approve, reject, request-changes, and defer decision records inside the ledger. JudgmentKit-shaped reports remain evaluation-only findings and cannot encode or override decision status. P4 does not execute work orders, persist live decisions, call live JudgmentKit tools, run agents, or create production adapter/A2UI scope.
 
 P4 contract references:
 
-- [P4 Subplan Index](p4/README.md) defines the planned P4 artifact tree, command contract, diagnostics additions, pass condition, and non-goals.
+- [P4 Subplan Index](p4/README.md) defines the P4 artifact tree, command contract, diagnostics additions, pass condition, and non-goals.
 - [P4 Product Boundaries](p4/product-boundaries.md) defines what the review and judgment proof may and may not own.
 - [SurfaceOps Decision Model v0](p4/surfaceops-decision-model-v0.md) defines the deterministic decision ledger contract.
 - [JudgmentKit Evaluation v0](p4/judgmentkit-evaluation-v0.md) defines the deterministic evaluation report contract.
@@ -280,10 +280,10 @@ P4 contract references:
 - [P4 Validation And Evidence](p4/validation-evidence.md) defines evidence, hashing, diagnostics, and aggregation.
 - [P4 Demo And CI](p4/demo-ci.md) defines generated demo, drift checks, untracked guards, and CI expectations.
 
-Planned P4 proof command:
+P4 proof command:
 
 ```bash
 interfacectl surfaces review proof --orchestration-evidence artifacts/p3/evidence.json --review-queue artifacts/p3/review-queue.json --fixture fixtures/p4 --out artifacts/p4
 ```
 
-This command is not runnable until P4 schemas, fixtures, implementation, artifacts, demo, tests, and CI gate exist. Package scripts should execute it as `node bin/interfacectl.js surfaces review proof --orchestration-evidence artifacts/p3/evidence.json --review-queue artifacts/p3/review-queue.json --fixture fixtures/p4 --out artifacts/p4` after implementation. Evidence should record the logical command string above.
+Package scripts execute it as `node bin/interfacectl.js surfaces review proof --orchestration-evidence artifacts/p3/evidence.json --review-queue artifacts/p3/review-queue.json --fixture fixtures/p4 --out artifacts/p4`. Evidence records the logical command string above.

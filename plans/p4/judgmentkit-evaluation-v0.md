@@ -1,7 +1,7 @@
 # JudgmentKit Evaluation v0
 
 ## Decision
-`judgmentkit-evaluation-report.v0` is the planned P4 artifact for deterministic, JudgmentKit-shaped findings over Surfaces evidence. It records evaluation dimensions, findings, and evidence refs without invoking live JudgmentKit tools in this planning slice and without becoming enforcement authority.
+`judgmentkit-evaluation-report.v0` is the P4 artifact for deterministic, JudgmentKit-shaped findings over Surfaces evidence. It records evaluation dimensions, findings, and evidence refs without invoking live JudgmentKit tools in this implementation slice and without becoming enforcement authority.
 
 ## Goal
 Make evaluation results reviewable and evidence-backed. The first P4 evaluation contract should let a reviewer inspect whether the activity, contract, evidence, and handoff quality are adequate for downstream use.
@@ -37,7 +37,7 @@ The first P4 dimensions are:
 - `handoff_quality`: whether downstream consumers can understand what is approved, rejected, blocked, or still review-required.
 
 ## Scoring And Finding Rules
-- Findings must cite evidence refs and artifact paths.
+- Findings must cite accepted P3 evidence and review queue boundary refs plus affected artifact paths.
 - Allowed severities are `info`, `warning`, and `error`.
 - Aggregate result is `pass`, `warn`, or `fail`.
 - An `error` finding can make P4 evidence `blocked`, but it cannot rewrite catalog or SurfaceOps decision authority.
@@ -58,7 +58,7 @@ JudgmentKit-shaped findings must not:
 The evaluation report passes when every finding is evidence-backed, invalid override attempts are blocked, aggregate results match the expectations manifest, and final P4 evidence records the evaluation report hash and provenance.
 
 ## Non-Goals
-- No live JudgmentKit MCP invocation in this planning slice.
+- No live JudgmentKit MCP invocation in this implementation slice.
 - No replacement for SurfaceOps decisions.
 - No enforcement authority beyond P4 proof aggregation.
 - No broad evaluator framework.

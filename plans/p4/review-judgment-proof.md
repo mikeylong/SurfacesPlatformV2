@@ -64,7 +64,7 @@ Forward refs to later same-run generated artifacts omit hashes. Resolved refs to
 - Findings must cite evidence refs.
 - Findings cannot override SurfaceOps decisions.
 - Findings cannot rewrite catalog policy.
-- Findings cannot call live JudgmentKit tooling in this planned proof.
+- Findings cannot call live JudgmentKit tooling in this proof.
 - Evaluation output is a proof artifact, not an enforcement service.
 
 ## Report Behavior
