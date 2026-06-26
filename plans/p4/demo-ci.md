@@ -16,7 +16,7 @@ Make the review and judgment proof inspectable without weakening the proof bound
 ## Outputs
 - `demo/p4/README.md`.
 - `demo/p4/index.html`.
-- CI scripts that materialize P4, run P0/P1/P2/P3/P4 proof gates, rebuild the demo, run tests, and fail on tracked or untracked drift.
+- CI scripts that support both the cumulative P0/P1/P2/P3/P4 proof closure and the phase-only P4 GitHub job after P3 has passed, rebuild the demo, run tests, and fail on tracked or untracked drift.
 
 ## Demo Rules
 - Demo generation must require passing `artifacts/p4/evidence.json`.
@@ -34,10 +34,11 @@ npm run proof:p4
 npm run build:p4-demo
 npm run check:p4
 npm run check:p4:ci
+npm run check:p4:ci:phase
 npm run check:p4:untracked
 ```
 
-`check:p4:ci` must:
+`check:p4:ci` is the cumulative release gate and must:
 
 - materialize P0/P1/P2/P3/P4 schemas and fixtures;
 - run P0 proof unchanged;
@@ -45,6 +46,15 @@ npm run check:p4:untracked
 - run P2 ingest proof unchanged;
 - run P3 agents proof unchanged;
 - run P4 review proof;
+- rebuild `demo/p4`;
+- run the full test suite;
+- fail if generated schemas, fixtures, artifacts, or demos drift;
+- fail if expected P4 generated/source files are untracked.
+
+`check:p4:ci:phase` is the GitHub `p4-proof` job gate after `p3-proof` has passed and must:
+
+- materialize P4 schemas and fixtures from the existing proof sources;
+- run P4 review proof against accepted P3 evidence and review queue inputs;
 - rebuild `demo/p4`;
 - run the full test suite;
 - fail if generated schemas, fixtures, artifacts, or demos drift;
