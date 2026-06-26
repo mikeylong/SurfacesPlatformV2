@@ -20,6 +20,7 @@ import {
   P3_SCHEMA_ROOT,
   P3_TIMESTAMP,
   P3_VERSION,
+  buildP3Fixtures,
   diagnosticsRegistry,
   inertExecution,
   p3ArtifactOrder,
@@ -46,6 +47,12 @@ const STAGE_ORDER = new Map([
   ["review", 5],
   ["report", 6],
   ["evidence", 7]
+]);
+const PREFLIGHT_DIAGNOSTIC_FIXTURES = new Map([
+  ["AGENT_UPSTREAM_EVIDENCE_MISSING", "mutations/missing-upstream-evidence.agent-preflight.json"],
+  ["AGENT_UPSTREAM_EVIDENCE_FAILED", "mutations/failing-upstream-evidence.agent-preflight.json"],
+  ["AGENT_UPSTREAM_EVIDENCE_HASH_MISMATCH", "mutations/upstream-evidence-hash-mismatch.agent-preflight.json"],
+  ["AGENT_UPSTREAM_EVIDENCE_STALE", "mutations/stale-upstream-evidence.agent-preflight.json"]
 ]);
 
 export async function runP3Interfacectl(argv, io) {
@@ -446,6 +453,8 @@ async function loadTaskFixtures(cwd, expectations, validators) {
     const fixture = await readJson(path.join(cwd, expectation.fixturePath));
     if (expectation.fixturePath.endsWith(".agent-task.json")) {
       assertSchema(validators, "agent-task.v0", fixture, expectation.fixturePath);
+    } else if (expectation.fixturePath.endsWith(".agent-preflight.json")) {
+      assertSchema(validators, "agent-preflight-mutation.v0", fixture, expectation.fixturePath);
     }
     rows.push({ expectation, fixture });
   }
@@ -586,13 +595,10 @@ async function fixtureMatchesDiagnostic(code, fixture, { registry, registryHash,
     case "AGENT_DEPENDENCY_MISSING":
       return graphCode === "AGENT_DEPENDENCY_MISSING";
     case "AGENT_UPSTREAM_EVIDENCE_MISSING":
-      return fixture.mutation === "missing-file" && fixture.ingestionEvidenceRef === null;
     case "AGENT_UPSTREAM_EVIDENCE_FAILED":
-      return fixture.mutation === "status" && fixture.status === "fail";
     case "AGENT_UPSTREAM_EVIDENCE_HASH_MISMATCH":
-      return fixture.mutation === "hash-mismatch" && fixture.boundaryRefs?.[0]?.hash === "0".repeat(64);
     case "AGENT_UPSTREAM_EVIDENCE_STALE":
-      return fixture.mutation === "stale-boundary" && fixture.boundaryRefs?.[0]?.path !== P3_INGESTION_EVIDENCE_PATH;
+      return preflightFixtureMatchesDiagnostic(code, fixture);
     case "AGENT_REGISTRY_REF_MISSING":
       return fixture.schemaId === "agent-orchestration-plan.v0" && !fixture.registryRef;
     case "AGENT_REGISTRY_HASH_MISMATCH":
@@ -614,6 +620,12 @@ async function fixtureMatchesDiagnostic(code, fixture, { registry, registryHash,
     default:
       return false;
   }
+}
+
+function preflightFixtureMatchesDiagnostic(code, fixture) {
+  const fixturePath = PREFLIGHT_DIAGNOSTIC_FIXTURES.get(code);
+  if (!fixturePath) return false;
+  return canonicalJson(fixture) === canonicalJson(buildP3Fixtures()[fixturePath]);
 }
 
 function invalidResult(expectation, code, selectedAgentIds = []) {
@@ -1350,5 +1362,6 @@ function contractError(message, exitCode) {
 export const p3Internals = {
   computeEvidenceSelfHash,
   firstEvidenceIntegrityFailureCode,
+  preflightFixtureMatchesDiagnostic,
   parseRelativePosixPath
 };

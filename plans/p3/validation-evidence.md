@@ -9,6 +9,7 @@ Create one P3 evidence artifact that can prove governed agent orchestration with
 ## Inputs
 - P3 schemas.
 - `schemas/agent-capability-registry-fixture.v0.schema.json` for the registry fixture class.
+- `schemas/agent-preflight-mutation.v0.schema.json` for the command-level `*.agent-preflight.json` mutation fixture class.
 - `schemas/agent-task.v0.schema.json` for the `*.agent-task.json` fixture class.
 - `fixtures/p3/agent-capability-registry.fixture.json`.
 - `fixtures/p3/expectations.manifest.json`.
@@ -81,7 +82,7 @@ Command-level upstream preflight mutation fixtures under `fixtures/p3/mutations/
 ## Artifact Ordering
 P3 evidence artifact order is:
 
-1. P3 schemas.
+1. P3 schemas, including `agent-preflight-mutation.v0` for command-level upstream preflight fixtures.
 2. Upstream P2 evidence and artifacts consumed by P3.
 3. P3 capability registry fixture.
 4. P3 expectations manifest.

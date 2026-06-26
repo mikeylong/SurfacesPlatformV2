@@ -65,7 +65,7 @@ fixtures/p3/
 
 `schemas/agent-task.v0.schema.json` owns the `*.agent-task.json` fixture class before recruitment. The expectations manifest records expected results for task fixtures and mutation fixtures, but it does not redefine task fixture structure.
 
-Command-level upstream preflight mutation fixtures are not task fixtures. They model command invocation failures that must stop before `agent-capability-registry.fixture.json` or any `*.agent-task.json` fixture is read.
+Command-level upstream preflight mutation fixtures are not task fixtures. They validate against `schemas/agent-preflight-mutation.v0.schema.json` and model command invocation failures that must stop before `agent-capability-registry.fixture.json` or any `*.agent-task.json` fixture is read.
 
 ## P3 Stages
 P3 stage values are:

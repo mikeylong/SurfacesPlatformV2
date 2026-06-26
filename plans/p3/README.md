@@ -53,6 +53,7 @@ Generated work orders remain inert descriptors throughout P3. They authorize no 
 schemas/
   agent-capability-registry-fixture.v0.schema.json
   agent-capability-registry.v0.schema.json
+  agent-preflight-mutation.v0.schema.json
   agent-task.v0.schema.json
   agent-work-order.v0.schema.json
   agent-orchestration-plan.v0.schema.json

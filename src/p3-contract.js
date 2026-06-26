@@ -26,6 +26,7 @@ export const P3_ENVIRONMENT = Object.freeze({
 export const P3_SCHEMA_FILES = [
   "agent-capability-registry-fixture.v0.schema.json",
   "agent-capability-registry.v0.schema.json",
+  "agent-preflight-mutation.v0.schema.json",
   "agent-task.v0.schema.json",
   "agent-work-order.v0.schema.json",
   "agent-orchestration-plan.v0.schema.json",
@@ -621,6 +622,7 @@ export function buildP3Schemas() {
   return {
     "agent-capability-registry-fixture.v0.schema.json": agentCapabilityRegistryFixtureSchema(),
     "agent-capability-registry.v0.schema.json": agentCapabilityRegistrySchema(),
+    "agent-preflight-mutation.v0.schema.json": agentPreflightMutationSchema(),
     "agent-task.v0.schema.json": agentTaskSchema(),
     "agent-work-order.v0.schema.json": agentWorkOrderSchema(),
     "agent-orchestration-plan.v0.schema.json": agentOrchestrationPlanSchema(),
@@ -1216,6 +1218,129 @@ function agentTaskSchema() {
       suggestedAction: nullableStringSchema(),
       provenance: provenanceSchema()
     },
+    unevaluatedProperties: false
+  };
+}
+
+function agentPreflightMutationSchema() {
+  return {
+    ...schemaBase("agent-preflight-mutation.v0"),
+    required: ["schemaId", "version", "command", "mutation", "provenance"],
+    properties: {
+      schemaId: { const: "agent-preflight-mutation.v0" },
+      version: semverSchema(),
+      command: { const: "interfacectl surfaces agents proof" },
+      mutation: { enum: ["missing-file", "status", "hash-mismatch", "stale-boundary"] },
+      ingestionEvidenceRef: {
+        oneOf: [
+          { type: "null" },
+          {
+            type: "object",
+            required: ["path", "schemaId"],
+            properties: {
+              path: relativePathSchema(),
+              schemaId: { type: "string", minLength: 1 }
+            },
+            unevaluatedProperties: false
+          }
+        ]
+      },
+      status: { const: "fail" },
+      boundaryRefs: {
+        type: "array",
+        minItems: 1,
+        items: {
+          type: "object",
+          required: ["path", "hash"],
+          properties: {
+            path: relativePathSchema(),
+            hash: hashSchema()
+          },
+          unevaluatedProperties: false
+        }
+      },
+      provenance: provenanceSchema()
+    },
+    allOf: [
+      {
+        if: { properties: { mutation: { const: "missing-file" } }, required: ["mutation"] },
+        then: {
+          required: ["ingestionEvidenceRef"],
+          properties: {
+            ingestionEvidenceRef: { type: "null" },
+            status: false,
+            boundaryRefs: false
+          }
+        }
+      },
+      {
+        if: { properties: { mutation: { const: "status" } }, required: ["mutation"] },
+        then: {
+          required: ["ingestionEvidenceRef", "status"],
+          properties: {
+            ingestionEvidenceRef: {
+              type: "object",
+              required: ["path", "schemaId"],
+              properties: {
+                path: { const: P3_INGESTION_EVIDENCE_PATH },
+                schemaId: { const: "design-system-ingestion-evidence.v0" }
+              },
+              unevaluatedProperties: false
+            },
+            boundaryRefs: false,
+            status: { const: "fail" }
+          }
+        }
+      },
+      {
+        if: { properties: { mutation: { const: "hash-mismatch" } }, required: ["mutation"] },
+        then: {
+          required: ["boundaryRefs"],
+          properties: {
+            ingestionEvidenceRef: false,
+            status: false,
+            boundaryRefs: {
+              type: "array",
+              minItems: 1,
+              maxItems: 1,
+              items: {
+                type: "object",
+                required: ["path", "hash"],
+                properties: {
+                  path: { const: P3_CATALOG_PATH },
+                  hash: { const: "0".repeat(64) }
+                },
+                unevaluatedProperties: false
+              }
+            }
+          }
+        }
+      },
+      {
+        if: { properties: { mutation: { const: "stale-boundary" } }, required: ["mutation"] },
+        then: {
+          required: ["boundaryRefs"],
+          properties: {
+            ingestionEvidenceRef: false,
+            status: false,
+            boundaryRefs: {
+              type: "array",
+              minItems: 1,
+              maxItems: 1,
+              items: {
+                type: "object",
+                required: ["path", "hash"],
+                properties: {
+                  path: { const: "artifacts/p2/alternate-evidence.json" },
+                  hash: { const: P3_ACCEPTED_P2_EVIDENCE_HASH }
+                },
+                unevaluatedProperties: false
+              }
+            }
+          }
+        }
+      }
+    ],
     unevaluatedProperties: false
   };
 }
