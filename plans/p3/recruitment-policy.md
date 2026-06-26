@@ -9,6 +9,7 @@ Make "recruit agents" auditable. A proof consumer should be able to see why each
 ## Inputs
 - `artifacts/p3/agent-capability-registry.json`.
 - P3 task fixtures under `fixtures/p3/valid/`, `fixtures/p3/review/`, and `fixtures/p3/invalid/`.
+- `schemas/agent-task.v0.schema.json`, which owns the `*.agent-task.json` fixture class before recruitment.
 - `fixtures/p3/expectations.manifest.json`.
 - Upstream P2 ingestion boundary refs accepted by preflight.
 
@@ -19,6 +20,8 @@ Make "recruit agents" auditable. A proof consumer should be able to see why each
 - Recruitment diagnostics in `artifacts/p3/agent-orchestration-report.json`.
 
 ## Task Requirement Shape
+Each P3 task fixture must validate against `schemas/agent-task.v0.schema.json` before recruitment. That schema owns all `*.agent-task.json` fixtures; orchestration-plan, work-order, review-queue, report, and evidence schemas consume the validated task records but do not redefine the fixture class.
+
 Each P3 task fixture must declare:
 
 | Field | Required | Notes |
@@ -55,11 +58,17 @@ Review-required tasks are structurally valid. They must:
 Invalid tasks prove the policy rejects:
 
 - unregistered capability requirements;
+- generated orchestration plans or work orders that select unregistered agent ids;
 - denied tools or side effects;
 - output paths outside declared scope;
 - hidden output channels;
-- dependency cycles or missing dependencies;
-- missing upstream P2 ingestion evidence refs.
+- dependency cycles;
+- missing dependencies;
+- duplicate task ids;
+- duplicate work-order ids;
+- hidden handoffs not declared by task dependencies or evidence refs;
+
+Command-level missing, failing, hash-mismatched, or stale upstream P2 ingestion evidence is not a recruitment invalid task. It is covered by preflight mutation fixtures and must fail before registry or task fixtures are read.
 
 ## P3 Proof
 Recruitment passes only when every selected agent is registered, every selected capability is declared, every scope boundary matches the task fixture and registry policy, every review-required task remains non-executable, and every invalid task fails with the expected diagnostic code.

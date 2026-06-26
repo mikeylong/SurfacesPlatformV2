@@ -40,6 +40,8 @@ P1 proves the first runtime-facing surface. It derives a `web-static` runtime pr
 
 P2 implements the first bounded real design-system ingestion proof from a manifest-declared local source bundle: the pinned `@adobe/spectrum-design-data@0.7.0` snapshot scoped to `button` and `in-line-alert`. The former agent-orchestration draft has moved to `plans/p3/` and should run only after P2 ingestion evidence passes.
 
+P3 implements the first inert agent recruitment and orchestration proof after P2 evidence passes. It materializes a capability registry, deterministic task DAG, scoped non-executable work orders, review queue, report, demo, and evidence without live agents, tool calls, connector calls, file edits, network calls, secrets, callbacks, SurfaceOps persistence, or JudgmentKit execution.
+
 ## Roadmap
 This roadmap is the accepted product sequence for the current plan.
 
@@ -49,7 +51,7 @@ P1: Runtime surface proof. Prove that the governed catalog can produce an adapte
 
 P2: Real design-system ingestion proof. Prove that Surfaces can extract a governed catalog from at least one bounded, real design-system source. The proof should keep the existing contract discipline: declared inputs, normalized extraction, source refs, provenance, diagnostics, fixture coverage, pass/fail gates, and final evidence.
 
-P3: Agent recruitment and orchestration proof. Use `plans/p3/` as the agent-control draft for the later phase. Agents should be recruited through registered capabilities, bounded inputs, bounded outputs, scoped work orders, explicit dependencies, review routing, reports, and evidence. This proof should remain inert before any live agent execution is allowed.
+P3: Agent recruitment and orchestration proof. Prove agent control through registered capabilities, bounded inputs, bounded outputs, scoped work orders, explicit dependencies, review routing, reports, and evidence. This proof remains inert before any live agent execution is allowed.
 
 P4: Review and judgment proof. Let SurfaceOps and JudgmentKit consume evidence. SurfaceOps should handle review queues and human decisions. JudgmentKit should evaluate activity fit, contract quality, evidence quality, and handoff quality. Neither should override the Surfaces Catalog.
 

@@ -603,6 +603,10 @@ const REGISTRY_BY_COVERAGE = new Map(REGISTRY_ROWS.map((entry) => [entry.coverag
 const REGISTRY_BY_ARTIFACT = new Map(REGISTRY_ROWS.map((entry) => [entry.artifactPath, entry]));
 
 export async function runInterfacectl(argv, io) {
+  if (argv[0] === "surfaces" && argv[1] === "agents" && argv[2] === "proof") {
+    const { runP3Interfacectl } = await import("./p3-proof.js");
+    return runP3Interfacectl(argv.slice(3), io);
+  }
   if (argv[0] === "surfaces" && argv[1] === "ingest" && argv[2] === "proof") {
     const { runP2Interfacectl } = await import("./p2-proof.js");
     return runP2Interfacectl(argv.slice(3), io);
@@ -613,7 +617,7 @@ export async function runInterfacectl(argv, io) {
   }
 
   if (argv[0] !== "surfaces" || argv[1] !== "proof") {
-    io.stderr.write("usage: interfacectl surfaces proof --fixture fixtures/p0 --out artifacts/p0\nusage: interfacectl surfaces adapter proof --catalog artifacts/p0/governed-catalog.json --fixture fixtures/p1 --out artifacts/p1\nusage: interfacectl surfaces ingest proof --source sources/p2/design-system-source --fixture fixtures/p2 --out artifacts/p2\n");
+    io.stderr.write("usage: interfacectl surfaces proof --fixture fixtures/p0 --out artifacts/p0\nusage: interfacectl surfaces adapter proof --catalog artifacts/p0/governed-catalog.json --fixture fixtures/p1 --out artifacts/p1\nusage: interfacectl surfaces ingest proof --source sources/p2/design-system-source --fixture fixtures/p2 --out artifacts/p2\nusage: interfacectl surfaces agents proof --ingestion-evidence artifacts/p2/evidence.json --catalog artifacts/p2/governed-catalog.json --fixture fixtures/p3 --out artifacts/p3\n");
     return 2;
   }
 

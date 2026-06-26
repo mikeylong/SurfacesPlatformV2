@@ -1,0 +1,1 @@
+{"command":"interfacectl surfaces agents proof","ingestionEvidenceRef":null,"mutation":"missing-file","provenance":{"generatedAt":"1970-01-01T00:00:00.000Z","generator":"interfacectl-p3-materialize","sourceRefs":["plans/p3/validation-evidence.md#p2-preflight-gate"]},"schemaId":"agent-preflight-mutation.v0","version":"0.0.0"}

@@ -256,8 +256,9 @@ artifacts/p2/evidence.json
 artifacts/p2/governed-catalog.json
 fixtures/p3/agent-capability-registry.fixture.json
 fixtures/p3/expectations.manifest.json
+  -> validate fixtures/p3/mutations/*.agent-preflight.json against expected upstream-preflight failures
   -> artifacts/p3/agent-capability-registry.json
-  -> validate fixtures/p3/mutations/*.json against expected registry/recruitment/orchestration/evidence failures
+  -> validate remaining fixtures/p3/mutations/*.json against expected registry/recruitment/orchestration/evidence failures
   -> validate fixtures/p3/valid/*.json, fixtures/p3/invalid/*.json, and fixtures/p3/review/*.json
   -> artifacts/p3/orchestration-plan.json
   -> artifacts/p3/work-order.contract-architect.json
@@ -275,10 +276,12 @@ fixtures/p3/expectations.manifest.json
 interfacectl surfaces agents proof --ingestion-evidence artifacts/p2/evidence.json --catalog artifacts/p2/governed-catalog.json --fixture fixtures/p3 --out artifacts/p3
 ```
 
-This remains a planned P3 command until that phase adds its schemas, fixtures, diagnostics, command implementation, artifacts, report, demo, and evidence.
+Package scripts and tests execute this as `node bin/interfacectl.js surfaces agents proof --ingestion-evidence artifacts/p2/evidence.json --catalog artifacts/p2/governed-catalog.json --fixture fixtures/p3 --out artifacts/p3`. P3 evidence records the logical command string above.
 
 ## P3 Pass Condition
 Given valid P2 ingestion evidence and the P3 fixture set, the agents proof command emits the exact P3 artifacts, creates a hash-bound agent capability registry, recruits only registered capabilities for declared task requirements, produces deterministic scoped work orders, blocks unregistered capabilities and scope escalation, routes review-required work to a non-executable review queue, records orchestration diagnostics before final evidence, and writes reproducible evidence with hashes and provenance for every P3 schema, fixture, input artifact, generated proof artifact under `artifacts/p3`, and final evidence artifact.
+
+P3 generated artifact refs must be acyclic: forward refs to later same-run artifacts omit hashes, resolved backward refs to already materialized artifacts may include hashes, and final P3 evidence owns the complete hash closure.
 
 ## P3 Architecture
 1. P3 Product Boundaries
@@ -292,10 +295,10 @@ Given valid P2 ingestion evidence and the P3 fixture set, the agents proof comma
 
 ## P3 Acceptance Criteria
 - P0, P1, and P2 proof gates still pass unchanged before and after P3 work.
-- P3 preflight validates the consumed P2 governed catalog and P2 evidence before recruitment.
-- `agent-capability-registry.json` is derived from `fixtures/p3/agent-capability-registry.fixture.json` and hash-bound to upstream P2 refs.
-- Recruitment cannot select unregistered agents, undeclared capabilities, denied tools, hidden outputs, or artifact paths outside the resolved work-order scope.
-- Orchestration plans must be deterministic DAGs with no cycles, missing dependencies, duplicate work-order ids, or hidden handoffs.
+- P3 preflight validates the consumed P2 governed catalog and P2 evidence before recruitment and before reading P3 registry or task fixtures.
+- `agent-capability-registry.json` is derived from `fixtures/p3/agent-capability-registry.fixture.json` after that fixture validates against `agent-capability-registry-fixture.v0`, then hash-bound to upstream P2 refs.
+- Recruitment cannot select unregistered agents, undeclared capabilities, denied tools, hidden outputs, or artifact paths outside the resolved intersection of task request, registry agent scope, and registry capability scope.
+- Orchestration plans must be deterministic DAGs with no cycles, missing dependencies, duplicate task ids, duplicate work-order ids, or hidden handoffs.
 - Work orders contain inert assignments only: no live tool calls, subprocesses, network calls, secrets, callbacks, autonomous edits, or executable output.
 - `review-queue.json` is always emitted, conforms to `agent-review-queue.v0`, and keeps review-required work non-executable.
 - Invalid P3 fixtures and mutation fixtures fail according to `fixtures/p3/expectations.manifest.json`.
@@ -368,7 +371,7 @@ Given valid P2 ingestion evidence and the P3 fixture set, the agents proof comma
 
 ## P3 Decisions
 - First agent-control target: deterministic agent orchestration proof.
-- First agent boundary: `agent-capability-registry.v0`, `agent-work-order.v0`, and `agent-review-queue.v0`, not direct live agent execution.
+- First agent boundary: `agent-capability-registry.v0`, `agent-task.v0`, `agent-orchestration-plan.v0`, `agent-work-order.v0`, and `agent-review-queue.v0`, not direct live agent execution.
 - First orchestration output: generated task DAG, scoped work orders, review queue, report, evidence, and static demo from proof artifacts.
 - SurfaceOps remains a later operational review product; P3 emits a review queue artifact but no persistent review console.
 - JudgmentKit remains evaluation metadata only unless a later proof defines evaluator execution.

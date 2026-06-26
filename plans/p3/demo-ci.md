@@ -26,8 +26,8 @@ Make the agent orchestration proof inspectable without weakening the proof bound
 - Demo output must not contain executable work-order behavior, forms, scripts that call tools, network fetches, secrets, or live agent status; this applies VISION.md's canonical no-live-execution boundary.
 - Demo output is not included in P3 evidence hashes.
 
-## Normative Package Scripts
-P3 is not implementation-complete until `package.json` exposes:
+## Package Scripts
+P3 exposes:
 
 ```bash
 npm run materialize:p3
@@ -35,6 +35,7 @@ npm run proof:p3
 npm run build:p3-demo
 npm run check:p3
 npm run check:p3:ci
+npm run check:p3:untracked
 ```
 
 `check:p3:ci` must:

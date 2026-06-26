@@ -43,7 +43,7 @@ This matrix is a P3 phase-local delta over [VISION.md Surface Roles](../../VISIO
 - Each work order must declare allowed inputs, allowed output paths, denied capabilities, dependencies, source refs, and evidence obligations.
 - Task fixtures request exact inputs and outputs, the registry authorizes agent and capability scope, recruitment computes the allowed intersection, and `interfacectl` is the sole author of orchestration plan and work-order artifacts. Work orders must only echo resolved scope; they cannot widen or reinterpret it.
 - Review-required work is recorded in `review-queue.json` and `agent-orchestration-report.json`; it must not be promoted to executable work.
-- Orchestration plans must be deterministic DAGs with stable ids and no hidden dependencies.
+- Orchestration plans must be deterministic DAGs with stable ids, no duplicate task or work-order ids, and no hidden dependencies.
 - Product demos must be generated from proof artifacts.
 - P3 may prepare review and evaluator records that SurfaceOps or JudgmentKit can later consume, but neither product executes in P3.
 

@@ -64,7 +64,7 @@ Do not revive older P2-as-agent-orchestration wording. Current docs place real d
 - `artifacts/`: generated proof artifacts and evidence.
 - `demo/`: generated static demo output.
 - `test/`: Node test suite.
-- `.github/workflows/p0-proof.yml`: CI for P0 and P1 gates.
+- `.github/workflows/surfaces-proof.yml`: CI for P0-P3 proof gates.
 
 The project is Node.js ESM and CI uses Node 22.
 

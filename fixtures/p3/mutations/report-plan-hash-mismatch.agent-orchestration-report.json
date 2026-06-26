@@ -1,0 +1,1 @@
+{"diagnostics":[],"orchestrationPlanRef":{"hash":"0000000000000000000000000000000000000000000000000000000000000000","hashAlgorithm":"sha256","path":"artifacts/p3/orchestration-plan.json","schemaId":"agent-orchestration-plan.v0"},"promotionStatus":"allowed","results":[],"runId":"p3-mutation","schemaId":"agent-orchestration-report.v0","status":"pass","version":"0.0.0"}
