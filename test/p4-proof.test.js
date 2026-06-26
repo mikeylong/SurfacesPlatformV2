@@ -345,11 +345,17 @@ test("P4 package scripts and untracked guard are exposed", async () => {
     "demo:p4",
     "check:p4",
     "check:p4:ci",
+    "check:p4:ci:phase",
     "check:p4:untracked"
   ]) {
     assert.ok(pkg.scripts[script], `${script} script missing`);
   }
   assert.match(pkg.scripts["proof:p4"], /surfaces review proof/);
+  assert.match(pkg.scripts["check:p4:ci"], /check:p3:ci/);
+  assert.match(pkg.scripts["check:p4:ci"], /check:p4:ci:phase/);
+  assert.match(pkg.scripts["check:p4:ci:phase"], /check:p4/);
+  assert.match(pkg.scripts["check:p4:ci:phase"], /git diff --exit-code/);
+  assert.match(pkg.scripts["check:p4:ci:phase"], /check:p4:untracked/);
   for (const guardedPath of [
     "artifacts/p4",
     "demo/p4",

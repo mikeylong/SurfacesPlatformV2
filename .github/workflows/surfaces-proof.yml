@@ -102,4 +102,4 @@ jobs:
         run: npm ci
 
       - name: Run P4 contract gate
-        run: npm run check:p4:ci
+        run: npm run check:p4:ci:phase
