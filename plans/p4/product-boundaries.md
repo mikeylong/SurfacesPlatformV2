@@ -1,7 +1,7 @@
 # Product Boundaries
 
 ## Decision
-P4 is subordinate to [VISION.md](../../VISION.md#canonical-authority-model)'s canonical authority model. It consumes P3 evidence and review queue artifacts, then defines the planned proof for review and judgment behavior as derived consumers. SurfaceOps may inspect review queue items and record approve, reject, request-changes, or defer decisions within the SurfaceOps decision ledger. JudgmentKit may inspect evidence and emit evaluation-only findings for activity fit, contract quality, evidence quality, and handoff quality. Neither may create catalog, runtime, source, adapter, execution, or override authority.
+P4 is subordinate to [VISION.md](../../VISION.md#canonical-authority-model)'s canonical authority model. It consumes P3 evidence and review queue artifacts, then defines the implemented deterministic proof for review and judgment behavior as derived consumers. SurfaceOps may inspect review queue items and record approve, reject, request-changes, or defer decisions within the SurfaceOps decision ledger. JudgmentKit may inspect evidence and emit evaluation-only findings for activity fit, contract quality, evidence quality, and handoff quality. Neither may create catalog, runtime, source, adapter, execution, or override authority.
 
 ## Goal
 Make human review and evidence judgment accountable. P4 should prove that review-required work can be inspected and decided with explicit evidence refs, reviewer provenance, deterministic decision state, and evaluator findings without creating hidden authority or executing work.
@@ -46,11 +46,11 @@ This matrix is a P4 phase-local delta over [VISION.md Surface Roles](../../VISIO
 - P4 may prepare records that a future SurfaceOps product or JudgmentKit integration can consume, but neither live product executes in P4.
 
 ## P4 Proof
-The planned P4 proof can be completed with P3 artifacts, P4 fixtures, P4 schemas, a SurfaceOps decision ledger, JudgmentKit-shaped evaluation report, review/judgment report, final evidence, and generated demo. No live operations console, live evaluator call, or work-order runtime is needed.
+The P4 proof is completed with P3 artifacts, P4 fixtures, P4 schemas, a SurfaceOps decision ledger, JudgmentKit-shaped evaluation report, review/judgment report, final evidence, and generated demo. No live operations console, live evaluator call, or work-order runtime is needed.
 
 ## Non-Goals
 - No live SurfaceOps application.
-- No live JudgmentKit MCP or connector invocation in this planning slice.
+- No live JudgmentKit MCP or connector invocation in this implementation slice.
 - No execution of P3 work orders.
 - No persistent review decision store.
 - No catalog, runtime, adapter, protocol, or A2UI expansion.

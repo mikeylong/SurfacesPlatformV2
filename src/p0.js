@@ -603,6 +603,10 @@ const REGISTRY_BY_COVERAGE = new Map(REGISTRY_ROWS.map((entry) => [entry.coverag
 const REGISTRY_BY_ARTIFACT = new Map(REGISTRY_ROWS.map((entry) => [entry.artifactPath, entry]));
 
 export async function runInterfacectl(argv, io) {
+  if (argv[0] === "surfaces" && argv[1] === "review" && argv[2] === "proof") {
+    const { runP4Interfacectl } = await import("./p4-proof.js");
+    return runP4Interfacectl(argv.slice(3), io);
+  }
   if (argv[0] === "surfaces" && argv[1] === "agents" && argv[2] === "proof") {
     const { runP3Interfacectl } = await import("./p3-proof.js");
     return runP3Interfacectl(argv.slice(3), io);
@@ -617,7 +621,7 @@ export async function runInterfacectl(argv, io) {
   }
 
   if (argv[0] !== "surfaces" || argv[1] !== "proof") {
-    io.stderr.write("usage: interfacectl surfaces proof --fixture fixtures/p0 --out artifacts/p0\nusage: interfacectl surfaces adapter proof --catalog artifacts/p0/governed-catalog.json --fixture fixtures/p1 --out artifacts/p1\nusage: interfacectl surfaces ingest proof --source sources/p2/design-system-source --fixture fixtures/p2 --out artifacts/p2\nusage: interfacectl surfaces agents proof --ingestion-evidence artifacts/p2/evidence.json --catalog artifacts/p2/governed-catalog.json --fixture fixtures/p3 --out artifacts/p3\n");
+    io.stderr.write("usage: interfacectl surfaces proof --fixture fixtures/p0 --out artifacts/p0\nusage: interfacectl surfaces adapter proof --catalog artifacts/p0/governed-catalog.json --fixture fixtures/p1 --out artifacts/p1\nusage: interfacectl surfaces ingest proof --source sources/p2/design-system-source --fixture fixtures/p2 --out artifacts/p2\nusage: interfacectl surfaces agents proof --ingestion-evidence artifacts/p2/evidence.json --catalog artifacts/p2/governed-catalog.json --fixture fixtures/p3 --out artifacts/p3\nusage: interfacectl surfaces review proof --orchestration-evidence artifacts/p3/evidence.json --review-queue artifacts/p3/review-queue.json --fixture fixtures/p4 --out artifacts/p4\n");
     return 2;
   }
 

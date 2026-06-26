@@ -1,7 +1,7 @@
 # Demo And CI
 
 ## Decision
-P4 should include a generated static demo and CI gate for review and judgment proof artifacts after the P4 proof is implemented. The demo is presentation output derived from passing P4 evidence; it is not proof, product, UI, runtime, projection, review-decision, judgment, or execution authority.
+P4 includes a generated static demo and CI gate for review and judgment proof artifacts. The demo is presentation output derived from passing P4 evidence; it is not proof, product, UI, runtime, projection, review-decision, judgment, or execution authority.
 
 ## Goal
 Make the review and judgment proof inspectable without weakening the proof boundary. A reviewer should be able to see P3 review queue intake, SurfaceOps decision rows, JudgmentKit-shaped findings, diagnostics, and hashes from current evidence.
@@ -26,7 +26,7 @@ Make the review and judgment proof inspectable without weakening the proof bound
 - Demo output is not included in P4 evidence hashes.
 
 ## Package Scripts
-P4 should expose these scripts only after implementation exists:
+P4 exposes these scripts:
 
 ```bash
 npm run materialize:p4

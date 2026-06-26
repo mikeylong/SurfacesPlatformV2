@@ -307,9 +307,9 @@ P3 generated artifact refs must be acyclic: forward refs to later same-run artif
 - `demo/p3/index.html` is generated from P3 proof artifacts and does not count as proof unless the underlying P3 evidence passes.
 
 ## P4 Focus
-P4 plans the first review and judgment proof. It will consume accepted P3 orchestration evidence and the P3 review queue, then prove SurfaceOps decision and JudgmentKit-shaped evaluation artifacts as derived consumers. SurfaceOps owns approve, reject, request-changes, and defer decision records. JudgmentKit-shaped reports remain evaluation-only findings and cannot encode or override decision status. P4 is not a live SurfaceOps console, live JudgmentKit invocation, production workflow, work-order runtime, production adapter, protocol boundary, or A2UI export.
+P4 implements the first deterministic review and judgment proof. It consumes accepted P3 orchestration evidence and the P3 review queue, then proves SurfaceOps decision and JudgmentKit-shaped evaluation artifacts as derived consumers. SurfaceOps owns approve, reject, request-changes, and defer decision records inside the ledger. JudgmentKit-shaped reports remain evaluation-only findings and cannot encode or override decision status. P4 is not a live SurfaceOps console, live JudgmentKit invocation, production workflow, work-order runtime, production adapter, protocol boundary, or A2UI export.
 
-The planned P4 proof path is:
+The P4 proof path is:
 
 ```text
 artifacts/p3/evidence.json
@@ -327,13 +327,13 @@ fixtures/p4/expectations.manifest.json
 
 ## P4 Proof Command
 
-Planned command, not runnable until P4 schemas, fixtures, implementation, artifacts, demo, tests, and CI gate exist:
+Implemented command:
 
 ```bash
 interfacectl surfaces review proof --orchestration-evidence artifacts/p3/evidence.json --review-queue artifacts/p3/review-queue.json --fixture fixtures/p4 --out artifacts/p4
 ```
 
-Package scripts should execute this as `node bin/interfacectl.js surfaces review proof --orchestration-evidence artifacts/p3/evidence.json --review-queue artifacts/p3/review-queue.json --fixture fixtures/p4 --out artifacts/p4`. P4 evidence should record the logical command string above.
+Package scripts execute this as `node bin/interfacectl.js surfaces review proof --orchestration-evidence artifacts/p3/evidence.json --review-queue artifacts/p3/review-queue.json --fixture fixtures/p4 --out artifacts/p4`. P4 evidence records the logical command string above.
 
 ## P4 Pass Condition
 Given valid P3 orchestration evidence, a valid P3 review queue, and the P4 fixture set, the review proof command emits the exact P4 artifacts, creates a deterministic SurfaceOps decision ledger for approve, reject, request-changes, and defer outcomes, emits a deterministic evaluation-only JudgmentKit-shaped report, blocks invalid SurfaceOps decision rows and any JudgmentKit-shaped finding that attempts to approve, reject, request changes, route, promote, or override policy, preserves second-review-required cases without execution, records review/judgment diagnostics before final evidence, and writes reproducible evidence with hashes and provenance for every P4 schema, fixture, input artifact, generated proof artifact under `artifacts/p4`, and final evidence artifact.
@@ -443,7 +443,7 @@ P4 generated artifact refs must be acyclic: forward refs to later same-run artif
 ## P4 Decisions
 - First review target: deterministic review and judgment proof over accepted P3 review queue and evidence.
 - First SurfaceOps boundary: `surfaceops-decision-ledger.v0`, not a live review console or persistent decision store.
-- First JudgmentKit boundary: `judgmentkit-evaluation-report.v0`, not live JudgmentKit MCP or connector execution in this planning slice.
+- First JudgmentKit boundary: `judgmentkit-evaluation-report.v0`, not live JudgmentKit MCP or connector execution in this implementation slice.
 - First review output: decision ledger, evaluation report, review/judgment report, evidence, and static demo from proof artifacts.
 - SurfaceOps approval decisions recorded in the P4 decision ledger are evidence eligibility records only; they do not execute P3 work orders or mutate upstream artifacts.
 - P5 production adapters, protocol boundaries, and A2UI remain deferred.

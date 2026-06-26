@@ -1,7 +1,7 @@
 # Surfaces Platform V2 P4 Subplans
 
 ## Decision
-P4 is planned to prove review and judgment as derived consumers of existing Surfaces evidence. It consumes accepted P3 orchestration evidence, the generated P3 review queue, and related reports, then plans a deterministic SurfaceOps decision ledger, JudgmentKit-shaped evaluation report, review/judgment report, and final evidence.
+P4 proves review and judgment as derived consumers of existing Surfaces evidence. It consumes accepted P3 orchestration evidence, the generated P3 review queue, and related reports, then materializes a deterministic SurfaceOps decision ledger, JudgmentKit-shaped evaluation report, review/judgment report, and final evidence.
 
 P4 is subordinate to [VISION.md](../../VISION.md#canonical-authority-model)'s canonical authority model: the design system is the authority, the Surfaces Catalog is the governed contract, and evidence proves only implemented proof behavior. SurfaceOps may inspect review queue items and record approve, reject, request-changes, or defer decisions within the SurfaceOps decision ledger. JudgmentKit may inspect evidence and emit evaluation-only findings for activity fit, contract quality, evidence quality, and handoff quality. Neither may create catalog, runtime, source, adapter, execution, or override authority.
 
@@ -11,24 +11,24 @@ Surfaces Platform creates value when review-required work can be routed to human
 P4 must run only after P3 inert orchestration evidence passes. Review and judgment over earlier synthetic or ingestion-only phases can be useful for diagnostics, but the first P4 proof target is the P3 review queue because it exercises work orders, dependencies, handoffs, and review-required routing.
 
 ## Start Gate Record
-P4 planning is opened by these documents only. The implementation start gate remains pending until a clean post-merge `main` records passing:
+P4 planning was opened by these documents. The implementation start gate was satisfied from clean post-merge `main` with passing:
 
 - `npm run check:p0:ci`
 - `npm run check:p1:ci`
 - `npm run check:p2:ci`
 - `npm run check:p3:ci`
 
-The start-gate record for P4 implementation must include the merge commit, the accepted `artifacts/p3/evidence.json` self-hash, and the proof-bearing gate logs. Do not store gate logs or merge records under `artifacts/p4`.
+The start-gate record for P4 implementation includes the merge commit, the accepted `artifacts/p3/evidence.json` self-hash, and the proof-bearing gate logs. Gate logs and merge records are not stored under `artifacts/p4`.
 
 ## Initial Implementation Slice
-The first P4 implementation slice should preserve the derived-consumer boundary and proceed in this order:
+The first P4 implementation slice preserves the derived-consumer boundary and proceeds in this order:
 
 1. Materialize P4 schema contracts for SurfaceOps decisions, JudgmentKit evaluations, review/judgment fixtures, reports, diagnostics, expectations, and evidence.
 2. Add P4 fixtures and `fixtures/p4/expectations.manifest.json` before proof output claims.
 3. Implement strict P3 preflight and deterministic artifact generation for the decision ledger, evaluation report, review/judgment report, and final evidence.
 4. Add the generated demo and CI drift/untracked guards only after P4 evidence is reproducible.
 
-P4 must not invoke live JudgmentKit tools, persist operational review decisions, execute work orders, or call agents unless a later explicit proof contract and user authorization allow it.
+P4 does not invoke live JudgmentKit tools, persist operational review decisions, execute work orders, or call agents unless a later explicit proof contract and user authorization allow it.
 
 ## P4 Dependency Order
 1. [Product Boundaries](product-boundaries.md)
@@ -50,6 +50,7 @@ schemas/
   review-judgment-evidence.v0.schema.json
   review-judgment-expectations.v0.schema.json
   review-judgment-diagnostics.v0.schema.json
+  review-preflight-mutation.v0.schema.json
 
 fixtures/p4/
   expectations.manifest.json
@@ -88,7 +89,7 @@ demo/p4/
 
 ## P4 Proof Command
 
-Planned command, not runnable until P4 schemas, fixtures, implementation, artifacts, demo, tests, and CI gate exist:
+Implemented command:
 
 ```bash
 interfacectl surfaces review proof \
@@ -98,7 +99,7 @@ interfacectl surfaces review proof \
   --out artifacts/p4
 ```
 
-Package scripts should execute this through `node bin/interfacectl.js` only after implementation exists. P4 evidence should record the logical command string above.
+Package scripts execute this through `node bin/interfacectl.js`. P4 evidence records the logical command string above.
 
 ## Pass Condition
 Given valid P3 orchestration evidence, a valid P3 review queue, and the P4 fixture set, the review proof command emits the exact P4 artifacts, creates a deterministic SurfaceOps decision ledger for approve, reject, request-changes, and defer outcomes, emits a deterministic evaluation-only JudgmentKit-shaped report, blocks invalid SurfaceOps decision rows and any JudgmentKit-shaped finding that attempts to approve, reject, request changes, route, promote, or override policy, preserves review-required second-review cases, records review/judgment diagnostics before final evidence, and writes reproducible evidence with hashes and provenance for every P4 schema, fixture, input artifact, generated proof artifact under `artifacts/p4`, and final evidence artifact.
@@ -106,7 +107,7 @@ Given valid P3 orchestration evidence, a valid P3 review queue, and the P4 fixtu
 P4 generated artifact refs must be acyclic. Forward refs to later same-run artifacts omit hashes, resolved backward refs to already materialized artifacts may include hashes, and final P4 evidence owns the complete hash closure.
 
 ## Product Surface Rule
-The planned P4 proof defines review and judgment contracts; it is not a live operations console or evaluator service.
+The P4 proof defines review and judgment contracts; it is not a live operations console or evaluator service.
 
 `demo/p4/index.html` must be generated from P4 proof artifacts. It may show review queue intake, decision ledger entries, JudgmentKit-shaped findings, diagnostics, artifact refs, and evidence status. It must not contain editable review state, live decision submission, JudgmentKit connector calls, work-order execution controls, secrets, or live agent status.
 
@@ -134,13 +135,14 @@ The planned P4 proof defines review and judgment contracts; it is not a live ope
 | `SURFACEOPS_EXECUTION_FORBIDDEN` | Review decision attempts to execute a P3 work order or invoke tools | `review` | `blocked` | `invalid/executes-work-order.review-judgment.json` |
 | `SURFACEOPS_DECISION_HIDDEN` | Review decision contains hidden, untracked, or non-evidence-backed state | `review` | `blocked` | `invalid/hidden-decision.review-judgment.json` |
 | `SURFACEOPS_SECOND_REVIEW_REQUIRED` | Structurally valid decision requires a second reviewer | `review` | `review_required` | `review/second-review-required.review-judgment.json` |
+| `JUDGMENTKIT_EVIDENCE_REF_MISSING` | Judgment finding omits accepted P3 evidence or review queue boundary refs | `judgment` | `blocked` | `invalid/judgmentkit-missing-boundary-ref.review-judgment.json` |
 | `JUDGMENTKIT_POLICY_OVERRIDE` | Judgment finding attempts to override catalog or SurfaceOps decision authority | `judgment` | `blocked` | `invalid/judgmentkit-overrides-policy.review-judgment.json` |
 | `REVIEW_LEDGER_HASH_MISMATCH` | Review report or fixture references a decision ledger hash that differs from the current ledger | `report` | `blocked` | `mutations/ledger-hash-mismatch.surfaceops-decision-ledger.json` |
 | `REVIEW_REPORT_LEDGER_HASH_MISMATCH` | Review report references a ledger hash that differs from the current ledger | `report` | `blocked` | `mutations/report-ledger-hash-mismatch.review-judgment-report.json` |
 | `REVIEW_EVIDENCE_HASH_MISMATCH` | Review evidence hash differs from manifest or self-hash rule | `evidence` | `blocked` | `mutations/hash-mismatch.review-judgment-evidence.json` |
 
 ## Allowed Claims
-P4 may be described as planned until the full proof shape exists. After implementation, it may be described only as a deterministic review and judgment proof over the accepted P3 review queue and evidence when `artifacts/p4/evidence.json` passes.
+P4 may be described only as a deterministic review and judgment proof over the accepted P3 review queue and evidence when `artifacts/p4/evidence.json` passes.
 
 It must not be described as a live SurfaceOps product, live JudgmentKit execution, agent execution, production review workflow, production adapter, A2UI projection, or authority override.
 

@@ -1,7 +1,7 @@
 # SurfaceOps Decision Model v0
 
 ## Decision
-`surfaceops-decision-ledger.v0` is the planned P4 artifact for deterministic review decisions over P3 review queue items. It records what a reviewer decided, why, and which evidence supports the decision. It does not persist live operational state and does not mutate upstream artifacts.
+`surfaceops-decision-ledger.v0` is the P4 artifact for deterministic review decisions over P3 review queue items. It records what a reviewer decided, why, and which evidence supports the decision. It does not persist live operational state and does not mutate upstream artifacts.
 
 ## Goal
 Provide the minimum review model needed to turn review-required proof artifacts into auditable decisions while preserving catalog authority and evidence traceability.

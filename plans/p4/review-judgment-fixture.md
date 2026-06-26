@@ -37,7 +37,7 @@ fixtures/p4/
 ## Fixture Categories
 - `valid/` fixtures produce decision ledger rows or evaluation findings that match expectations.
 - `review/` fixtures are structurally valid but preserve `review_required`, such as second-review-required decisions.
-- `invalid/` fixtures are blocked for missing evidence refs, policy overrides, forbidden execution, or hidden state.
+- `invalid/` fixtures are blocked for missing accepted P3 evidence or review queue refs, policy overrides, forbidden execution, or hidden state.
 - `mutations/` fixtures model command preflight, generated artifact, report, and evidence tampering failures.
 
 ## Expectations Manifest
@@ -46,7 +46,7 @@ fixtures/p4/
 The manifest must also declare the expected generated artifacts and final evidence behavior for valid and review-required cases. Unknown P4 fixtures must fail closed.
 
 ## P4 Stages
-The planned stage order is:
+The stage order is:
 
 1. `preflight`
 2. `review`
@@ -55,7 +55,7 @@ The planned stage order is:
 5. `evidence`
 
 ## P4 Phases
-The planned phase labels are:
+The phase labels are:
 
 - `upstream-preflight`
 - `surfaceops-decision`
