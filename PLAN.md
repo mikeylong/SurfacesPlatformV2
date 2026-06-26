@@ -306,6 +306,61 @@ P3 generated artifact refs must be acyclic: forward refs to later same-run artif
 - P3 evidence hashes upstream P2 artifacts, P3 schemas, P3 fixtures, generated P3 artifacts, and itself under the same canonicalization discipline as P0/P1/P2.
 - `demo/p3/index.html` is generated from P3 proof artifacts and does not count as proof unless the underlying P3 evidence passes.
 
+## P4 Focus
+P4 plans the first review and judgment proof. It will consume accepted P3 orchestration evidence and the P3 review queue, then prove SurfaceOps decision and JudgmentKit-shaped evaluation artifacts as derived consumers. SurfaceOps owns approve, reject, request-changes, and defer decision records. JudgmentKit-shaped reports remain evaluation-only findings and cannot encode or override decision status. P4 is not a live SurfaceOps console, live JudgmentKit invocation, production workflow, work-order runtime, production adapter, protocol boundary, or A2UI export.
+
+The planned P4 proof path is:
+
+```text
+artifacts/p3/evidence.json
+artifacts/p3/review-queue.json
+artifacts/p3/agent-orchestration-report.json
+fixtures/p4/expectations.manifest.json
+  -> validate fixtures/p4/mutations/*.review-preflight.json against expected upstream-preflight failures
+  -> validate fixtures/p4/valid/*.json, fixtures/p4/invalid/*.json, fixtures/p4/review/*.json, and remaining fixtures/p4/mutations/*.json
+  -> artifacts/p4/surfaceops-decision-ledger.json
+  -> artifacts/p4/judgmentkit-evaluation-report.json
+  -> artifacts/p4/review-judgment-report.json
+  -> artifacts/p4/evidence.json
+  -> demo/p4/index.html
+```
+
+## P4 Proof Command
+
+Planned command, not runnable until P4 schemas, fixtures, implementation, artifacts, demo, tests, and CI gate exist:
+
+```bash
+interfacectl surfaces review proof --orchestration-evidence artifacts/p3/evidence.json --review-queue artifacts/p3/review-queue.json --fixture fixtures/p4 --out artifacts/p4
+```
+
+Package scripts should execute this as `node bin/interfacectl.js surfaces review proof --orchestration-evidence artifacts/p3/evidence.json --review-queue artifacts/p3/review-queue.json --fixture fixtures/p4 --out artifacts/p4`. P4 evidence should record the logical command string above.
+
+## P4 Pass Condition
+Given valid P3 orchestration evidence, a valid P3 review queue, and the P4 fixture set, the review proof command emits the exact P4 artifacts, creates a deterministic SurfaceOps decision ledger for approve, reject, request-changes, and defer outcomes, emits a deterministic evaluation-only JudgmentKit-shaped report, blocks invalid SurfaceOps decision rows and any JudgmentKit-shaped finding that attempts to approve, reject, request changes, route, promote, or override policy, preserves second-review-required cases without execution, records review/judgment diagnostics before final evidence, and writes reproducible evidence with hashes and provenance for every P4 schema, fixture, input artifact, generated proof artifact under `artifacts/p4`, and final evidence artifact.
+
+P4 generated artifact refs must be acyclic: forward refs to later same-run artifacts omit hashes, resolved backward refs to already materialized artifacts may include hashes, and final P4 evidence owns the complete hash closure.
+
+## P4 Architecture
+1. P4 Product Boundaries
+2. SurfaceOps Decision Model v0
+3. JudgmentKit Evaluation v0
+4. Review And Judgment Fixture
+5. Review And Judgment Proof
+6. Validation And Evidence
+7. Demo And CI
+
+## P4 Acceptance Criteria
+- P0, P1, P2, and P3 proof gates still pass unchanged before and after P4 work.
+- P4 preflight validates consumed P3 evidence and review queue hashes before reading P4 fixtures or writing P4 artifacts.
+- `surfaceops-decision-ledger.json` records deterministic review decisions with queue item refs, evidence refs, reviewer provenance, rationale, decision status, and aggregate promotion status.
+- SurfaceOps decisions cannot rewrite catalog policy, mutate P3 artifacts, execute work orders, or introduce hidden review state.
+- `judgmentkit-evaluation-report.json` records deterministic findings for activity fit, contract quality, evidence quality, and handoff quality.
+- JudgmentKit-shaped findings cannot approve, reject, request changes, defer, route, promote, mutate, render, execute, or override catalog policy or SurfaceOps decision authority.
+- Invalid P4 fixtures and mutation fixtures fail according to `fixtures/p4/expectations.manifest.json`.
+- `review-judgment-report.json` records every expected and actual review/judgment result before final P4 evidence.
+- P4 evidence hashes upstream P3 artifacts, P4 schemas, P4 fixtures, generated P4 artifacts, and itself under the same canonicalization discipline as P0/P1/P2/P3.
+- `demo/p4/index.html` is generated from P4 proof artifacts and does not count as proof unless the underlying P4 evidence passes.
+
 ## Subplans
 - [Subplan Index](plans/README.md)
 - [Runtime Catalog v0](plans/runtime-catalog-v0.md)
@@ -341,6 +396,14 @@ P3 generated artifact refs must be acyclic: forward refs to later same-run artif
 - [Review Queue v0](plans/p3/review-queue-v0.md)
 - [P3 Validation and Evidence](plans/p3/validation-evidence.md)
 - [P3 Demo and CI](plans/p3/demo-ci.md)
+- [P4 Subplan Index](plans/p4/README.md)
+- [P4 Product Boundaries](plans/p4/product-boundaries.md)
+- [SurfaceOps Decision Model v0](plans/p4/surfaceops-decision-model-v0.md)
+- [JudgmentKit Evaluation v0](plans/p4/judgmentkit-evaluation-v0.md)
+- [Review And Judgment Fixture](plans/p4/review-judgment-fixture.md)
+- [Review And Judgment Proof](plans/p4/review-judgment-proof.md)
+- [P4 Validation and Evidence](plans/p4/validation-evidence.md)
+- [P4 Demo and CI](plans/p4/demo-ci.md)
 - [Surfaces.dev Documentation Tracking](plans/surfaces-dev.md)
 
 ## P0 Decisions
@@ -371,11 +434,19 @@ P3 generated artifact refs must be acyclic: forward refs to later same-run artif
 
 ## P3 Decisions
 - First agent-control target: deterministic agent orchestration proof.
-- First agent boundary: `agent-capability-registry.v0`, `agent-task.v0`, `agent-orchestration-plan.v0`, `agent-work-order.v0`, and `agent-review-queue.v0`, not direct live agent execution.
+- First agent boundary: `agent-capability-registry.v0`, `agent-preflight-mutation.v0`, `agent-task.v0`, `agent-orchestration-plan.v0`, `agent-work-order.v0`, and `agent-review-queue.v0`, not direct live agent execution.
 - First orchestration output: generated task DAG, scoped work orders, review queue, report, evidence, and static demo from proof artifacts.
 - SurfaceOps remains a later operational review product; P3 emits a review queue artifact but no persistent review console.
 - JudgmentKit remains evaluation metadata only unless a later proof defines evaluator execution.
 - Agent work orders are inert descriptors in P3; they authorize no actual tool execution, file edits, network calls, side effects, or future outputs.
+
+## P4 Decisions
+- First review target: deterministic review and judgment proof over accepted P3 review queue and evidence.
+- First SurfaceOps boundary: `surfaceops-decision-ledger.v0`, not a live review console or persistent decision store.
+- First JudgmentKit boundary: `judgmentkit-evaluation-report.v0`, not live JudgmentKit MCP or connector execution in this planning slice.
+- First review output: decision ledger, evaluation report, review/judgment report, evidence, and static demo from proof artifacts.
+- SurfaceOps approval decisions recorded in the P4 decision ledger are evidence eligibility records only; they do not execute P3 work orders or mutate upstream artifacts.
+- P5 production adapters, protocol boundaries, and A2UI remain deferred.
 
 ## Non-Goals For P0/P1
 - No full product scaffold.
@@ -404,3 +475,11 @@ P3 generated artifact refs must be acyclic: forward refs to later same-run artif
 - No SurfaceOps review-decision persistence.
 - No JudgmentKit evaluator execution.
 - No relaxation of P2 catalog, ingestion evidence, or review gates.
+
+## Non-Goals For P4
+- No live SurfaceOps console or durable review database.
+- No live JudgmentKit MCP or connector invocation without a later explicit proof and user authorization.
+- No execution of P3 work orders.
+- No live agents, shell commands, connector calls, network calls, callbacks, or secret access from P4 artifacts.
+- No production adapters, protocol exports, A2UI conformance, or P5 scope.
+- No relaxation of P3 orchestration evidence, review queue, catalog, or review gates.

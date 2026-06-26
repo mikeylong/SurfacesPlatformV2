@@ -12,6 +12,7 @@ import { p3Internals } from "../src/p3-proof.js";
 const execFileAsync = promisify(execFile);
 const root = process.cwd();
 const p2EvidencePath = path.join(root, "artifacts/p2/evidence.json");
+const p2CatalogPath = path.join(root, "artifacts/p2/governed-catalog.json");
 const p3StalePath = path.join(root, "artifacts/p3/stale.tmp");
 
 test("P3 agents proof emits passing evidence with final self-hash", async () => {
@@ -175,6 +176,48 @@ test("P3 upstream preflight rejects failing P2 evidence before orchestration", a
   }
 });
 
+test("P3 upstream preflight rejects missing P2 evidence before orchestration", async () => {
+  const original = await fs.readFile(p2EvidencePath, "utf8");
+  await fs.rm(p2EvidencePath, { force: true });
+  try {
+    const result = await runP3ProofExpectFailure();
+    assert.equal(result.code, 1);
+    assert.match(result.stderr, /upstream evidence input is missing/);
+  } finally {
+    await fs.writeFile(p2EvidencePath, original);
+  }
+});
+
+test("P3 upstream preflight rejects P2 catalog hash mismatch before orchestration", async () => {
+  const original = await fs.readFile(p2CatalogPath, "utf8");
+  const catalog = JSON.parse(original);
+  catalog.version = "0.0.1";
+  await fs.writeFile(p2CatalogPath, canonicalJson(catalog));
+  try {
+    const result = await runP3ProofExpectFailure();
+    assert.equal(result.code, 1);
+    assert.match(result.stderr, /upstream catalog hash does not match the accepted boundary/);
+  } finally {
+    await fs.writeFile(p2CatalogPath, original);
+  }
+});
+
+test("P3 upstream preflight rejects stale P2 catalog refs before orchestration", async () => {
+  const original = await fs.readFile(p2EvidencePath, "utf8");
+  const evidence = JSON.parse(original);
+  const catalogRef = evidence.artifactRefs.find((entry) => entry.path === "artifacts/p2/governed-catalog.json");
+  assert.ok(catalogRef, "expected P2 governed catalog ref");
+  catalogRef.path = "artifacts/p2/stale-governed-catalog.json";
+  await fs.writeFile(p2EvidencePath, canonicalJson(evidence));
+  try {
+    const result = await runP3ProofExpectFailure();
+    assert.equal(result.code, 1);
+    assert.match(result.stderr, /must contain exactly one ref for artifacts\/p2\/governed-catalog\.json/);
+  } finally {
+    await fs.writeFile(p2EvidencePath, original);
+  }
+});
+
 test("P3 registry fixture schema is present and closed", async () => {
   const schema = await readJson("schemas/agent-capability-registry-fixture.v0.schema.json");
   const fixture = await readJson("fixtures/p3/agent-capability-registry.fixture.json");
@@ -190,6 +233,52 @@ test("P3 registry fixture schema is present and closed", async () => {
   const tampered = structuredClone(fixture);
   tampered.liveExecutor = { callback: "https://example.invalid/live" };
   assert.equal(validate(tampered), false);
+});
+
+test("P3 preflight mutation schema is present and closed", async () => {
+  const schema = await readJson("schemas/agent-preflight-mutation.v0.schema.json");
+  const fixtures = {
+    missing: await readJson("fixtures/p3/mutations/missing-upstream-evidence.agent-preflight.json"),
+    status: await readJson("fixtures/p3/mutations/failing-upstream-evidence.agent-preflight.json"),
+    hashMismatch: await readJson("fixtures/p3/mutations/upstream-evidence-hash-mismatch.agent-preflight.json"),
+    stale: await readJson("fixtures/p3/mutations/stale-upstream-evidence.agent-preflight.json")
+  };
+  const ajv = new Ajv2020({
+    allErrors: true,
+    strict: false,
+    validateSchema: true,
+    validateFormats: false
+  });
+  const validate = ajv.compile(schema);
+
+  for (const fixture of Object.values(fixtures)) {
+    assert.equal(validate(fixture), true);
+  }
+  const tampered = structuredClone(fixtures.missing);
+  tampered.liveExecutor = { callback: "https://example.invalid/live" };
+  assert.equal(validate(tampered), false);
+
+  const missingWithBoundary = structuredClone(fixtures.missing);
+  missingWithBoundary.boundaryRefs = fixtures.hashMismatch.boundaryRefs;
+  assert.equal(validate(missingWithBoundary), false);
+
+  const statusWithBoundary = structuredClone(fixtures.status);
+  statusWithBoundary.boundaryRefs = fixtures.hashMismatch.boundaryRefs;
+  assert.equal(validate(statusWithBoundary), false);
+
+  const mismatchWithEvidenceRef = structuredClone(fixtures.hashMismatch);
+  mismatchWithEvidenceRef.ingestionEvidenceRef = fixtures.status.ingestionEvidenceRef;
+  assert.equal(validate(mismatchWithEvidenceRef), false);
+
+  const staleWithStatus = structuredClone(fixtures.stale);
+  staleWithStatus.status = "fail";
+  assert.equal(validate(staleWithStatus), false);
+
+  const mismatchWithWrongBoundary = structuredClone(fixtures.hashMismatch);
+  mismatchWithWrongBoundary.boundaryRefs[0].path = "artifacts/p2/evidence.json";
+  assert.equal(validate(mismatchWithWrongBoundary), false);
+  assert.equal(p3Internals.preflightFixtureMatchesDiagnostic("AGENT_UPSTREAM_EVIDENCE_HASH_MISMATCH", mismatchWithWrongBoundary), false);
+  assert.equal(p3Internals.preflightFixtureMatchesDiagnostic("AGENT_UPSTREAM_EVIDENCE_HASH_MISMATCH", fixtures.hashMismatch), true);
 });
 
 test("P3 evidence integrity detects schema, fixture, upstream, artifact, and self-hash tampering", async () => {

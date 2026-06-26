@@ -129,5 +129,5 @@ If a product surface consumes evidence, it may explain, evaluate, route, or disp
 ## Open Decisions
 - Broader real design-system source families beyond the P2 local source bundle remain open. P2 does not settle Figma, Storybook, Code Connect, docs crawler, production HTML, or multi-source authority policy.
 - Broader Spectrum coverage remains open. The implemented P2 target is Adobe Spectrum Design Data, pinned to `@adobe/spectrum-design-data@0.7.0`, initially scoped to `button` and `in-line-alert`; this is not a claim of full Spectrum support, live ingestion, or Adobe endorsement.
-- What is the first JudgmentKit evaluation contract over Surfaces evidence?
-- What minimum SurfaceOps decision model is needed before review-required artifacts can be promoted or rejected?
+- Broader JudgmentKit execution or live integration beyond the planned P4 deterministic `judgmentkit-evaluation-report.v0` remains open.
+- Broader SurfaceOps operational storage, workflow, or live product behavior beyond the planned P4 deterministic `surfaceops-decision-ledger.v0` remains open.
