@@ -1,0 +1,1 @@
+{"command":"interfacectl surfaces protocol proof","mutation":"missing-upstream-evidence","provenance":{"generatedAt":"1970-01-01T00:00:00.000Z","generator":"interfacectl-p5-protocol-materialize","sourceRefs":["plans/p5/validation-evidence.md#planned-upstream-preflight"]},"schemaId":"protocol-preflight-mutation.v0","status":null,"upstreamRefs":[],"version":"0.0.0"}
