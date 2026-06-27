@@ -39,9 +39,9 @@ The accepted roadmap sequence is:
 - P4: SurfaceOps and JudgmentKit review and judgment proof.
 - P5: production adapters, protocol boundaries, and A2UI exports or conformance.
 
-P0, P1, P2, and P3 are currently implemented through package scripts and tracked proof artifacts.
+P0, P1, P2, P3, and P4 are currently implemented through package scripts and tracked proof artifacts.
 
-P4 and P5 are planned contracts until their schemas, fixtures, commands, artifacts, reports, demos, and evidence are implemented. Do not treat planned proof commands as runnable just because they appear in docs.
+P5 is a planned contract until its schemas, fixtures, commands, artifacts, reports, demos, and evidence are implemented. Do not treat planned proof commands as runnable just because they appear in docs.
 
 Important phase constraints:
 
@@ -49,7 +49,7 @@ Important phase constraints:
 - P1 runtime projections, render plans, and demos are derived consumers, not new authority.
 - P2 is ingestion only. It must not call live source APIs, crawl docs, build runtime adapters, recruit agents, persist SurfaceOps decisions, or run JudgmentKit.
 - P3 work orders are inert proof artifacts. They authorize no live agents, shell commands, tool calls, connector calls, network calls, file edits, secrets, callbacks, persistent review decisions, or execution.
-- JudgmentKit is deferred to P4 and should be invoked only when the user explicitly asks for it in this project.
+- P4 emits deterministic SurfaceOps and JudgmentKit-shaped proof artifacts only. Do not invoke live SurfaceOps or live JudgmentKit unless the user explicitly asks for it in this project.
 - A2UI is deferred to P5 unless P5 adds its own schema, fixtures, diagnostics, command contract, conformance proof, and evidence.
 
 Do not revive older P2-as-agent-orchestration wording. Current docs place real design-system ingestion in `plans/p2/` and agent orchestration in `plans/p3/`.
@@ -64,7 +64,7 @@ Do not revive older P2-as-agent-orchestration wording. Current docs place real d
 - `artifacts/`: generated proof artifacts and evidence.
 - `demo/`: generated static demo output.
 - `test/`: Node test suite.
-- `.github/workflows/surfaces-proof.yml`: CI for P0-P3 proof gates.
+- `.github/workflows/surfaces-proof.yml`: CI for P0-P4 proof gates.
 
 The project is Node.js ESM and CI uses Node 22.
 
@@ -108,6 +108,8 @@ npm run check:p0:ci
 npm run check:p1:ci
 npm run check:p2:ci
 npm run check:p3:ci
+npm run check:p4:ci
+npm run check:p4:ci:phase
 ```
 
 Minimum expectations:
@@ -117,9 +119,11 @@ Minimum expectations:
 - P1-only, CLI, package, generated artifact, broad proof, or cross-phase changes: run the highest relevant proof gate, at minimum `npm run check:p1:ci`.
 - P2 ingestion changes: run `npm run check:p2:ci`.
 - P3 orchestration changes or broad post-P3 changes: run `npm run check:p3:ci`.
+- P4 review/judgment changes or broad post-P4 changes: run `npm run check:p4:ci`.
+- P4 phase-only CI jobs may use `npm run check:p4:ci:phase` after the P3 proof gate has already passed.
 - Focused code changes can use `npm test` during iteration, but finish with the relevant proof gate.
 
-Before mutation-heavy gates such as `npm test`, `npm run check:p0:ci`, `npm run check:p1:ci`, `npm run check:p2:ci`, or `npm run check:p3:ci`, run `git status --short` and confirm the worktree is quiescent: no unexpected files, no in-progress generated-output edits, and no parallel agent or process writing into the repo. If a gate must run with intentional source edits present, make that scope explicit before starting.
+Before mutation-heavy gates such as `npm test`, `npm run check:p0:ci`, `npm run check:p1:ci`, `npm run check:p2:ci`, `npm run check:p3:ci`, `npm run check:p4:ci`, or `npm run check:p4:ci:phase`, run `git status --short` and confirm the worktree is quiescent: no unexpected files, no in-progress generated-output edits, and no parallel agent or process writing into the repo. If a gate must run with intentional source edits present, make that scope explicit before starting.
 
 Do not run proof/test commands concurrently with edits. The P0 tests mutate the real workspace and restore it; keep verification sequential.
 

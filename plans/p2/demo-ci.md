@@ -23,6 +23,7 @@ Make the ingestion proof inspectable without weakening the proof boundary. A rev
 
 ## Demo Rules
 - Demo generation must require passing `artifacts/p2/evidence.json`.
+- Demo generation must verify the full evidence closure, including `sourceManifestRef`, `sourceFileRefs`, `schemaClosure`, `fixtureRefs`, `artifactRefs`, and the final self-hash.
 - Demo output must be deterministic and self-contained.
 - Demo output may display source file coverage, source refs, mapping rows, extracted components, token coverage, governance results, review-required rows, diagnostics, artifact refs, and evidence status.
 - Demo output must not contain remote source calls, hidden source files, untracked mapping decisions, or hand-authored claims absent from evidence.

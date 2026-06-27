@@ -7,6 +7,10 @@ import test from "node:test";
 import Ajv2020 from "ajv/dist/2020.js";
 import { canonicalJson } from "../src/p0.js";
 import { p3Internals } from "../src/p3-proof.js";
+import {
+  P4_REVIEW_QUEUE_PATH,
+  buildP4Fixtures
+} from "../src/p4-contract.js";
 import { p4Internals } from "../src/p4-proof.js";
 
 const execFileAsync = promisify(execFile);
@@ -14,6 +18,7 @@ const root = process.cwd();
 const p3EvidencePath = path.join(root, "artifacts/p3/evidence.json");
 const p3ReviewQueuePath = path.join(root, "artifacts/p3/review-queue.json");
 const p4StalePath = path.join(root, "artifacts/p4/stale.tmp");
+const staleP3ReviewQueueRunId = "p3-bea4f37aac1a5a666671bf0ee57795c2";
 
 test("P4 review proof emits passing evidence with final self-hash", async () => {
   await runP4Proof();
@@ -22,7 +27,7 @@ test("P4 review proof emits passing evidence with final self-hash", async () => 
 
   assert.equal(evidence.status, "pass");
   assert.equal(evidence.promotionStatus, "blocked");
-  assert.equal(evidence.validationResults.length, 18);
+  assert.equal(evidence.validationResults.length, 19);
   assert.equal(evidence.artifacts.at(-1).path, "artifacts/p4/evidence.json");
   assert.equal(evidence.artifacts.at(-1).hash, p4Internals.computeEvidenceSelfHash(evidence));
   assert.deepEqual(evidence.artifacts.map((entry) => entry.path), [
@@ -35,16 +40,58 @@ test("P4 review proof emits passing evidence with final self-hash", async () => 
   assert.equal(report.promotionStatus, evidence.promotionStatus);
 });
 
+test("P4 fixture generation binds review item refs to the accepted P3 review queue run", async () => {
+  const reviewQueue = await readJson(P4_REVIEW_QUEUE_PATH);
+  const reviewJudgmentFixtures = Object.entries(buildP4Fixtures())
+    .filter(([fixturePath]) => fixturePath.endsWith(".review-judgment.json"));
+
+  assert.notEqual(reviewQueue.runId, staleP3ReviewQueueRunId);
+  assert.ok(reviewJudgmentFixtures.length > 0);
+  for (const [fixturePath, fixture] of reviewJudgmentFixtures) {
+    assert.equal(fixture.reviewItemRef.path, P4_REVIEW_QUEUE_PATH, fixturePath);
+    assert.equal(fixture.reviewItemRef.schemaId, reviewQueue.schemaId, fixturePath);
+    assert.equal(fixture.reviewItemRef.runId, reviewQueue.runId, fixturePath);
+    assert.ok(
+      reviewQueue.items.some((item) =>
+        item.reviewItemId === fixture.reviewItemRef.reviewItemId &&
+        item.taskId === fixture.reviewItemRef.taskId
+      ),
+      `${fixturePath} reviewItemRef does not match an accepted queue item`
+    );
+  }
+});
+
+test("P4 rejects stale fixture review item run ids with evidence-ref diagnostics", async () => {
+  await runP4Proof();
+  const originalP4Artifacts = await snapshotP4Artifacts();
+
+  await withJsonFileMutations([
+    {
+      absolutePath: path.join(root, "fixtures/p4/valid/approve-reviewed-work.review-judgment.json"),
+      mutate(fixture) {
+        fixture.reviewItemRef.runId = staleP3ReviewQueueRunId;
+      }
+    }
+  ], async () => {
+    const result = await runP4ProofExpectFailure();
+    assert.equal(result.code, 1);
+    assert.match(result.stderr, /P4 validation expectation mismatch/);
+    assert.match(result.stderr, /SURFACEOPS_EVIDENCE_REF_MISSING/);
+    await assertP4ArtifactsUnchanged(originalP4Artifacts);
+  });
+});
+
 test("P4 decision ledger is evidence-backed and non-executable", async () => {
   await runP4Proof();
   const ledger = await readJson("artifacts/p4/surfaceops-decision-ledger.json");
+  const report = await readJson("artifacts/p4/review-judgment-report.json");
   const schema = await readJson("schemas/surfaceops-decision-ledger.v0.schema.json");
   const validate = compileSchema(schema);
 
   assert.equal(ledger.schemaId, "surfaceops-decision-ledger.v0");
   assert.equal(validate(ledger), true);
-  assert.equal(ledger.decisions.length, 4);
-  assert.equal(ledger.promotionStatus, "blocked");
+  assert.equal(ledger.decisions.length, 1);
+  assert.equal(ledger.promotionStatus, "allowed");
   for (const decision of ledger.decisions) {
     assert.equal(decision.nonExecutable, true);
     assert.equal(decision.execution.authorized, false);
@@ -60,6 +107,26 @@ test("P4 decision ledger is evidence-backed and non-executable", async () => {
     assert.ok(decision.evidenceRefs.some((ref) => ref.path === "artifacts/p3/review-queue.json"));
     assert.equal(decision.fixtureRef.schemaId, "review-judgment-fixture.v0");
   }
+  assert.deepEqual(ledger.decisions.map((decision) => decision.status), ["approved"]);
+  assert.equal(new Set(ledger.decisions.map((decision) => decision.reviewItemId)).size, ledger.decisions.length);
+  assert.deepEqual(ledger.diagnostics, []);
+
+  for (const [fixturePath, decisionStatus, promotionStatus] of [
+    ["fixtures/p4/valid/reject-unsafe-work.review-judgment.json", "rejected", "blocked"],
+    ["fixtures/p4/valid/request-changes.review-judgment.json", "changes_requested", "blocked"],
+    ["fixtures/p4/review/second-review-required.review-judgment.json", "deferred", "review_required"]
+  ]) {
+    const result = report.results.find((row) => row.fixturePath === fixturePath);
+    assert.ok(result, `${fixturePath} result missing`);
+    assert.equal(result.decisionStatus, decisionStatus);
+    assert.equal(result.promotionStatus, promotionStatus);
+  }
+
+  const duplicateDecision = report.results.find((row) =>
+    row.fixturePath === "fixtures/p4/mutations/duplicate-decision.surfaceops-decision-ledger.json"
+  );
+  assert.deepEqual(duplicateDecision.diagnosticCodes, ["SURFACEOPS_DUPLICATE_DECISION"]);
+  assert.equal(duplicateDecision.actualResult, "invalid");
 
   const tampered = structuredClone(ledger);
   tampered.decisions[0].execution.shellCommands.push("npm run proof:p3");
@@ -283,6 +350,16 @@ test("P4 diagnostic objects are locked to registry rows", async () => {
 test("P4 evidence integrity detects schema, fixture, upstream, artifact, and self-hash tampering", async () => {
   await runP4Proof();
   const evidence = await readJson("artifacts/p4/evidence.json");
+  const schema = await readJson("schemas/review-judgment-evidence.v0.schema.json");
+  const validate = compileSchema(schema);
+
+  for (const ref of evidence.boundaryRefs) {
+    assert.deepEqual(ref.provenance, {
+      generatedAt: "1970-01-01T00:00:00.000Z",
+      generator: "interfacectl-p4-boundary-ref",
+      sourceRefs: [ref.path]
+    });
+  }
 
   const schemaTamper = structuredClone(evidence);
   schemaTamper.schemaClosure[0].hash = "0".repeat(64);
@@ -308,6 +385,17 @@ test("P4 evidence integrity detects schema, fixture, upstream, artifact, and sel
   missingBoundaryTamper.boundaryRefs = missingBoundaryTamper.boundaryRefs.slice(1);
   missingBoundaryTamper.artifacts[missingBoundaryTamper.artifacts.length - 1].hash = p4Internals.computeEvidenceSelfHash(missingBoundaryTamper);
   assert.equal(await p4Internals.firstEvidenceIntegrityFailureCode(root, missingBoundaryTamper), "REVIEW_EVIDENCE_HASH_MISMATCH");
+
+  const missingBoundaryProvenance = structuredClone(evidence);
+  delete missingBoundaryProvenance.boundaryRefs[0].provenance;
+  missingBoundaryProvenance.artifacts[missingBoundaryProvenance.artifacts.length - 1].hash = p4Internals.computeEvidenceSelfHash(missingBoundaryProvenance);
+  assert.equal(validate(missingBoundaryProvenance), false);
+  assert.equal(await p4Internals.firstEvidenceIntegrityFailureCode(root, missingBoundaryProvenance), "REVIEW_EVIDENCE_HASH_MISMATCH");
+
+  const boundaryProvenanceTamper = structuredClone(evidence);
+  boundaryProvenanceTamper.boundaryRefs[0].provenance.sourceRefs = ["fixtures/p4/expectations.manifest.json"];
+  boundaryProvenanceTamper.artifacts[boundaryProvenanceTamper.artifacts.length - 1].hash = p4Internals.computeEvidenceSelfHash(boundaryProvenanceTamper);
+  assert.equal(await p4Internals.firstEvidenceIntegrityFailureCode(root, boundaryProvenanceTamper), "REVIEW_EVIDENCE_HASH_MISMATCH");
 
   const reorderedSchemaTamper = structuredClone(evidence);
   reorderedSchemaTamper.schemaClosure = [...reorderedSchemaTamper.schemaClosure].reverse();

@@ -67,11 +67,12 @@ Invalid tasks prove the policy rejects:
 - duplicate task ids;
 - duplicate work-order ids;
 - hidden handoffs not declared by task dependencies or evidence refs;
+- blocked review policies that must stay blocked and must not emit work orders.
 
 Command-level missing, failing, hash-mismatched, or stale upstream P2 ingestion evidence is not a recruitment invalid task. It is covered by preflight mutation fixtures and must fail before registry or task fixtures are read.
 
 ## P3 Proof
-Recruitment passes only when every selected agent is registered, every selected capability is declared, every scope boundary matches the task fixture and registry policy, every review-required task remains non-executable, and every invalid task fails with the expected diagnostic code.
+Recruitment passes only when every selected agent is registered, every selected capability is declared, every scope boundary matches the task fixture and registry policy, every review-required task remains non-executable, every blocked task remains blocked with no work order, and every invalid task fails with the expected diagnostic code.
 
 ## Non-Goals
 - No scoring or ranking based on model quality.

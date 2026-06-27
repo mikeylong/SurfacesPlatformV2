@@ -9,7 +9,6 @@ import {
 } from "../src/p3-contract.js";
 import { p3Internals } from "../src/p3-proof.js";
 import {
-  canonicalFileHash,
   readJson
 } from "../src/p2-contract.js";
 
@@ -116,12 +115,9 @@ async function verifyEvidence(evidence, evidencePath) {
   if (finalRef.path !== evidencePath.posixPath || finalRef.hash !== p3Internals.computeEvidenceSelfHash(evidence)) {
     throw contractError("P3 evidence self-hash is invalid");
   }
-  for (const ref of evidence.artifacts) {
-    if (ref.path === evidencePath.posixPath) continue;
-    const actualHash = await canonicalFileHash(path.join(ROOT, ref.path));
-    if (actualHash !== ref.hash) {
-      throw contractError(`P3 artifact hash mismatch for ${ref.path}`);
-    }
+  const integrityCode = await p3Internals.firstEvidenceIntegrityFailureCode(ROOT, evidence);
+  if (integrityCode !== null) {
+    throw contractError(`P3 evidence integrity verification failed: ${integrityCode}`);
   }
 }
 

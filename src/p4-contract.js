@@ -12,9 +12,10 @@ export const P4_ARTIFACT_ROOT = "artifacts/p4";
 export const P4_ORCHESTRATION_EVIDENCE_PATH = "artifacts/p3/evidence.json";
 export const P4_REVIEW_QUEUE_PATH = "artifacts/p3/review-queue.json";
 export const P4_ORCHESTRATION_REPORT_PATH = "artifacts/p3/agent-orchestration-report.json";
-export const P4_ACCEPTED_P3_EVIDENCE_HASH = "65c824168519bd20bcf64a75579d070c56c80197be9b7c8e524bb7397f9d1fa1";
-export const P4_ACCEPTED_P3_REVIEW_QUEUE_HASH = "c43bcb9287f1d4c13137b6265c95a7ee8664efbd665e383811fc1125ad5bacbd";
-export const P4_ACCEPTED_P3_REPORT_HASH = "88647a79cdd469bf7556fa8fab0469e6ed5148b29e6355df02a822528292e357";
+export const P4_ACCEPTED_P3_EVIDENCE_HASH = "9a1ae85b240561ab39e427ff5495beeff03088a17f623d2ce35cb633ca9914d7";
+export const P4_ACCEPTED_P3_REVIEW_QUEUE_HASH = "57a5a357f1c0c47604f58b719f25ff0edaf919c25ac0c7a63f91f6f773b49d07";
+export const P4_ACCEPTED_P3_REPORT_HASH = "50a7dd81afceb5437d51e3e00ca85d082d38408e5b7648a31569a8bc6afb5c72";
+export const P4_ACCEPTED_P3_REVIEW_QUEUE_RUN_ID = "p3-ca0ed6b878b6ac1397c5e98897cc0846";
 
 export const P4_ENVIRONMENT = Object.freeze({
   generatedAt: P4_TIMESTAMP,
@@ -54,6 +55,7 @@ export const P4_FIXTURE_FILES = [
   "mutations/failing-upstream-evidence.review-preflight.json",
   "mutations/upstream-evidence-hash-mismatch.review-preflight.json",
   "mutations/stale-upstream-evidence.review-preflight.json",
+  "mutations/duplicate-decision.surfaceops-decision-ledger.json",
   "mutations/ledger-hash-mismatch.surfaceops-decision-ledger.json",
   "mutations/report-ledger-hash-mismatch.review-judgment-report.json",
   "mutations/hash-mismatch.review-judgment-evidence.json"
@@ -205,6 +207,21 @@ export const P4_DIAGNOSTIC_ROWS = [
     fixtureCoverage: "review/second-review-required.review-judgment.json"
   }),
   diagnosticRow({
+    code: "SURFACEOPS_DUPLICATE_DECISION",
+    trigger: "SurfaceOps decision ledger contains more than one committed decision for the same P3 review item",
+    canonicalMessage: "SurfaceOps decision ledger contains duplicate committed decisions for a P3 review item.",
+    severity: "error",
+    diagnosticSource: "surfaceops-decision-validator",
+    stage: "review",
+    phase: "surfaceops-decision",
+    artifactPath: "fixtures/p4/mutations/duplicate-decision.surfaceops-decision-ledger.json",
+    jsonPointer: "/decisions/1/reviewItemId",
+    sourceRef: "fixture://p4/mutations/duplicate-decision#/decisions/1/reviewItemId",
+    validationResult: "invalid",
+    promotionStatus: "blocked",
+    fixtureCoverage: "mutations/duplicate-decision.surfaceops-decision-ledger.json"
+  }),
+  diagnosticRow({
     code: "JUDGMENTKIT_EVIDENCE_REF_MISSING",
     trigger: "Judgment finding omits accepted P3 evidence or review queue boundary refs",
     canonicalMessage: "JudgmentKit finding is missing accepted P3 evidence boundary references.",
@@ -293,6 +310,7 @@ export const P4_EXPECTATION_ROWS = [
     artifactPath: "artifacts/p4/surfaceops-decision-ledger.json",
     jsonPointer: "/decision/status",
     requiredSourceRef: "fixture://p4/valid/approve-reviewed-work#/decision/status",
+    ledgerBehavior: "committed",
     decisionStatus: "approved",
     evaluationResult: null
   }),
@@ -307,6 +325,7 @@ export const P4_EXPECTATION_ROWS = [
     artifactPath: "artifacts/p4/surfaceops-decision-ledger.json",
     jsonPointer: "/decision/status",
     requiredSourceRef: "fixture://p4/valid/reject-unsafe-work#/decision/status",
+    ledgerBehavior: "coverage_only",
     decisionStatus: "rejected",
     evaluationResult: null
   }),
@@ -321,6 +340,7 @@ export const P4_EXPECTATION_ROWS = [
     artifactPath: "artifacts/p4/surfaceops-decision-ledger.json",
     jsonPointer: "/decision/status",
     requiredSourceRef: "fixture://p4/valid/request-changes#/decision/status",
+    ledgerBehavior: "coverage_only",
     decisionStatus: "changes_requested",
     evaluationResult: null
   }),
@@ -335,6 +355,7 @@ export const P4_EXPECTATION_ROWS = [
     artifactPath: "artifacts/p4/judgmentkit-evaluation-report.json",
     jsonPointer: "/finding/dimension",
     requiredSourceRef: "fixture://p4/valid/evaluate-evidence-quality#/finding/dimension",
+    ledgerBehavior: "none",
     decisionStatus: null,
     evaluationResult: "warn"
   }),
@@ -349,6 +370,7 @@ export const P4_EXPECTATION_ROWS = [
     artifactPath: "artifacts/p4/surfaceops-decision-ledger.json",
     jsonPointer: "/decision/secondReviewRequired",
     requiredSourceRef: "fixture://p4/review/second-review-required#/decision/secondReviewRequired",
+    ledgerBehavior: "coverage_only",
     decisionStatus: "deferred",
     evaluationResult: null
   }),
@@ -363,6 +385,7 @@ export const P4_EXPECTATION_ROWS = [
     ["mutations/failing-upstream-evidence.review-preflight.json", "preflight", "upstream-preflight", "REVIEW_UPSTREAM_EVIDENCE_FAILED", "/status", null, null],
     ["mutations/upstream-evidence-hash-mismatch.review-preflight.json", "preflight", "upstream-preflight", "REVIEW_UPSTREAM_EVIDENCE_HASH_MISMATCH", "/boundaryRefs/0/hash", null, null],
     ["mutations/stale-upstream-evidence.review-preflight.json", "preflight", "upstream-preflight", "REVIEW_UPSTREAM_EVIDENCE_STALE", "/boundaryRefs", null, null],
+    ["mutations/duplicate-decision.surfaceops-decision-ledger.json", "review", "surfaceops-decision", "SURFACEOPS_DUPLICATE_DECISION", "/decisions/1/reviewItemId", null, null],
     ["mutations/ledger-hash-mismatch.surfaceops-decision-ledger.json", "report", "review-judgment-report", "REVIEW_LEDGER_HASH_MISMATCH", "/integrityCheck/expectedLedgerHash", null, null],
     ["mutations/report-ledger-hash-mismatch.review-judgment-report.json", "report", "review-judgment-report", "REVIEW_REPORT_LEDGER_HASH_MISMATCH", "/decisionLedgerRef/hash", null, null],
     ["mutations/hash-mismatch.review-judgment-evidence.json", "evidence", "review-judgment-evidence", "REVIEW_EVIDENCE_HASH_MISMATCH", "/artifacts/0/hash", null, null]
@@ -377,6 +400,7 @@ export const P4_EXPECTATION_ROWS = [
     artifactPath: `${P4_FIXTURE_ROOT}/${file}`,
     jsonPointer,
     requiredSourceRef: `fixture://p4/${file.replace(/\.[^.]+(?:\.[^.]+)?$/, "").replace(".review-judgment", "").replace(".review-preflight", "").replace(".surfaceops-decision-ledger", "").replace(".review-judgment-report", "").replace(".review-judgment-evidence", "")}#${jsonPointer}`,
+    ledgerBehavior: "none",
     decisionStatus,
     evaluationResult
   }))
@@ -594,6 +618,7 @@ export function buildP4Fixtures() {
       mutation: "stale-boundary",
       boundaryRefs: [{ path: "artifacts/p3/alternate-review-queue.json", hash: P4_ACCEPTED_P3_REVIEW_QUEUE_HASH }]
     }),
+    "mutations/duplicate-decision.surfaceops-decision-ledger.json": duplicateDecisionLedgerMutation(),
     "mutations/ledger-hash-mismatch.surfaceops-decision-ledger.json": ledgerMutation(),
     "mutations/report-ledger-hash-mismatch.review-judgment-report.json": reportMutation(),
     "mutations/hash-mismatch.review-judgment-evidence.json": evidenceMutation()
@@ -747,7 +772,7 @@ function defaultReviewItemRef() {
   return {
     path: P4_REVIEW_QUEUE_PATH,
     schemaId: "agent-review-queue.v0",
-    runId: "p3-bea4f37aac1a5a666671bf0ee57795c2",
+    runId: P4_ACCEPTED_P3_REVIEW_QUEUE_RUN_ID,
     reviewItemId: "review.review-required-work",
     taskId: "review-required-work"
   };
@@ -830,6 +855,74 @@ function ledgerMutation() {
     status: "pass",
     promotionStatus: "allowed",
     provenance: provenance("interfacectl-p4-materialize", ["fixture://p4/mutations/ledger-hash-mismatch#/integrityCheck/expectedLedgerHash"])
+  };
+}
+
+function duplicateDecisionLedgerMutation() {
+  const sourceRef = "fixture://p4/mutations/duplicate-decision#/decisions/1/reviewItemId";
+  const reviewer = reviewerFixture("surfaceops-reviewer", sourceRef);
+  const decisions = [
+    duplicateDecisionRow({
+      decisionId: "decision.duplicate-primary",
+      decisionKey: "review.review-required-work#duplicate-primary",
+      fixtureSourceRef: "fixture://p4/mutations/duplicate-decision#/decisions/0/reviewItemId",
+      status: "approved",
+      rationale: "Mutation fixture records the first committed decision for the queue item."
+    }),
+    duplicateDecisionRow({
+      decisionId: "decision.duplicate-secondary",
+      decisionKey: "review.review-required-work#duplicate-secondary",
+      fixtureSourceRef: sourceRef,
+      status: "rejected",
+      rationale: "Mutation fixture records a second committed decision for the same queue item."
+    })
+  ];
+  return {
+    schemaId: "surfaceops-decision-ledger.v0",
+    version: P4_VERSION,
+    runId: "p4-mutation",
+    upstreamEvidenceRef: artifactRef(P4_ORCHESTRATION_EVIDENCE_PATH, "agent-orchestration-evidence.v0", P4_ACCEPTED_P3_EVIDENCE_HASH),
+    reviewQueueRef: {
+      ...artifactRef(P4_REVIEW_QUEUE_PATH, "agent-review-queue.v0", P4_ACCEPTED_P3_REVIEW_QUEUE_HASH),
+      sourceEvidenceHash: P4_ACCEPTED_P3_EVIDENCE_HASH
+    },
+    orchestrationReportRef: {
+      ...artifactRef(P4_ORCHESTRATION_REPORT_PATH, "agent-orchestration-report.v0", P4_ACCEPTED_P3_REPORT_HASH),
+      sourceEvidenceHash: P4_ACCEPTED_P3_EVIDENCE_HASH
+    },
+    reviewers: [reviewer],
+    decisions,
+    diagnostics: [],
+    diagnosticsRegistry: diagnosticsRegistry(),
+    integrityCheck: null,
+    environment: { ...P4_ENVIRONMENT },
+    status: "pass",
+    promotionStatus: "blocked",
+    provenance: provenance("interfacectl-p4-materialize", [sourceRef])
+  };
+}
+
+function duplicateDecisionRow({ decisionId, decisionKey, fixtureSourceRef, status, rationale }) {
+  return {
+    decisionId,
+    decisionKey,
+    reviewItemId: "review.review-required-work",
+    taskId: "review-required-work",
+    reviewerId: "surfaceops-reviewer",
+    status,
+    rationale,
+    requestedChanges: [],
+    evidenceRefs: defaultDecisionEvidenceRefs(),
+    fixtureRef: {
+      path: `${P4_FIXTURE_ROOT}/mutations/duplicate-decision.surfaceops-decision-ledger.json`,
+      schemaId: "review-judgment-fixture.v0",
+      sourceRef: fixtureSourceRef
+    },
+    secondReviewRequired: false,
+    nonExecutable: true,
+    execution: inertReviewExecution(),
+    promotionStatus: status === "approved" ? "allowed" : "blocked",
+    provenance: provenance("interfacectl-p4-materialize", [fixtureSourceRef])
   };
 }
 
@@ -1201,7 +1294,7 @@ function reviewJudgmentEvidenceSchema() {
       environment: environmentSchema(),
       schemaClosure: { type: "array", items: artifactRefSchema(), minItems: P4_SCHEMA_FILES.length + P4_CONSUMED_P3_SCHEMA_FILES.length },
       fixtureRefs: { type: "array", items: artifactRefSchema(), minItems: p4FixturePaths().length },
-      boundaryRefs: { type: "array", items: artifactRefSchema({ sourceEvidenceHash: true }) },
+      boundaryRefs: { type: "array", items: artifactRefSchema({ sourceEvidenceHash: true, provenance: true, requireProvenance: true }) },
       artifacts: { type: "array", items: artifactRefSchema({ nullableHash: true, provenance: true }), minItems: P4_ARTIFACT_PATHS.length },
       diagnostics: { type: "array", items: diagnosticObjectSchema() },
       diagnosticsRegistry: diagnosticsRegistrySchema(),
@@ -1534,7 +1627,7 @@ function diagnosticRegistryRowSchema(row) {
 function expectationRowSchema(row) {
   return {
     type: "object",
-    required: ["fixturePath", "kind", "stage", "phase", "expectedResult", "promotionStatus", "diagnosticCodes", "artifactPath", "jsonPointer", "requiredSourceRef", "decisionStatus", "evaluationResult"],
+    required: ["fixturePath", "kind", "stage", "phase", "expectedResult", "promotionStatus", "diagnosticCodes", "artifactPath", "jsonPointer", "requiredSourceRef", "ledgerBehavior", "decisionStatus", "evaluationResult"],
     properties: {
       fixturePath: { const: row.fixturePath },
       kind: { const: row.kind },
@@ -1546,6 +1639,7 @@ function expectationRowSchema(row) {
       artifactPath: { const: row.artifactPath },
       jsonPointer: { const: row.jsonPointer },
       requiredSourceRef: row.requiredSourceRef === null ? { type: "null" } : { const: row.requiredSourceRef },
+      ledgerBehavior: { const: row.ledgerBehavior },
       decisionStatus: row.decisionStatus === null ? { type: "null" } : { const: row.decisionStatus },
       evaluationResult: row.evaluationResult === null ? { type: "null" } : { const: row.evaluationResult }
     },
@@ -1555,6 +1649,7 @@ function expectationRowSchema(row) {
 
 function artifactRefSchema(options = {}) {
   const hashSchemaValue = options.nullableHash ? { oneOf: [hashSchema(), { type: "null" }] } : hashSchema();
+  const required = ["path", "schemaId", "hashAlgorithm", "hash"];
   const properties = {
     path: relativePathSchema(),
     schemaId: { type: "string", minLength: 1 },
@@ -1563,10 +1658,13 @@ function artifactRefSchema(options = {}) {
     sourceRef: nullableStringSchema()
   };
   if (options.sourceEvidenceHash) properties.sourceEvidenceHash = hashSchema();
-  if (options.provenance) properties.provenance = provenanceSchema();
+  if (options.provenance) {
+    properties.provenance = provenanceSchema();
+    if (options.requireProvenance) required.push("provenance");
+  }
   return {
     type: "object",
-    required: ["path", "schemaId", "hashAlgorithm", "hash"],
+    required,
     properties,
     unevaluatedProperties: false
   };

@@ -267,7 +267,7 @@ P3 generated artifact refs must be acyclic: forward refs to later same-run artif
 Command-level P3 upstream preflight mutation fixtures validate against `agent-preflight-mutation.v0` and model missing, failing, hash-mismatched, or stale P2 inputs before registry or task fixtures are read.
 
 ## P4 Contract Summary
-P4 implements governed review and judgment after P3 orchestration evidence passes. The deterministic proof consumes P3 evidence and review queue boundaries, materializes a deterministic SurfaceOps decision ledger, emits a JudgmentKit-shaped evaluation report, records a review/judgment report, and finalizes evidence. SurfaceOps owns approve, reject, request-changes, and defer decision records inside the ledger. JudgmentKit-shaped reports remain evaluation-only findings and cannot encode or override decision status. P4 does not execute work orders, persist live decisions, call live JudgmentKit tools, run agents, or create production adapter/A2UI scope.
+P4 implements governed review and judgment after P3 orchestration evidence passes. The deterministic proof consumes P3 evidence and review queue boundaries, materializes a deterministic SurfaceOps decision ledger, emits a JudgmentKit-shaped evaluation report, records a review/judgment report, and finalizes evidence. SurfaceOps owns approve, reject, request-changes, and defer decision coverage; only manifest-committed decisions are ledger rows, while coverage-only outcomes remain validation/report rows. JudgmentKit-shaped reports remain evaluation-only findings and cannot encode or override decision status. P4 does not execute work orders, persist live decisions, call live JudgmentKit tools, run agents, or create production adapter/A2UI scope.
 
 P4 contract references:
 

@@ -22,6 +22,7 @@ fixtures/p4/
     missing-evidence-ref.review-judgment.json
     decision-overrides-catalog.review-judgment.json
     executes-work-order.review-judgment.json
+    judgmentkit-missing-boundary-ref.review-judgment.json
     judgmentkit-overrides-policy.review-judgment.json
     hidden-decision.review-judgment.json
   mutations/
@@ -29,16 +30,19 @@ fixtures/p4/
     failing-upstream-evidence.review-preflight.json
     upstream-evidence-hash-mismatch.review-preflight.json
     stale-upstream-evidence.review-preflight.json
+    duplicate-decision.surfaceops-decision-ledger.json
     ledger-hash-mismatch.surfaceops-decision-ledger.json
     report-ledger-hash-mismatch.review-judgment-report.json
     hash-mismatch.review-judgment-evidence.json
 ```
 
 ## Fixture Categories
-- `valid/` fixtures produce decision ledger rows or evaluation findings that match expectations.
+- `valid/` fixtures produce manifest-declared committed decision ledger rows, coverage-only decision results, or evaluation findings that match expectations.
 - `review/` fixtures are structurally valid but preserve `review_required`, such as second-review-required decisions.
 - `invalid/` fixtures are blocked for missing accepted P3 evidence or review queue refs, policy overrides, forbidden execution, or hidden state.
 - `mutations/` fixtures model command preflight, generated artifact, report, and evidence tampering failures.
+
+Every review/judgment fixture `reviewItemRef` must bind to the accepted P3 review queue by exact `path`, `schemaId`, top-level `runId`, `reviewItemId`, and `taskId`. Stale run ids or refs that do not match an accepted queue item fail through the existing evidence-ref diagnostics.
 
 ## Expectations Manifest
 `fixtures/p4/expectations.manifest.json` must declare every fixture input, expected stage, expected phase, expected validation result, expected promotion status, and expected diagnostic code.
@@ -76,6 +80,7 @@ The first fixture set should cover:
 - forbidden work-order execution attempts;
 - JudgmentKit policy override attempts;
 - hidden decision state;
+- duplicate committed decision ledger rows for the same P3 review item;
 - missing, failing, mismatched, and stale upstream P3 evidence;
 - ledger, report, and evidence hash tampering.
 

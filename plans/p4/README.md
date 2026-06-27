@@ -65,6 +65,7 @@ fixtures/p4/
     missing-evidence-ref.review-judgment.json
     decision-overrides-catalog.review-judgment.json
     executes-work-order.review-judgment.json
+    judgmentkit-missing-boundary-ref.review-judgment.json
     judgmentkit-overrides-policy.review-judgment.json
     hidden-decision.review-judgment.json
   mutations/
@@ -72,6 +73,7 @@ fixtures/p4/
     failing-upstream-evidence.review-preflight.json
     upstream-evidence-hash-mismatch.review-preflight.json
     stale-upstream-evidence.review-preflight.json
+    duplicate-decision.surfaceops-decision-ledger.json
     ledger-hash-mismatch.surfaceops-decision-ledger.json
     report-ledger-hash-mismatch.review-judgment-report.json
     hash-mismatch.review-judgment-evidence.json
@@ -102,7 +104,7 @@ interfacectl surfaces review proof \
 Package scripts execute this through `node bin/interfacectl.js`. P4 evidence records the logical command string above.
 
 ## Pass Condition
-Given valid P3 orchestration evidence, a valid P3 review queue, and the P4 fixture set, the review proof command emits the exact P4 artifacts, creates a deterministic SurfaceOps decision ledger for approve, reject, request-changes, and defer outcomes, emits a deterministic evaluation-only JudgmentKit-shaped report, blocks invalid SurfaceOps decision rows and any JudgmentKit-shaped finding that attempts to approve, reject, request changes, route, promote, or override policy, preserves review-required second-review cases, records review/judgment diagnostics before final evidence, and writes reproducible evidence with hashes and provenance for every P4 schema, fixture, input artifact, generated proof artifact under `artifacts/p4`, and final evidence artifact.
+Given valid P3 orchestration evidence, a valid P3 review queue, and the P4 fixture set, the review proof command emits the exact P4 artifacts, creates a deterministic SurfaceOps decision ledger for manifest-committed decisions, keeps reject, request-changes, and defer outcomes covered in validation/report rows without duplicating committed ledger entries for the same P3 review item, emits a deterministic evaluation-only JudgmentKit-shaped report, blocks invalid SurfaceOps decision rows and any JudgmentKit-shaped finding that attempts to approve, reject, request changes, route, promote, or override policy, preserves review-required second-review cases, records review/judgment diagnostics before final evidence, and writes reproducible evidence with hashes and provenance for every P4 schema, fixture, input artifact, generated proof artifact under `artifacts/p4`, and final evidence artifact.
 
 P4 generated artifact refs must be acyclic. Forward refs to later same-run artifacts omit hashes, resolved backward refs to already materialized artifacts may include hashes, and final P4 evidence owns the complete hash closure.
 
@@ -135,6 +137,7 @@ The P4 proof defines review and judgment contracts; it is not a live operations 
 | `SURFACEOPS_EXECUTION_FORBIDDEN` | Review decision attempts to execute a P3 work order or invoke tools | `review` | `blocked` | `invalid/executes-work-order.review-judgment.json` |
 | `SURFACEOPS_DECISION_HIDDEN` | Review decision contains hidden, untracked, or non-evidence-backed state | `review` | `blocked` | `invalid/hidden-decision.review-judgment.json` |
 | `SURFACEOPS_SECOND_REVIEW_REQUIRED` | Structurally valid decision requires a second reviewer | `review` | `review_required` | `review/second-review-required.review-judgment.json` |
+| `SURFACEOPS_DUPLICATE_DECISION` | SurfaceOps decision ledger contains more than one committed decision for the same P3 review item | `review` | `blocked` | `mutations/duplicate-decision.surfaceops-decision-ledger.json` |
 | `JUDGMENTKIT_EVIDENCE_REF_MISSING` | Judgment finding omits accepted P3 evidence or review queue boundary refs | `judgment` | `blocked` | `invalid/judgmentkit-missing-boundary-ref.review-judgment.json` |
 | `JUDGMENTKIT_POLICY_OVERRIDE` | Judgment finding attempts to override catalog or SurfaceOps decision authority | `judgment` | `blocked` | `invalid/judgmentkit-overrides-policy.review-judgment.json` |
 | `REVIEW_LEDGER_HASH_MISMATCH` | Review report or fixture references a decision ledger hash that differs from the current ledger | `report` | `blocked` | `mutations/ledger-hash-mismatch.surfaceops-decision-ledger.json` |

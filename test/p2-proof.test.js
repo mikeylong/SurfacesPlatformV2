@@ -4,6 +4,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { promisify } from "node:util";
 import test from "node:test";
+import Ajv2020 from "ajv/dist/2020.js";
 import { canonicalJson } from "../src/p0.js";
 import { p2Internals } from "../src/p2-proof.js";
 
@@ -23,6 +24,54 @@ test("P2 ingest proof emits passing evidence with final self-hash", async () => 
   assert.equal(evidence.validationResults.length, 21);
   assert.equal(evidence.artifactRefs.at(-1).path, "artifacts/p2/evidence.json");
   assert.equal(evidence.artifactRefs.at(-1).hash, p2Internals.computeEvidenceSelfHash(evidence));
+});
+
+test("P2 evidence refs carry deterministic provenance required by schema", async () => {
+  await runP2Proof();
+  const evidence = await readJson("artifacts/p2/evidence.json");
+
+  for (const ref of [
+    evidence.sourceManifestRef,
+    ...evidence.schemaClosure,
+    ...evidence.sourceFileRefs,
+    ...evidence.fixtureRefs,
+    ...evidence.artifactRefs
+  ]) {
+    assert.equal(ref.provenance?.artifactPath, ref.path);
+    assert.equal(ref.provenance?.generatedAt, "1970-01-01T00:00:00.000Z");
+    assert.equal(ref.provenance?.generator?.name, "interfacectl-p2-evidence");
+    assert.equal(ref.provenance?.environment?.pathStyle, "posix-relative");
+    assert.equal(typeof ref.provenance?.role, "string");
+  }
+
+  const ajv = await loadP2Ajv();
+  const validate = ajv.getSchema("https://surfaces.dev/schemas/p2/design-system-ingestion-evidence.v0.schema.json");
+  assert.ok(validate, "expected P2 evidence schema to be loaded");
+  const tampered = structuredClone(evidence);
+  delete tampered.artifactRefs[0].provenance;
+  tampered.artifactRefs[tampered.artifactRefs.length - 1].hash = p2Internals.computeEvidenceSelfHash(tampered);
+  assert.equal(validate(tampered), false);
+});
+
+test("P2 evidence schema requires source and fixture ref schemaId", async () => {
+  await runP2Proof();
+  const evidence = await readJson("artifacts/p2/evidence.json");
+  const ajv = await loadP2Ajv();
+  const validate = ajv.getSchema("https://surfaces.dev/schemas/p2/design-system-ingestion-evidence.v0.schema.json");
+  assert.ok(validate, "expected P2 evidence schema to be loaded");
+
+  for (const [label, mutate] of [
+    ["sourceFileRefs[0].schemaId", (candidate) => delete candidate.sourceFileRefs[0].schemaId],
+    ["fixtureRefs[0].schemaId", (candidate) => delete candidate.fixtureRefs[0].schemaId]
+  ]) {
+    const tampered = structuredClone(evidence);
+    mutate(tampered);
+    assert.equal(validate(tampered), false, `expected AJV to reject missing ${label}`);
+    assert.ok(
+      validate.errors?.some((error) => error.keyword === "required" && error.params?.missingProperty === "schemaId"),
+      `expected missing schemaId error for ${label}`
+    );
+  }
 });
 
 test("P2 ingest proof rejects stale unexpected output before writing", async () => {
@@ -203,4 +252,31 @@ async function refreshManifestMappingHash(mappingPath) {
   const { createHash } = await import("node:crypto");
   mapping.sha256 = createHash("sha256").update(bytes).digest("hex");
   await fs.writeFile(manifestPath, canonicalJson(manifest));
+}
+
+async function loadP2Ajv() {
+  const ajv = new Ajv2020({
+    allErrors: true,
+    strict: false,
+    validateSchema: true,
+    validateFormats: false
+  });
+  for (const schemaPath of [
+    "schemas/diagnostics.v0.schema.json",
+    "schemas/fixture-expectations.v0.schema.json",
+    "schemas/evidence.v0.schema.json",
+    "schemas/extract.v0.schema.json",
+    "schemas/runtime-catalog.v0.schema.json",
+    "schemas/design-source-manifest.v0.schema.json",
+    "schemas/design-source-inventory.v0.schema.json",
+    "schemas/design-source-mapping.v0.schema.json",
+    "schemas/design-system-ingestion-report.v0.schema.json",
+    "schemas/design-system-ingestion-diagnostics.v0.schema.json",
+    "schemas/design-system-ingestion-expectations.v0.schema.json",
+    "schemas/design-system-ingestion-valid-fixture.v0.schema.json",
+    "schemas/design-system-ingestion-evidence.v0.schema.json"
+  ]) {
+    ajv.addSchema(await readJson(schemaPath));
+  }
+  return ajv;
 }

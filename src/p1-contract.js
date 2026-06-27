@@ -64,8 +64,8 @@ const P1_DIAGNOSTIC_ROWS = [
     stage: "projection",
     phase: "projection-mutation",
     artifactPath: "fixtures/p1/mutations/projection-authority-escalation.runtime-projection.json",
-    jsonPointer: "/components/ConfirmPanel/actions/escalate",
-    sourceRef: "fixture://p1/mutations/projection-authority-escalation.runtime-projection#/components/ConfirmPanel/actions/escalate",
+    jsonPointer: "/components/Button/props/variant/allowedValues/3",
+    sourceRef: "fixture://p1/mutations/projection-authority-escalation.runtime-projection#/components/Button/props/variant/allowedValues/3",
     validationResult: "invalid",
     promotionStatus: "blocked",
     suggestedAction: "Reject the projection and remove non-catalog authority before proof continues.",
@@ -431,8 +431,8 @@ const EXPECTATION_ROWS = [
     promotionStatus: "blocked",
     expectedDiagnosticCodes: ["PROJECTION_AUTHORITY_ESCALATION"],
     expectedArtifactPath: "fixtures/p1/mutations/projection-authority-escalation.runtime-projection.json",
-    expectedJsonPointer: "/components/ConfirmPanel/actions/escalate",
-    requiredSourceRef: "fixture://p1/mutations/projection-authority-escalation.runtime-projection#/components/ConfirmPanel/actions/escalate",
+    expectedJsonPointer: "/components/Button/props/variant/allowedValues/3",
+    requiredSourceRef: "fixture://p1/mutations/projection-authority-escalation.runtime-projection#/components/Button/props/variant/allowedValues/3",
     renderPlanPath: null
   }),
   expectationRow({
@@ -496,11 +496,14 @@ const P1_STAGE_ORDER = ["projection", "runtime-boundary", "evidence"];
 const P1_PHASES = ["projection-mutation", "runtime-adapter", "runtime-review", "runtime-invalid", "runtime-evidence"];
 const PROMOTION_STATUSES = ["allowed", "review_required", "blocked"];
 const VALIDATION_RESULTS = ["valid", "invalid", "review_required", "not_applicable"];
-const GENERATED_P1_ARTIFACTS = [
-  "artifacts/p1/runtime-projection.json",
+const GENERATED_P1_RENDER_PLAN_ARTIFACTS = [
   "artifacts/p1/render-plan.confirm-panel.json",
   "artifacts/p1/render-plan.status-callout.json",
-  "artifacts/p1/render-plan.button-defaults.json",
+  "artifacts/p1/render-plan.button-defaults.json"
+];
+const GENERATED_P1_ARTIFACTS = [
+  "artifacts/p1/runtime-projection.json",
+  ...GENERATED_P1_RENDER_PLAN_ARTIFACTS,
   "artifacts/p1/runtime-adapter-report.json",
   "artifacts/p1/evidence.json"
 ];
@@ -789,6 +792,11 @@ function runtimeAdapterEvidenceSchema() {
       "diagnostics",
       "diagnosticsRegistry",
       "validationResults",
+      "upstream",
+      "runtimeProjectionRef",
+      "runtimeAdapterReportRef",
+      "renderPlanRefs",
+      "provenance",
       "status",
       "promotionStatus"
     ],
@@ -811,15 +819,21 @@ function runtimeAdapterEvidenceSchema() {
         unevaluatedProperties: false
       },
       environment: environmentSchema(),
-      upstream: { type: "object", additionalProperties: true },
-      boundaryRefs: { type: "array", items: boundaryRefSchema() },
-      artifacts: { type: "array", items: artifactRefSchema({ nullableHash: true, provenance: true }) },
+      upstream: upstreamClosureSchema(),
+      boundaryRefs: orderedBoundaryRefsSchema(),
+      artifacts: orderedEvidenceArtifactsSchema(),
       diagnostics: { type: "array", items: diagnosticObjectSchema() },
       diagnosticsRegistry: diagnosticsRegistrySchema(),
       validationResults: { type: "array", items: adapterResultSchema() },
-      renderPlanRefs: { type: "array", items: { type: "object", additionalProperties: true } },
-      runtimeProjectionRef: artifactRefSchema(),
-      runtimeAdapterReportRef: artifactRefSchema(),
+      renderPlanRefs: orderedEvidenceRenderPlanRefsSchema(),
+      runtimeProjectionRef: exactArtifactRefSchema({
+        artifactPath: "artifacts/p1/runtime-projection.json",
+        schemaId: "runtime-projection.v0"
+      }),
+      runtimeAdapterReportRef: exactArtifactRefSchema({
+        artifactPath: "artifacts/p1/runtime-adapter-report.json",
+        schemaId: "runtime-adapter-report.v0"
+      }),
       status: { enum: ["pass", "fail"] },
       promotionStatus: { enum: PROMOTION_STATUSES },
       provenance: { type: "object", additionalProperties: true }
@@ -1043,6 +1057,87 @@ function renderPlanRefSchema() {
   };
 }
 
+function upstreamClosureSchema() {
+  return {
+    type: "object",
+    required: ["p0EvidenceRef", "governedCatalogRef", "adapterDiagnosticsRef"],
+    properties: {
+      p0EvidenceRef: exactArtifactRefSchema({
+        artifactPath: "artifacts/p0/evidence.json",
+        schemaId: "evidence.v0"
+      }),
+      governedCatalogRef: exactArtifactRefSchema({
+        artifactPath: "artifacts/p0/governed-catalog.json",
+        schemaId: "runtime-catalog.v0"
+      }),
+      adapterDiagnosticsRef: exactArtifactRefSchema({
+        artifactPath: "artifacts/p0/adapter-diagnostics.json",
+        schemaId: "adapter-diagnostics.v0"
+      })
+    },
+    unevaluatedProperties: false
+  };
+}
+
+function orderedBoundaryRefsSchema() {
+  const boundaryRefs = [
+    ["artifacts/p0/evidence.json", "evidence.v0"],
+    ["artifacts/p0/governed-catalog.json", "runtime-catalog.v0"],
+    ["artifacts/p0/adapter-diagnostics.json", "adapter-diagnostics.v0"],
+    ["artifacts/p1/runtime-projection.json", "runtime-projection.v0"],
+    ...GENERATED_P1_RENDER_PLAN_ARTIFACTS.map((artifactPath) => [artifactPath, "render-plan.v0"]),
+    ["artifacts/p1/runtime-adapter-report.json", "runtime-adapter-report.v0"]
+  ];
+  return {
+    type: "array",
+    prefixItems: boundaryRefs.map(([artifactPath, schemaId]) => exactBoundaryRefSchema({ artifactPath, schemaId })),
+    minItems: boundaryRefs.length,
+    maxItems: boundaryRefs.length
+  };
+}
+
+function orderedEvidenceRenderPlanRefsSchema() {
+  return {
+    type: "array",
+    prefixItems: GENERATED_P1_RENDER_PLAN_ARTIFACTS.map((artifactPath) => evidenceRenderPlanRefSchema(artifactPath)),
+    minItems: GENERATED_P1_RENDER_PLAN_ARTIFACTS.length,
+    maxItems: GENERATED_P1_RENDER_PLAN_ARTIFACTS.length
+  };
+}
+
+function orderedEvidenceArtifactsSchema() {
+  const order = artifactOrder();
+  return {
+    type: "array",
+    prefixItems: order.map((artifactPath) => exactArtifactRefSchema({
+      artifactPath,
+      schemaId: schemaIdForEvidencePath(artifactPath),
+      role: roleForEvidencePath(artifactPath),
+      provenance: true,
+      nullableHash: artifactPath === "artifacts/p1/evidence.json"
+    })),
+    minItems: order.length,
+    maxItems: order.length
+  };
+}
+
+function evidenceRenderPlanRefSchema(artifactPath) {
+  return {
+    type: "object",
+    required: ["path", "schemaId", "hashAlgorithm", "hash", "promotionStatus", "surfaceRef", "provenance"],
+    properties: {
+      path: { const: artifactPath },
+      schemaId: { const: "render-plan.v0" },
+      hashAlgorithm: { const: "sha256" },
+      hash: hashSchema(),
+      promotionStatus: { const: "allowed" },
+      surfaceRef: surfaceRefSchema(),
+      provenance: provenanceSchema()
+    },
+    unevaluatedProperties: false
+  };
+}
+
 function surfaceRefSchema() {
   return {
     type: "object",
@@ -1061,7 +1156,7 @@ function surfaceRefSchema() {
 function boundaryRefSchema() {
   return {
     type: "object",
-    required: ["path", "schemaId", "hashAlgorithm", "hash", "provenance"],
+    required: ["path", "schemaId", "hashAlgorithm", "hash", "sourceArtifactHash", "provenance"],
     properties: {
       path: { type: "string" },
       schemaId: { type: "string" },
@@ -1072,6 +1167,76 @@ function boundaryRefSchema() {
     },
     unevaluatedProperties: false
   };
+}
+
+function exactBoundaryRefSchema({ artifactPath, schemaId }) {
+  return {
+    type: "object",
+    required: ["path", "schemaId", "hashAlgorithm", "hash", "sourceArtifactHash", "provenance"],
+    properties: {
+      path: { const: artifactPath },
+      schemaId: { const: schemaId },
+      hashAlgorithm: { const: "sha256" },
+      hash: hashSchema(),
+      sourceArtifactHash: hashSchema(),
+      provenance: provenanceSchema()
+    },
+    unevaluatedProperties: false
+  };
+}
+
+function exactArtifactRefSchema({ artifactPath, schemaId, role, provenance = false, nullableHash = false }) {
+  const required = ["path", "schemaId", "hashAlgorithm", "hash"];
+  const properties = {
+    path: { const: artifactPath },
+    schemaId: { const: schemaId },
+    hashAlgorithm: { const: "sha256" },
+    hash: nullableHash ? { anyOf: [hashSchema(), { type: "null" }] } : hashSchema()
+  };
+  if (role !== undefined) {
+    required.unshift("role");
+    properties.role = { const: role };
+  }
+  if (provenance) {
+    required.push("provenance");
+    properties.provenance = provenanceSchema();
+  }
+  return {
+    type: "object",
+    required,
+    properties,
+    unevaluatedProperties: false
+  };
+}
+
+function schemaIdForEvidencePath(artifactPath) {
+  const file = artifactPath.split("/").pop();
+  if (artifactPath.startsWith(`${SCHEMA_ROOT}/`) && P1_SCHEMA_FILES.includes(file)) return "json-schema";
+  if (artifactPath === "artifacts/p0/evidence.json") return "evidence.v0";
+  if (artifactPath === "artifacts/p0/governed-catalog.json") return "runtime-catalog.v0";
+  if (artifactPath === "artifacts/p0/adapter-diagnostics.json") return "adapter-diagnostics.v0";
+  if (file === "expectations.manifest.json") return "runtime-adapter-expectations.v0";
+  if (file?.endsWith(".surface-ir.json")) return "surface-ir.v0";
+  if (file?.endsWith(".runtime-projection.json") || file === "runtime-projection.json") return "runtime-projection.v0";
+  if (file?.endsWith(".render-plan.json") || file?.startsWith("render-plan.")) return "render-plan.v0";
+  if (file?.endsWith(".runtime-adapter-report.json") || file === "runtime-adapter-report.json") return "runtime-adapter-report.v0";
+  if (file?.endsWith(".runtime-adapter-evidence.json") || file === "evidence.json") return "runtime-adapter-evidence.v0";
+  return null;
+}
+
+function roleForEvidencePath(artifactPath) {
+  if (artifactPath.startsWith(`${SCHEMA_ROOT}/`)) return "schema";
+  if (artifactPath.startsWith("artifacts/p0/")) return "upstream-boundary";
+  if (artifactPath.endsWith("expectations.manifest.json")) return "expectations-manifest";
+  if (artifactPath.includes("/mutations/")) return "mutation-fixture";
+  if (artifactPath.includes("/valid/")) return "valid-fixture";
+  if (artifactPath.includes("/invalid/")) return "invalid-fixture";
+  if (artifactPath.includes("/review/")) return "review-fixture";
+  if (artifactPath.endsWith("runtime-projection.json")) return "runtime-projection";
+  if (artifactPath.includes("/render-plan.")) return "render-plan";
+  if (artifactPath.endsWith("runtime-adapter-report.json")) return "runtime-adapter-report";
+  if (artifactPath.endsWith("evidence.json")) return "evidence";
+  return "generated-artifact";
 }
 
 function artifactRefSchema(options = {}) {
@@ -1661,15 +1826,9 @@ function mutationCatalogHashMismatch() {
 
 function mutationProjectionAuthorityEscalation() {
   const projection = runtimeProjectionFixture();
-  projection.components.ConfirmPanel.actions.escalate = {
-    id: "escalate",
-    kind: "event",
-    allowedTargets: ["external-workflow"],
-    destructive: true,
-    requiresReview: false,
-    disabledUntilImplemented: false,
-    sourceRef: "fixture://p1/mutations/projection-authority-escalation.runtime-projection#/components/ConfirmPanel/actions/escalate"
-  };
+  projection.provenance.sourceUri = "fixture://p1/mutations/projection-authority-escalation.runtime-projection";
+  projection.provenance.sourceRef = "fixture://p1/mutations/projection-authority-escalation.runtime-projection#/provenance";
+  projection.components.Button.props.variant.allowedValues.push("ghost");
   return projection;
 }
 
@@ -1703,12 +1862,20 @@ function mutationRuntimeProjectionHashMismatch() {
 }
 
 function mutationHashMismatchEvidence() {
+  const p0EvidenceRef = ref("artifacts/p0/evidence.json", "evidence.v0", ZERO_HASH);
+  const governedCatalogRef = ref("artifacts/p0/governed-catalog.json", "runtime-catalog.v0", ZERO_HASH);
+  const adapterDiagnosticsRef = ref("artifacts/p0/adapter-diagnostics.json", "adapter-diagnostics.v0", ZERO_HASH);
+  const projectionRef = ref("artifacts/p1/runtime-projection.json", "runtime-projection.v0", ZERO_HASH);
+  const badProjectionArtifactRef = artifactEntry("artifacts/p1/runtime-projection.json", "runtime-projection.v0", BAD_HASH, "runtime-projection");
+  const reportRef = ref("artifacts/p1/runtime-adapter-report.json", "runtime-adapter-report.v0", ZERO_HASH);
+  const selfArtifactRef = artifactEntry("artifacts/p1/evidence.json", "runtime-adapter-evidence.v0", ZERO_HASH, "evidence");
   return {
+    contractId: "surfaces-p1-runtime-adapter-proof",
     schemaId: "runtime-adapter-evidence.v0",
     version: VERSION,
     adapter: ADAPTER,
     runId: "p1-evidence-hash-mismatch",
-    generatedAt: TIMESTAMP,
+    checkedAt: TIMESTAMP,
     command: "interfacectl surfaces adapter proof",
     args: {
       catalog: "artifacts/p0/governed-catalog.json",
@@ -1716,20 +1883,35 @@ function mutationHashMismatchEvidence() {
       out: ARTIFACT_ROOT
     },
     environment: environment(),
-    boundaryRefs: [],
-    schemaRefs: [],
-    fixtureRefs: [],
-    artifacts: [
-      ref("artifacts/p1/runtime-projection.json", "runtime-projection.v0", BAD_HASH)
+    upstream: {
+      p0EvidenceRef,
+      governedCatalogRef,
+      adapterDiagnosticsRef
+    },
+    boundaryRefs: [
+      boundaryRefFixture(p0EvidenceRef, "upstream-boundary"),
+      boundaryRefFixture(governedCatalogRef, "upstream-boundary"),
+      boundaryRefFixture(adapterDiagnosticsRef, "upstream-boundary"),
+      boundaryRefFixture(projectionRef, "runtime-projection"),
+      boundaryRefFixture(reportRef, "runtime-adapter-report")
     ],
+    validationResults: [],
+    renderPlanRefs: [],
+    runtimeProjectionRef: projectionRef,
+    runtimeAdapterReportRef: reportRef,
+    artifacts: [badProjectionArtifactRef, selfArtifactRef],
     diagnostics: [
       diagnosticForRow(P1_DIAGNOSTIC_ROWS.find((row) => row.code === "RUNTIME_EVIDENCE_HASH_MISMATCH"))
     ],
     diagnosticsRegistry: diagnosticsRegistry(),
-    results: [],
     status: "fail",
     promotionStatus: "blocked",
-    selfHash: ZERO_HASH
+    provenance: {
+      evaluator: { name: "materialize-p1", version: VERSION },
+      schemaIds: P1_SCHEMA_FILES.map((file) => file.replace(/\.schema\.json$/, "")),
+      stageChain: ["projection", "runtime-boundary", "evidence"],
+      generatedAt: TIMESTAMP
+    }
   };
 }
 
@@ -1751,37 +1933,48 @@ function runtimeProjectionFixture() {
     },
     tokens: projectedTokens(),
     runtimeCapabilities: {
-      adapter: ADAPTER,
-      actionExecution: false,
-      sideEffects: false,
-      supportsModal: false,
-      cssProperties: [
-        "display",
-        "box-sizing",
-        "margin",
-        "padding",
-        "border",
-        "border-radius",
-        "background",
-        "color",
-        "font",
-        "font-size",
-        "font-weight",
-        "line-height",
-        "gap",
-        "width",
-        "max-width",
-        "min-height",
-        "align-items",
-        "justify-content",
-        "outline"
-      ]
+      actionExecution: "fail-closed",
+      unknownAction: "blocked",
+      unknownComponent: "blocked",
+      unknownDataBinding: "blocked",
+      unknownEvent: "blocked",
+      unknownProp: "blocked",
+      unknownSlot: "blocked",
+      unknownState: "blocked",
+      unknownTokenRef: "blocked",
+      unknownVariant: "blocked"
     },
     governance: {
-      sourceRef: "fixture://p0/source#/components/ConfirmPanel/governance",
-      promotionStatuses: PROMOTION_STATUSES,
-      reviewRequiredActions: ["ConfirmPanel.confirm"],
-      blockedCapabilities: ["action-execution", "modal"]
+      promotionStatus: "review_required",
+      results: {
+        invalidUsage: "blocked",
+        reviewRequiredAction: "review_required",
+        validSurfaceIr: "allowed"
+      },
+      rules: {
+        destructiveAction: {
+          appliesTo: ["ConfirmPanel.actions.confirm"],
+          result: "review_required"
+        },
+        disabledActionExecution: {
+          appliesTo: ["Button.actions.dismiss"],
+          result: "blocked"
+        },
+        unknownUsage: {
+          appliesTo: [
+            "component",
+            "prop",
+            "variant",
+            "state",
+            "slot",
+            "action",
+            "event",
+            "tokenRef",
+            "dataBinding"
+          ],
+          result: "blocked"
+        }
+      }
     },
     accessibility: {
       roles: ["alert", "button", "group", "status"],
@@ -2069,5 +2262,32 @@ function ref(artifactPath, schemaId, hash = ZERO_HASH) {
     schemaId,
     hashAlgorithm: "sha256",
     hash
+  };
+}
+
+function artifactEntry(artifactPath, schemaId, hash, role) {
+  return {
+    role,
+    ...ref(artifactPath, schemaId, hash),
+    provenance: artifactProvenanceFixture(artifactPath, hash, role)
+  };
+}
+
+function boundaryRefFixture(artifactRef, role) {
+  return {
+    ...artifactRef,
+    sourceArtifactHash: artifactRef.hash,
+    provenance: artifactProvenanceFixture(artifactRef.path, artifactRef.hash, role)
+  };
+}
+
+function artifactProvenanceFixture(artifactPath, hash, role) {
+  return {
+    sourceUri: artifactPath,
+    sourceHash: hash,
+    sourceRef: `artifact://${artifactPath}`,
+    generatedAt: TIMESTAMP,
+    generator: { name: `materialize-p1-${role}`, version: VERSION },
+    environment: environment()
   };
 }

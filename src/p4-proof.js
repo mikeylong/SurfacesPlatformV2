@@ -152,7 +152,7 @@ export async function runReviewProof({ cwd, orchestrationEvidencePath, reviewQue
 
   const fixtureRows = await loadP4FixtureRows(cwd, expectations, validators);
   const runId = buildRunId({ upstream, expectations, command, args });
-  const validationResults = evaluateP4Expectations({ fixtureRows });
+  const validationResults = evaluateP4Expectations({ fixtureRows, upstream });
   const diagnostics = sortDiagnostics(validationResults.flatMap((result) => result.diagnostics));
   const status = validationResults.every((result) => result.matched) ? "pass" : "fail";
   if (status === "fail") {
@@ -452,9 +452,9 @@ async function loadP4FixtureRows(cwd, expectations, validators) {
   return rows;
 }
 
-function evaluateP4Expectations({ fixtureRows }) {
+function evaluateP4Expectations({ fixtureRows, upstream }) {
   return fixtureRows.map(({ expectation, fixture }) => {
-    const actual = evaluateP4Fixture({ fixture, expectation });
+    const actual = evaluateP4Fixture({ fixture, expectation, upstream });
     const matched = compareExpectation(expectation, actual);
     return {
       fixturePath: expectation.fixturePath,
@@ -474,12 +474,12 @@ function evaluateP4Expectations({ fixtureRows }) {
   });
 }
 
-function evaluateP4Fixture({ fixture, expectation }) {
+function evaluateP4Fixture({ fixture, expectation, upstream }) {
   if (expectation.diagnosticCodes.length === 0) {
-    return validateAllowedReviewJudgment(fixture, expectation);
+    return validateAllowedReviewJudgment(fixture, expectation, upstream);
   }
   const code = expectation.diagnosticCodes[0];
-  if (!fixtureMatchesDiagnostic(code, fixture)) {
+  if (!fixtureMatchesDiagnostic(code, fixture, upstream)) {
     return {
       result: "valid",
       promotionStatus: "allowed",
@@ -489,7 +489,7 @@ function evaluateP4Fixture({ fixture, expectation }) {
     };
   }
   if (code === "SURFACEOPS_SECOND_REVIEW_REQUIRED") {
-    const validation = validateAllowedReviewJudgment(fixture, expectation);
+    const validation = validateAllowedReviewJudgment(fixture, expectation, upstream);
     if (validation.result === "invalid") return validation;
     return {
       result: "review_required",
@@ -508,10 +508,10 @@ function evaluateP4Fixture({ fixture, expectation }) {
   };
 }
 
-function validateAllowedReviewJudgment(fixture, expectation) {
+function validateAllowedReviewJudgment(fixture, expectation, upstream) {
   if (fixture.fixtureKind === "surfaceops-decision") {
     const decision = fixture.decision;
-    const invalidCode = firstDecisionFailureCode(fixture);
+    const invalidCode = firstDecisionFailureCode(fixture, upstream);
     if (invalidCode) {
       return invalidResult(expectation, invalidCode, decision?.status ?? null, null);
     }
@@ -528,7 +528,7 @@ function validateAllowedReviewJudgment(fixture, expectation) {
   }
 
   if (fixture.fixtureKind === "judgmentkit-evaluation") {
-    const invalidCode = firstFindingFailureCode(fixture);
+    const invalidCode = firstFindingFailureCode(fixture, upstream);
     if (invalidCode) return invalidResult(expectation, invalidCode, null, fixture.finding?.result ?? null);
     return {
       result: "valid",
@@ -542,14 +542,36 @@ function validateAllowedReviewJudgment(fixture, expectation) {
   return invalidResult(expectation, "SURFACEOPS_EVIDENCE_REF_MISSING", null, null);
 }
 
-function firstDecisionFailureCode(fixture) {
+function firstDecisionFailureCode(fixture, upstream) {
   const decision = fixture.decision;
-  if (!decision || fixture.reviewItemRef?.reviewItemId !== decision.reviewItemId) return "SURFACEOPS_EVIDENCE_REF_MISSING";
+  if (
+    !decision ||
+    !reviewItemRefMatchesAcceptedQueue(fixture.reviewItemRef, upstream?.reviewQueue) ||
+    fixture.reviewItemRef.reviewItemId !== decision.reviewItemId
+  ) {
+    return "SURFACEOPS_EVIDENCE_REF_MISSING";
+  }
   if (!decisionHasAcceptedEvidence(decision)) return "SURFACEOPS_EVIDENCE_REF_MISSING";
   if (decision.catalogOverride !== null) return "SURFACEOPS_DECISION_OVERRIDE";
   if (decisionExecutionForbidden(decision.execution)) return "SURFACEOPS_EXECUTION_FORBIDDEN";
   if (decision.hiddenState !== null) return "SURFACEOPS_DECISION_HIDDEN";
   return null;
+}
+
+function reviewItemRefMatchesAcceptedQueue(ref, reviewQueue) {
+  if (
+    !ref ||
+    !reviewQueue ||
+    ref.path !== P4_REVIEW_QUEUE_PATH ||
+    ref.schemaId !== "agent-review-queue.v0" ||
+    ref.runId !== reviewQueue.runId
+  ) {
+    return false;
+  }
+  return (reviewQueue.items || []).some((item) =>
+    item.reviewItemId === ref.reviewItemId &&
+    item.taskId === ref.taskId
+  );
 }
 
 function decisionHasAcceptedEvidence(decision) {
@@ -585,18 +607,19 @@ function decisionExecutionForbidden(execution) {
     ].some((key) => (execution?.[key] || []).length > 0);
 }
 
-function firstFindingFailureCode(fixture) {
+function firstFindingFailureCode(fixture, upstream) {
   const finding = fixture.finding;
   if (!finding || !Array.isArray(finding.evidenceRefs) || finding.evidenceRefs.length === 0) {
     return "JUDGMENTKIT_EVIDENCE_REF_MISSING";
   }
+  if (!reviewItemRefMatchesAcceptedQueue(fixture.reviewItemRef, upstream?.reviewQueue)) return "JUDGMENTKIT_EVIDENCE_REF_MISSING";
   if (!refsHaveAcceptedP3Boundary(finding.evidenceRefs)) return "JUDGMENTKIT_EVIDENCE_REF_MISSING";
   const authority = finding.authority || {};
   if (Object.values(authority).some((value) => value !== false)) return "JUDGMENTKIT_POLICY_OVERRIDE";
   return null;
 }
 
-function fixtureMatchesDiagnostic(code, fixture) {
+function fixtureMatchesDiagnostic(code, fixture, upstream) {
   switch (code) {
     case "REVIEW_UPSTREAM_EVIDENCE_MISSING":
     case "REVIEW_UPSTREAM_EVIDENCE_FAILED":
@@ -604,19 +627,21 @@ function fixtureMatchesDiagnostic(code, fixture) {
     case "REVIEW_UPSTREAM_EVIDENCE_STALE":
       return preflightFixtureMatchesDiagnostic(code, fixture);
     case "SURFACEOPS_EVIDENCE_REF_MISSING":
-      return firstDecisionFailureCode(fixture) === "SURFACEOPS_EVIDENCE_REF_MISSING";
+      return firstDecisionFailureCode(fixture, upstream) === "SURFACEOPS_EVIDENCE_REF_MISSING";
     case "SURFACEOPS_DECISION_OVERRIDE":
-      return firstDecisionFailureCode(fixture) === "SURFACEOPS_DECISION_OVERRIDE";
+      return firstDecisionFailureCode(fixture, upstream) === "SURFACEOPS_DECISION_OVERRIDE";
     case "SURFACEOPS_EXECUTION_FORBIDDEN":
-      return firstDecisionFailureCode(fixture) === "SURFACEOPS_EXECUTION_FORBIDDEN";
+      return firstDecisionFailureCode(fixture, upstream) === "SURFACEOPS_EXECUTION_FORBIDDEN";
     case "SURFACEOPS_DECISION_HIDDEN":
-      return firstDecisionFailureCode(fixture) === "SURFACEOPS_DECISION_HIDDEN";
+      return firstDecisionFailureCode(fixture, upstream) === "SURFACEOPS_DECISION_HIDDEN";
     case "SURFACEOPS_SECOND_REVIEW_REQUIRED":
-      return fixture.decision?.secondReviewRequired === true && firstDecisionFailureCode(fixture) === null;
+      return fixture.decision?.secondReviewRequired === true && firstDecisionFailureCode(fixture, upstream) === null;
+    case "SURFACEOPS_DUPLICATE_DECISION":
+      return ledgerHasDuplicateCommittedDecision(fixture);
     case "JUDGMENTKIT_EVIDENCE_REF_MISSING":
-      return firstFindingFailureCode(fixture) === "JUDGMENTKIT_EVIDENCE_REF_MISSING";
+      return firstFindingFailureCode(fixture, upstream) === "JUDGMENTKIT_EVIDENCE_REF_MISSING";
     case "JUDGMENTKIT_POLICY_OVERRIDE":
-      return firstFindingFailureCode(fixture) === "JUDGMENTKIT_POLICY_OVERRIDE";
+      return firstFindingFailureCode(fixture, upstream) === "JUDGMENTKIT_POLICY_OVERRIDE";
     case "REVIEW_LEDGER_HASH_MISMATCH":
       return fixture.integrityCheck?.expectedLedgerHash === "0".repeat(64);
     case "REVIEW_REPORT_LEDGER_HASH_MISMATCH":
@@ -655,6 +680,7 @@ function compareExpectation(expectation, actual) {
 function buildDecisionLedger({ runId, upstream, fixtureRows, validationResults, diagnostics }) {
   const rowsByPath = new Map(fixtureRows.map((row) => [row.expectation.fixturePath, row]));
   const decisionResults = validationResults.filter((result) =>
+    rowsByPath.get(result.fixturePath)?.expectation.ledgerBehavior === "committed" &&
     (result.kind === "valid" || result.kind === "review") &&
     (result.actualResult === "valid" || result.actualResult === "review_required") &&
     result.decisionStatus !== null
@@ -687,9 +713,11 @@ function buildDecisionLedger({ runId, upstream, fixtureRows, validationResults, 
     a.decisionKey.localeCompare(b.decisionKey) ||
     a.decisionId.localeCompare(b.decisionId)
   );
+  assertNoDuplicateCommittedDecisions(decisions);
   const reviewers = uniqueReviewers(decisionResults.map((result) => rowsByPath.get(result.fixturePath).fixture.reviewer));
+  const committedFixturePaths = new Set(decisionResults.map((result) => result.fixturePath));
   const ledgerDiagnostics = sortDiagnostics(diagnostics.filter((diagnostic) =>
-    diagnostic.code === "SURFACEOPS_SECOND_REVIEW_REQUIRED"
+    committedFixturePaths.has(diagnostic.artifactPath)
   ));
   return {
     schemaId: "surfaceops-decision-ledger.v0",
@@ -825,7 +853,7 @@ async function buildEvidence({ cwd, runId, command, args, upstream, ledgerRef, e
     ledgerRef,
     evaluationReportRef,
     reportRef
-  ];
+  ].map(withBoundaryProvenance);
 
   const artifactRefs = [];
   for (const artifactPath of P4_ARTIFACT_PATHS) {
@@ -940,12 +968,50 @@ function aggregateEvaluationResult(findings) {
   return "pass";
 }
 
+function ledgerHasDuplicateCommittedDecision(ledger) {
+  if (!Array.isArray(ledger?.decisions)) return false;
+  const seen = new Set();
+  for (const decision of ledger.decisions) {
+    if (!decision?.reviewItemId) continue;
+    if (seen.has(decision.reviewItemId)) return true;
+    seen.add(decision.reviewItemId);
+  }
+  return false;
+}
+
+function assertNoDuplicateCommittedDecisions(decisions) {
+  const seen = new Set();
+  const duplicates = [];
+  for (const decision of decisions) {
+    if (seen.has(decision.reviewItemId)) duplicates.push(decision.reviewItemId);
+    seen.add(decision.reviewItemId);
+  }
+  if (duplicates.length > 0) {
+    throw contractError(`P4 decision ledger has duplicate committed decisions for review item(s): ${[...new Set(duplicates)].join(", ")}`, 1);
+  }
+}
+
 function uniqueReviewers(reviewers) {
   const byId = new Map();
   for (const reviewer of reviewers) {
     if (!byId.has(reviewer.reviewerId)) byId.set(reviewer.reviewerId, reviewer);
   }
   return [...byId.values()].sort((a, b) => a.reviewerId.localeCompare(b.reviewerId));
+}
+
+function withBoundaryProvenance(ref) {
+  return {
+    ...ref,
+    provenance: boundaryRefProvenance(ref.path)
+  };
+}
+
+function boundaryRefProvenance(pathValue) {
+  return {
+    generatedAt: P4_TIMESTAMP,
+    generator: "interfacectl-p4-boundary-ref",
+    sourceRefs: [pathValue]
+  };
 }
 
 function artifactRef(pathValue, schemaId, hash, extra = {}) {
@@ -1048,6 +1114,11 @@ async function firstEvidenceIntegrityFailureCode(cwd, evidence) {
   }
   if (!pathArrayEquals(evidence.boundaryRefs?.map((ref) => ref.path), expectedBoundaryPaths)) {
     return "REVIEW_EVIDENCE_HASH_MISMATCH";
+  }
+  for (const ref of evidence.boundaryRefs || []) {
+    if (!ref.provenance || canonicalJson(ref.provenance) !== canonicalJson(boundaryRefProvenance(ref.path))) {
+      return "REVIEW_EVIDENCE_HASH_MISMATCH";
+    }
   }
   if (!pathArrayEquals(evidence.artifacts?.map((ref) => ref.path), P4_ARTIFACT_PATHS)) {
     return "REVIEW_EVIDENCE_HASH_MISMATCH";

@@ -15,7 +15,7 @@ export const P3_FIXTURE_ROOT = "fixtures/p3";
 export const P3_ARTIFACT_ROOT = "artifacts/p3";
 export const P3_INGESTION_EVIDENCE_PATH = "artifacts/p2/evidence.json";
 export const P3_CATALOG_PATH = "artifacts/p2/governed-catalog.json";
-export const P3_ACCEPTED_P2_EVIDENCE_HASH = "05972eb0791db7bad5b0b84b6ba447e4869e5ff066e6faf7e7de54cb6c592621";
+export const P3_ACCEPTED_P2_EVIDENCE_HASH = "ec5fe3e0bf4f2ac0b8f10ba746610df94175085ee35904186a23c0f27282906f";
 export const P3_ACCEPTED_P2_CATALOG_HASH = "2ba1d418bc51051bb642a0c675efbc7e16f4f315dae62674a6b6e363461c9d29";
 
 export const P3_ENVIRONMENT = Object.freeze({
@@ -46,6 +46,7 @@ export const P3_FIXTURE_FILES = [
   "invalid/denied-tool.agent-task.json",
   "invalid/scope-escalation.agent-task.json",
   "invalid/hidden-output.agent-task.json",
+  "invalid/blocked-review-policy.agent-task.json",
   "invalid/cycle-dependency.agent-task.json",
   "invalid/missing-dependency.agent-task.json",
   "mutations/missing-upstream-evidence.agent-preflight.json",
@@ -196,6 +197,21 @@ export const P3_DIAGNOSTIC_ROWS = [
     validationResult: "invalid",
     promotionStatus: "blocked",
     fixtureCoverage: "invalid/hidden-output.agent-task.json"
+  }),
+  diagnosticRow({
+    code: "AGENT_REVIEW_POLICY_BLOCKED",
+    trigger: "A task declares blocked review policy",
+    canonicalMessage: "Agent task review policy is blocked and cannot be promoted.",
+    severity: "error",
+    diagnosticSource: "review-router",
+    stage: "review",
+    phase: "review-routing",
+    artifactPath: "fixtures/p3/invalid/blocked-review-policy.agent-task.json",
+    jsonPointer: "/reviewPolicy",
+    sourceRef: "fixture://p3/invalid/blocked-review-policy#/reviewPolicy",
+    validationResult: "invalid",
+    promotionStatus: "blocked",
+    fixtureCoverage: "invalid/blocked-review-policy.agent-task.json"
   }),
   diagnosticRow({
     code: "AGENT_DEPENDENCY_CYCLE",
@@ -501,6 +517,21 @@ export const P3_EXPECTATION_ROWS = [
     reviewQueuePath: null
   }),
   expectationRow({
+    fixturePath: "fixtures/p3/invalid/blocked-review-policy.agent-task.json",
+    kind: "invalid",
+    stage: "review",
+    phase: "review-routing",
+    expectedResult: "invalid",
+    promotionStatus: "blocked",
+    diagnosticCodes: ["AGENT_REVIEW_POLICY_BLOCKED"],
+    artifactPath: "artifacts/p3/agent-orchestration-report.json",
+    jsonPointer: "/reviewPolicy",
+    requiredSourceRef: "fixture://p3/invalid/blocked-review-policy#/reviewPolicy",
+    selectedAgentIds: [],
+    workOrderPath: null,
+    reviewQueuePath: null
+  }),
+  expectationRow({
     fixturePath: "fixtures/p3/invalid/cycle-dependency.agent-task.json",
     kind: "invalid",
     stage: "orchestration",
@@ -717,6 +748,16 @@ export function buildP3Fixtures() {
       allowedOutputs: [outputRef("artifacts/p3/.hidden-output.json", "agent-work-order.v0", { hidden: true, evidenceTracked: false })],
       dependencies: [],
       reviewPolicy: "allowed"
+    }),
+    "invalid/blocked-review-policy.agent-task.json": taskFixture({
+      taskId: "blocked-review-policy",
+      sourceRef: "fixture://p3/invalid/blocked-review-policy#/reviewPolicy",
+      taskKind: "invalid-review-policy",
+      requiredCapabilities: ["plan-contracts"],
+      allowedOutputs: [outputRef("artifacts/p3/work-order.contract-architect.json", "agent-work-order.v0")],
+      dependencies: [],
+      reviewPolicy: "blocked",
+      evidenceObligations: ["blocked-policy-preserved", "no-work-order", "report-row"]
     }),
     "invalid/cycle-dependency.agent-task.json": taskFixture({
       taskId: "cycle-dependency",
@@ -1458,9 +1499,9 @@ function agentOrchestrationEvidenceSchema() {
         unevaluatedProperties: false
       },
       environment: environmentSchema(),
-      schemaClosure: { type: "array", items: artifactRefSchema(), minItems: P3_SCHEMA_FILES.length },
-      fixtureRefs: { type: "array", items: artifactRefSchema(), minItems: p3FixturePaths().length },
-      boundaryRefs: { type: "array", items: artifactRefSchema({ sourceEvidenceHash: true }) },
+      schemaClosure: { type: "array", items: artifactRefSchema({ provenance: true }), minItems: P3_SCHEMA_FILES.length },
+      fixtureRefs: { type: "array", items: artifactRefSchema({ provenance: true }), minItems: p3FixturePaths().length },
+      boundaryRefs: { type: "array", items: artifactRefSchema({ sourceEvidenceHash: true, provenance: true }) },
       artifacts: { type: "array", items: artifactRefSchema({ nullableHash: true, provenance: true }), minItems: P3_ARTIFACT_PATHS.length },
       diagnostics: { type: "array", items: diagnosticObjectSchema() },
       diagnosticsRegistry: diagnosticsRegistrySchema(),
@@ -1776,6 +1817,7 @@ function expectationRowSchema(row) {
 
 function artifactRefSchema(options = {}) {
   const hashSchemaValue = options.nullableHash ? { oneOf: [hashSchema(), { type: "null" }] } : hashSchema();
+  const required = ["path", "schemaId", "hashAlgorithm", "hash"];
   const properties = {
     path: relativePathSchema(),
     schemaId: { type: "string", minLength: 1 },
@@ -1784,10 +1826,13 @@ function artifactRefSchema(options = {}) {
     sourceRef: nullableStringSchema()
   };
   if (options.sourceEvidenceHash) properties.sourceEvidenceHash = hashSchema();
-  if (options.provenance) properties.provenance = provenanceSchema();
+  if (options.provenance) {
+    properties.provenance = provenanceSchema();
+    required.push("provenance");
+  }
   return {
     type: "object",
-    required: ["path", "schemaId", "hashAlgorithm", "hash"],
+    required,
     properties,
     unevaluatedProperties: false
   };
