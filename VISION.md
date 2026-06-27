@@ -24,6 +24,16 @@ The design system is the product authority. The Surfaces Catalog is the governed
 - Runtime projections, render plans, demos, review queues, docs, product surfaces, and evaluator findings are derived consumers. They cannot add authority.
 - Evidence makes every proof reproducible, reviewable, and safe to consume in CI, SurfaceOps, JudgmentKit, demos, and future adapters.
 
+## Lifecycle Enforcement Model
+Surfaces governs generated UI at the points where unsupported behavior can enter, move through review, or reach a consumer.
+
+- Generation time: the Surfaces Catalog is the emission boundary for any agent or generator that claims Surfaces compliance. Implemented proof slices model that boundary without authorizing live agent execution. Unsupported, ambiguous, or review-bound requests become diagnostics or review-required records instead of inferred UI.
+- CI/CD integration time: proof gates validate catalog, fixture, surface, projection, review, and adapter artifacts before repository evidence can support an implementation claim. Passing evidence, deterministic diagnostics, artifact hashes, and proof-bearing gate logs make each claim reproducible and reject stale or invalid output.
+- Review time: review-required surfaces remain structurally inspectable but cannot be promoted unattended. Deterministic SurfaceOps decision artifacts and evaluator-facing findings may consume evidence under explicit contracts; they cannot override catalog policy or create live review persistence without a later proof.
+- Runtime: runtimes and adapters may consume only derived, hash-bound projections, render plans, protocol envelopes, or adapter-facing artifacts. A target may render, reject, or display output only where its own proof authorizes that behavior; it must not add components, actions, policy, transport behavior, or authority absent from the governed catalog and accepted evidence.
+
+These lifecycle moments share one authority chain: design-system source material feeds the Surfaces Catalog, the Surfaces Catalog defines what consumers may do, passing evidence proves implemented behavior, and derived consumers stay inside those boundaries. A later phase may broaden any lifecycle moment only after it adds its own schema, fixture, proof command, diagnostics, report or artifact path, and evidence.
+
 ## User Value
 Surfaces Platform creates value when it lets teams:
 
@@ -44,6 +54,8 @@ P3 implements the first inert agent recruitment and orchestration proof after P2
 
 P4 implements the first deterministic review and judgment proof over accepted P3 evidence and the P3 review queue. It materializes a SurfaceOps decision ledger, JudgmentKit-shaped evaluation report, review/judgment report, demo, and evidence without live SurfaceOps persistence, live JudgmentKit invocation, work-order execution, production adapters, P5/A2UI scope, or authority override.
 
+P5 implements the first bounded protocol-boundary slice: `surfaces-protocol-static`. It materializes a deterministic target-selection artifact, protocol projection, inert protocol envelopes, protocol adapter report, demo, CI gate, and evidence from accepted P2 catalog/evidence and accepted P4 review/judgment evidence. This P5 slice is proof-only: it is not A2UI, a production adapter, public API, SDK, live protocol service, live SurfaceOps integration, or live JudgmentKit integration.
+
 ## Roadmap
 This roadmap is the accepted product sequence for the current plan.
 
@@ -57,7 +69,7 @@ P3: Agent recruitment and orchestration proof. Prove agent control through regis
 
 P4: Review and judgment proof. Let SurfaceOps and JudgmentKit consume evidence. SurfaceOps should handle review queues and human decisions. JudgmentKit should evaluate activity fit, contract quality, evidence quality, and handoff quality. Neither should override the Surfaces Catalog.
 
-P5: Production adapters and protocol boundaries. Add additional runtime projections, A2UI exports or conformance proofs, production APIs, and broader adapter support only after each target has its own schema, fixtures, diagnostics, command contract, and evidence.
+P5: Protocol boundaries and production adapters. The first implemented slice is `surfaces-protocol-static`, a deterministic inert protocol-envelope proof. Add additional runtime projections, A2UI exports or conformance proofs, production APIs, and broader adapter support only after each target has its own schema, fixtures, diagnostics, command contract, and evidence.
 
 ## Real Design-System Extraction
 P0 remains a synthetic fixture proof, and P1 remains a derived runtime projection proof. P2 is the first bounded real-source ingestion proof: it reads only the manifest-declared local `@adobe/spectrum-design-data@0.7.0` source snapshot, companion local mappings, and local usage policy under `sources/p2/design-system-source`, scoped to `button` and `in-line-alert`. It does not call Figma, scrape Storybook, parse Code Connect, crawl docs, inspect production HTML, or claim full Spectrum support.
@@ -93,7 +105,7 @@ JudgmentKit is the evaluation layer. It may emit evaluation findings over existi
 
 SurfaceOps is the operational review surface. It should consume review-required evidence, show queues and decisions, and help humans promote, reject, or request changes. It should not invent policy outside the governed catalog.
 
-A2UI is a downstream compatibility or projection target for P5. It should not become the Surfaces data model unless P5 proves an A2UI projection with its own schema, fixtures, diagnostics, conformance proof, and evidence.
+A2UI is a downstream compatibility or projection target for a future P5 target. It is not implemented by the first `surfaces-protocol-static` slice and should not become the Surfaces data model unless a separate P5 target proves an A2UI projection with its own schema, fixtures, diagnostics, conformance proof, and evidence.
 
 ## Runtime Relationship
 The runtime chain is:
@@ -133,3 +145,4 @@ If a product surface consumes evidence, it may explain, evaluate, route, or disp
 - Broader Spectrum coverage remains open. The implemented P2 target is Adobe Spectrum Design Data, pinned to `@adobe/spectrum-design-data@0.7.0`, initially scoped to `button` and `in-line-alert`; this is not a claim of full Spectrum support, live ingestion, or Adobe endorsement.
 - Broader JudgmentKit execution or live integration beyond the implemented P4 deterministic `judgmentkit-evaluation-report.v0` remains open.
 - Broader SurfaceOps operational storage, workflow, or live product behavior beyond the implemented P4 deterministic `surfaceops-decision-ledger.v0` remains open.
+- Broader P5 support beyond the implemented `surfaces-protocol-static` proof remains open. The first P5 slice proves inert protocol envelopes only; A2UI, production adapters, public APIs, SDKs, live protocol services, live SurfaceOps, and live JudgmentKit remain future target-specific proof work.

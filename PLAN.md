@@ -108,7 +108,7 @@ The canonical surface-role taxonomy lives in [VISION.md](VISION.md#surface-roles
 - SurfaceOps: deferred to the P4 review and judgment proof; P0/P1 preserve review-required evidence only.
 - Surfaces Catalog: product-facing name for the governed design-system catalog/compiler artifact defined by VISION as the governed contract authority.
 - `runtime-catalog.v0`: schema/artifact id for the P0 Surfaces Catalog.
-- A2UI: reference-only before P5. P5 may emit A2UI-compatible projections/exports from the governed Surfaces Catalog and validate those projections against A2UI conformance; P0/P1 do not define an A2UI adapter or data model.
+- A2UI: reference-only before a future A2UI-specific P5 target. A later P5 proof may emit A2UI-compatible projections/exports from the governed Surfaces Catalog and validate those projections against A2UI conformance; P0/P1 and the first `surfaces-protocol-static` P5 slice do not define an A2UI adapter or data model.
 
 ## P0 Catalog Contract Implication
 Subordinate to the authority model in [VISION.md](VISION.md#canonical-authority-model), the P0 Surfaces Catalog contract decides what fixture-backed Surface IR may emit and what proof consumers, runtime projections, and future adapters may render as inert plans, reject, or send to review.
@@ -361,6 +361,64 @@ P4 generated artifact refs must be acyclic: forward refs to later same-run artif
 - P4 evidence hashes upstream P3 artifacts, P4 schemas, P4 fixtures, generated P4 artifacts, and itself under the same canonicalization discipline as P0/P1/P2/P3.
 - `demo/p4/index.html` is generated from P4 proof artifacts and does not count as proof unless the underlying P4 evidence passes.
 
+## P5 Focus
+P5 implements the first bounded protocol-boundary proof through the `surfaces-protocol-static` target. It consumes accepted P2 catalog/evidence and accepted P4 review/judgment evidence, then proves deterministic inert protocol envelopes as derived artifacts. This slice is a protocol-envelope proof only: it is not a production adapter, public Surface IR protocol, public API, SDK, live protocol service, A2UI export, A2UI conformance proof, live SurfaceOps persistence path, live JudgmentKit invocation, or work-order execution path.
+
+The P5 protocol proof path is:
+
+```text
+artifacts/p2/evidence.json
+artifacts/p2/governed-catalog.json
+artifacts/p4/evidence.json
+artifacts/p4/surfaceops-decision-ledger.json
+artifacts/p4/review-judgment-report.json
+fixtures/p5/protocol/adapter-target-selection.fixture.json
+fixtures/p5/protocol/expectations.manifest.json
+  -> validate fixtures/p5/protocol/mutations/*.protocol-preflight.json against expected upstream-preflight failures
+  -> artifacts/p5/protocol/adapter-target-selection.json
+  -> artifacts/p5/protocol/protocol-projection.json
+  -> validate fixtures/p5/protocol/valid/*.json, fixtures/p5/protocol/review/*.json, fixtures/p5/protocol/invalid/*.json, and remaining fixtures/p5/protocol/mutations/*.json
+  -> artifacts/p5/protocol/protocol-envelope.button.json
+  -> artifacts/p5/protocol/protocol-envelope.in-line-alert.json
+  -> artifacts/p5/protocol/protocol-adapter-report.json
+  -> artifacts/p5/protocol/evidence.json
+  -> demo/p5/protocol/index.html
+```
+
+## P5 Proof Command
+
+Implemented command:
+
+```bash
+interfacectl surfaces protocol proof --ingestion-evidence artifacts/p2/evidence.json --review-evidence artifacts/p4/evidence.json --decision-ledger artifacts/p4/surfaceops-decision-ledger.json --review-report artifacts/p4/review-judgment-report.json --catalog artifacts/p2/governed-catalog.json --fixture fixtures/p5/protocol --out artifacts/p5/protocol
+```
+
+Package scripts execute this as `node bin/interfacectl.js surfaces protocol proof --ingestion-evidence artifacts/p2/evidence.json --review-evidence artifacts/p4/evidence.json --decision-ledger artifacts/p4/surfaceops-decision-ledger.json --review-report artifacts/p4/review-judgment-report.json --catalog artifacts/p2/governed-catalog.json --fixture fixtures/p5/protocol --out artifacts/p5/protocol`. P5 evidence records the logical command string above.
+
+## P5 Pass Condition
+Given valid P2 ingestion evidence, the P2 governed catalog, valid P4 review/judgment evidence, the P4 decision ledger, the P4 review/judgment report, and the P5 protocol fixture set, the protocol proof command emits the exact P5 protocol artifact set, validates upstream hashes and target selection, creates a hash-bound `surfaces-protocol-static` projection, validates every fixture against the expectations manifest, emits deterministic inert protocol envelopes for allowed surfaces only, blocks invalid and review-required usage without executing actions or calling live services, records protocol diagnostics before final evidence, and writes reproducible evidence with hashes and provenance for every P5 schema, fixture, input artifact, generated proof artifact under `artifacts/p5/protocol`, and final evidence artifact.
+
+## P5 Architecture
+1. P5 Product Boundaries
+2. Adapter Target Selection
+3. Protocol Projection v0
+4. Protocol Fixture
+5. Protocol Adapter Proof
+6. Validation And Evidence
+7. Demo And CI
+
+## P5 Acceptance Criteria
+- P0, P1, P2, P3, and P4 proof gates still pass unchanged before and after P5 work.
+- P5 preflight validates consumed P2 evidence, P2 governed catalog, P4 evidence, P4 decision ledger, and P4 review/judgment report hashes before reading P5 target or Surface IR fixtures.
+- Target selection declares exactly `surfaces-protocol-static` and cannot expand beyond accepted upstream component, action, token, data-binding, accessibility, governance, or evidence authority.
+- `protocol-projection.json` is derived from the governed P2 catalog and accepted P2/P4 evidence refs, not from fixture convenience, demo output, live services, or reviewer preference.
+- Protocol envelopes contain declarative data only, with inert action descriptors, `executed: false`, `sideEffects: []`, and `transport: "none"`.
+- Review-required fixtures remain structurally valid, record `review_required`, execute no actions, and emit no protocol-envelope artifacts.
+- Invalid and mutation fixtures fail according to `fixtures/p5/protocol/expectations.manifest.json`.
+- `protocol-adapter-report.json` records every expected and actual target-selection, projection, protocol-boundary, report, evidence, fixture, and diagnostic result before final P5 evidence.
+- P5 evidence hashes upstream P2/P4 artifacts, P5 schemas, P5 fixtures, generated P5 artifacts, and itself under the same canonicalization discipline as P0/P1/P2/P3/P4.
+- `demo/p5/protocol/index.html` is generated from P5 proof artifacts and does not count as proof unless the underlying P5 evidence passes.
+
 ## Subplans
 - [Subplan Index](plans/README.md)
 - [Runtime Catalog v0](plans/runtime-catalog-v0.md)
@@ -404,11 +462,21 @@ P4 generated artifact refs must be acyclic: forward refs to later same-run artif
 - [Review And Judgment Proof](plans/p4/review-judgment-proof.md)
 - [P4 Validation and Evidence](plans/p4/validation-evidence.md)
 - [P4 Demo and CI](plans/p4/demo-ci.md)
+- [P5 Protocol Static Proof](plans/p5/README.md)
+- [P5 Product Boundaries](plans/p5/product-boundaries.md)
+- [P5 Adapter Target Selection](plans/p5/adapter-target-selection.md)
+- [P5 Protocol Projection v0](plans/p5/protocol-projection-v0.md)
+- [P5 Protocol Fixture](plans/p5/protocol-fixture.md)
+- [P5 Protocol Adapter Proof](plans/p5/protocol-adapter-proof.md)
+- [P5 Validation and Evidence](plans/p5/validation-evidence.md)
+- [P5 Demo and CI](plans/p5/demo-ci.md)
 - [Surfaces.dev Documentation Tracking](plans/surfaces-dev.md)
+
+The P5 subplans linked above define the implemented `surfaces-protocol-static` proof slice. They do not implement production adapters, protocol APIs, SDKs, live protocol services, A2UI export, or A2UI conformance. Future P5 targets remain planned until they add their own proof shape and passing evidence.
 
 ## P0 Decisions
 - Runtime catalog name and boundary: Surfaces Catalog / `runtime-catalog.v0`, a governed design-system catalog/compiler artifact.
-- A2UI role: reference-only before P5; possible downstream projection/export conformance target only at the P5 gate.
+- A2UI role: reference-only before an A2UI-specific P5 target; possible downstream projection/export conformance target only after its own P5 proof gate.
 - Proof fixture: `fixtures/p0/source.fixture.json` plus mutation, valid, invalid, and review fixtures.
 - Surface IR role: internal P0 validation fixture, not a public protocol.
 - Proof command: `interfacectl surfaces proof --fixture fixtures/p0 --out artifacts/p0`.
@@ -418,7 +486,7 @@ P4 generated artifact refs must be acyclic: forward refs to later same-run artif
 - First runtime target: `web-static`.
 - First runtime boundary: adapter-specific `runtime-projection.v0`, not direct renderer consumption of the full governed catalog.
 - First product-visible output: generated static demo from proof artifacts, not hand-authored product UI.
-- A2UI remains deferred to P5 as a downstream projection target, not the P1 adapter or data model.
+- A2UI remains deferred to a future P5 downstream projection target, not the P1 adapter, the first P5 static protocol proof, or the Surfaces data model.
 - Actions remain inert descriptors in P1; no live execution is allowed.
 - Demo output is checked by drift and generated from evidence, but final P1 proof authority stays in `artifacts/p1/evidence.json`.
 
@@ -446,14 +514,23 @@ P4 generated artifact refs must be acyclic: forward refs to later same-run artif
 - First JudgmentKit boundary: `judgmentkit-evaluation-report.v0`, not live JudgmentKit MCP or connector execution in this implementation slice.
 - First review output: decision ledger, evaluation report, review/judgment report, evidence, and static demo from proof artifacts.
 - SurfaceOps approval decisions recorded in the P4 decision ledger are evidence eligibility records only; they do not execute P3 work orders or mutate upstream artifacts.
-- P5 production adapters, protocol boundaries, and A2UI remain deferred.
+- P5 production adapters, live protocol boundaries, protocol APIs, SDKs, and A2UI remain deferred beyond the `surfaces-protocol-static` proof.
+
+## P5 Decisions
+- First implemented P5 target: `surfaces-protocol-static`, a deterministic inert protocol-envelope proof.
+- First P5 boundary: `protocol-target-selection.v0`, `protocol-projection.v0`, `protocol-envelope.v0`, `protocol-adapter-report.v0`, and `protocol-adapter-evidence.v0`, not a production API, SDK, transport, live protocol service, or public Surface IR protocol.
+- First P5 output: target selection, protocol projection, allowed protocol envelopes, protocol adapter report, evidence, generated demo, and CI gate from proof artifacts.
+- Review-required protocol fixtures remain report/evidence-only and do not emit protocol-envelope artifacts.
+- A2UI remains a downstream conformance or projection target only if a future P5 proof implements it with its own contract and evidence.
+- Production adapters, protocol APIs, SDKs, live protocol services, live SurfaceOps, and live JudgmentKit remain planned until target evidence passes for those specific targets.
+- Future P5 targets must prove their own schemas, fixtures, diagnostics, command contract, artifacts, target report, evidence, demo, CI gate, non-goals, and acceptance criteria before they are described as implemented.
 
 ## Non-Goals For P0/P1
 - No full product scaffold.
 - No copied legacy implementation.
 - No live Figma ingestion before fixture-based compiler proof.
 - No live or general-purpose runtime renderer in P0/P1; P1 stops at `web-static` projection, deterministic render plans, generated demos, and evidence.
-- No broad A2UI compatibility layer before P5.
+- No broad A2UI compatibility layer in P0/P1.
 - No production product implementation or live operational surface in P0/P1 beyond proof tooling, generated artifacts, generated demos, and tests.
 
 ## Non-Goals For P2
@@ -483,3 +560,9 @@ P4 generated artifact refs must be acyclic: forward refs to later same-run artif
 - No live agents, shell commands, connector calls, network calls, callbacks, or secret access from P4 artifacts.
 - No production adapters, protocol exports, A2UI conformance, or P5 scope.
 - No relaxation of P3 orchestration evidence, review queue, catalog, or review gates.
+
+## Non-Goals For P5 `surfaces-protocol-static`
+- No live production adapter, production API, SDK, hosted protocol service, public Surface IR protocol, A2UI export, or A2UI conformance claim.
+- No live SurfaceOps persistence, live JudgmentKit invocation, work-order execution, agent execution, network call, connector call, callback, or secret access.
+- No relaxation of P0/P1/P2/P3/P4 evidence, catalog authority, deterministic diagnostics, review-required semantics, or generated-demo boundaries.
+- No claim that future P5 targets are implemented by the static protocol-envelope proof.
