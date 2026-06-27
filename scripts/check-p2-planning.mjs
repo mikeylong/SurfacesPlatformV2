@@ -430,6 +430,12 @@ if (evidenceSchema.required.includes("evidenceHash") || evidenceSchema.propertie
 if (evidenceSchema.$defs.finalEvidenceArtifactRef.properties.hash.$ref !== "#/$defs/hash") {
   fail("P2 final evidence artifact hash must persist as lowercase SHA-256, not null");
 }
+for (const refDefName of ["sourceFileRef", "fixtureRef"]) {
+  const refDef = evidenceSchema.$defs[refDefName];
+  if (!refDef?.required?.includes("schemaId")) {
+    fail(`P2 evidence $defs.${refDefName} must require schemaId`);
+  }
+}
 const schemaClosure = evidenceSchema.properties.schemaClosure;
 const sourceFileRefs = evidenceSchema.properties.sourceFileRefs;
 const fixtureRefs = evidenceSchema.properties.fixtureRefs;

@@ -54,7 +54,7 @@ P1 valid, invalid, review, and mutation fixtures are not projection inputs. Fixt
 - Numeric token values keep the P0 canonical number constraints.
 
 ## Authority Checks
-Projection generation fails with `PROJECTION_AUTHORITY_ESCALATION` if any projected field grants authority absent from the governed catalog.
+Projection generation fails with `PROJECTION_AUTHORITY_ESCALATION` if any projected field grants authority absent from the governed catalog. The check compares the projection against the governed catalog across projected components, props, variants, states, slots, actions, events, token refs, data bindings, component accessibility, top-level projection accessibility derived from `governedCatalog.components[*].accessibility`, projected tokens, runtime capabilities, and governance. Representative fixture coverage includes a projected `Button.props.variant.allowedValues` value that is absent from the governed catalog, but the guard is not limited to that field.
 
 Projection generation fails with `PROJECTION_SOURCE_HASH_MISMATCH` if the governed catalog hash does not match P0 evidence.
 

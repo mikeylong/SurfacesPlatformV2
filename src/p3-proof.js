@@ -560,6 +560,7 @@ async function evaluateP3Fixture({ cwd, fixture, expectation, registry, registry
 
 function validateAllowedTask(task, registry, graphCode = null) {
   if (task.schemaId !== "agent-task.v0") return { ok: false, code: "AGENT_CAPABILITY_UNREGISTERED" };
+  if (task.reviewPolicy === "blocked") return { ok: false, code: "AGENT_REVIEW_POLICY_BLOCKED" };
   if ((task.requestedTools || []).some((tool) => deniedRuntimeTokens().has(tool))) return { ok: false, code: "AGENT_TOOL_DENIED" };
   if ((task.requiredCapabilities || []).some((capabilityId) => !registry.capabilities[capabilityId])) {
     return { ok: false, code: "AGENT_CAPABILITY_UNREGISTERED" };
@@ -590,6 +591,8 @@ async function fixtureMatchesDiagnostic(code, fixture, { registry, registryHash,
       }
     case "AGENT_OUTPUT_HIDDEN":
       return (fixture.allowedOutputs || []).some((output) => output.hidden || output.evidenceTracked === false || path.posix.basename(output.path).startsWith("."));
+    case "AGENT_REVIEW_POLICY_BLOCKED":
+      return fixture.reviewPolicy === "blocked";
     case "AGENT_DEPENDENCY_CYCLE":
       return graphCode === "AGENT_DEPENDENCY_CYCLE";
     case "AGENT_DEPENDENCY_MISSING":
@@ -877,12 +880,18 @@ function buildReport({ runId, upstream, registryRef, planRef, reviewQueueRef, va
 async function buildEvidence({ cwd, runId, command, args, upstream, registryRef, planRef, workOrderRefs, reviewQueueRef, reportRef, validationResults, diagnostics, status, promotionStatus }) {
   const schemaClosure = [];
   for (const artifactPath of p3SchemaPaths()) {
-    schemaClosure.push(artifactRef(artifactPath, schemaIdForP3Path(artifactPath), await canonicalFileHash(path.join(cwd, artifactPath))));
+    schemaClosure.push(withEvidenceRefProvenance(
+      artifactRef(artifactPath, schemaIdForP3Path(artifactPath), await canonicalFileHash(path.join(cwd, artifactPath))),
+      "schema-closure"
+    ));
   }
 
   const fixtureRefs = [];
   for (const fixturePath of p3FixturePaths()) {
-    fixtureRefs.push(artifactRef(fixturePath, schemaIdForP3Path(fixturePath), await canonicalFileHash(path.join(cwd, fixturePath))));
+    fixtureRefs.push(withEvidenceRefProvenance(
+      artifactRef(fixturePath, schemaIdForP3Path(fixturePath), await canonicalFileHash(path.join(cwd, fixturePath))),
+      "fixture-input"
+    ));
   }
 
   const boundaryRefs = [
@@ -893,23 +902,19 @@ async function buildEvidence({ cwd, runId, command, args, upstream, registryRef,
     ...workOrderRefs,
     reviewQueueRef,
     reportRef
-  ];
+  ].map((ref) => withEvidenceRefProvenance(ref, ref.path.startsWith("artifacts/p2/") ? "upstream-boundary" : "generated-boundary"));
 
-  const artifactRefs = [];
-  for (const artifactPath of P3_ARTIFACT_PATHS) {
-    artifactRefs.push({
-      ...artifactRef(
-        artifactPath,
-        schemaIdForP3Path(artifactPath),
-        artifactPath.endsWith("/evidence.json") ? null : await canonicalFileHash(path.join(cwd, artifactPath))
-      ),
-      provenance: {
-        generatedAt: P3_TIMESTAMP,
-        generator: "interfacectl-p3-evidence",
-        sourceRefs: artifactPath === `${P3_ARTIFACT_ROOT}/evidence.json` ? ["plans/p3/validation-evidence.md"] : [artifactPath]
-      }
-    });
-  }
+	  const artifactRefs = [];
+	  for (const artifactPath of P3_ARTIFACT_PATHS) {
+	    artifactRefs.push({
+	      ...artifactRef(
+	        artifactPath,
+	        schemaIdForP3Path(artifactPath),
+	        artifactPath.endsWith("/evidence.json") ? null : await canonicalFileHash(path.join(cwd, artifactPath))
+	      ),
+	      provenance: evidenceArtifactProvenance(artifactPath)
+	    });
+	  }
 
   const evidence = {
     contractId: "surfaces-p3-agent-orchestration-proof",
@@ -942,6 +947,28 @@ async function buildEvidence({ cwd, runId, command, args, upstream, registryRef,
   assertOrderedPaths("P3 evidence artifacts", evidence.artifacts.map((entry) => entry.path), P3_ARTIFACT_PATHS);
   assertOrderedPaths("P3 evidence validationResults", evidence.validationResults.map((entry) => entry.fixturePath), P3_EXPECTATION_ROWS.map((row) => row.fixturePath));
   return evidence;
+}
+
+function withEvidenceRefProvenance(ref, role) {
+  return {
+    ...ref,
+    provenance: {
+      generatedAt: P3_TIMESTAMP,
+      generator: "interfacectl-p3-evidence",
+      sourceRefs: [`artifact://${ref.path}`, `role://${role}`]
+    }
+  };
+}
+
+function evidenceArtifactProvenance(artifactPath) {
+  const role = artifactPath === `${P3_ARTIFACT_ROOT}/evidence.json` ? "final-evidence" : "generated-artifact";
+  const sourceRefs = [`artifact://${artifactPath}`, `role://${role}`];
+  if (role === "final-evidence") sourceRefs.push("plans/p3/validation-evidence.md");
+  return {
+    generatedAt: P3_TIMESTAMP,
+    generator: "interfacectl-p3-evidence",
+    sourceRefs
+  };
 }
 
 function stripResult(result) {

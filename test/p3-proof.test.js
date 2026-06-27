@@ -23,12 +23,53 @@ test("P3 agents proof emits passing evidence with final self-hash", async () => 
 
   assert.equal(evidence.status, "pass");
   assert.equal(evidence.promotionStatus, "review_required");
-  assert.equal(evidence.validationResults.length, 23);
+  assert.equal(evidence.validationResults.length, 24);
   assert.equal(evidence.artifacts.at(-1).path, "artifacts/p3/evidence.json");
   assert.equal(evidence.artifacts.at(-1).hash, p3Internals.computeEvidenceSelfHash(evidence));
   assert.equal(plan.reviewQueueRef.path, "artifacts/p3/review-queue.json");
   assert.equal(Object.hasOwn(plan.reviewQueueRef, "hash"), false);
   assert.equal(reviewQueue.orchestrationPlanRef.hash, evidence.artifacts.find((entry) => entry.path === "artifacts/p3/orchestration-plan.json").hash);
+});
+
+test("P3 blocked review policy remains blocked and emits no work order", async () => {
+  await runP3Proof();
+  const evidence = await readJson("artifacts/p3/evidence.json");
+  const report = await readJson("artifacts/p3/agent-orchestration-report.json");
+  const plan = await readJson("artifacts/p3/orchestration-plan.json");
+
+  const result = evidence.validationResults.find((row) => row.fixturePath === "fixtures/p3/invalid/blocked-review-policy.agent-task.json");
+  assert.ok(result, "expected blocked review-policy fixture result");
+  assert.equal(result.actualResult, "invalid");
+  assert.equal(result.promotionStatus, "blocked");
+  assert.deepEqual(result.diagnosticCodes, ["AGENT_REVIEW_POLICY_BLOCKED"]);
+  assert.equal(result.workOrderPath, null);
+  assert.equal(result.reviewQueuePath, null);
+  assert.equal(plan.tasks.some((task) => task.taskId === "blocked-review-policy"), false);
+  assert.ok(report.diagnostics.some((diagnostic) => diagnostic.code === "AGENT_REVIEW_POLICY_BLOCKED"));
+});
+
+test("P3 evidence refs carry deterministic provenance required by schema", async () => {
+  await runP3Proof();
+  const evidence = await readJson("artifacts/p3/evidence.json");
+
+  for (const ref of [
+    ...evidence.schemaClosure,
+    ...evidence.fixtureRefs,
+    ...evidence.boundaryRefs,
+    ...evidence.artifacts
+  ]) {
+    assert.equal(ref.provenance?.generatedAt, "1970-01-01T00:00:00.000Z");
+    assert.equal(ref.provenance?.generator, "interfacectl-p3-evidence");
+    assert.ok(ref.provenance?.sourceRefs?.includes(`artifact://${ref.path}`));
+  }
+
+  const ajv = await loadP3Ajv();
+  const validate = ajv.getSchema("https://surfaces.dev/schemas/p3/agent-orchestration-evidence.v0.schema.json");
+  assert.ok(validate, "expected P3 evidence schema to be loaded");
+  const tampered = structuredClone(evidence);
+  delete tampered.boundaryRefs[0].provenance;
+  tampered.artifacts[tampered.artifacts.length - 1].hash = p3Internals.computeEvidenceSelfHash(tampered);
+  assert.equal(validate(tampered), false);
 });
 
 test("P3 work orders remain inert and review work has no work order", async () => {
@@ -372,4 +413,29 @@ async function withJsonFileMutations(mutations, fn) {
 
 async function readJson(relativePath) {
   return JSON.parse(await fs.readFile(path.join(root, relativePath), "utf8"));
+}
+
+async function loadP3Ajv() {
+  const ajv = new Ajv2020({
+    allErrors: true,
+    strict: false,
+    validateSchema: true,
+    validateFormats: false
+  });
+  for (const schemaPath of [
+    "schemas/agent-capability-registry-fixture.v0.schema.json",
+    "schemas/agent-capability-registry.v0.schema.json",
+    "schemas/agent-preflight-mutation.v0.schema.json",
+    "schemas/agent-task.v0.schema.json",
+    "schemas/agent-work-order.v0.schema.json",
+    "schemas/agent-orchestration-plan.v0.schema.json",
+    "schemas/agent-review-queue.v0.schema.json",
+    "schemas/agent-orchestration-report.v0.schema.json",
+    "schemas/agent-orchestration-diagnostics.v0.schema.json",
+    "schemas/agent-orchestration-expectations.v0.schema.json",
+    "schemas/agent-orchestration-evidence.v0.schema.json"
+  ]) {
+    ajv.addSchema(await readJson(schemaPath));
+  }
+  return ajv;
 }

@@ -8,6 +8,7 @@ import { promisify } from "node:util";
 import test from "node:test";
 import Ajv2020 from "ajv/dist/2020.js";
 import { canonicalJson } from "../src/p0.js";
+import { findProjectionAuthorityEscalation } from "../src/p1-proof.js";
 
 const execFileAsync = promisify(execFile);
 const root = process.cwd();
@@ -221,8 +222,8 @@ const expectedP1Rows = [
     expectedPromotionStatus: "blocked",
     expectedDiagnosticCodes: ["PROJECTION_AUTHORITY_ESCALATION"],
     expectedArtifactPath: "fixtures/p1/mutations/projection-authority-escalation.runtime-projection.json",
-    expectedJsonPointer: "/components/ConfirmPanel/actions/escalate",
-    requiredSourceRef: "fixture://p1/mutations/projection-authority-escalation.runtime-projection#/components/ConfirmPanel/actions/escalate",
+    expectedJsonPointer: "/components/Button/props/variant/allowedValues/3",
+    requiredSourceRef: "fixture://p1/mutations/projection-authority-escalation.runtime-projection#/components/Button/props/variant/allowedValues/3",
     renderPlanPath: null
   },
   {
@@ -343,6 +344,28 @@ test("materialize:p1 creates required P1 schemas and fixtures", async (t) => {
   assert.equal(manifest.runExpectation?.promotionStatus, "review_required");
   assert.deepEqual(new Set(manifest.inputs), new Set(expectedP1Rows.map((row) => row.fixturePath)));
   assertExpectedRows(manifest.expectations, "manifest expectations");
+
+  const evidenceSchema = await readJson(workspace, "schemas/runtime-adapter-evidence.v0.schema.json");
+  for (const field of ["upstream", "runtimeProjectionRef", "runtimeAdapterReportRef", "renderPlanRefs", "provenance"]) {
+    assert.ok(evidenceSchema.required.includes(field), `runtime adapter evidence schema must require ${field}`);
+  }
+
+  const authorityMutation = await readJson(workspace, "fixtures/p1/mutations/projection-authority-escalation.runtime-projection.json");
+  assert.equal(authorityMutation.components.Button.props.variant.allowedValues.at(-1), "ghost");
+  assert.equal(
+    authorityMutation.provenance.sourceUri,
+    "fixture://p1/mutations/projection-authority-escalation.runtime-projection"
+  );
+
+  const hashMutation = await readJson(workspace, "fixtures/p1/mutations/hash-mismatch.runtime-adapter-evidence.json");
+  for (const field of ["upstream", "runtimeProjectionRef", "runtimeAdapterReportRef", "renderPlanRefs", "provenance"]) {
+    assert.ok(Object.prototype.hasOwnProperty.call(hashMutation, field), `hash mismatch mutation must include ${field}`);
+  }
+  const badProjectionArtifact = findRef(hashMutation.artifacts, "artifacts/p1/runtime-projection.json");
+  assert.equal(badProjectionArtifact.hash, "f".repeat(64), "hash mutation must carry a generated artifact hash mismatch");
+  const finalEvidenceArtifact = hashMutation.artifacts.at(-1);
+  assert.equal(finalEvidenceArtifact.path, "artifacts/p1/evidence.json");
+  assert.notEqual(finalEvidenceArtifact.hash, p1EvidenceSelfHash(hashMutation), "hash mutation must carry a final evidence self-hash mismatch");
 });
 
 test("proof:p1 emits bounded runtime adapter artifacts and evidence", async (t) => {
@@ -359,18 +382,120 @@ test("proof:p1 emits bounded runtime adapter artifacts and evidence", async (t) 
   const evidence = await readJson(workspace, "artifacts/p1/evidence.json");
   const manifest = await readJson(workspace, "fixtures/p1/expectations.manifest.json");
   const projection = await readJson(workspace, "artifacts/p1/runtime-projection.json");
+  const governedCatalog = await readJson(workspace, "artifacts/p0/governed-catalog.json");
   const confirmPlan = await readJson(workspace, "artifacts/p1/render-plan.confirm-panel.json");
 
   assert.equal(report.status, "pass");
   assert.equal(report.promotionStatus, "review_required");
   assert.equal(evidence.status, "pass");
   assert.equal(evidence.promotionStatus, "review_required");
+  assert.equal(findProjectionAuthorityEscalation(projection, governedCatalog), null);
+  const expectedEscalation = (pointer) => ({
+    pointer,
+    sourceRef: `${projection.provenance.sourceUri}#${pointer}`
+  });
+  assert.deepEqual(
+    findProjectionAuthorityEscalation(withMutation(projection, (candidate) => {
+      candidate.components.Button.props.variant.allowedValues.push("ghost");
+    }), governedCatalog),
+    expectedEscalation("/components/Button/props/variant/allowedValues/3")
+  );
+  assert.deepEqual(
+    findProjectionAuthorityEscalation(withMutation(projection, (candidate) => {
+      candidate.components.StatusCallout.dataBindings.userId = {
+        type: "string",
+        sourceRef: "fixture://p1/test#/components/StatusCallout/dataBindings/userId"
+      };
+    }), governedCatalog),
+    expectedEscalation("/components/StatusCallout/dataBindings/userId")
+  );
+  assert.deepEqual(
+    findProjectionAuthorityEscalation(withMutation(projection, (candidate) => {
+      candidate.accessibility.Button.nameFrom = "props.ghostLabel";
+    }), governedCatalog),
+    expectedEscalation("/accessibility/Button/nameFrom")
+  );
+  assert.deepEqual(
+    findProjectionAuthorityEscalation(withMutation(projection, (candidate) => {
+      candidate.runtimeCapabilities.unknownAction = "allowed";
+    }), governedCatalog),
+    expectedEscalation("/runtimeCapabilities/unknownAction")
+  );
   assertProjectedTokens(projection, confirmPlan);
   assertExpectedRows(manifest.expectations, "manifest expectations");
   assertExpectedRows(evidence.validationResults, "evidence validationResults");
   assertExpectedRows(report.results, "runtime adapter report results");
   await assertEvidenceBoundaryAndArtifactRefs(workspace, evidence, report);
   await assertDiagnosticsRegistryBehavior(workspace, manifest, report, evidence);
+});
+
+test("runtime-adapter-evidence schema rejects non-closure refs", async (t) => {
+  const workspace = await createWorkspace(t);
+  await runNpm(workspace, ["run", "materialize:p1"]);
+  await fs.rm(path.join(workspace, "artifacts/p1"), { recursive: true, force: true });
+  await runNpm(workspace, ["run", "proof:p1"]);
+
+  const validate = await runtimeAdapterEvidenceValidator(workspace);
+  const evidence = await readJson(workspace, "artifacts/p1/evidence.json");
+  assert.equal(validate(evidence), true, `generated P1 evidence must validate: ${JSON.stringify(validate.errors)}`);
+
+  const selfPlaceholder = withMutation(evidence, (candidate) => {
+    candidate.artifacts.at(-1).hash = null;
+  });
+  assert.equal(validate(selfPlaceholder), true, "only the final P1 evidence self ref may use the null hash placeholder");
+
+  const scenarios = [
+    {
+      name: "missing upstream governed catalog ref",
+      mutate: (candidate) => {
+        delete candidate.upstream.governedCatalogRef;
+      }
+    },
+    {
+      name: "arbitrary render plan ref",
+      mutate: (candidate) => {
+        candidate.renderPlanRefs[0].path = "artifacts/p1/render-plan.arbitrary.json";
+      }
+    },
+    {
+      name: "extra render plan ref",
+      mutate: (candidate) => {
+        candidate.renderPlanRefs.push(JSON.parse(JSON.stringify(candidate.renderPlanRefs[0])));
+      }
+    },
+    {
+      name: "truncated artifacts",
+      mutate: (candidate) => {
+        candidate.artifacts.pop();
+      }
+    },
+    {
+      name: "extra artifacts",
+      mutate: (candidate) => {
+        candidate.artifacts.splice(candidate.artifacts.length - 1, 0, {
+          ...JSON.parse(JSON.stringify(candidate.artifacts[0])),
+          path: "artifacts/p1/extra.json"
+        });
+      }
+    },
+    {
+      name: "missing boundary source artifact hash",
+      mutate: (candidate) => {
+        delete candidate.boundaryRefs[0].sourceArtifactHash;
+      }
+    },
+    {
+      name: "non-self null artifact hash",
+      mutate: (candidate) => {
+        candidate.artifacts[0].hash = null;
+      }
+    }
+  ];
+
+  for (const scenario of scenarios) {
+    const candidate = withMutation(evidence, scenario.mutate);
+    assert.equal(validate(candidate), false, `${scenario.name} must be rejected by runtime-adapter-evidence.v0`);
+  }
 });
 
 test("direct adapter proof command exits 0 after materialization and P0 proof", async (t) => {
@@ -898,6 +1023,13 @@ async function validateJsonArtifact(ajv, workspace, schemaPath, dataPath) {
   assert.equal(validate(data), true, `${dataPath} failed ${schemaPath}: ${JSON.stringify(validate.errors)}`);
 }
 
+async function runtimeAdapterEvidenceValidator(workspace) {
+  const schema = await readJson(workspace, "schemas/runtime-adapter-evidence.v0.schema.json");
+  const ajv = new Ajv2020({ allErrors: true, strict: false, validateSchema: true });
+  assert.equal(ajv.validateSchema(schema), true, `runtime adapter evidence schema must be valid JSON Schema: ${JSON.stringify(ajv.errors)}`);
+  return ajv.compile(schema);
+}
+
 function assertExpectedRows(rows, label) {
   assert.ok(Array.isArray(rows), `${label} must be an array`);
   const rowsByFixture = new Map(rows.map((row) => [row.fixturePath, row]));
@@ -1122,6 +1254,20 @@ function setEvidenceSelfHash(evidence) {
   assert.equal(selfEntry.path, "artifacts/p0/evidence.json", "P0 evidence self-ref must be the final artifact entry");
   selfEntry.hash = null;
   selfEntry.hash = sha256Hex(canonicalJson(evidence));
+}
+
+function p1EvidenceSelfHash(evidence) {
+  const clone = JSON.parse(JSON.stringify(evidence));
+  const selfEntry = clone.artifacts[clone.artifacts.length - 1];
+  assert.equal(selfEntry.path, "artifacts/p1/evidence.json", "P1 evidence self-ref must be the final artifact entry");
+  selfEntry.hash = null;
+  return sha256Hex(canonicalJson(clone));
+}
+
+function withMutation(value, mutate) {
+  const clone = JSON.parse(JSON.stringify(value));
+  mutate(clone);
+  return clone;
 }
 
 async function pathExists(absolutePath) {

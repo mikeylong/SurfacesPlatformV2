@@ -62,6 +62,7 @@ Required preflight checks:
 
 P2 evidence must preserve accepted source and proof refs through `sourceManifestRef`, `sourceFileRefs`, `schemaClosure`, `fixtureRefs`, `artifactRefs`, and `validationResults`; the accepted report is represented by the `artifactRefs` entry for `artifacts/p2/ingestion-report.json`.
 These refs and the final evidence self-hash must be recorded without rewriting paths, hashes, run ids, schema ids, source ids, or source ref roots.
+Each evidence ref must also carry deterministic provenance for its ref path, hash or self-hash placeholder, role, generator, timestamp, and environment.
 
 ## Artifact Ordering
 P2 evidence artifact order is:

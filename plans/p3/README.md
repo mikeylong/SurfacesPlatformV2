@@ -77,6 +77,7 @@ fixtures/p3/
     denied-tool.agent-task.json
     scope-escalation.agent-task.json
     hidden-output.agent-task.json
+    blocked-review-policy.agent-task.json
     cycle-dependency.agent-task.json
     missing-dependency.agent-task.json
   mutations/
@@ -126,7 +127,7 @@ Command-level upstream preflight mutation fixtures cover missing, failing, hash-
 Package scripts and tests execute this as `node bin/interfacectl.js surfaces agents proof --ingestion-evidence artifacts/p2/evidence.json --catalog artifacts/p2/governed-catalog.json --fixture fixtures/p3 --out artifacts/p3`. Evidence records the logical command string above.
 
 ## Pass Condition
-Given valid P2 ingestion evidence and the P3 fixture set, the agents proof command emits the exact P3 artifacts, creates a hash-bound agent capability registry, recruits only registered capabilities for declared task requirements, emits deterministic scoped work orders, blocks invalid and mutation cases with registry-backed diagnostics, records review-required work without execution, records orchestration diagnostics before final evidence, and writes reproducible evidence with hashes and provenance for every P3 schema, fixture, input artifact, generated proof artifact under `artifacts/p3`, and final evidence artifact.
+Given valid P2 ingestion evidence and the P3 fixture set, the agents proof command emits the exact P3 artifacts, creates a hash-bound agent capability registry, recruits only registered capabilities for declared task requirements, emits deterministic scoped work orders, blocks invalid and mutation cases with registry-backed diagnostics, preserves blocked review policies without downgrading them to allowed, records review-required work without execution, records orchestration diagnostics before final evidence, and writes reproducible evidence with hashes and provenance for every P3 schema, fixture, input artifact, generated proof artifact under `artifacts/p3`, and final evidence artifact.
 
 P3 generated artifact refs must be acyclic: forward refs to later same-run artifacts omit hashes, resolved backward refs to already materialized artifacts may include hashes, and final P3 evidence owns the complete hash closure.
 
@@ -158,6 +159,7 @@ P3 proves governed agent orchestration, not agent execution.
 | `AGENT_SCOPE_ESCALATION` | A task reads, writes, or emits outside declared artifact scope | `work-order` | `blocked` | `invalid/scope-escalation.agent-task.json` |
 | `AGENT_SCOPE_ESCALATION` | A generated work order reads, writes, or emits outside resolved artifact scope | `work-order` | `blocked` | `mutations/work-order-scope-escalation.agent-work-order.json` |
 | `AGENT_OUTPUT_HIDDEN` | A task declares hidden, untracked, or non-evidence output | `work-order` | `blocked` | `invalid/hidden-output.agent-task.json` |
+| `AGENT_REVIEW_POLICY_BLOCKED` | A task declares blocked review policy | `review` | `blocked` | `invalid/blocked-review-policy.agent-task.json` |
 | `AGENT_DEPENDENCY_CYCLE` | Orchestration plan contains a dependency cycle | `orchestration` | `blocked` | `invalid/cycle-dependency.agent-task.json` |
 | `AGENT_DEPENDENCY_MISSING` | Orchestration plan references a missing dependency | `orchestration` | `blocked` | `invalid/missing-dependency.agent-task.json` |
 | `AGENT_TASK_DUPLICATE_ID` | Orchestration plan contains a duplicate task id | `orchestration` | `blocked` | `mutations/duplicate-task-id.agent-orchestration-plan.json` |

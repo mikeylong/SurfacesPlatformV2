@@ -25,7 +25,7 @@ The decision ledger records:
 
 - upstream evidence and review queue refs;
 - reviewer fixture metadata;
-- decision rows keyed by queue item id;
+- manifest-committed decision rows keyed by queue item id;
 - decision status and rationale;
 - evidence refs for each decision;
 - second-review markers when required;
@@ -55,10 +55,12 @@ Forward refs to later same-run generated artifacts omit hashes. Resolved refs to
 
 ## SurfaceOps Decision Rules
 - Decisions must cite P3 queue items and P3 evidence.
+- Fixture queue refs must match the accepted P3 review queue `path`, `schemaId`, top-level `runId`, `reviewItemId`, and `taskId`.
 - Decisions must not mutate upstream P3 artifacts.
 - Decisions must not execute work orders.
 - Decisions must not create hidden review state.
 - Approval, rejection, request-changes, and deferral are ledger states only.
+- The generated ledger emits only manifest-committed decision rows and blocks duplicate committed decisions for the same P3 review item; coverage-only reject, request-changes, and defer fixtures remain visible in `review-judgment-report.json`.
 
 ## JudgmentKit Evaluation Rules
 - Findings must cite evidence refs.

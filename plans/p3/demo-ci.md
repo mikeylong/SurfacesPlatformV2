@@ -21,6 +21,7 @@ Make the agent orchestration proof inspectable without weakening the proof bound
 
 ## Demo Rules
 - Demo generation must require passing `artifacts/p3/evidence.json`.
+- Demo generation must verify the full evidence closure, including `schemaClosure`, `fixtureRefs`, upstream and generated `boundaryRefs`, generated artifact hashes, and the final self-hash.
 - Demo output must be deterministic and self-contained.
 - Demo output may display registry entries, selected capabilities, DAG edges, work orders, review queue rows, diagnostics, artifact refs, and evidence status.
 - Demo output must not contain executable work-order behavior, forms, scripts that call tools, network fetches, secrets, or live agent status; this applies VISION.md's canonical no-live-execution boundary.

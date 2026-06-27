@@ -42,6 +42,8 @@ P2 implements the first bounded real design-system ingestion proof from a manife
 
 P3 implements the first inert agent recruitment and orchestration proof after P2 evidence passes. It materializes a capability registry, deterministic task DAG, scoped non-executable work orders, review queue, report, demo, and evidence without live agents, tool calls, connector calls, file edits, network calls, secrets, callbacks, SurfaceOps persistence, or JudgmentKit execution.
 
+P4 implements the first deterministic review and judgment proof over accepted P3 evidence and the P3 review queue. It materializes a SurfaceOps decision ledger, JudgmentKit-shaped evaluation report, review/judgment report, demo, and evidence without live SurfaceOps persistence, live JudgmentKit invocation, work-order execution, production adapters, P5/A2UI scope, or authority override.
+
 ## Roadmap
 This roadmap is the accepted product sequence for the current plan.
 

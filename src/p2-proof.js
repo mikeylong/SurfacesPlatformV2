@@ -1297,52 +1297,82 @@ async function buildEvidence({ cwd, sourceRoot, fixtureRoot, outRoot, manifest, 
       schemaId: schemaIdForP2Path(artifactPath),
       hashAlgorithm: "sha256",
       hash: await canonicalFileHash(path.join(cwd, artifactPath)),
-      ownership: isP2Owned ? "p2-owned" : "shared-consumed"
+      ownership: isP2Owned ? "p2-owned" : "shared-consumed",
+      provenance: evidenceRefProvenance({
+        artifactPath,
+        hash: await canonicalFileHash(path.join(cwd, artifactPath)),
+        role: isP2Owned ? "p2-owned-schema" : "shared-consumed-schema"
+      })
     });
   }
 
   const sourceFileRefs = [];
   for (const sourceFile of manifest.sourceFiles) {
+    const artifactPath = `${sourceRoot}/${sourceFile.path}`;
     sourceFileRefs.push({
-      path: `${sourceRoot}/${sourceFile.path}`,
+      path: artifactPath,
       schemaId: sourceFile.sourceType,
       hashAlgorithm: "sha256",
       hash: sourceFile.sha256,
-      sourceRef: sourceFile.sourceRefRoot
+      sourceRef: sourceFile.sourceRefRoot,
+      provenance: evidenceRefProvenance({
+        artifactPath,
+        hash: sourceFile.sha256,
+        role: "source-input"
+      })
     });
   }
   for (const mappingFile of manifest.requiredMappings) {
+    const artifactPath = `${sourceRoot}/${mappingFile.path}`;
     sourceFileRefs.push({
-      path: `${sourceRoot}/${mappingFile.path}`,
+      path: artifactPath,
       schemaId: "source-mapping-input",
       hashAlgorithm: "sha256",
       hash: mappingFile.sha256,
-      sourceRef: null
+      sourceRef: null,
+      provenance: evidenceRefProvenance({
+        artifactPath,
+        hash: mappingFile.sha256,
+        role: "mapping-input"
+      })
     });
   }
 
   const fixtureRefs = [];
   for (const fixturePath of p2FixturePaths()) {
+    const hash = await canonicalFileHash(path.join(cwd, fixturePath));
     fixtureRefs.push({
       path: fixturePath,
       schemaId: schemaIdForP2Path(fixturePath),
       hashAlgorithm: "sha256",
-      hash: await canonicalFileHash(path.join(cwd, fixturePath)),
-      sourceRef: null
+      hash,
+      sourceRef: null,
+      provenance: evidenceRefProvenance({
+        artifactPath: fixturePath,
+        hash,
+        role: "fixture-input"
+      })
     });
   }
 
   const artifactRefs = [];
   for (const artifactPath of P2_ARTIFACT_PATHS) {
+    const hash = artifactPath.endsWith("/evidence.json") ? null : await canonicalFileHash(path.join(cwd, artifactPath));
     artifactRefs.push({
       path: artifactPath,
       schemaId: schemaIdForP2Path(artifactPath),
       hashAlgorithm: "sha256",
-      hash: artifactPath.endsWith("/evidence.json") ? null : await canonicalFileHash(path.join(cwd, artifactPath)),
-      sourceRef: null
+      hash,
+      sourceRef: null,
+      provenance: evidenceRefProvenance({
+        artifactPath,
+        hash,
+        role: artifactPath.endsWith("/evidence.json") ? "final-evidence" : "generated-artifact"
+      })
     });
   }
 
+  const manifestHash = await canonicalFileHash(path.join(cwd, sourceRoot, "manifest.json"));
   const evidence = {
     schemaId: "design-system-ingestion-evidence.v0",
     version: P2_VERSION,
@@ -1354,8 +1384,13 @@ async function buildEvidence({ cwd, sourceRoot, fixtureRoot, outRoot, manifest, 
       path: `${sourceRoot}/manifest.json`,
       schemaId: "design-source-manifest.v0",
       hashAlgorithm: "sha256",
-      hash: await canonicalFileHash(path.join(cwd, sourceRoot, "manifest.json")),
-      sourceRef: null
+      hash: manifestHash,
+      sourceRef: null,
+      provenance: evidenceRefProvenance({
+        artifactPath: `${sourceRoot}/manifest.json`,
+        hash: manifestHash,
+        role: "source-manifest"
+      })
     },
     sourceFileRefs,
     schemaClosure,
@@ -1374,6 +1409,23 @@ async function buildEvidence({ cwd, sourceRoot, fixtureRoot, outRoot, manifest, 
   assertOrderedPaths("P2 evidence validationResults", evidence.validationResults.map((entry) => entry.fixturePath), P2_FIXTURE_FILES);
   assertOrderedPaths("P2 expectations artifactOrder", expectations.artifactOrder, p2ArtifactOrder());
   return evidence;
+}
+
+function evidenceRefProvenance({ artifactPath, hash, role }) {
+  return {
+    artifactPath,
+    artifactHash: hash ?? "sha256:self-hash-null-placeholder",
+    role,
+    generatedAt: P2_TIMESTAMP,
+    generator: {
+      name: "interfacectl-p2-evidence",
+      version: P2_VERSION
+    },
+    environment: {
+      ...P2_ENVIRONMENT,
+      pathStyle: "posix-relative"
+    }
+  };
 }
 
 function stripResult(result) {

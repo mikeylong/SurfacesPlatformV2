@@ -50,7 +50,7 @@ P4 evidence must include `boundaryRefs[]` for:
 - `artifacts/p4/judgmentkit-evaluation-report.json`;
 - `artifacts/p4/review-judgment-report.json`.
 
-Each ref must include artifact path, schema id, hash, source artifact hash when applicable, and provenance.
+Each ref must include artifact path, schema id, hash, source artifact hash when applicable, and deterministic provenance. P4 requires provenance on evidence `boundaryRefs[]` specifically so boundary crossings are auditable without requiring provenance on every generic artifact ref shape consumed elsewhere.
 
 ## P3 Preflight Gate
 Before materializing `artifacts/p4/surfaceops-decision-ledger.json`, P4 proof must run strict P3 preflight checks and fail closed before writing any P4 proof artifact when any check fails.
@@ -64,6 +64,8 @@ Required preflight checks:
 5. Current P3 artifact bytes match the hashes recorded in accepted evidence.
 6. P3 review queue ref matches the command input and evidence ref.
 7. No alternate review queue ref, alternate orchestration evidence ref, absolute path, symlinked path, `..` traversal, or extra upstream input is accepted before ledger materialization.
+
+After preflight accepts the queue, P4 fixture validation must bind each `reviewItemRef` to that queue's exact path, schema id, top-level run id, review item id, and task id. Stale fixture refs are reported with the existing SurfaceOps or JudgmentKit evidence-ref diagnostics.
 
 P4 evidence must copy accepted upstream refs into `boundaryRefs[]` without rewriting paths, hashes, run ids, or schema ids.
 

@@ -23,6 +23,7 @@ fixtures/p3/
     denied-tool.agent-task.json
     scope-escalation.agent-task.json
     hidden-output.agent-task.json
+    blocked-review-policy.agent-task.json
     cycle-dependency.agent-task.json
     missing-dependency.agent-task.json
   mutations/
@@ -48,7 +49,7 @@ fixtures/p3/
 | `agent-capability-registry.fixture.json` | Proves registered agents and capabilities can be materialized | `registry` |
 | `valid/` | Proves allowed tasks recruit agents and emit scoped work orders | `recruitment` or `orchestration` |
 | `review/` | Proves review-required work is structurally valid but not executable | `review` |
-| `invalid/` | Proves invalid recruitment/orchestration fails closed | `recruitment`, `orchestration`, or `work-order` |
+| `invalid/` | Proves invalid recruitment/orchestration/review-policy handling fails closed | `recruitment`, `orchestration`, `work-order`, or `review` |
 | `mutations/` | Proves command preflight, registry, plan, work-order, report, and evidence tampering is blocked | `preflight`, `orchestration`, `work-order`, `report`, or `evidence` |
 
 ## Expectations Manifest
@@ -105,6 +106,7 @@ P3 expected phase values are:
 | `fixtures/p3/invalid/denied-tool.agent-task.json` | `invalid` | `recruitment` | `recruitment-selection` | `invalid` | `blocked` | `["AGENT_TOOL_DENIED"]` | `artifacts/p3/agent-orchestration-report.json` | `/deniedCapabilities` | `fixture://p3/invalid/denied-tool#/deniedCapabilities` | `[]` | `null` | `null` |
 | `fixtures/p3/invalid/scope-escalation.agent-task.json` | `invalid` | `work-order` | `work-order-validation` | `invalid` | `blocked` | `["AGENT_SCOPE_ESCALATION"]` | `artifacts/p3/agent-orchestration-report.json` | `/allowedOutputs` | `fixture://p3/invalid/scope-escalation#/allowedOutputs` | `[]` | `null` | `null` |
 | `fixtures/p3/invalid/hidden-output.agent-task.json` | `invalid` | `work-order` | `work-order-validation` | `invalid` | `blocked` | `["AGENT_OUTPUT_HIDDEN"]` | `artifacts/p3/agent-orchestration-report.json` | `/allowedOutputs` | `fixture://p3/invalid/hidden-output#/allowedOutputs` | `[]` | `null` | `null` |
+| `fixtures/p3/invalid/blocked-review-policy.agent-task.json` | `invalid` | `review` | `review-routing` | `invalid` | `blocked` | `["AGENT_REVIEW_POLICY_BLOCKED"]` | `artifacts/p3/agent-orchestration-report.json` | `/reviewPolicy` | `fixture://p3/invalid/blocked-review-policy#/reviewPolicy` | `[]` | `null` | `null` |
 | `fixtures/p3/invalid/cycle-dependency.agent-task.json` | `invalid` | `orchestration` | `orchestration-plan` | `invalid` | `blocked` | `["AGENT_DEPENDENCY_CYCLE"]` | `artifacts/p3/agent-orchestration-report.json` | `/dependencies` | `fixture://p3/invalid/cycle-dependency#/dependencies` | `[]` | `null` | `null` |
 | `fixtures/p3/invalid/missing-dependency.agent-task.json` | `invalid` | `orchestration` | `orchestration-plan` | `invalid` | `blocked` | `["AGENT_DEPENDENCY_MISSING"]` | `artifacts/p3/agent-orchestration-report.json` | `/dependencies` | `fixture://p3/invalid/missing-dependency#/dependencies` | `[]` | `null` | `null` |
 | `fixtures/p3/mutations/missing-upstream-evidence.agent-preflight.json` | `mutation` | `preflight` | `upstream-preflight` | `invalid` | `blocked` | `["AGENT_UPSTREAM_EVIDENCE_MISSING"]` | `fixtures/p3/mutations/missing-upstream-evidence.agent-preflight.json` | `/ingestionEvidenceRef` | `fixture://p3/mutations/missing-upstream-evidence#/ingestionEvidenceRef` | `[]` | `null` | `null` |

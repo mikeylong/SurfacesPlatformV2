@@ -24,7 +24,7 @@ The ledger must include:
 - upstream P3 evidence ref and review queue ref;
 - deterministic generated metadata;
 - reviewer records with stable ids and non-secret provenance;
-- decision rows keyed by queue item id;
+- manifest-committed decision rows keyed by queue item id;
 - decision status: `approved`, `rejected`, `changes_requested`, or `deferred`;
 - rationale text with bounded length;
 - evidence refs for every decision;
@@ -42,7 +42,8 @@ Reviewer provenance must use deterministic fixture identities in P4 proof. Host 
 - `changes_requested` decisions must name requested changes and aggregate as `blocked`.
 - `deferred` decisions must preserve `review_required`.
 - Decisions requiring a second reviewer aggregate as `review_required`.
-- Duplicate decisions for the same queue item are invalid unless the fixture explicitly models second-review behavior.
+- The ledger must not contain more than one committed decision for the same P3 review queue item.
+- Reject, request-changes, defer, and second-review fixture outcomes may be retained as validation/report coverage when the expectations manifest marks them coverage-only; coverage-only rows must not be emitted as duplicate committed ledger entries.
 
 ## Promotion, Reject, And Request-Changes Semantics
 P4 promotion status is a proof aggregate, not a live deployment switch.
@@ -63,7 +64,7 @@ SurfaceOps decisions must not:
 - call connectors, tools, network services, or agents.
 
 ## P4 Proof
-The decision ledger passes when every valid, invalid, review, and mutation fixture matches the expectations manifest, all decisions cite evidence, invalid overrides are blocked, second-review rows remain non-executable, and the ledger hash is recorded by the review/judgment report and final evidence.
+The decision ledger passes when every valid, invalid, review, and mutation fixture matches the expectations manifest, committed ledger decisions cite evidence, duplicate committed decisions are blocked, coverage-only reject/request-changes/defer rows remain report evidence, invalid overrides are blocked, second-review rows remain non-executable, and the ledger hash is recorded by the review/judgment report and final evidence.
 
 ## Non-Goals
 - No live reviewer identity integration.

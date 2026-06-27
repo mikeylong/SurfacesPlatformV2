@@ -141,8 +141,8 @@ const P1_REGISTRY_ROWS = [
     stage: "projection",
     phase: "projection-mutation",
     artifactPath: "fixtures/p1/mutations/projection-authority-escalation.runtime-projection.json",
-    pointer: "/components/ConfirmPanel/actions/escalate",
-    sourceRef: "fixture://p1/mutations/projection-authority-escalation.runtime-projection#/components/ConfirmPanel/actions/escalate",
+    pointer: "/components/Button/props/variant/allowedValues/3",
+    sourceRef: "fixture://p1/mutations/projection-authority-escalation.runtime-projection#/components/Button/props/variant/allowedValues/3",
     validationResult: "invalid",
     promotionStatus: "blocked",
     suggestedAction: "Reject the projection and remove non-catalog authority before proof continues.",
@@ -350,6 +350,10 @@ export async function runAdapterProof({ cwd, catalogPath, fixtureRoot, outRoot, 
   const runId = buildRunId(p0, command, args, manifest);
   let projection = buildRuntimeProjection(p0, runId);
   assertSchema(validators, "p1", "runtime-projection.v0", projection, `${outRoot}/runtime-projection.json`);
+  const generatedProjectionEscalation = findProjectionAuthorityEscalation(projection, p0.governedCatalog);
+  if (generatedProjectionEscalation) {
+    throw contractError(`P1 runtime projection grants authority absent from the governed catalog at ${generatedProjectionEscalation.pointer}`, 1);
+  }
   await writeJson(path.join(cwd, outRoot, "runtime-projection.json"), projection);
   const persistedProjection = await readJson(path.join(cwd, outRoot, "runtime-projection.json"));
   assertSchema(validators, "p1", "runtime-projection.v0", persistedProjection, `${outRoot}/runtime-projection.json`);
@@ -789,6 +793,170 @@ function buildRuntimeProjection(p0, runId) {
   };
 }
 
+export function findProjectionAuthorityEscalation(projection, governedCatalog) {
+  if (!projection || typeof projection !== "object" || Array.isArray(projection)) {
+    return projectionAuthorityEscalationResult(projection, "/");
+  }
+  if (!governedCatalog || typeof governedCatalog !== "object" || Array.isArray(governedCatalog)) {
+    return projectionAuthorityEscalationResult(projection, "/catalogRef");
+  }
+
+  const componentEscalation = findProjectedComponentEscalation(
+    projection.components || {},
+    governedCatalog.components || {}
+  );
+  if (componentEscalation) return projectionAuthorityEscalationResult(projection, componentEscalation);
+
+  const tokenEscalation = findProjectedTokenEscalation(
+    projection.tokens || {},
+    governedCatalog.tokens || {}
+  );
+  if (tokenEscalation) return projectionAuthorityEscalationResult(projection, tokenEscalation);
+
+  const accessibilityEscalation = findSubsetEscalation(
+    projection.accessibility || {},
+    catalogTopLevelAccessibility(governedCatalog.components || {}),
+    "/accessibility"
+  );
+  if (accessibilityEscalation) return projectionAuthorityEscalationResult(projection, accessibilityEscalation);
+
+  const runtimeCapabilityEscalation = findSubsetEscalation(
+    projection.runtimeCapabilities || {},
+    governedCatalog.runtimeCapabilities || {},
+    "/runtimeCapabilities"
+  );
+  if (runtimeCapabilityEscalation) return projectionAuthorityEscalationResult(projection, runtimeCapabilityEscalation);
+
+  const governanceEscalation = findSubsetEscalation(
+    projection.governance || {},
+    governedCatalog.governance || {},
+    "/governance"
+  );
+  if (governanceEscalation) return projectionAuthorityEscalationResult(projection, governanceEscalation);
+
+  return null;
+}
+
+function catalogTopLevelAccessibility(catalogComponents) {
+  const accessibility = {};
+  for (const componentId of Object.keys(catalogComponents).sort()) {
+    const componentAccessibility = catalogComponents[componentId]?.accessibility;
+    if (componentAccessibility !== undefined) {
+      accessibility[componentId] = componentAccessibility;
+    }
+  }
+  return accessibility;
+}
+
+function findProjectedComponentEscalation(projectedComponents, catalogComponents) {
+  const memberKeys = [
+    "props",
+    "variants",
+    "states",
+    "slots",
+    "actions",
+    "events",
+    "dataBindings",
+    "tokenRefs",
+    "accessibility",
+    "governance"
+  ];
+  for (const componentId of Object.keys(projectedComponents).sort()) {
+    const componentPointer = `/components/${escapeJsonPointer(componentId)}`;
+    const projectedComponent = projectedComponents[componentId];
+    const catalogComponent = catalogComponents[componentId];
+    if (!catalogComponent) return componentPointer;
+    if (projectedComponent?.sourceRef && catalogComponent.sourceRef && projectedComponent.sourceRef !== catalogComponent.sourceRef) {
+      return `${componentPointer}/sourceRef`;
+    }
+    for (const key of memberKeys) {
+      if (!Object.prototype.hasOwnProperty.call(projectedComponent || {}, key)) continue;
+      if (!Object.prototype.hasOwnProperty.call(catalogComponent || {}, key)) {
+        return `${componentPointer}/${key}`;
+      }
+      const escalation = findSubsetEscalation(
+        projectedComponent[key],
+        catalogComponent[key],
+        `${componentPointer}/${key}`
+      );
+      if (escalation) return escalation;
+    }
+  }
+  return null;
+}
+
+function findProjectedTokenEscalation(projectedTokens, catalogTokens) {
+  const catalogTokenMap = flattenCatalogTokens(catalogTokens);
+  for (const tokenRef of Object.keys(projectedTokens).sort()) {
+    const pointer = `/tokens/${escapeJsonPointer(tokenRef)}`;
+    const projectedToken = projectedTokens[tokenRef];
+    const catalogToken = catalogTokenMap.get(tokenRef);
+    if (!catalogToken) return pointer;
+    if (Object.prototype.hasOwnProperty.call(projectedToken || {}, "value") &&
+      canonicalJson(projectedToken.value) !== canonicalJson(catalogToken.$value)) {
+      return `${pointer}/value`;
+    }
+    if (projectedToken?.sourceRef && catalogToken.sourceRef && projectedToken.sourceRef !== catalogToken.sourceRef) {
+      return `${pointer}/sourceRef`;
+    }
+  }
+  return null;
+}
+
+function flattenCatalogTokens(tokens) {
+  const refs = new Map();
+  const walk = (node, parts) => {
+    if (!node || typeof node !== "object" || Array.isArray(node)) return;
+    if (Object.prototype.hasOwnProperty.call(node, "$value")) {
+      refs.set(parts.join("."), node);
+      return;
+    }
+    for (const [key, value] of Object.entries(node)) {
+      if (key.startsWith("$") || key === "sourceRef" || key === "resolvedSubvalues") continue;
+      walk(value, [...parts, key]);
+    }
+  };
+  walk(tokens, []);
+  return refs;
+}
+
+function findSubsetEscalation(projectedValue, catalogValue, pointer) {
+  if (projectedValue === undefined) return null;
+  if (catalogValue === undefined) return pointer;
+  if (Array.isArray(projectedValue)) {
+    if (!Array.isArray(catalogValue)) return pointer;
+    const catalogItems = new Set(catalogValue.map((item) => canonicalJson(item)));
+    for (const [index, item] of projectedValue.entries()) {
+      if (!catalogItems.has(canonicalJson(item))) return `${pointer}/${index}`;
+    }
+    return null;
+  }
+  if (projectedValue && typeof projectedValue === "object") {
+    if (!catalogValue || typeof catalogValue !== "object" || Array.isArray(catalogValue)) return pointer;
+    for (const key of Object.keys(projectedValue).sort()) {
+      if (!Object.prototype.hasOwnProperty.call(catalogValue, key)) {
+        return `${pointer}/${escapeJsonPointer(key)}`;
+      }
+      const nested = findSubsetEscalation(
+        projectedValue[key],
+        catalogValue[key],
+        `${pointer}/${escapeJsonPointer(key)}`
+      );
+      if (nested) return nested;
+    }
+    return null;
+  }
+  return Object.is(projectedValue, catalogValue) ? null : pointer;
+}
+
+function projectionAuthorityEscalationResult(projection, pointer) {
+  const sourceUri = typeof projection?.provenance?.sourceUri === "string" ? projection.provenance.sourceUri : null;
+  const sourceRef = sourceUri?.startsWith("fixture://")
+    ? `${sourceUri}#${pointer}`
+    : null;
+  return { pointer, sourceRef };
+}
+
 async function evaluateP1Mutation({ fixture, expectation, p0, projectionRef }) {
   const relative = expectation.fixturePath.replace(`${FIXTURE_ROOT}/`, "");
   const row = P1_REGISTRY_BY_COVERAGE.get(relative);
@@ -815,12 +983,11 @@ async function p1MutationMatchesFixtureContent(code, fixture, { p0, projectionRe
       return fixture.schemaId === "runtime-projection.v0" &&
         isArtifactRef(fixture.catalogRef, p0.catalogRef.path, p0.catalogRef.schemaId) &&
         fixture.catalogRef.hash !== p0.catalogRef.hash;
-    case "PROJECTION_AUTHORITY_ESCALATION":
+    case "PROJECTION_AUTHORITY_ESCALATION": {
+      const escalation = findProjectionAuthorityEscalation(fixture, p0.governedCatalog);
       return fixture.schemaId === "runtime-projection.v0" &&
-        Object.prototype.hasOwnProperty.call(fixture.components?.ConfirmPanel?.actions || {}, "escalate") &&
-        !Object.prototype.hasOwnProperty.call(p0.governedCatalog.components?.ConfirmPanel?.actions || {}, "escalate") &&
-        fixture.components.ConfirmPanel.actions.escalate?.sourceRef ===
-          "fixture://p1/mutations/projection-authority-escalation.runtime-projection#/components/ConfirmPanel/actions/escalate";
+        escalation?.pointer === P1_REGISTRY_BY_COVERAGE.get("mutations/projection-authority-escalation.runtime-projection.json")?.pointer;
+    }
     case "RUNTIME_RENDER_PLAN_PROVENANCE_MISSING":
       return fixture.schemaId === "render-plan.v0" &&
         !Object.prototype.hasOwnProperty.call(fixture, "provenance") &&
@@ -836,7 +1003,13 @@ async function p1MutationMatchesFixtureContent(code, fixture, { p0, projectionRe
       const projectionArtifact = fixture.artifacts.find((entry) =>
         isArtifactRef(entry, projectionRef.path, projectionRef.schemaId)
       );
-      return Boolean(projectionArtifact && projectionArtifact.hash !== projectionRef.hash);
+      const finalEvidenceArtifact = fixture.artifacts[fixture.artifacts.length - 1];
+      const generatedArtifactHashMismatch = Boolean(projectionArtifact && projectionArtifact.hash !== projectionRef.hash);
+      const finalEvidenceSelfHashMismatch = Boolean(
+        isArtifactRef(finalEvidenceArtifact, `${ARTIFACT_ROOT}/evidence.json`, "runtime-adapter-evidence.v0") &&
+        finalEvidenceArtifact.hash !== computeEvidenceSelfHash(fixture)
+      );
+      return generatedArtifactHashMismatch && finalEvidenceSelfHashMismatch;
     }
     default:
       return false;

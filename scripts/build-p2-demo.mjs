@@ -1,16 +1,13 @@
 import path from "node:path";
 import fs from "node:fs/promises";
 import Ajv2020 from "ajv/dist/2020.js";
-import { canonicalJson } from "../src/p0.js";
+import { p2Internals } from "../src/p2-proof.js";
 import {
   P2_ARTIFACT_ROOT,
   P2_SCHEMA_FILES,
   P2_SCHEMA_ROOT,
   P2_SHARED_SCHEMA_FILES,
-  canonicalFileHash,
-  deepClone,
   readJson,
-  sha256Hex,
   writeCanonicalJson
 } from "../src/p2-contract.js";
 
@@ -114,15 +111,12 @@ async function verifyEvidence(evidence, evidencePath) {
     throw contractError("P2 demo requires passing evidence");
   }
   const finalRef = evidence.artifactRefs[evidence.artifactRefs.length - 1];
-  if (finalRef.path !== evidencePath.posixPath || finalRef.hash !== computeEvidenceSelfHash(evidence)) {
+  if (finalRef.path !== evidencePath.posixPath || finalRef.hash !== p2Internals.computeEvidenceSelfHash(evidence)) {
     throw contractError("P2 evidence self-hash is invalid");
   }
-  for (const ref of evidence.artifactRefs) {
-    if (ref.path === evidencePath.posixPath) continue;
-    const actualHash = await canonicalFileHash(path.join(ROOT, ref.path));
-    if (actualHash !== ref.hash) {
-      throw contractError(`P2 artifact hash mismatch for ${ref.path}`);
-    }
+  const integrityCode = await p2Internals.firstEvidenceIntegrityFailureCode(ROOT, evidence);
+  if (integrityCode !== null) {
+    throw contractError(`P2 evidence integrity verification failed: ${integrityCode}`);
   }
 }
 
@@ -205,12 +199,6 @@ function assertSchema(validators, scope, schemaId, data, label) {
   if (!result.valid) {
     throw contractError(`${label} failed ${schemaId}: ${formatAjvErrors(result.errors)}`);
   }
-}
-
-function computeEvidenceSelfHash(evidence) {
-  const clone = deepClone(evidence);
-  clone.artifactRefs[clone.artifactRefs.length - 1].hash = null;
-  return sha256Hex(canonicalJson(clone));
 }
 
 function formatAjvErrors(errors) {
