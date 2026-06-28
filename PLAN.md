@@ -6,6 +6,8 @@ Read [Surfaces Platform Vision And Roadmap](VISION.md) before selecting or imple
 ## Plan Scope
 Subordinate to [VISION.md](VISION.md), this plan tracks the mechanical proof contracts for compiling design-system source material into governed UI contracts for bounded generation, CI/CD validation, evidence review, and runtime-safe rendering.
 
+Cross-cutting product and value documentation lives in [Product Portfolio Boundaries](plans/product-portfolio-boundaries.md) and [Usability And Value Evidence Plan](plans/usability-value-evidence.md). Those files are subordinate to `VISION.md` and must not redefine product authority, roadmap sequence, or implemented proof status.
+
 ## P0 Focus
 P0 establishes one executable catalog proof contract. It specifies and implements the exact schema files, fixture files, output artifacts, diagnostics, and pass/fail gates that the proof must satisfy.
 
@@ -470,6 +472,8 @@ Given valid P2 ingestion evidence, the P2 governed catalog, valid P4 review/judg
 - [P5 Protocol Adapter Proof](plans/p5/protocol-adapter-proof.md)
 - [P5 Validation and Evidence](plans/p5/validation-evidence.md)
 - [P5 Demo and CI](plans/p5/demo-ci.md)
+- [Product Portfolio Boundaries](plans/product-portfolio-boundaries.md)
+- [Usability And Value Evidence Plan](plans/usability-value-evidence.md)
 - [Surfaces.dev Documentation Tracking](plans/surfaces-dev.md)
 
 The P5 subplans linked above define the implemented `surfaces-protocol-static` proof slice. They do not implement production adapters, protocol APIs, SDKs, live protocol services, A2UI export, or A2UI conformance. Future P5 targets remain planned until they add their own proof shape and passing evidence.

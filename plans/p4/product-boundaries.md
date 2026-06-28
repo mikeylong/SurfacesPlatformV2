@@ -3,6 +3,8 @@
 ## Decision
 P4 is subordinate to [VISION.md](../../VISION.md#canonical-authority-model)'s canonical authority model. It consumes P3 evidence and review queue artifacts, then defines the implemented deterministic proof for review and judgment behavior as derived consumers. SurfaceOps may inspect review queue items and record approve, reject, request-changes, or defer decisions within the SurfaceOps decision ledger. JudgmentKit may inspect evidence and emit evaluation-only findings for activity fit, contract quality, evidence quality, and handoff quality. Neither may create catalog, runtime, source, adapter, execution, or override authority.
 
+Portfolio-level boundaries for SurfaceOps, `kanban.cards`, JudgmentKit, A2UI, product surfaces, and docs surfaces are tracked in [Product Portfolio Boundaries](../product-portfolio-boundaries.md). This P4 document stays phase-local.
+
 ## Goal
 Make human review and evidence judgment accountable. P4 should prove that review-required work can be inspected and decided with explicit evidence refs, reviewer provenance, deterministic decision state, and evaluator findings without creating hidden authority or executing work.
 
