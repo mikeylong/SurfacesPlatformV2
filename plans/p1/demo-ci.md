@@ -26,7 +26,7 @@ Make P1 inspectable without weakening the contract boundary. The demo should hel
 - The demo must not execute actions.
 - The demo must not fetch network resources.
 - The demo must not read secrets.
-- The demo must not claim A2UI compatibility before P5.
+- The demo must not claim A2UI compatibility without a separate A2UI-specific P5 proof.
 - Demo generation must be byte-identical across repeated runs from the same artifacts.
 - Demo generation must fail before writing when `artifacts/p1/evidence.json` is missing, schema-invalid, self-hash-invalid, stale, or not passing.
 - Demo generation must fail when `artifacts/p1/evidence.json` has `status` other than `pass` or aggregate `promotionStatus: "blocked"`.

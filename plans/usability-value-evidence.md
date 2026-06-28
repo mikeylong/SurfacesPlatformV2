@@ -25,18 +25,29 @@ The platform is usable when a developer, agent, reviewer, CI system, or runtime 
 Demos make the proof easier to inspect. They are never proof authority. If a demo and evidence disagree, the evidence and phase contract win.
 
 ## Current Evidence Summary
-The current tracked phase evidence files report passing status for P0 through P5 protocol:
+The current tracked phase evidence files report passing status for P0 through P5 protocol. Evidence `status` records whether the proof command passed. `promotionStatus` records the governed outcome that downstream consumers must respect.
 
-| Phase | Implemented slice | Evidence path | Demo path | Current promotion status |
-| --- | --- | --- | --- | --- |
-| P0 | Synthetic catalog contract proof | `artifacts/p0/evidence.json` | `demo/p0/index.html` | `review_required` |
-| P1 | `web-static` runtime projection and render-plan proof | `artifacts/p1/evidence.json` | `demo/p1/index.html` | `review_required` |
-| P2 | Bounded local Adobe Spectrum Design Data ingestion proof | `artifacts/p2/evidence.json` | `demo/p2/index.html` | `review_required` |
-| P3 | Inert agent orchestration proof | `artifacts/p3/evidence.json` | `demo/p3/index.html` | `review_required` |
-| P4 | Deterministic review and judgment proof | `artifacts/p4/evidence.json` | `demo/p4/index.html` | `blocked` |
-| P5 | `surfaces-protocol-static` inert protocol-envelope proof | `artifacts/p5/protocol/evidence.json` | `demo/p5/protocol/index.html` | `review_required` |
+| Phase | Implemented slice | Evidence path | Current evidence status | Current promotion status | Demo path |
+| --- | --- | --- | --- | --- | --- |
+| P0 | Synthetic catalog contract proof | `artifacts/p0/evidence.json` | `pass` | `review_required` | `demo/p0/index.html` |
+| P1 | `web-static` runtime projection and render-plan proof | `artifacts/p1/evidence.json` | `pass` | `review_required` | `demo/p1/index.html` |
+| P2 | Bounded local Adobe Spectrum Design Data ingestion proof | `artifacts/p2/evidence.json` | `pass` | `review_required` | `demo/p2/index.html` |
+| P3 | Inert agent orchestration proof | `artifacts/p3/evidence.json` | `pass` | `review_required` | `demo/p3/index.html` |
+| P4 | Deterministic review and judgment proof | `artifacts/p4/evidence.json` | `pass` | `blocked` | `demo/p4/index.html` |
+| P5 | `surfaces-protocol-static` inert protocol-envelope proof | `artifacts/p5/protocol/evidence.json` | `pass` | `review_required` | `demo/p5/protocol/index.html` |
 
 The promotion status is not a marketing status. It is part of the proof contract: allowed work may proceed, review-required work stays inspectable but blocked from unattended promotion, and blocked work remains rejected by deterministic diagnostics or review policy.
+
+P4's `status: "pass"` with `promotionStatus: "blocked"` is intentional in the current evidence. It proves review and evaluation artifacts can block invalid or unsafe outcomes without giving SurfaceOps or JudgmentKit authority to rewrite the catalog or execute work.
+
+## Human Value Readout
+A reviewer should be able to demonstrate platform value by walking the evidence loop for a declared target:
+
+- Generation time: show the governed catalog, valid fixtures, invalid fixtures, review-required fixtures, and diagnostics that prevent unsupported UI from becoming hidden output.
+- CI/CD integration time: show the package gate, tracked drift check, untracked-output guard, evidence file, and proof-bearing workflow result for the phase.
+- Review time: show the P3 review queue, P4 decision ledger, JudgmentKit-shaped findings, diagnostics, and promotion status without claiming live SurfaceOps or live JudgmentKit behavior.
+- Runtime or protocol consumption time: show hash-bound projections, render plans, protocol projections, inert envelopes, and review-required rows that produce no executable output.
+- Demo inspection time: show generated demos only as presentation views backed by passing evidence, never as the source of proof.
 
 ## Phase Evidence Cards
 
@@ -397,7 +408,7 @@ Non-goals:
 - No live action execution.
 - No live SurfaceOps or live JudgmentKit integration.
 - No work-order execution.
-- No A2UI export or conformance claim without a separate P5 A2UI proof shape.
+- No A2UI export or conformance claim without a separate A2UI-specific P5 proof shape.
 - No claim that future P5 targets are implemented by this static protocol-envelope proof.
 
 ## Lifecycle Evidence Cards

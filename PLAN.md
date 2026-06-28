@@ -8,6 +8,8 @@ Subordinate to [VISION.md](VISION.md), this plan tracks the mechanical proof con
 
 Cross-cutting product and value documentation lives in [Product Portfolio Boundaries](plans/product-portfolio-boundaries.md) and [Usability And Value Evidence Plan](plans/usability-value-evidence.md). Those files are subordinate to `VISION.md` and must not redefine product authority, roadmap sequence, or implemented proof status.
 
+Any implementation or roadmap-status claim should cite the phase proof command, evidence path, evidence `status`, promotion status, and relevant CI gate. Generated demos may help present the claim, but demos are not proof authority.
+
 ## P0 Focus
 P0 establishes one executable catalog proof contract. It specifies and implements the exact schema files, fixture files, output artifacts, diagnostics, and pass/fail gates that the proof must satisfy.
 
@@ -103,14 +105,14 @@ Given the P0 fixture, the proof command emits all expected artifacts, valid Surf
 ## P0/P1 Surface Mechanics
 The canonical surface-role taxonomy lives in [VISION.md](VISION.md#surface-roles). The P0/P1 proof implications are:
 
-- Surfaces.systems: context-only for P0/P1; no validation or enforcement ownership.
-- Surfaces.dev: instruction context for P0/P1; no schema, manifest, or CLI proof ownership.
+- `surfaces.systems`: context-only for P0/P1; no validation or enforcement ownership.
+- `surfaces.dev`: instruction context for P0/P1; no schema, manifest, or CLI proof ownership.
 - JudgmentKit: deferred to the P4 review and judgment proof; P0/P1 may record evaluator metadata only.
 - `interfacectl`: compiler, validation, and enforcement tooling. P0 implements the catalog proof command; P1 implements the adapter proof command.
 - SurfaceOps: deferred to the P4 review and judgment proof; P0/P1 preserve review-required evidence only.
 - Surfaces Catalog: product-facing name for the governed design-system catalog/compiler artifact defined by VISION as the governed contract authority.
 - `runtime-catalog.v0`: schema/artifact id for the P0 Surfaces Catalog.
-- A2UI: reference-only before a future A2UI-specific P5 target. A later P5 proof may emit A2UI-compatible projections/exports from the governed Surfaces Catalog and validate those projections against A2UI conformance; P0/P1 and the first `surfaces-protocol-static` P5 slice do not define an A2UI adapter or data model.
+- A2UI: reference-only before a future A2UI-specific P5 target. A future A2UI-specific P5 proof may emit projections, exports, or conformance artifacts from the governed Surfaces Catalog; P0/P1 and the first `surfaces-protocol-static` P5 slice do not define an A2UI adapter or data model.
 
 ## P0 Catalog Contract Implication
 Subordinate to the authority model in [VISION.md](VISION.md#canonical-authority-model), the P0 Surfaces Catalog contract decides what fixture-backed Surface IR may emit and what proof consumers, runtime projections, and future adapters may render as inert plans, reject, or send to review.
@@ -144,7 +146,7 @@ Subordinate to the authority model in [VISION.md](VISION.md#canonical-authority-
 - `check:p0:ci` must combine tracked drift checks with a P0 untracked-file guard because `git diff --exit-code` does not report untracked generated or source files.
 
 ## P1 Focus
-P1 proves a governed product surface through a `web-static` runtime projection and deterministic render-plan proof. It is not a product mock, general DOM runtime, React package, native adapter, P5 A2UI adapter, SurfaceOps console, JudgmentKit evaluator, or public Surface IR protocol.
+P1 proves a governed product surface through a `web-static` runtime projection and deterministic render-plan proof. It is not a product mock, general DOM runtime, React package, native adapter, A2UI adapter, SurfaceOps console, JudgmentKit evaluator, or public Surface IR protocol.
 
 The P1 proof path is:
 

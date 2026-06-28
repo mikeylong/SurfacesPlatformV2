@@ -94,12 +94,12 @@ Each P0 adapter safety check above must appear in `fixtures/p0/expectations.mani
 ## Non-Goals
 - No DOM renderer.
 - No native renderer.
-- No P5 A2UI adapter.
+- No A2UI adapter.
 - No visual output.
 - No runtime state manager.
 - No live action execution.
 
 ## Closed P0 Decisions
 - Adapter conformance is part of the proof command.
-- A2UI remains gated to P5; P0 is reference-only.
+- A2UI remains deferred to a future A2UI-specific P5 target; P0 is reference-only.
 - Runtime capability diagnostics share codes with compiler and validation diagnostics.

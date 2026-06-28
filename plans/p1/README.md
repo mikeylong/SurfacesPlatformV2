@@ -1,7 +1,7 @@
 # Surfaces Platform V2 P1 Subplans
 
 ## Decision
-P1 proves a governed product surface through a `web-static` runtime projection and deterministic render-plan proof. It does not build a general DOM runtime, React package, native adapter, P5 A2UI adapter, SurfaceOps console, JudgmentKit evaluator, or public Surface IR protocol.
+P1 proves a governed product surface through a `web-static` runtime projection and deterministic render-plan proof. It does not build a general DOM runtime, React package, native adapter, A2UI adapter, SurfaceOps console, JudgmentKit evaluator, or public Surface IR protocol.
 
 P1 extends the P0 contract by proving that the governed Surfaces Catalog can cross into an adapter-visible, product-visible surface without creating a second authority source. The product-visible demo is an output of the proof contract, not a hand-authored mock.
 
@@ -141,7 +141,7 @@ P1 introduces a strict extension registry for adapter proof failures. The eviden
 - No live Figma ingestion.
 - No general renderer.
 - No React, native, or web-component adapter package.
-- No A2UI compatibility claim before P5.
+- No A2UI compatibility claim without a separate A2UI-specific P5 proof.
 - No modal or `alertdialog` runtime support; that support is deferred beyond P1.
 - No live action execution, callbacks, RPC commands, workflow triggers, network calls, or secret access.
 - No SurfaceOps review console.

@@ -186,7 +186,7 @@ The fixture compiles deterministically through `artifacts/p0/extract.json`, `art
 - No live Figma file.
 - No Storybook scraping.
 - No renderer implementation.
-- No A2UI compatibility fixture before P5.
+- No A2UI compatibility fixture without a separate A2UI-specific P5 proof.
 - No deprecated-entry or warning-only fixture behavior.
 - No modal dialog or `alertdialog` behavior.
 

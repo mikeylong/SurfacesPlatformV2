@@ -130,6 +130,6 @@ Given accepted P2 ingestion evidence, accepted P4 review/judgment evidence, the 
 - No live action execution.
 - No live SurfaceOps or live JudgmentKit integration.
 - No work-order execution.
-- No A2UI export or conformance claim without a separate P5 A2UI proof shape.
+- No A2UI export or conformance claim without a separate A2UI-specific P5 proof shape.
 - No relaxation of P0/P1/P2/P3/P4 evidence, stale-output, diagnostic, review, or authority gates.
 - No claim that future P5 targets are implemented by this static protocol-envelope proof.

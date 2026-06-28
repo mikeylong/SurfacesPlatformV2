@@ -36,7 +36,7 @@ This matrix is a P5 proof-boundary delta over [VISION.md Surface Roles](../../VI
 | Generated protocol demo | Presentation output | Passing P5 evidence and protocol artifacts | Static demo files | Become proof authority, production documentation, or a live protocol console |
 | SurfaceOps | Implemented P4 deterministic proof consumer, future operational product | P4 evidence, P4 decision ledger, P4 review/judgment report, and P5 evidence | No live P5 decisions | Persist live decisions or authorize protocol execution without a later proof |
 | JudgmentKit | Implemented P4 deterministic evaluation-shaped proof consumer | P4 evidence and possible future P5 evidence | No live P5 evaluations | Invoke live MCP/connectors or override protocol/catalog policy |
-| A2UI | Possible future P5 target | A declared P5 A2UI projection and conformance fixture, if added later | Separate A2UI proof artifacts | Serve as Surfaces data model or be claimed by this protocol proof |
+| A2UI | Possible future A2UI-specific P5 target | A declared A2UI projection and conformance fixture, if added later | Separate A2UI proof artifacts | Serve as Surfaces data model or be claimed by this protocol proof |
 
 ## Boundary Rules
 - P5 `surfaces-protocol-static` is the only implemented P5 target in this slice.

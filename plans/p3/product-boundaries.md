@@ -17,7 +17,7 @@ Make agent recruitment itself governed. P3 should prove that the platform can de
 - Must-not-cross rules that apply VISION.md's canonical no-live-execution boundary to P3.
 
 ## Phase-Local Responsibility Matrix
-This matrix is a P3 phase-local delta over [VISION.md Surface Roles](../../VISION.md#surface-roles), not a complete surface list. VISION.md remains canonical for the full surface model, including `surfaces.systems` and P5 A2UI; P3 omits them here because neither consumes nor emits P3 orchestration artifacts in this phase.
+This matrix is a P3 phase-local delta over [VISION.md Surface Roles](../../VISION.md#surface-roles), not a complete surface list. VISION.md remains canonical for the full surface model, including `surfaces.systems` and a future A2UI-specific P5 target; P3 omits them here because neither consumes nor emits P3 orchestration artifacts in this phase.
 
 | Surface | P3 role | Consumes | Emits | Must not do |
 | --- | --- | --- | --- | --- |
@@ -29,7 +29,7 @@ This matrix is a P3 phase-local delta over [VISION.md Surface Roles](../../VISIO
 | Orchestration proof | Control-plane proof | Registry, task fixtures, upstream evidence | Task DAG, work orders, review queue, report | Spawn agents, call tools, edit files, or run commands |
 | Work orders | Inert assignment descriptors | Orchestration plan and accepted refs | No runtime output; they are generated proof artifacts | Execute, mutate, fetch secrets, emit future outputs, or widen scope |
 | Review queue | Future SurfaceOps input | Review-required task rows | Non-executable review records | Persist decisions or promote work as allowed |
-| Surfaces.dev | Agent-ready instruction surface | Accepted work orders and evidence summaries | Human-readable instructions in later phases | Replace schemas, manifest, proof, or evidence |
+| `surfaces.dev` | Agent-ready instruction surface | Accepted work orders and evidence summaries | Human-readable instructions in later phases | Replace schemas, manifest, proof, or evidence |
 | SurfaceOps | Future review console | Review queue and evidence | Human decisions in a later phase | Own P3 policy or execute work in P3 |
 | JudgmentKit | Future evaluator | Evidence and evaluator metadata | Quality and handoff evaluation in a later phase | Override recruitment or orchestration proof |
 
