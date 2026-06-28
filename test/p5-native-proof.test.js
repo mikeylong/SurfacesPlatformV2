@@ -6,6 +6,7 @@ import { promisify } from "node:util";
 import test from "node:test";
 import Ajv2020 from "ajv/dist/2020.js";
 import { canonicalJson } from "../src/p0.js";
+import { canonicalFileHash } from "../src/p2-contract.js";
 import { p2Internals } from "../src/p2-proof.js";
 import { p5NativeInternals } from "../src/p5-native-proof.js";
 
@@ -362,6 +363,119 @@ test("P5 native demo writes static HTML from passing evidence", async () => {
   assert.doesNotMatch(html, /https?:\/\//i);
 });
 
+test("P5 native demo rejects live behavior in rendered packet fields", async () => {
+  await runP5Proof();
+  const packetRelativePath = "artifacts/p5/native/surfaces-native-packet.button.json";
+  const evidenceRelativePath = "artifacts/p5/native/evidence.json";
+  const cases = [
+    {
+      name: "transport",
+      expected: /P5 native packet transport must be none/,
+      mutate(packet) {
+        packet.transport = "nativeBridge";
+      }
+    },
+    {
+      name: "side effects",
+      expected: /P5 native packet sideEffects must be empty/,
+      mutate(packet) {
+        packet.sideEffects = ["network callback"];
+      }
+    },
+    {
+      name: "executed action",
+      expected: /P5 native packet action execution is forbidden/,
+      mutate(packet) {
+        packet.actions = [{ actionId: "submit", executed: true, payload: {}, sourceRef: null }];
+      }
+    },
+    {
+      name: "action payload",
+      expected: /P5 native packet contains forbidden live behavior claim/,
+      mutate(packet) {
+        packet.actions = [{
+          actionId: "submit",
+          executed: false,
+          payload: { callback: "https://example.invalid/native-callback" },
+          sourceRef: "fixture://p5/native/demo#/actions/submit"
+        }];
+      }
+    },
+    {
+      name: "action source ref",
+      expected: /P5 native packet contains forbidden live behavior claim/,
+      mutate(packet) {
+        packet.actions = [{
+          actionId: "submit",
+          executed: false,
+          payload: {},
+          sourceRef: "https://example.invalid/native-callback"
+        }];
+      }
+    },
+    {
+      name: "surface ref",
+      expected: /P5 native packet contains forbidden live behavior claim/,
+      mutate(packet) {
+        packet.surfaceRef.sourceRef = "https://example.invalid/native-callback";
+      }
+    },
+    {
+      name: "projection ref",
+      expected: /P5 native packet contains forbidden live behavior claim/,
+      mutate(packet) {
+        packet.projectionRef.sourceRef = "native bridge live runtime";
+      }
+    },
+    {
+      name: "accessibility",
+      expected: /P5 native packet contains forbidden live behavior claim/,
+      mutate(packet) {
+        packet.accessibility.nameFrom = "live runtime";
+      }
+    },
+    {
+      name: "tokens",
+      expected: /P5 native packet contains forbidden live behavior claim/,
+      mutate(packet) {
+        packet.tokens.widthMultiplier.sourceRef = "native bridge live runtime";
+      }
+    }
+  ];
+
+  for (const testCase of cases) {
+    await withJsonFileMutations([
+      {
+        absolutePath: path.join(root, packetRelativePath),
+        mutate: testCase.mutate
+      },
+      {
+        absolutePath: path.join(root, evidenceRelativePath),
+        async mutate(evidence) {
+          const updatedRefs = updateEvidenceRefsForPath(
+            evidence,
+            packetRelativePath,
+            await canonicalFileHash(path.join(root, packetRelativePath))
+          );
+          assert.ok(updatedRefs > 0, "native packet artifact ref missing");
+          evidence.artifacts[evidence.artifacts.length - 1].hash = p5NativeInternals.computeEvidenceSelfHash(evidence);
+        }
+      }
+    ], async () => {
+      const result = await runCommandExpectFailure([
+        "scripts/build-p5-native-demo.mjs",
+        "--evidence",
+        evidenceRelativePath,
+        "--out",
+        "demo/p5/native"
+      ]);
+      assert.equal(result.code, 1, testCase.name);
+      assert.match(result.stderr, testCase.expected, testCase.name);
+      assert.match(result.stderr, new RegExp(escapeRegExp(packetRelativePath)), testCase.name);
+    });
+  }
+});
+
 test("P5 package scripts and untracked guard are exposed", async () => {
   const pkg = await readJson("package.json");
   for (const script of [
@@ -456,7 +570,7 @@ async function withJsonFileMutations(mutations, fn) {
     const original = await fs.readFile(mutation.absolutePath, "utf8");
     originals.push({ absolutePath: mutation.absolutePath, original });
     const json = JSON.parse(original);
-    mutation.mutate(json);
+    await mutation.mutate(json);
     await fs.writeFile(mutation.absolutePath, canonicalJson(json));
   }
   try {
@@ -519,4 +633,38 @@ function compileSchema(schema) {
 
 function escapeRegExp(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function updateEvidenceRefsForPath(evidence, relativePath, hash) {
+  let updated = 0;
+  for (const key of [
+    "schemaClosure",
+    "fixtureRefs",
+    "boundaryRefs",
+    "compatibilityPreflightRefs",
+    "artifacts",
+    "artifactRefs",
+    "nativePacketRefs",
+    "packetRefs",
+    "generatedArtifactRefs"
+  ]) {
+    if (!Array.isArray(evidence[key])) continue;
+    for (const ref of evidence[key]) {
+      if (ref?.path !== relativePath) continue;
+      ref.hash = hash;
+      updated += 1;
+    }
+  }
+  for (const key of [
+    "targetSelectionRef",
+    "nativeProjectionRef",
+    "projectionRef",
+    "nativeAdapterReportRef",
+    "reportRef"
+  ]) {
+    if (evidence[key]?.path !== relativePath) continue;
+    evidence[key].hash = hash;
+    updated += 1;
+  }
+  return updated;
 }

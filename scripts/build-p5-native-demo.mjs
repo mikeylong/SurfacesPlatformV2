@@ -334,23 +334,32 @@ function computeEvidenceSelfHash(evidence) {
 }
 
 function assertInertPacketForDemo(packet, artifactPath) {
-  const text = canonicalJson({
-    message: packet.message || null,
-    actions: packet.actions || null,
-    sideEffects: packet.sideEffects || null,
-    transport: packet.transport || null
-  });
+  if (packet.transport !== "none") {
+    throw contractError(`P5 native packet transport must be none: ${artifactPath}`);
+  }
+  if (!Array.isArray(packet.sideEffects) || packet.sideEffects.length !== 0) {
+    throw contractError(`P5 native packet sideEffects must be empty: ${artifactPath}`);
+  }
+  const actions = Array.isArray(packet.actions) ? packet.actions : [];
+  if (actions.some((action) => action?.executed === true)) {
+    throw contractError(`P5 native packet action execution is forbidden: ${artifactPath}`);
+  }
+  const text = canonicalJson(safePacketView(packet));
   const forbidden = [
-    /\bapi\b/i,
-    /\bsdk\b/i,
+    /(?:^|[^a-z0-9])api(?:$|[^a-z0-9])/i,
+    /(?:production|native|live)[-_\s]*api/i,
+    /(?:^|[^a-z0-9])sdk(?:$|[^a-z0-9])/i,
+    /(?:production|native|live)[-_\s]*sdk/i,
     /a2ui/i,
     /callback/i,
     /webhook/i,
     /\bfetch\b/i,
-    /https?:\/\//i,
+    /https?:/i,
     /network/i,
     /secret/i,
-    /credential/i
+    /credential/i,
+    /native[-_\s]*bridge/i,
+    /live[-_\s]*runtime/i
   ];
   if (forbidden.some((pattern) => pattern.test(text))) {
     throw contractError(`P5 native packet contains forbidden live behavior claim: ${artifactPath}`);
@@ -491,7 +500,9 @@ function safePacketView(packet) {
     actions: Array.isArray(packet.actions) ? packet.actions.map((action) => ({
       actionId: action.actionId || action.id || action.name || null,
       kind: action.kind || action.intent || null,
-      executed: action.executed === true
+      executed: action.executed === true,
+      payload: action.payload || null,
+      sourceRef: action.sourceRef || null
     })) : [],
     sideEffects: Array.isArray(packet.sideEffects) ? packet.sideEffects : [],
     transport: packet.transport || null,
