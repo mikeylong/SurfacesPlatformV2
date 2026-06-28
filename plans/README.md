@@ -2,10 +2,10 @@
 
 For product vision, authority taxonomy, roadmap sequence, surface roles, and agent operating rules, read [Surfaces Platform Vision And Roadmap](../VISION.md) first. This index is the mechanical contract reference for phase subplans. Phase subplans add phase-local deltas and mechanics only. Developer and agent documentation obligations for `surfaces.dev` are tracked in [Surfaces.dev Documentation Tracking](surfaces-dev.md).
 
-These subplans define the Surfaces Platform proof contracts and their materialized schemas, fixtures, artifacts, demos, scripts, and tests. P0 specifies the first executable catalog proof, P1 specifies the first runtime projection proof, P2 specifies bounded real design-system ingestion, P3 specifies inert agent orchestration proof, P4 specifies review and judgment proof without turning derived consumers into new authority, and P5 specifies the first bounded `surfaces-protocol-static` protocol-envelope proof. Future P5 targets remain planned until they add their own complete proof shape and passing evidence.
+These subplans define the Surfaces Platform proof contracts and their materialized schemas, fixtures, artifacts, demos, scripts, and tests. P0 specifies the first executable catalog proof, P1 specifies the first runtime projection proof, P2 specifies bounded real design-system ingestion, P3 specifies inert agent orchestration proof, P4 specifies review and judgment proof without turning derived consumers into new authority, and P5 specifies the bounded `surfaces-protocol-static` protocol-envelope proof plus the sibling `surfaces-native-static` native-packet proof. Future P5 targets remain planned until they add their own complete proof shape and passing evidence.
 
 ## Roadmap Status Snapshot
-The current implemented proof roadmap is P0-P5, where P5 means only the `surfaces-protocol-static` slice. The canonical status snapshot lives in [VISION.md](../VISION.md#current-roadmap-proof-snapshot), and the human-readable value map lives in [Usability And Value Evidence Plan](usability-value-evidence.md). Future P5 targets such as A2UI conformance, production APIs, SDKs, live protocol services, live SurfaceOps, or live JudgmentKit remain planned until they add their own target-specific schema, fixture, diagnostics, command contract, report or artifact path, evidence path, demo boundary, CI gate, and passing evidence.
+The current implemented proof roadmap is P0-P5, where P5 means only the `surfaces-protocol-static` and `surfaces-native-static` proof-only slices. The canonical status snapshot lives in [VISION.md](../VISION.md#current-roadmap-proof-snapshot), and the human-readable value map lives in [Usability And Value Evidence Plan](usability-value-evidence.md). Future P5 targets such as A2UI conformance, production APIs, SDKs, live protocol services, live native runtimes, live SurfaceOps, or live JudgmentKit remain planned until they add their own target-specific schema, fixture, diagnostics, command contract, report or artifact path, evidence path, demo boundary, CI gate, and passing evidence.
 
 ## Cross-Cutting Documentation
 These documents are subordinate to `VISION.md` and support the phase plans without redefining authority or proof status.
@@ -65,7 +65,7 @@ These documents are subordinate to `VISION.md` and support the phase plans witho
 8. [P4 Demo And CI](p4/demo-ci.md)
 
 ## P5 Protocol Dependency Order
-The P5 subplans define the implemented `surfaces-protocol-static` proof slice. They do not define a production adapter, protocol API, SDK, live protocol service, A2UI export, A2UI conformance claim, live SurfaceOps integration, or live JudgmentKit integration.
+The P5 protocol subplans define the implemented `surfaces-protocol-static` proof slice. They do not define a production adapter, protocol API, SDK, live protocol service, A2UI export, A2UI conformance claim, live SurfaceOps integration, or live JudgmentKit integration.
 
 1. [P5 Subplan Index](p5/README.md)
 2. [P5 Product Boundaries](p5/product-boundaries.md)
@@ -75,8 +75,9 @@ The P5 subplans define the implemented `surfaces-protocol-static` proof slice. T
 6. [Protocol Adapter Proof](p5/protocol-adapter-proof.md)
 7. [P5 Validation And Evidence](p5/validation-evidence.md)
 8. [P5 Demo And CI](p5/demo-ci.md)
+9. [P5 Native Static Proof](p5/native-static-proof.md)
 
-Before any future P5 target beyond `surfaces-protocol-static` is implemented or documented as supported, the target-specific subplans must define:
+Before any future P5 target beyond `surfaces-protocol-static` and `surfaces-native-static` is implemented or documented as supported, the target-specific subplans must define:
 
 - product boundaries for exactly one target, such as A2UI conformance, a production API boundary, or another runtime adapter;
 - target-specific schemas for the adapter/protocol/export, report, diagnostics, expectations, fixtures, and evidence;
@@ -322,7 +323,7 @@ interfacectl surfaces review proof --orchestration-evidence artifacts/p3/evidenc
 Package scripts execute it as `node bin/interfacectl.js surfaces review proof --orchestration-evidence artifacts/p3/evidence.json --review-queue artifacts/p3/review-queue.json --fixture fixtures/p4 --out artifacts/p4`. Evidence records the logical command string above.
 
 ## P5 Contract Summary
-P5 implements the first bounded protocol-boundary slice as `surfaces-protocol-static`. The proof consumes accepted P2 catalog/evidence and accepted P4 review/judgment evidence, emits target selection, a protocol projection, deterministic inert protocol envelopes, a protocol adapter report, final evidence, a generated demo, and a CI gate.
+P5 implements `surfaces-protocol-static` as the first bounded protocol-boundary slice and `surfaces-native-static` as a sibling Surfaces-native static target. The protocol proof consumes accepted P2 catalog/evidence and accepted P4 review/judgment evidence, emits target selection, a protocol projection, deterministic inert protocol envelopes, a protocol adapter report, final evidence, a generated demo, and a CI gate. The native proof consumes the same accepted P2/P4 authority plus protocol evidence as compatibility preflight only, then emits native target selection, a native projection, deterministic inert native packets, a native report, final evidence, a generated demo, and a CI gate.
 
 P5 proof command:
 
@@ -331,3 +332,11 @@ interfacectl surfaces protocol proof --ingestion-evidence artifacts/p2/evidence.
 ```
 
 This P5 implementation is proof-only. It must not be treated as a production adapter, public protocol/API, SDK, live protocol service, A2UI export, A2UI conformance proof, live SurfaceOps integration, live JudgmentKit invocation, or permission to execute actions. Future P5 production adapters, A2UI targets, and live protocol boundaries remain planned until a separate target-specific proof adds the complete schema, fixture, diagnostics, command, artifact, report, evidence, demo, and CI shape.
+
+P5 native proof command:
+
+```bash
+interfacectl surfaces native proof --ingestion-evidence artifacts/p2/evidence.json --review-evidence artifacts/p4/evidence.json --decision-ledger artifacts/p4/surfaceops-decision-ledger.json --review-report artifacts/p4/review-judgment-report.json --catalog artifacts/p2/governed-catalog.json --protocol-evidence artifacts/p5/protocol/evidence.json --fixture fixtures/p5/native --out artifacts/p5/native
+```
+
+The native implementation is also proof-only. It must not be treated as A2UI, an A2UI clone, A2UI conformance, a production native SDK/API/package, native bridge, live runtime, expansion of `surfaces-protocol-static`, live SurfaceOps integration, live JudgmentKit invocation, or permission to execute actions.

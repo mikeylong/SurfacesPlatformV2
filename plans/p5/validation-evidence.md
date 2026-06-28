@@ -1,12 +1,14 @@
 # Validation And Evidence
 
 ## Status
-This is the implemented P5 validation and evidence contract for the `surfaces-protocol-static` proof.
+This is the implemented P5 validation and evidence contract for the `surfaces-protocol-static` and `surfaces-native-static` proofs.
 
 ## Decision
 P5 protocol evidence proves the `surfaces-protocol-static` boundary without coupling P5 to a live production API, public protocol, SurfaceOps product, JudgmentKit invocation, or A2UI export.
 
-P5 evidence proves only the implemented static protocol-envelope behavior whose full proof shape exists and passes. Future P5 targets need separate evidence before they can be claimed.
+P5 native evidence proves the sibling `surfaces-native-static` boundary without coupling P5 to A2UI, a native SDK, production API, native bridge, live runtime, live SurfaceOps, or live JudgmentKit. The native proof consumes protocol evidence as compatibility preflight only; authority still comes from accepted P2 catalog/evidence and P4 review evidence.
+
+P5 evidence proves only the implemented static protocol-envelope and native static-packet behavior whose full proof shapes exist and pass. Future P5 targets need separate evidence before they can be claimed.
 
 ## Inputs
 - P5 schemas.
@@ -21,11 +23,20 @@ P5 evidence proves only the implemented static protocol-envelope behavior whose 
 - `artifacts/p5/protocol/protocol-projection.json`.
 - P5 protocol envelope artifacts.
 - `artifacts/p5/protocol/protocol-adapter-report.json`.
+- `fixtures/p5/native/expectations.manifest.json`.
+- `artifacts/p5/protocol/evidence.json` as native compatibility preflight only.
+- `artifacts/p5/native/adapter-target-selection.json`.
+- `artifacts/p5/native/surfaces-native-projection.json`.
+- P5 native packet artifacts.
+- `artifacts/p5/native/surfaces-native-report.json`.
 
 ## Outputs
 - `schemas/protocol-adapter-evidence.v0.schema.json`.
 - `schemas/protocol-adapter-diagnostics.v0.schema.json`.
 - `artifacts/p5/protocol/evidence.json`.
+- `schemas/surfaces-native-evidence.v0.schema.json`.
+- `schemas/surfaces-native-diagnostics.v0.schema.json`.
+- `artifacts/p5/native/evidence.json`.
 
 ## Evidence Shape
 `protocol-adapter-evidence.v0` includes all fields needed to verify:
@@ -50,8 +61,10 @@ P5 evidence proves only the implemented static protocol-envelope behavior whose 
 - aggregate `promotionStatus`;
 - final evidence self-hash.
 
+`surfaces-native-evidence.v0` mirrors the proof closure for `surfaces-native-static`: command args, accepted P2/P4 authority refs, protocol evidence compatibility preflight ref, native schema and fixture refs, native target selection, Surfaces-native projection, inert native packet refs, native report, diagnostics, validation results, aggregate status, promotion status, and final evidence self-hash.
+
 ## Boundary Refs
-P5 evidence includes `boundaryRefs[]` for:
+P5 protocol evidence includes `boundaryRefs[]` for:
 
 - `artifacts/p2/evidence.json`;
 - `artifacts/p2/governed-catalog.json`;
@@ -63,7 +76,21 @@ P5 evidence includes `boundaryRefs[]` for:
 - every emitted protocol envelope;
 - `artifacts/p5/protocol/protocol-adapter-report.json`.
 
-Each ref must include artifact path, schema id, hash, source artifact hash where applicable, and deterministic provenance. Missing, duplicated, reordered, alternate, or extra boundary refs must fail closed.
+P5 native evidence includes `boundaryRefs[]` for accepted P2/P4 authority and generated native artifacts:
+
+- `artifacts/p2/evidence.json`;
+- `artifacts/p2/governed-catalog.json`;
+- `artifacts/p4/evidence.json`;
+- `artifacts/p4/surfaceops-decision-ledger.json`;
+- `artifacts/p4/review-judgment-report.json`;
+- `artifacts/p5/native/adapter-target-selection.json`;
+- `artifacts/p5/native/surfaces-native-projection.json`;
+- every emitted native packet;
+- `artifacts/p5/native/surfaces-native-report.json`.
+
+P5 native evidence records `artifacts/p5/protocol/evidence.json` separately in required `compatibilityPreflightRefs[]`. That ref is compatibility preflight only and must not appear in native `boundaryRefs[]`.
+
+Each ref must include the full expected tuple: artifact path, schema id, hash algorithm, hash, source evidence hash where applicable, role by field placement (`boundaryRefs[]` versus `compatibilityPreflightRefs[]`), and deterministic provenance where the schema requires it. Missing, duplicated, reordered, wrong-schema, wrong-path, wrong-hash-algorithm, wrong-source-evidence-hash, alternate, or extra refs must fail closed.
 
 ## Upstream Preflight
 Before target selection or projection, the P5 protocol proof must fail closed when any required upstream check fails:
@@ -80,13 +107,15 @@ Before target selection or projection, the P5 protocol proof must fail closed wh
 10. Current P4 decision ledger and review/judgment report bytes match the hashes recorded in P4 evidence.
 11. Target-specific P5 eligibility must be derived from explicit P4 decision ledger and review/judgment report refs when the target contract declares that dependency. P5 must preserve committed ledger decisions and coverage-only rejected, changes-requested, deferred, or second-review-required report rows as `blocked` or `review_required`.
 12. P4 evidence records accepted upstream refs without stale or mismatched artifacts.
-13. Command inputs exactly match the accepted evidence refs.
+13. Command inputs exactly match the accepted evidence refs by full tuple: path, schema id, hash algorithm, hash, source evidence hash where applicable, and deterministic order.
 14. No alternate evidence ref, alternate catalog ref, alternate decision-ledger ref, alternate review-report ref, absolute path, symlinked path, `.` segment, `..` traversal, or extra upstream input is accepted.
 
-## Accepted Upstream Boundary Refresh Runbook
-Use this runbook only when P2 or P4 proof artifacts intentionally change and the P5 accepted upstream boundary for `surfaces-protocol-static` must be advanced. This runbook is procedural guidance, not proof authority. Passing P5 evidence remains the proof authority.
+The P5 native proof applies the same accepted P2/P4 preflight and additionally requires passing `artifacts/p5/protocol/evidence.json` at the accepted protocol evidence hash as compatibility preflight only. The target-selection artifact records P2/P4 authority in `upstreamRefs[]` and protocol compatibility in `compatibilityPreflightRefs[]`; both arrays must match the accepted full tuples. Protocol evidence does not add native authority and does not prove native support by itself.
 
-The accepted upstream tuple is exactly:
+## Accepted Upstream Boundary Refresh Runbook
+Use this runbook only when P2, P4, or accepted protocol compatibility proof artifacts intentionally change and the P5 accepted boundary for `surfaces-protocol-static` or `surfaces-native-static` must be advanced. This runbook is procedural guidance, not proof authority. Passing P5 evidence remains the proof authority.
+
+The accepted P2/P4 authority tuple is exactly:
 
 - `artifacts/p2/evidence.json`;
 - `artifacts/p2/governed-catalog.json`;
@@ -94,19 +123,24 @@ The accepted upstream tuple is exactly:
 - `artifacts/p4/surfaceops-decision-ledger.json`;
 - `artifacts/p4/review-judgment-report.json`.
 
+For native only, the accepted compatibility-preflight tuple is exactly:
+
+- `artifacts/p5/protocol/evidence.json`.
+
 Refresh procedure:
 
-1. Confirm the worktree is quiescent and the upstream P2 or P4 change is intentional.
-2. Run or cite fresh passing P0-P4 proof gates before advancing the P5 boundary.
-3. Keep P5 command inputs fixed to the canonical `artifacts/p2/*` and `artifacts/p4/*` paths listed above.
-4. Review the new P2 evidence, P2 governed catalog, P4 evidence, P4 decision ledger, and P4 review/judgment report hashes before changing P5 refs.
-5. Update only the reviewed accepted-boundary refs and derived P5 materialized refs needed by `surfaces-protocol-static`, including pinned P5 accepted-hash constants, materialized fixtures when their embedded refs change, generated P5 protocol artifacts, report, evidence, demo, and documentation tracking.
-6. Do not change target scope, projection authority, review semantics, A2UI claims, production API claims, live protocol behavior, live SurfaceOps behavior, live JudgmentKit behavior, transport, callbacks, network calls, or action execution during a boundary refresh.
-7. Re-run `npm run check:p5:protocol:ci`.
-8. Review the diff for no target expansion, no authority expansion, no live behavior, and no future P5 target claim.
-9. Preserve gate logs, commit SHA, and the final P5 evidence hash with the PR or merge record, not under generated artifact roots.
+1. Confirm the worktree is quiescent and the upstream P2/P4 or protocol compatibility change is intentional.
+2. Run or cite fresh passing P0-P4 proof gates before advancing any P5 authority boundary. If the native protocol compatibility hash changes, also run or cite a fresh passing `npm run check:p5:protocol:ci` before refreshing native compatibility refs.
+3. Keep P5 command inputs fixed to the canonical `artifacts/p2/*`, `artifacts/p4/*`, and, for native, `artifacts/p5/protocol/evidence.json` paths listed above.
+4. Review the new P2 evidence, P2 governed catalog, P4 evidence, P4 decision ledger, P4 review/judgment report, and, for native, protocol evidence hashes before changing P5 refs.
+5. Update only the reviewed accepted-boundary refs, compatibility-preflight refs, and derived P5 materialized refs needed by the affected target, including pinned P5 accepted-hash constants, materialized fixtures when their embedded refs change, generated P5 artifacts, report, evidence, demo, and documentation tracking.
+6. Do not move protocol evidence into native authority refs. Native must keep P2/P4 authority in `upstreamRefs[]` and protocol evidence in `compatibilityPreflightRefs[]`.
+7. Do not change target scope, projection authority, review semantics, A2UI claims, production API claims, live protocol behavior, live native behavior, live SurfaceOps behavior, live JudgmentKit behavior, transport, callbacks, network calls, or action execution during a boundary refresh.
+8. Re-run `npm run check:p5:protocol:ci` for protocol boundary refreshes and `npm run check:p5:native:ci` for native boundary or compatibility-preflight refreshes.
+9. Review the diff for no target expansion, no authority expansion, no live behavior, and no future P5 target claim.
+10. Preserve gate logs, commit SHA, and final P5 evidence hashes with the PR or merge record, not under generated artifact roots.
 
-If P5 reports `PROTOCOL_UPSTREAM_EVIDENCE_HASH_MISMATCH`, `PROTOCOL_DECISION_LEDGER_HASH_MISMATCH`, `PROTOCOL_REVIEW_REPORT_HASH_MISMATCH`, or `PROTOCOL_UPSTREAM_EVIDENCE_STALE` after an intentional upstream change, either refresh the accepted boundary through this review procedure or restore the upstream artifacts. Do not weaken preflight checks, point P5 at alternate paths, or treat latest upstream artifacts as accepted without explicit review.
+If P5 protocol reports `PROTOCOL_UPSTREAM_EVIDENCE_HASH_MISMATCH`, `PROTOCOL_DECISION_LEDGER_HASH_MISMATCH`, `PROTOCOL_REVIEW_REPORT_HASH_MISMATCH`, or `PROTOCOL_UPSTREAM_EVIDENCE_STALE` after an intentional upstream change, either refresh the accepted boundary through this review procedure or restore the upstream artifacts. If P5 native reports `NATIVE_UPSTREAM_EVIDENCE_HASH_MISMATCH`, `NATIVE_DECISION_LEDGER_HASH_MISMATCH`, `NATIVE_REVIEW_REPORT_HASH_MISMATCH`, `NATIVE_PROTOCOL_EVIDENCE_HASH_MISMATCH`, `NATIVE_UPSTREAM_EVIDENCE_STALE`, or `NATIVE_PROTOCOL_EVIDENCE_STALE`, either refresh the accepted authority or compatibility-preflight boundary through this review procedure or restore the referenced artifacts. Do not weaken preflight checks, point P5 at alternate paths, or treat latest upstream artifacts as accepted without explicit review.
 
 ## Artifact Ordering
 P5 evidence artifact order is:
@@ -127,7 +161,9 @@ P5 evidence artifact order is:
 
 The `artifacts` entry for `artifacts/p5/protocol/evidence.json` must be ordered last. Its persisted `hash` must be the lowercase SHA-256 hex digest of the canonical evidence object after replacing only that entry's `hash` field with JSON `null`.
 
-Demo files under `demo/p5/protocol` are generated presentation output, not evidence-hashed proof artifacts.
+The native evidence artifact order follows the same closure pattern with native schemas, fixtures, accepted upstream refs, protocol compatibility-preflight ref, native target selection, native projection, native packet artifacts, native report, and `artifacts/p5/native/evidence.json` ordered last under the same self-hash rule.
+
+Demo files under `demo/p5/protocol` and `demo/p5/native` are generated presentation output, not evidence-hashed proof artifacts.
 
 ## Diagnostics Registry
 P5 diagnostics use canonical registry messages. Validator-native messages are non-normative and must not be used in golden evidence hashing or manifest comparison.
@@ -161,10 +197,12 @@ P5 diagnostics use canonical registry messages. Validator-native messages are no
 
 `schemas/protocol-adapter-diagnostics.v0.schema.json`, `fixtures/p5/protocol/expectations.manifest.json`, `artifacts/p5/protocol/protocol-adapter-report.json`, and `artifacts/p5/protocol/evidence.json` encode the same registry rows. Codes not listed there are invalid for the P5 protocol proof.
 
+`schemas/surfaces-native-diagnostics.v0.schema.json`, `fixtures/p5/native/expectations.manifest.json`, `artifacts/p5/native/surfaces-native-report.json`, and `artifacts/p5/native/evidence.json` encode the native registry rows. Codes not listed there are invalid for the P5 native proof.
+
 ## Aggregation Rules
 1. If any expectation is unmatched, `status` is `fail` and `promotionStatus` is `blocked`.
 2. If any invalid fixture is allowed, `status` is `fail` and `promotionStatus` is `blocked`.
-3. If any protocol envelope contains live execution, callback, transport, network, secret, hidden state, or production API behavior, `status` is `fail` and `promotionStatus` is `blocked`.
+3. If any protocol envelope or native packet contains live execution, callback, transport other than `"none"`, network, secret, hidden state, or production API behavior, `status` is `fail` and `promotionStatus` is `blocked`.
 4. If all expectations match and any structurally valid fixture requires review, `status` is `pass` and `promotionStatus` is `review_required`.
 5. If all expectations match and no structurally valid fixture requires review, `status` is `pass` and `promotionStatus` is `allowed`.
 
@@ -176,11 +214,11 @@ P5 diagnostics use canonical registry messages. Validator-native messages are no
 - Host-derived fields are `null`.
 - Command arguments are recorded in deterministic order.
 - Evidence self-hash uses the prior-phase null-placeholder rule.
-- Evidence hashes generated proof artifacts under `artifacts/p5/protocol`; it must not hash `demo/p5/protocol` output.
+- Evidence hashes generated proof artifacts under `artifacts/p5/protocol` or `artifacts/p5/native`; it must not hash `demo/p5/protocol` or `demo/p5/native` output.
 
 ## Non-Goals
 - No demo HTML hash requirement inside proof evidence.
 - No validator-native message hashing.
 - No non-deterministic environment capture.
 - No live SurfaceOps, live JudgmentKit, production API, or A2UI authority.
-- No claim that future P5 targets are implemented by this static protocol evidence.
+- No claim that future P5 targets are implemented by this static P5 evidence.

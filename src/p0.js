@@ -603,6 +603,10 @@ const REGISTRY_BY_COVERAGE = new Map(REGISTRY_ROWS.map((entry) => [entry.coverag
 const REGISTRY_BY_ARTIFACT = new Map(REGISTRY_ROWS.map((entry) => [entry.artifactPath, entry]));
 
 export async function runInterfacectl(argv, io) {
+  if (argv[0] === "surfaces" && argv[1] === "native" && argv[2] === "proof") {
+    const { runP5NativeInterfacectl } = await import("./p5-native-proof.js");
+    return runP5NativeInterfacectl(argv.slice(3), io);
+  }
   if (argv[0] === "surfaces" && argv[1] === "protocol" && argv[2] === "proof") {
     const { runP5ProtocolInterfacectl } = await import("./p5-protocol-proof.js");
     return runP5ProtocolInterfacectl(argv.slice(3), io);
@@ -625,7 +629,7 @@ export async function runInterfacectl(argv, io) {
   }
 
   if (argv[0] !== "surfaces" || argv[1] !== "proof") {
-    io.stderr.write("usage: interfacectl surfaces proof --fixture fixtures/p0 --out artifacts/p0\nusage: interfacectl surfaces adapter proof --catalog artifacts/p0/governed-catalog.json --fixture fixtures/p1 --out artifacts/p1\nusage: interfacectl surfaces ingest proof --source sources/p2/design-system-source --fixture fixtures/p2 --out artifacts/p2\nusage: interfacectl surfaces agents proof --ingestion-evidence artifacts/p2/evidence.json --catalog artifacts/p2/governed-catalog.json --fixture fixtures/p3 --out artifacts/p3\nusage: interfacectl surfaces review proof --orchestration-evidence artifacts/p3/evidence.json --review-queue artifacts/p3/review-queue.json --fixture fixtures/p4 --out artifacts/p4\nusage: interfacectl surfaces protocol proof --ingestion-evidence artifacts/p2/evidence.json --review-evidence artifacts/p4/evidence.json --decision-ledger artifacts/p4/surfaceops-decision-ledger.json --review-report artifacts/p4/review-judgment-report.json --catalog artifacts/p2/governed-catalog.json --fixture fixtures/p5/protocol --out artifacts/p5/protocol\n");
+    io.stderr.write("usage: interfacectl surfaces proof --fixture fixtures/p0 --out artifacts/p0\nusage: interfacectl surfaces adapter proof --catalog artifacts/p0/governed-catalog.json --fixture fixtures/p1 --out artifacts/p1\nusage: interfacectl surfaces ingest proof --source sources/p2/design-system-source --fixture fixtures/p2 --out artifacts/p2\nusage: interfacectl surfaces agents proof --ingestion-evidence artifacts/p2/evidence.json --catalog artifacts/p2/governed-catalog.json --fixture fixtures/p3 --out artifacts/p3\nusage: interfacectl surfaces review proof --orchestration-evidence artifacts/p3/evidence.json --review-queue artifacts/p3/review-queue.json --fixture fixtures/p4 --out artifacts/p4\nusage: interfacectl surfaces protocol proof --ingestion-evidence artifacts/p2/evidence.json --review-evidence artifacts/p4/evidence.json --decision-ledger artifacts/p4/surfaceops-decision-ledger.json --review-report artifacts/p4/review-judgment-report.json --catalog artifacts/p2/governed-catalog.json --fixture fixtures/p5/protocol --out artifacts/p5/protocol\nusage: interfacectl surfaces native proof --ingestion-evidence artifacts/p2/evidence.json --review-evidence artifacts/p4/evidence.json --decision-ledger artifacts/p4/surfaceops-decision-ledger.json --review-report artifacts/p4/review-judgment-report.json --catalog artifacts/p2/governed-catalog.json --protocol-evidence artifacts/p5/protocol/evidence.json --fixture fixtures/p5/native --out artifacts/p5/native\n");
     return 2;
   }
 
