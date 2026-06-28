@@ -82,7 +82,7 @@ jobs:
         run: npm ci
 
       - name: Run P3 contract gate
-        run: npm run check:p3:ci
+        run: npm run check:p3:ci:phase
 
   p4-proof:
     runs-on: ubuntu-latest
