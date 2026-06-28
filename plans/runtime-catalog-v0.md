@@ -50,7 +50,7 @@ All P0 schemas must use JSON Schema Draft 2020-12 and must include:
 | `governance` | object | yes | Exact empty shape for `catalog`; populated rule/result maps for `governed-catalog` |
 | `provenance` | object | yes | Reproducibility metadata |
 | `diagnostics` | array | yes | Diagnostics v0 objects |
-| `compatibility` | object | yes | P0 value is A2UI reference-only before the P5 gate |
+| `compatibility` | object | yes | P0 value is A2UI reference-only unless a separate A2UI-specific P5 proof exists |
 
 `surface-ir.v0.schema.json` must require:
 

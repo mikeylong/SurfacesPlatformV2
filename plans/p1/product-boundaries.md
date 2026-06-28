@@ -43,7 +43,7 @@ The complete cross-phase [authority model](../../VISION.md#canonical-authority-m
 - Review-required usage is report/evidence-only in P1. It must not execute, become `allowed`, or emit a render-plan or preview artifact.
 - P1 Surface IR fixtures are not an adapter API, public protocol, or product integration contract.
 - P1 may prepare evidence fields that SurfaceOps or JudgmentKit can later consume, but neither product executes in P1.
-- A2UI remains a P5 downstream projection target, not the P1 adapter target.
+- A2UI remains a future A2UI-specific P5 target, not the P1 adapter target or the implemented `surfaces-protocol-static` P5 target.
 
 ## P1 Proof
 The proof can be completed with P0 artifacts, P1 fixtures, P1 schemas, runtime projection, allowed render plans, adapter report, final evidence, and a generated demo. No product application needs to be built.
@@ -62,4 +62,4 @@ The proof can be completed with P0 artifacts, P1 fixtures, P1 schemas, runtime p
 - The first runtime target is `web-static`.
 - The first runtime boundary uses an adapter-specific projection, not direct renderer consumption of the full governed catalog.
 - The product demo is proof output, not independent product implementation.
-- A2UI compatibility is deferred to the P5 projection or conformance proof.
+- A2UI compatibility is deferred to a future A2UI-specific P5 projection or conformance proof.
