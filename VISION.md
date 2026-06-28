@@ -67,7 +67,7 @@ Surfaces becomes a usable platform per target when a team can complete an eviden
 Generated demos, review queues, protocol envelopes, workflow cards, or adapter-facing outputs can help demonstrate usability, but they are not the signal by themselves. The signal is the closed evidence loop for a declared target.
 
 ## Current Roadmap Proof Snapshot
-The current roadmap evidence is P0-P5, with P5 implemented only for the first `surfaces-protocol-static` slice. A row counts as implemented only when the named evidence file records `status: "pass"`. `promotionStatus` records governance outcome, not whether the proof command failed.
+The current roadmap evidence is P0-P5, with P5 implemented only for the `surfaces-protocol-static` and `surfaces-native-static` proof-only slices. A row counts as implemented only when the named evidence file records `status: "pass"`. `promotionStatus` records governance outcome, not whether the proof command failed.
 
 | Phase | Implemented slice | Lifecycle value | Evidence | Current status | Current promotion status | CI gate | Demo |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -77,6 +77,7 @@ The current roadmap evidence is P0-P5, with P5 implemented only for the first `s
 | P3 | Inert agent orchestration proof | Evidence-bound work orders, task DAG, review queue, and no live execution | `artifacts/p3/evidence.json` | `pass` | `review_required` | `npm run check:p3:ci` | `demo/p3/index.html` |
 | P4 | Deterministic review and judgment proof | SurfaceOps-shaped decisions and JudgmentKit-shaped findings without live persistence or invocation | `artifacts/p4/evidence.json` | `pass` | `blocked` | `npm run check:p4:ci` | `demo/p4/index.html` |
 | P5 | `surfaces-protocol-static` inert protocol-envelope proof | Protocol-boundary consumption of accepted P2/P4 evidence | `artifacts/p5/protocol/evidence.json` | `pass` | `review_required` | `npm run check:p5:protocol:ci` | `demo/p5/protocol/index.html` |
+| P5 | `surfaces-native-static` inert native-packet proof | Surfaces-native static projection with protocol compatibility preflight | `artifacts/p5/native/evidence.json` | `pass` | `review_required` | `npm run check:p5:native:ci` | `demo/p5/native/index.html` |
 
 P4's `blocked` promotion status is expected in current tracked evidence: it proves invalid or unsafe review outcomes are blocked while the proof itself still passes. Demos remain presentation output. They help humans inspect the proof, but evidence and the proof contract remain authoritative.
 
@@ -93,6 +94,8 @@ P4 implements the first deterministic review and judgment proof over accepted P3
 
 P5 implements the first bounded protocol-boundary slice: `surfaces-protocol-static`. It materializes a deterministic target-selection artifact, protocol projection, inert protocol envelopes, protocol adapter report, demo, CI gate, and evidence from accepted P2 catalog/evidence and accepted P4 review/judgment evidence. This P5 slice is proof-only: it is not A2UI, a production adapter, public API, SDK, live protocol service, live SurfaceOps integration, or live JudgmentKit integration.
 
+P5 also implements the sibling `surfaces-native-static` target. It materializes native target selection, a Surfaces-native projection, inert native packets, a native report, demo, CI gate, and evidence from accepted P2 catalog/evidence and accepted P4 review/judgment evidence, with `artifacts/p5/protocol/evidence.json` consumed only as compatibility preflight. This slice is proof-only: it is not A2UI, a production native SDK, production API, native bridge, live runtime, expansion of `surfaces-protocol-static`, live SurfaceOps integration, or live JudgmentKit integration.
+
 ## Roadmap
 This roadmap is the accepted product sequence for the current plan.
 
@@ -106,7 +109,7 @@ P3: Agent recruitment and orchestration proof. Prove agent control through regis
 
 P4: Review and judgment proof. Let SurfaceOps and JudgmentKit consume evidence. SurfaceOps should handle review queues and human decisions. JudgmentKit should evaluate activity fit, contract quality, evidence quality, and handoff quality. Neither should override the Surfaces Catalog.
 
-P5: Protocol boundaries and target-specific adapter proofs. The first implemented slice is `surfaces-protocol-static`, a deterministic inert protocol-envelope proof. Add additional runtime projections, A2UI exports or conformance proofs, production APIs, SDKs, live runtimes, and broader adapter support only after each target has its own schema, fixtures, diagnostics, command contract, and evidence.
+P5: Protocol boundaries and target-specific adapter proofs. The implemented slices are `surfaces-protocol-static`, a deterministic inert protocol-envelope proof, and `surfaces-native-static`, a deterministic inert native-packet proof. Add additional runtime projections, A2UI exports or conformance proofs, production APIs, SDKs, live runtimes, and broader adapter support only after each target has its own schema, fixtures, diagnostics, command contract, and evidence.
 
 ## Roadmap Horizon
 The current P0-P5 sequence is the implemented proof-contract roadmap, not the full company roadmap. The horizon after P5 is target-specific expansion, not a blanket platform claim or a set of runnable P6/P7 phases before proof shapes exist.
@@ -153,7 +156,7 @@ SurfaceOps is the operational review surface. It should consume review-required 
 
 `kanban.cards` is the candidate upstream board and collaboration surface for human/agent SurfaceOps workflows. It may later organize Surfaces-backed work items, review status, and SurfaceOps decision references, but it does not own Surfaces review semantics. It must not create catalog authority, promote or reject surfaces, execute work, or persist SurfaceOps decisions unless a later proof defines that bounded consumer relationship.
 
-A2UI is a downstream compatibility or projection target for a future P5 target. It is not implemented by the first `surfaces-protocol-static` slice and should not become the Surfaces data model unless a separate P5 target proves an A2UI projection with its own schema, fixtures, diagnostics, conformance proof, and evidence.
+A2UI is a downstream compatibility or projection target for a future P5 target. It is not implemented by the `surfaces-protocol-static` or `surfaces-native-static` slices and should not become the Surfaces data model unless a separate P5 target proves an A2UI projection with its own schema, fixtures, diagnostics, conformance proof, and evidence.
 
 ## Runtime Relationship
 The runtime chain is:
@@ -196,4 +199,4 @@ If a product surface consumes evidence, it may explain, evaluate, route, or disp
 - The exact packaging relationship between SurfaceOps, `surfaceops.ai`, and `kanban.cards` remains open. The default architecture is `kanban.cards` as reusable collaboration core with SurfaceOps-specific governance layered on top, but white-labeling remains possible if standalone `kanban.cards` is deprioritized.
 - Long-term JudgmentKit finding storage remains open: findings may stay in evidence, appear in SurfaceOps, or live in a separate evaluation store only after the relevant proof defines ownership and authority.
 - A2UI target shape remains open: a future proof may define export, conformance, or both, but A2UI is not the Surfaces data model.
-- Broader P5 support beyond the implemented `surfaces-protocol-static` proof remains open. The first P5 slice proves inert protocol envelopes only; A2UI, production adapters, public APIs, SDKs, live protocol services, live SurfaceOps, and live JudgmentKit remain future target-specific proof work.
+- Broader P5 support beyond the implemented `surfaces-protocol-static` and `surfaces-native-static` proofs remains open. The current P5 slices prove inert protocol envelopes and inert native packets only; A2UI, production adapters, public APIs, SDKs, live protocol services, live native runtimes, live SurfaceOps, and live JudgmentKit remain future target-specific proof work.

@@ -1,12 +1,12 @@
 # Surfaces Platform V2 P5 Protocol Static Proof
 
 ## Status
-This P5 subplan set covers the first implemented P5 target: `surfaces-protocol-static`.
+This P5 subplan set covers the implemented P5 targets: `surfaces-protocol-static` and the sibling `surfaces-native-static` proof documented in [Native Static Proof](native-static-proof.md).
 
-The implemented slice is a deterministic inert protocol-envelope proof with target-specific schemas, fixtures, diagnostics, command implementation, generated artifacts, protocol adapter report, final evidence, demo output, tests, and CI gate. It is not a production adapter, public API, SDK, live protocol service, A2UI export, A2UI conformance claim, live SurfaceOps integration, or live JudgmentKit integration.
+The protocol slice is a deterministic inert protocol-envelope proof with target-specific schemas, fixtures, diagnostics, command implementation, generated artifacts, protocol adapter report, final evidence, demo output, tests, and CI gate. The native slice is a deterministic inert native-packet proof with its own target-specific schemas, fixtures, diagnostics, command implementation, generated artifacts, native report, final evidence, demo output, tests, and CI gate. Neither slice is a production adapter, public API, SDK, native SDK, live protocol service, live native runtime, A2UI export, A2UI conformance claim, live SurfaceOps integration, or live JudgmentKit integration.
 
 ## Decision
-P5 opens a bounded protocol-boundary proof after P4 review and judgment evidence passes. The first P5 target, `surfaces-protocol-static`, selects a protocol target, derives a protocol projection from governed catalog authority, validates protocol-facing fixtures, emits deterministic inert protocol artifacts, records diagnostics, and finalizes evidence.
+P5 opens bounded target-specific proofs after P4 review and judgment evidence passes. `surfaces-protocol-static` selects a protocol target, derives a protocol projection from governed catalog authority, validates protocol-facing fixtures, emits deterministic inert protocol artifacts, records diagnostics, and finalizes evidence. `surfaces-native-static` selects a native target, derives a Surfaces-native projection from the same governed catalog authority, consumes protocol evidence only as compatibility preflight, emits deterministic inert native packets, records diagnostics, and finalizes separate native evidence.
 
 The protocol adapter is proof-only. It must not be treated as a live production API, SDK, renderer, A2UI adapter, transport service, workflow runtime, SurfaceOps console, JudgmentKit invocation, or public Surface IR protocol.
 
@@ -20,7 +20,7 @@ The design-system source remains product authority. The Surfaces Catalog remains
 - P2 implements bounded local real design-system ingestion from the declared `@adobe/spectrum-design-data@0.7.0` source snapshot, scoped to `button` and `in-line-alert`.
 - P3 implements inert agent orchestration proof only. P3 work orders authorize no live agents, tools, shell commands, network calls, file edits, secrets, callbacks, or execution.
 - P4 implements deterministic review and judgment proof only. P4 emits SurfaceOps and JudgmentKit-shaped proof artifacts without live SurfaceOps persistence, live JudgmentKit invocation, work-order execution, production adapters, protocol boundaries, or A2UI scope.
-- P5 implements `surfaces-protocol-static` as a deterministic inert protocol-envelope proof only. P5 does not implement A2UI, production adapters, public APIs, SDKs, live protocols, live SurfaceOps, or live JudgmentKit.
+- P5 implements `surfaces-protocol-static` as a deterministic inert protocol-envelope proof only and `surfaces-native-static` as a deterministic inert native-packet proof only. P5 does not implement A2UI, production adapters, public APIs, SDKs, native SDKs, live protocols, live native runtimes, live SurfaceOps, or live JudgmentKit.
 
 ## Dependency Order
 1. [Product Boundaries](product-boundaries.md)
@@ -30,6 +30,7 @@ The design-system source remains product authority. The Surfaces Catalog remains
 5. [Protocol Adapter Proof](protocol-adapter-proof.md)
 6. [Validation And Evidence](validation-evidence.md)
 7. [Demo And CI](demo-ci.md)
+8. [Native Static Proof](native-static-proof.md)
 
 ## Contract Layout
 The implemented `surfaces-protocol-static` proof uses this target-specific contract shape.
@@ -132,4 +133,4 @@ Given accepted P2 ingestion evidence, accepted P4 review/judgment evidence, the 
 - No work-order execution.
 - No A2UI export or conformance claim without a separate A2UI-specific P5 proof shape.
 - No relaxation of P0/P1/P2/P3/P4 evidence, stale-output, diagnostic, review, or authority gates.
-- No claim that future P5 targets are implemented by this static protocol-envelope proof.
+- No claim that future P5 targets are implemented by these static protocol-envelope or native-packet proofs.

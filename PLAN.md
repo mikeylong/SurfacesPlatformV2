@@ -423,6 +423,40 @@ Given valid P2 ingestion evidence, the P2 governed catalog, valid P4 review/judg
 - P5 evidence hashes upstream P2/P4 artifacts, P5 schemas, P5 fixtures, generated P5 artifacts, and itself under the same canonicalization discipline as P0/P1/P2/P3/P4.
 - `demo/p5/protocol/index.html` is generated from P5 proof artifacts and does not count as proof unless the underlying P5 evidence passes.
 
+P5 also implements the sibling `surfaces-native-static` target. It is a Surfaces-native proof-only inert static-packet target, not an A2UI clone, A2UI conformance proof, production API, native SDK, native bridge, live runtime, or expansion of `surfaces-protocol-static`.
+
+The P5 native proof path is:
+
+```text
+artifacts/p2/evidence.json
+artifacts/p2/governed-catalog.json
+artifacts/p4/evidence.json
+artifacts/p4/surfaceops-decision-ledger.json
+artifacts/p4/review-judgment-report.json
+artifacts/p5/protocol/evidence.json
+fixtures/p5/native/adapter-target-selection.fixture.json
+fixtures/p5/native/expectations.manifest.json
+  -> validate fixtures/p5/native/mutations/*.native-preflight.json against expected upstream and compatibility-preflight failures
+  -> artifacts/p5/native/adapter-target-selection.json
+  -> artifacts/p5/native/surfaces-native-projection.json
+  -> validate fixtures/p5/native/valid/*.json, fixtures/p5/native/review/*.json, fixtures/p5/native/invalid/*.json, and remaining fixtures/p5/native/mutations/*.json
+  -> artifacts/p5/native/surfaces-native-packet.button.json
+  -> artifacts/p5/native/surfaces-native-packet.in-line-alert.json
+  -> artifacts/p5/native/surfaces-native-report.json
+  -> artifacts/p5/native/evidence.json
+  -> demo/p5/native/index.html
+```
+
+Native proof command:
+
+```bash
+interfacectl surfaces native proof --ingestion-evidence artifacts/p2/evidence.json --review-evidence artifacts/p4/evidence.json --decision-ledger artifacts/p4/surfaceops-decision-ledger.json --review-report artifacts/p4/review-judgment-report.json --catalog artifacts/p2/governed-catalog.json --protocol-evidence artifacts/p5/protocol/evidence.json --fixture fixtures/p5/native --out artifacts/p5/native
+```
+
+Given valid P2 ingestion evidence, the P2 governed catalog, valid P4 review/judgment evidence, the P4 decision ledger, the P4 review/judgment report, passing protocol evidence as compatibility preflight only, and the P5 native fixture set, the native proof command emits the exact P5 native artifact set, validates upstream hashes and target selection, creates a hash-bound `surfaces-native-static` projection, validates every fixture against the expectations manifest, emits deterministic inert native packets for allowed surfaces only, blocks invalid and review-required usage without executing actions or calling live services, records native diagnostics before final evidence, and writes reproducible evidence with hashes and provenance for every native schema, fixture, input artifact, generated proof artifact under `artifacts/p5/native`, and final evidence artifact.
+
+Native target selection records accepted P2/P4 authority in `upstreamRefs[]` and protocol compatibility evidence in `compatibilityPreflightRefs[]`. Native evidence keeps `artifacts/p5/protocol/evidence.json` out of native `boundaryRefs[]`; protocol evidence is a compatibility preflight ref only, not native authority.
+
 ## Subplans
 - [Subplan Index](plans/README.md)
 - [Runtime Catalog v0](plans/runtime-catalog-v0.md)
@@ -474,11 +508,12 @@ Given valid P2 ingestion evidence, the P2 governed catalog, valid P4 review/judg
 - [P5 Protocol Adapter Proof](plans/p5/protocol-adapter-proof.md)
 - [P5 Validation and Evidence](plans/p5/validation-evidence.md)
 - [P5 Demo and CI](plans/p5/demo-ci.md)
+- [P5 Native Static Proof](plans/p5/native-static-proof.md)
 - [Product Portfolio Boundaries](plans/product-portfolio-boundaries.md)
 - [Usability And Value Evidence Plan](plans/usability-value-evidence.md)
 - [Surfaces.dev Documentation Tracking](plans/surfaces-dev.md)
 
-The P5 subplans linked above define the implemented `surfaces-protocol-static` proof slice. They do not implement production adapters, protocol APIs, SDKs, live protocol services, A2UI export, or A2UI conformance. Future P5 targets remain planned until they add their own proof shape and passing evidence.
+The P5 subplans linked above define the implemented `surfaces-protocol-static` and `surfaces-native-static` proof slices. They do not implement production adapters, protocol APIs, SDKs, native SDKs, live protocol services, live native runtimes, A2UI export, or A2UI conformance. Future P5 targets remain planned until they add their own proof shape and passing evidence.
 
 ## P0 Decisions
 - Runtime catalog name and boundary: Surfaces Catalog / `runtime-catalog.v0`, a governed design-system catalog/compiler artifact.
@@ -527,6 +562,9 @@ The P5 subplans linked above define the implemented `surfaces-protocol-static` p
 - First P5 boundary: `protocol-target-selection.v0`, `protocol-projection.v0`, `protocol-envelope.v0`, `protocol-adapter-report.v0`, and `protocol-adapter-evidence.v0`, not a production API, SDK, transport, live protocol service, or public Surface IR protocol.
 - First P5 output: target selection, protocol projection, allowed protocol envelopes, protocol adapter report, evidence, generated demo, and CI gate from proof artifacts.
 - Review-required protocol fixtures remain report/evidence-only and do not emit protocol-envelope artifacts.
+- Sibling implemented P5 target: `surfaces-native-static`, a deterministic inert native-packet proof.
+- Native P5 boundary: `surfaces-native-target-selection.v0`, `surfaces-native-projection.v0`, `surfaces-native-packet.v0`, `surfaces-native-report.v0`, and `surfaces-native-evidence.v0`, not a production native SDK, production API, native bridge, live runtime, A2UI clone, or expansion of `surfaces-protocol-static`.
+- Native proof consumes `artifacts/p5/protocol/evidence.json` as compatibility preflight only; authority remains accepted P2 catalog/evidence plus accepted P4 review/judgment evidence.
 - A2UI remains a downstream conformance or projection target only if a future P5 proof implements it with its own contract and evidence.
 - Production adapters, protocol APIs, SDKs, live protocol services, live SurfaceOps, and live JudgmentKit remain planned until target evidence passes for those specific targets.
 - Future P5 targets must prove their own schemas, fixtures, diagnostics, command contract, artifacts, target report, evidence, demo, CI gate, non-goals, and acceptance criteria before they are described as implemented.
@@ -572,3 +610,10 @@ The P5 subplans linked above define the implemented `surfaces-protocol-static` p
 - No live SurfaceOps persistence, live JudgmentKit invocation, work-order execution, agent execution, network call, connector call, callback, or secret access.
 - No relaxation of P0/P1/P2/P3/P4 evidence, catalog authority, deterministic diagnostics, review-required semantics, or generated-demo boundaries.
 - No claim that future P5 targets are implemented by the static protocol-envelope proof.
+
+## Non-Goals For P5 `surfaces-native-static`
+- No A2UI clone, A2UI export, or A2UI conformance claim.
+- No production native SDK, production API, native bridge, live runtime, renderer, package, callback, network, connector, or secret access.
+- No expansion of `surfaces-protocol-static`; protocol evidence is compatibility preflight only.
+- No action execution, live SurfaceOps persistence, live JudgmentKit invocation, work-order execution, or authority override.
+- No relaxation of P0/P1/P2/P3/P4 evidence, catalog authority, deterministic diagnostics, review-required semantics, or generated-demo boundaries.

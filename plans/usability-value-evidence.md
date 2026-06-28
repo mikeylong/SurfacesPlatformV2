@@ -25,7 +25,7 @@ The platform is usable when a developer, agent, reviewer, CI system, or runtime 
 Demos make the proof easier to inspect. They are never proof authority. If a demo and evidence disagree, the evidence and phase contract win.
 
 ## Current Evidence Summary
-The current tracked phase evidence files report passing status for P0 through P5 protocol. Evidence `status` records whether the proof command passed. `promotionStatus` records the governed outcome that downstream consumers must respect.
+The current tracked phase evidence files report passing status for P0 through the implemented P5 protocol and native proof-only targets. Evidence `status` records whether the proof command passed. `promotionStatus` records the governed outcome that downstream consumers must respect.
 
 | Phase | Implemented slice | Evidence path | Current evidence status | Current promotion status | Demo path |
 | --- | --- | --- | --- | --- | --- |
@@ -35,6 +35,7 @@ The current tracked phase evidence files report passing status for P0 through P5
 | P3 | Inert agent orchestration proof | `artifacts/p3/evidence.json` | `pass` | `review_required` | `demo/p3/index.html` |
 | P4 | Deterministic review and judgment proof | `artifacts/p4/evidence.json` | `pass` | `blocked` | `demo/p4/index.html` |
 | P5 | `surfaces-protocol-static` inert protocol-envelope proof | `artifacts/p5/protocol/evidence.json` | `pass` | `review_required` | `demo/p5/protocol/index.html` |
+| P5 | `surfaces-native-static` inert native-packet proof | `artifacts/p5/native/evidence.json` | `pass` | `review_required` | `demo/p5/native/index.html` |
 
 The promotion status is not a marketing status. It is part of the proof contract: allowed work may proceed, review-required work stays inspectable but blocked from unattended promotion, and blocked work remains rejected by deterministic diagnostics or review policy.
 
@@ -46,7 +47,7 @@ A reviewer should be able to demonstrate platform value by walking the evidence 
 - Generation time: show the governed catalog, valid fixtures, invalid fixtures, review-required fixtures, and diagnostics that prevent unsupported UI from becoming hidden output.
 - CI/CD integration time: show the package gate, tracked drift check, untracked-output guard, evidence file, and proof-bearing workflow result for the phase.
 - Review time: show the P3 review queue, P4 decision ledger, JudgmentKit-shaped findings, diagnostics, and promotion status without claiming live SurfaceOps or live JudgmentKit behavior.
-- Runtime or protocol consumption time: show hash-bound projections, render plans, protocol projections, inert envelopes, and review-required rows that produce no executable output.
+- Runtime, protocol, or native consumption time: show hash-bound projections, render plans, protocol projections, native projections, inert envelopes, inert native packets, and review-required rows that produce no executable output.
 - Demo inspection time: show generated demos only as presentation views backed by passing evidence, never as the source of proof.
 
 ## Phase Evidence Cards
@@ -411,6 +412,66 @@ Non-goals:
 - No A2UI export or conformance claim without a separate A2UI-specific P5 proof shape.
 - No claim that future P5 targets are implemented by this static protocol-envelope proof.
 
+### P5: `surfaces-native-static` Native Packet Proof
+Value demonstrated: accepted P2/P4 authority can feed a Surfaces-native static-packet target while protocol evidence is consumed only as compatibility preflight, not native authority.
+
+Command:
+
+```bash
+interfacectl surfaces native proof --ingestion-evidence artifacts/p2/evidence.json --review-evidence artifacts/p4/evidence.json --decision-ledger artifacts/p4/surfaceops-decision-ledger.json --review-report artifacts/p4/review-judgment-report.json --catalog artifacts/p2/governed-catalog.json --protocol-evidence artifacts/p5/protocol/evidence.json --fixture fixtures/p5/native --out artifacts/p5/native
+```
+
+Inputs:
+
+- `artifacts/p2/evidence.json`
+- `artifacts/p2/governed-catalog.json`
+- `artifacts/p4/evidence.json`
+- `artifacts/p4/surfaceops-decision-ledger.json`
+- `artifacts/p4/review-judgment-report.json`
+- `artifacts/p5/protocol/evidence.json` as compatibility preflight only
+- `fixtures/p5/native/adapter-target-selection.fixture.json`
+- `fixtures/p5/native/expectations.manifest.json`
+- `fixtures/p5/native/valid/*.json`
+- `fixtures/p5/native/invalid/*.json`
+- `fixtures/p5/native/review/*.json`
+- `fixtures/p5/native/mutations/*.json`
+- P5 native-owned and consumed shared schemas under `schemas/`
+
+Artifacts:
+
+- `artifacts/p5/native/adapter-target-selection.json`
+- `artifacts/p5/native/surfaces-native-projection.json`
+- `artifacts/p5/native/surfaces-native-packet.button.json`
+- `artifacts/p5/native/surfaces-native-packet.in-line-alert.json`
+- `artifacts/p5/native/surfaces-native-report.json`
+- `artifacts/p5/native/evidence.json`
+
+Evidence and demo:
+
+- Proof authority: `artifacts/p5/native/evidence.json`
+- Presentation only: `demo/p5/native/index.html`
+
+Promotion status:
+
+- Current tracked evidence records `review_required` because review-required native fixtures remain report/evidence-only and emit no native packet artifact.
+
+Diagnostic coverage:
+
+- Missing, failing, stale, wrong-schema, wrong-path, wrong-source-evidence-hash, or hash-mismatched accepted P2/P4 authority refs.
+- Missing, failing, stale, wrong-schema, wrong-path, or hash-mismatched protocol compatibility preflight refs.
+- Undeclared, out-of-scope, A2UI-claiming, or live-native-API-claiming targets.
+- Target-selection, projection, report, generated artifact, and evidence ref tuple mismatch.
+- Native projection authority escalation.
+- Live action callback, production API, SDK, transport, network, and A2UI conformance claims without proof.
+- Review-required native action handling.
+
+Non-goals:
+
+- No A2UI clone, export, or conformance claim.
+- No production native SDK, production API, native bridge, live runtime, renderer, package, callback, network, connector, or secret access.
+- No expansion of `surfaces-protocol-static`; protocol evidence is compatibility preflight only.
+- No action execution, live SurfaceOps persistence, live JudgmentKit invocation, work-order execution, or authority override.
+
 ## Lifecycle Evidence Cards
 
 ### Generation Time
@@ -447,6 +508,7 @@ Evidence paths:
 - `artifacts/p3/evidence.json`
 - `artifacts/p4/evidence.json`
 - `artifacts/p5/protocol/evidence.json`
+- `artifacts/p5/native/evidence.json`
 
 Gate commands:
 
@@ -457,6 +519,7 @@ npm run check:p2:ci
 npm run check:p3:ci
 npm run check:p4:ci
 npm run check:p5:protocol:ci
+npm run check:p5:native:ci
 ```
 
 Usability signal:
@@ -471,7 +534,7 @@ Value signal:
 Non-goals:
 
 - CI passing does not make demos authoritative.
-- CI passing for `surfaces-protocol-static` does not implement future P5 targets, production adapters, A2UI exports, hosted APIs, or live services.
+- CI passing for `surfaces-protocol-static` or `surfaces-native-static` does not implement future P5 targets, production adapters, native SDKs, A2UI exports, hosted APIs, native bridges, or live services.
 
 ### Review Time
 Question answered: can review-required work be routed, evaluated, approved, rejected, or held without losing evidence traceability?
@@ -498,7 +561,7 @@ Non-goals:
 
 - No live review console, persistent review database, live JudgmentKit invocation, live SurfaceOps persistence, or work-order execution is proven by P4.
 
-### Runtime And Protocol Consumption Time
+### Runtime, Protocol, And Native Consumption Time
 Question answered: can downstream consumers render or package only what accepted evidence authorizes, without adding authority or behavior?
 
 Evidence path:
@@ -509,22 +572,27 @@ Evidence path:
 - Protocol proof: `artifacts/p5/protocol/evidence.json`
 - Protocol projection: `artifacts/p5/protocol/protocol-projection.json`
 - Protocol envelopes: `artifacts/p5/protocol/protocol-envelope.*.json`
-- Presentation only: `demo/p1/index.html` and `demo/p5/protocol/index.html`
+- Native proof: `artifacts/p5/native/evidence.json`
+- Native projection: `artifacts/p5/native/surfaces-native-projection.json`
+- Native packets: `artifacts/p5/native/surfaces-native-packet.*.json`
+- Presentation only: `demo/p1/index.html`, `demo/p5/protocol/index.html`, and `demo/p5/native/index.html`
 
 Usability signal:
 
 - Runtime consumers can inspect hash-bound projections and render plans for allowed surfaces.
 - Protocol consumers can inspect target selection, protocol projection, inert envelopes, transport-free action descriptors, diagnostics, and evidence refs.
-- Review-required cases are report/evidence-only and do not emit render-plan or protocol-envelope artifacts.
+- Native consumers can inspect target selection, native projection, inert native packets, compatibility preflight refs, diagnostics, and evidence refs.
+- Review-required cases are report/evidence-only and do not emit render-plan, protocol-envelope, or native-packet artifacts.
 
 Value signal:
 
-- The platform demonstrates runtime-safe and protocol-safe consumption without letting consumers invent components, actions, tokens, accessibility semantics, transport behavior, or promotion policy.
+- The platform demonstrates runtime-safe, protocol-safe, and native-packet-safe consumption without letting consumers invent components, actions, tokens, accessibility semantics, transport behavior, or promotion policy.
 
 Non-goals:
 
 - P1 is not a general renderer or production adapter.
 - P5 `surfaces-protocol-static` is not a production API, SDK, hosted protocol service, public protocol, A2UI export, or A2UI conformance proof.
+- P5 `surfaces-native-static` is not a production native SDK, native bridge, live runtime, renderer, A2UI clone, A2UI conformance proof, or expansion of protocol authority.
 
 ## How To Use This Plan
 Use this file as a human-readable evidence map during roadmap, release, demo, and review discussions.
