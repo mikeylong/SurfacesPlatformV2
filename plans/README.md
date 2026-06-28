@@ -4,6 +4,12 @@ For product vision, authority taxonomy, roadmap sequence, surface roles, and age
 
 These subplans define the Surfaces Platform proof contracts and their materialized schemas, fixtures, artifacts, demos, scripts, and tests. P0 specifies the first executable catalog proof, P1 specifies the first runtime projection proof, P2 specifies bounded real design-system ingestion, P3 specifies inert agent orchestration proof, P4 specifies review and judgment proof without turning derived consumers into new authority, and P5 specifies the first bounded `surfaces-protocol-static` protocol-envelope proof. Future P5 targets remain planned until they add their own complete proof shape and passing evidence.
 
+## Cross-Cutting Documentation
+These documents are subordinate to `VISION.md` and support the phase plans without redefining authority or proof status.
+
+1. [Product Portfolio Boundaries](product-portfolio-boundaries.md)
+2. [Usability And Value Evidence Plan](usability-value-evidence.md)
+
 ## P0 Dependency Order
 1. [Runtime Catalog v0](runtime-catalog-v0.md)
 2. [P0/P1 Product Boundaries](product-boundaries.md)

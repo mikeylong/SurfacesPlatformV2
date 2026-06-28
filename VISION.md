@@ -43,6 +43,29 @@ Surfaces Platform creates value when it lets teams:
 - promote safe surfaces, reject invalid surfaces, and route sensitive surfaces to human review;
 - generate adapter-visible render plans without turning demos or runtime projections into hidden sources of truth.
 
+## Product Portfolio Boundaries
+Surfaces Platform is the contract system. The surrounding product portfolio may include human-facing sites, developer docs, review tools, evaluators, workflow products, and downstream adapter targets, but none of those products gain authority by being adjacent to Surfaces.
+
+- `interfacectl`, the Surfaces Catalog, proof reports, and evidence define implemented Surfaces behavior.
+- `surfaces.systems` and `surfaces.dev` explain, teach, and guide. They do not prove behavior or replace evidence.
+- SurfaceOps is the review-product direction, including any future `surfaceops.ai` product packaging. The implemented P4 boundary is deterministic decision artifacts only; live review storage, workflow, or product behavior needs a later proof.
+- JudgmentKit is the evaluation direction. The implemented P4 boundary is deterministic JudgmentKit-shaped findings only; live invocation needs a later proof and explicit authorization.
+- `kanban.cards` is the candidate upstream reusable board and human/agent collaboration core for SurfaceOps workflows. The default direction is to keep `kanban.cards` standalone, then layer SurfaceOps-specific governance, evidence, review queues, and promotion semantics on top. White-labeling `kanban.cards` as SurfaceOps is a packaging option only if the standalone product is intentionally deprioritized.
+- A2UI, production adapters, public APIs, SDKs, live runtimes, and other downstream targets remain future target-specific work until each has its own proof shape and passing evidence.
+
+`kanban.cards`, SurfaceOps, JudgmentKit, and A2UI can remain standalone products or targets only if their boundaries stay explicit. None may become catalog authority, proof authority, policy authority, or hidden review state without a later proof.
+
+## Usable Platform Signal
+Surfaces becomes a usable platform per target when a team can complete an evidence-backed loop:
+
+- bounded design-system source material becomes a governed catalog with source refs and diagnostics;
+- an agent or generator can emit only catalog-allowed surfaces and receives deterministic rejections or review requirements for unsupported requests;
+- review-required work is inspectable through evidence and decision records without unattended promotion;
+- a consumer can render, display, or adapt only the accepted, hash-bound output for its proven target;
+- docs and product surfaces point back to the current proof status instead of claiming unsupported behavior.
+
+Generated demos, review queues, protocol envelopes, workflow cards, or adapter-facing outputs can help demonstrate usability, but they are not the signal by themselves. The signal is the closed evidence loop for a declared target.
+
 ## Current State
 P0 proves the catalog contract with a synthetic golden fixture. It materializes `extract.json`, `catalog.json`, `governed-catalog.json`, adapter diagnostics, and evidence from `fixtures/p0/source.fixture.json`.
 
@@ -69,7 +92,16 @@ P3: Agent recruitment and orchestration proof. Prove agent control through regis
 
 P4: Review and judgment proof. Let SurfaceOps and JudgmentKit consume evidence. SurfaceOps should handle review queues and human decisions. JudgmentKit should evaluate activity fit, contract quality, evidence quality, and handoff quality. Neither should override the Surfaces Catalog.
 
-P5: Protocol boundaries and production adapters. The first implemented slice is `surfaces-protocol-static`, a deterministic inert protocol-envelope proof. Add additional runtime projections, A2UI exports or conformance proofs, production APIs, and broader adapter support only after each target has its own schema, fixtures, diagnostics, command contract, and evidence.
+P5: Protocol boundaries and target-specific adapter proofs. The first implemented slice is `surfaces-protocol-static`, a deterministic inert protocol-envelope proof. Add additional runtime projections, A2UI exports or conformance proofs, production APIs, SDKs, live runtimes, and broader adapter support only after each target has its own schema, fixtures, diagnostics, command contract, and evidence.
+
+## Roadmap Horizon
+The current P0-P5 sequence is the implemented proof-contract roadmap, not the full company roadmap. The horizon after P5 is target-specific expansion, not a blanket platform claim or a set of runnable P6/P7 phases before proof shapes exist.
+
+- Source coverage can broaden only through declared source families that preserve refs, provenance, diagnostics, and evidence.
+- SurfaceOps can move from deterministic decision artifacts toward live operational review only after a proof defines storage, workflow, permissions, and authority boundaries.
+- `kanban.cards` can become the reusable collaboration core only after a proof defines how cards reference Surfaces evidence and SurfaceOps decisions. It should organize work around those decisions, not replace them.
+- A2UI, production adapters, public APIs, SDKs, live runtimes, live SurfaceOps, and live JudgmentKit remain future work until target-specific evidence passes.
+- Product and docs surfaces should continue to describe the current proven scope plainly and keep planned targets labeled as planned.
 
 ## Real Design-System Extraction
 P0 remains a synthetic fixture proof, and P1 remains a derived runtime projection proof. P2 is the first bounded real-source ingestion proof: it reads only the manifest-declared local `@adobe/spectrum-design-data@0.7.0` source snapshot, companion local mappings, and local usage policy under `sources/p2/design-system-source`, scoped to `button` and `in-line-alert`. It does not call Figma, scrape Storybook, parse Code Connect, crawl docs, inspect production HTML, or claim full Spectrum support.
@@ -104,6 +136,8 @@ Surfaces Catalog is the governed contract artifact. It is the authority for what
 JudgmentKit is the evaluation layer. It may emit evaluation findings over existing proof artifacts after they exist. It should not compile, mutate, render, route, promote, reject, or override the Surfaces Catalog.
 
 SurfaceOps is the operational review surface. It should consume review-required evidence, show queues and decisions, and help humans promote, reject, or request changes. It should not invent policy outside the governed catalog.
+
+`kanban.cards` is the candidate upstream board and collaboration surface for human/agent SurfaceOps workflows. It may later organize Surfaces-backed work items, review status, and SurfaceOps decision references, but it does not own Surfaces review semantics. It must not create catalog authority, promote or reject surfaces, execute work, or persist SurfaceOps decisions unless a later proof defines that bounded consumer relationship.
 
 A2UI is a downstream compatibility or projection target for a future P5 target. It is not implemented by the first `surfaces-protocol-static` slice and should not become the Surfaces data model unless a separate P5 target proves an A2UI projection with its own schema, fixtures, diagnostics, conformance proof, and evidence.
 
@@ -145,4 +179,7 @@ If a product surface consumes evidence, it may explain, evaluate, route, or disp
 - Broader Spectrum coverage remains open. The implemented P2 target is Adobe Spectrum Design Data, pinned to `@adobe/spectrum-design-data@0.7.0`, initially scoped to `button` and `in-line-alert`; this is not a claim of full Spectrum support, live ingestion, or Adobe endorsement.
 - Broader JudgmentKit execution or live integration beyond the implemented P4 deterministic `judgmentkit-evaluation-report.v0` remains open.
 - Broader SurfaceOps operational storage, workflow, or live product behavior beyond the implemented P4 deterministic `surfaceops-decision-ledger.v0` remains open.
+- The exact packaging relationship between SurfaceOps, `surfaceops.ai`, and `kanban.cards` remains open. The default architecture is `kanban.cards` as reusable collaboration core with SurfaceOps-specific governance layered on top, but white-labeling remains possible if standalone `kanban.cards` is deprioritized.
+- Long-term JudgmentKit finding storage remains open: findings may stay in evidence, appear in SurfaceOps, or live in a separate evaluation store only after the relevant proof defines ownership and authority.
+- A2UI target shape remains open: a future proof may define export, conformance, or both, but A2UI is not the Surfaces data model.
 - Broader P5 support beyond the implemented `surfaces-protocol-static` proof remains open. The first P5 slice proves inert protocol envelopes only; A2UI, production adapters, public APIs, SDKs, live protocol services, live SurfaceOps, and live JudgmentKit remain future target-specific proof work.

@@ -4,12 +4,14 @@
 This document defines the product boundary for the implemented `surfaces-protocol-static` P5 proof. It does not register or claim a production adapter, public API, SDK, live protocol service, or A2UI target.
 
 ## Decision
-The first P5 protocol proof preserves the authority model from `VISION.md`: design-system source material is product authority, the Surfaces Catalog is governed contract authority, and passing evidence is proof authority for implemented behavior.
+The first P5 protocol proof preserves the [authority model from VISION.md](../../VISION.md#canonical-authority-model): design-system source material is product authority, the Surfaces Catalog is governed contract authority, and passing evidence is proof authority for implemented behavior.
 
 The `surfaces-protocol-static` projection exposes a protocol-facing subset of governed catalog behavior, but it remains a derived consumer. It must not become a new catalog, a production API, a public Surface IR protocol, an A2UI data model, or a route around review and evidence gates.
 
+Portfolio-level boundaries for SurfaceOps, `kanban.cards`, JudgmentKit, A2UI, product surfaces, and docs surfaces are tracked in [Product Portfolio Boundaries](../product-portfolio-boundaries.md). This P5 document stays phase-local.
+
 ## Inputs
-- `VISION.md` canonical authority model, roadmap sequence, surface roles, and agent operating rules.
+- [VISION.md canonical authority model](../../VISION.md#canonical-authority-model), [roadmap sequence](../../VISION.md#roadmap), [surface roles](../../VISION.md#surface-roles), and [agent operating rules](../../VISION.md#agent-operating-rules).
 - Implemented P1 runtime projection and render-plan proof boundaries.
 - Implemented P2 real-source ingestion evidence and governed catalog.
 - Implemented P3 inert orchestration evidence.
@@ -22,7 +24,7 @@ The `surfaces-protocol-static` projection exposes a protocol-facing subset of go
 - Must-not-cross rules for production adapter, protocol, A2UI, SurfaceOps, and JudgmentKit claims.
 
 ## Phase-Local Responsibility Matrix
-This matrix is a P5 proof-boundary delta over `VISION.md`. Passing P5 evidence remains the implementation proof authority.
+This matrix is a P5 proof-boundary delta over [VISION.md Surface Roles](../../VISION.md#surface-roles). Passing P5 evidence remains the implementation proof authority.
 
 | Surface | P5 role | Consumes | Emits | Must not do |
 | --- | --- | --- | --- | --- |
