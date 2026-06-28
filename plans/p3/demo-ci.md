@@ -17,7 +17,7 @@ Make the agent orchestration proof inspectable without weakening the proof bound
 ## Outputs
 - `demo/p3/README.md`.
 - `demo/p3/index.html`.
-- CI scripts that materialize P3, run P0/P1/P2/P3 proof gates, rebuild the demo, run tests, and fail on tracked or untracked drift.
+- CI scripts that materialize P3, run the required upstream proof gates or an already-gated phase boundary, rebuild the demo, run tests, and fail on tracked or untracked drift.
 
 ## Demo Rules
 - Demo generation must require passing `artifacts/p3/evidence.json`.
@@ -36,6 +36,7 @@ npm run proof:p3
 npm run build:p3-demo
 npm run check:p3
 npm run check:p3:ci
+npm run check:p3:ci:phase
 npm run check:p3:untracked
 ```
 
@@ -45,6 +46,12 @@ npm run check:p3:untracked
 - run P0 proof unchanged;
 - run P1 proof unchanged;
 - run P2 ingest proof unchanged;
+- run the P3 phase-only gate.
+
+`check:p3:ci:phase` must:
+
+- run only after accepted P2 proof evidence exists or after a CI job such as `p2-proof` has already run `check:p2:ci`;
+- materialize P0/P1/P2/P3 schemas and fixtures needed by the P3 proof;
 - run P3 proof;
 - rebuild `demo/p3`;
 - run the full test suite;
