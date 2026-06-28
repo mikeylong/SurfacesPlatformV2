@@ -33,7 +33,7 @@ The complete cross-phase surface-role taxonomy lives in [VISION](../../VISION.md
 | Runtime projection | Downstream consumer | Governed catalog after future adapter proof | Adapter-specific projection | Add source eligibility or source policy in P2 |
 | SurfaceOps | Future review console | Review-required evidence rows | Human decisions in later phase | Own ingestion policy in P2 |
 | JudgmentKit | Future evaluator | Evidence and evaluator metadata | Quality evaluation in later phase | Override ingestion proof or catalog output |
-| A2UI | P5 compatibility or projection target; non-participant in P2 | Governed catalog after P5 A2UI proof | P5 A2UI projection or conformance artifacts | Become the Surfaces data model before P5 or add P2 catalog behavior |
+| A2UI | Future A2UI-specific P5 target; non-participant in P2 | Governed catalog after A2UI-specific proof | A2UI projection, export, or conformance artifacts | Become the Surfaces data model without a separate A2UI proof or add P2 catalog behavior |
 
 ## Boundary Rules
 - P2 may read only files declared by `sources/p2/design-system-source/manifest.json`.

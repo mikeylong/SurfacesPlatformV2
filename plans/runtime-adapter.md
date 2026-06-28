@@ -28,15 +28,15 @@ Any future runtime adapter must:
 - respect `review_required` by blocking unattended action execution;
 - provide evidence-compatible provenance and artifact hashes.
 
-## P5 A2UI Position
-A2UI is reference-only before P5. P5 may emit A2UI-compatible projections/exports from the governed Surfaces Catalog and validate those projections against A2UI conformance. P0 does not implement an A2UI adapter and does not claim A2UI compatibility.
+## A2UI Position
+A2UI is reference-only in P0/P1 and is not implemented by the first `surfaces-protocol-static` P5 slice. A future A2UI-specific P5 target may emit projections, exports, or conformance artifacts from the governed Surfaces Catalog. P0 does not implement an A2UI adapter and does not claim A2UI compatibility.
 
 ## P0 Proof
 No renderer is built. The proof is that adapter conformance can accept valid usage, reject invalid usage, and record review-required usage from the governed catalog.
 
 ## Non-Goals
 - No runtime renderer.
-- No A2UI compatibility implementation before P5.
+- No A2UI compatibility implementation without a separate A2UI-specific P5 proof.
 - No P0 web/native adapter; P1's `web-static` proof target is not a live or general-purpose web/native adapter.
 - No component package integration.
 - No live action execution.
@@ -45,4 +45,4 @@ No renderer is built. The proof is that adapter conformance can accept valid usa
 - P1 resolves the first adapter proof target as `web-static`.
 - P1 resolves the first runtime boundary as `runtime-projection.v0`, a smaller adapter-specific projection derived from `governed-catalog.json`.
 - Runtime actions remain inert descriptors in P1; callbacks, RPC commands, workflow triggers, and live side effects remain deferred beyond P1.
-- A2UI remains gated to P5. React, web-component, native, or live runtime adapters remain future targets unless a later phase defines their schema, fixtures, conformance proof, and evidence.
+- A2UI remains deferred to a future A2UI-specific P5 target. React, web-component, native, or live runtime adapters remain future targets unless a later phase defines their schema, fixtures, conformance proof, and evidence.

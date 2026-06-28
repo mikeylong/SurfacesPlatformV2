@@ -167,5 +167,5 @@ The fixture set passes only when every expectation matches the manifest, every u
 - No live source ingestion fixture.
 - No generated application code fixture.
 - No modal implementation fixture.
-- No P5 A2UI conformance fixture.
+- No A2UI conformance fixture without a separate A2UI-specific P5 proof.
 - No reviewer decision fixture.

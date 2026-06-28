@@ -1,13 +1,21 @@
 # Product Portfolio Boundaries
 
 ## Status
-This is a subordinate mechanical map for the product and surface names around SurfacesPlatform. [VISION.md](../VISION.md) remains canonical for product vision, authority taxonomy, roadmap sequence, surface roles, and agent operating rules.
+This is a subordinate mechanical map for the product and surface names around Surfaces Platform. [VISION.md](../VISION.md) remains canonical for product vision, authority taxonomy, roadmap sequence, surface roles, and agent operating rules.
 
 This file is not proof authority. It summarizes what each named surface may own, consume, and emit under current evidence, and what must be proved before broader claims are made.
 
+## Canonical Names And Packaging Defaults
+- Surfaces Platform is the contract system. The repository name may be `SurfacesPlatformV2`, but prose should use "Surfaces Platform" unless referring to the repo.
+- `surfaces.systems` and `surfaces.dev` are domain-style product and documentation surfaces. They explain and guide; they do not prove behavior.
+- SurfaceOps is the review-product direction. `surfaceops.ai` may become product packaging for that direction, but current proof is limited to deterministic P4 artifacts.
+- `kanban.cards` should remain a standalone reusable board and collaboration core by default. SurfaceOps-specific governance, evidence refs, review queues, promotion semantics, and decision ownership should layer on top. White-labeling `kanban.cards` as SurfaceOps remains a fallback only if standalone `kanban.cards` is intentionally deprioritized.
+- JudgmentKit is the evaluator direction. JudgmentKit MCP or connector invocation is a possible future live integration path, not something invoked by the current P4 proof.
+- A2UI is a possible downstream projection, export, or conformance target for a future A2UI-specific P5 proof. The implemented `surfaces-protocol-static` P5 slice does not implement A2UI.
+
 ## Boundary Map
 
-### SurfacesPlatform
+### Surfaces Platform
 - Owns: the mission to compile design-system source material into governed UI contracts, plus the roadmap sequence described in `VISION.md`.
 - Consumes: design-system source material, schemas, fixtures, phase subplans, proof commands, generated artifacts, diagnostics, demos, and evidence.
 - Emits: governed proof slices, phase reports, generated demos, evidence, and product/documentation context.
@@ -26,7 +34,7 @@ This file is not proof authority. It summarizes what each named surface may own,
 ### interfacectl
 - Owns: deterministic compiler, validation, proof-command, stale-output, diagnostics, artifact, and evidence materialization behavior.
 - Consumes: POSIX-relative inputs, schemas, fixtures, upstream evidence, governed catalogs, review artifacts, and phase-specific command arguments.
-- Emits: phase artifacts under `artifacts/`, generated demos under `demo/`, reports, diagnostics, and final evidence.
+- Emits: phase artifacts under `artifacts/`, reports, diagnostics, and final evidence. Package scripts coordinate generated demos under `demo/` from passing evidence.
 - Current proof status: implements the P0 catalog, P1 adapter, P2 ingestion, P3 agents, P4 review, and P5 protocol proof commands documented in `PLAN.md`.
 - Must not do: call live source APIs, execute work orders, invoke live SurfaceOps or JudgmentKit, expose production APIs, bypass stale-output checks, or infer unsupported behavior.
 - Future proof required before claim: every new command or target needs an exact command contract, path rules, diagnostics, fixtures, generated artifact set, report, final evidence, tests, and CI gate.
@@ -56,15 +64,15 @@ This file is not proof authority. It summarizes what each named surface may own,
 - Future proof required before claim: live SurfaceOps needs schemas, fixtures, diagnostics, persistence rules, command/API boundaries, audit evidence, review workflows, and proof gates.
 
 ### kanban.cards
-- Owns: no current SurfacesPlatform proof authority; the preferred architecture treats it as a reusable board and human/agent collaboration core.
+- Owns: no current Surfaces Platform proof authority; the preferred architecture treats it as a reusable board and human/agent collaboration core.
 - Consumes: nothing in the current proof contract; a future card/workflow surface could consume review queues, decision ledgers, work-order refs, and evidence after a target-specific proof.
 - Emits: nothing in the current proof contract; future outputs would need to be bounded as inert card records, workflow state, or review artifacts by a separate proof.
 - Current proof status: standalone product or repo direction only. The preferred packaging keeps `kanban.cards` upstream of SurfaceOps-specific governance, with white-labeling as a fallback if standalone `kanban.cards` is intentionally deprioritized.
 - Must not do: masquerade as proof authority, execute work orders, route review, persist SurfaceOps decisions, create catalog policy, or claim proof status from unrelated artifacts.
 - Future proof required before claim: introduce product boundaries, schemas, fixtures, diagnostics, command or API contract, artifact/report/evidence paths, persistence semantics, SurfaceOps layering rules, and explicit non-goals.
 
-### JudgmentKit MCP
-- Owns: no live execution ownership in the current repo; the current proof owns only a JudgmentKit-shaped evaluation artifact.
+### JudgmentKit And JudgmentKit MCP
+- Owns: no live execution ownership in the current repo; the current proof owns only a JudgmentKit-shaped evaluation artifact. JudgmentKit is the evaluator direction, while JudgmentKit MCP is a possible future invocation transport.
 - Consumes: existing evidence and evidence refs when a proof or explicit user request authorizes evaluation.
 - Emits: currently, deterministic `judgmentkit-evaluation-report.json` inside the P4 proof; future live MCP output requires separate authorization and proof.
 - Current proof status: P4 implements `judgmentkit-evaluation-report.v0` without live JudgmentKit MCP or connector invocation.

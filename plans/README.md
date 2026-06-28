@@ -4,6 +4,9 @@ For product vision, authority taxonomy, roadmap sequence, surface roles, and age
 
 These subplans define the Surfaces Platform proof contracts and their materialized schemas, fixtures, artifacts, demos, scripts, and tests. P0 specifies the first executable catalog proof, P1 specifies the first runtime projection proof, P2 specifies bounded real design-system ingestion, P3 specifies inert agent orchestration proof, P4 specifies review and judgment proof without turning derived consumers into new authority, and P5 specifies the first bounded `surfaces-protocol-static` protocol-envelope proof. Future P5 targets remain planned until they add their own complete proof shape and passing evidence.
 
+## Roadmap Status Snapshot
+The current implemented proof roadmap is P0-P5, where P5 means only the `surfaces-protocol-static` slice. The canonical status snapshot lives in [VISION.md](../VISION.md#current-roadmap-proof-snapshot), and the human-readable value map lives in [Usability And Value Evidence Plan](usability-value-evidence.md). Future P5 targets such as A2UI conformance, production APIs, SDKs, live protocol services, live SurfaceOps, or live JudgmentKit remain planned until they add their own target-specific schema, fixture, diagnostics, command contract, report or artifact path, evidence path, demo boundary, CI gate, and passing evidence.
+
 ## Cross-Cutting Documentation
 These documents are subordinate to `VISION.md` and support the phase plans without redefining authority or proof status.
 

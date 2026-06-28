@@ -27,11 +27,11 @@ The complete cross-phase [authority model](../../VISION.md#canonical-authority-m
 | `web-static` projection | Adapter-specific contract subset | Governed catalog, runtime projection schema constants, P0 evidence refs | `runtime-projection.json` | Add components, props, actions, policy, review decisions, or fixture-derived authority |
 | Runtime adapter proof | Render-plan boundary | Runtime projection, fixture inputs | Allowed render plans and adapter report | Interpret the full catalog as a second governance engine |
 | Product demo | Generated product-visible proof view | P1 proof artifacts | `demo/p1/index.html` | Hand-author proof data or bypass evidence |
-| Surfaces.systems | Category and product home | Published proof summaries | Product narrative | Own validation or enforcement |
-| Surfaces.dev | Agent-ready instructions | Contract artifacts and docs | Human-readable agent instructions | Replace schemas, manifest, or CLI proof |
+| `surfaces.systems` | Category and product home | Published proof summaries | Product narrative | Own validation or enforcement |
+| `surfaces.dev` | Agent-ready instructions | Contract artifacts and docs | Human-readable agent instructions | Replace schemas, manifest, or CLI proof |
 | SurfaceOps | Future review console | Review-required evidence records | Human review decisions in a later phase | Invent policy outside governed catalog |
 | JudgmentKit | Future evaluator | Evidence and evaluator metadata | Quality and handoff evaluation in a later phase | Compile, mutate, or override the catalog |
-| A2UI | P5 future projection target | Governed catalog or declared P5 A2UI projection | P5 conformance proof | Serve as the Surfaces data model before P5 |
+| A2UI | Future A2UI-specific P5 target | Governed catalog or declared A2UI projection | A2UI export or conformance proof | Serve as the Surfaces data model without a separate A2UI proof |
 
 ## Boundary Rules
 - The governed catalog remains the contract authority for P1.
@@ -52,7 +52,7 @@ The proof can be completed with P0 artifacts, P1 fixtures, P1 schemas, runtime p
 - No public site redesign.
 - No JudgmentKit default-source change.
 - No SurfaceOps persistence.
-- No A2UI adapter before P5.
+- No A2UI adapter without a separate A2UI-specific P5 proof.
 - No live user approval workflow.
 - No modal or `alertdialog` runtime support; that support is deferred beyond P1.
 - No product analytics or telemetry.

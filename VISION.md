@@ -66,6 +66,20 @@ Surfaces becomes a usable platform per target when a team can complete an eviden
 
 Generated demos, review queues, protocol envelopes, workflow cards, or adapter-facing outputs can help demonstrate usability, but they are not the signal by themselves. The signal is the closed evidence loop for a declared target.
 
+## Current Roadmap Proof Snapshot
+The current roadmap evidence is P0-P5, with P5 implemented only for the first `surfaces-protocol-static` slice. A row counts as implemented only when the named evidence file records `status: "pass"`. `promotionStatus` records governance outcome, not whether the proof command failed.
+
+| Phase | Implemented slice | Lifecycle value | Evidence | Current status | Current promotion status | CI gate | Demo |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| P0 | Synthetic catalog contract proof | Generation boundary for governed Surface IR | `artifacts/p0/evidence.json` | `pass` | `review_required` | `npm run check:p0:ci` | `demo/p0/index.html` |
+| P1 | `web-static` runtime projection and render-plan proof | Runtime-safe derived projection and inert render plans | `artifacts/p1/evidence.json` | `pass` | `review_required` | `npm run check:p1:ci` | `demo/p1/index.html` |
+| P2 | Bounded local Adobe Spectrum Design Data ingestion for `button` and `in-line-alert` | Real design-system source refs, mappings, diagnostics, and governed catalog output | `artifacts/p2/evidence.json` | `pass` | `review_required` | `npm run check:p2:ci` | `demo/p2/index.html` |
+| P3 | Inert agent orchestration proof | Evidence-bound work orders, task DAG, review queue, and no live execution | `artifacts/p3/evidence.json` | `pass` | `review_required` | `npm run check:p3:ci` | `demo/p3/index.html` |
+| P4 | Deterministic review and judgment proof | SurfaceOps-shaped decisions and JudgmentKit-shaped findings without live persistence or invocation | `artifacts/p4/evidence.json` | `pass` | `blocked` | `npm run check:p4:ci` | `demo/p4/index.html` |
+| P5 | `surfaces-protocol-static` inert protocol-envelope proof | Protocol-boundary consumption of accepted P2/P4 evidence | `artifacts/p5/protocol/evidence.json` | `pass` | `review_required` | `npm run check:p5:protocol:ci` | `demo/p5/protocol/index.html` |
+
+P4's `blocked` promotion status is expected in current tracked evidence: it proves invalid or unsafe review outcomes are blocked while the proof itself still passes. Demos remain presentation output. They help humans inspect the proof, but evidence and the proof contract remain authoritative.
+
 ## Current State
 P0 proves the catalog contract with a synthetic golden fixture. It materializes `extract.json`, `catalog.json`, `governed-catalog.json`, adapter diagnostics, and evidence from `fixtures/p0/source.fixture.json`.
 

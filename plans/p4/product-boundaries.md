@@ -31,7 +31,7 @@ This matrix is a P4 phase-local delta over [VISION.md Surface Roles](../../VISIO
 | SurfaceOps decision ledger | Deterministic review artifact | P3 queue items and P4 fixtures | Evidence-backed decision rows | Rewrite upstream evidence, mutate P3 artifacts, or execute work |
 | JudgmentKit evaluation report | Deterministic evaluation artifact | P3/P4 evidence refs and P4 fixtures | Evidence-backed findings | Approve, reject, request changes, defer, route, promote, mutate, render, execute, or override catalog policy or SurfaceOps decision authority |
 | Review/judgment report | Summary proof artifact | Ledger, evaluation report, diagnostics | Expected vs actual review results | Hide unsupported findings or decisions |
-| Surfaces.dev | Agent-ready instruction surface | P4 evidence and docs | Human-readable instructions after implementation | Replace schemas, manifests, proof, or evidence |
+| `surfaces.dev` | Agent-ready instruction surface | P4 evidence and docs | Human-readable instructions after implementation | Replace schemas, manifests, proof, or evidence |
 | SurfaceOps | Future operational review product | P4 ledger and evidence | Later persistent decisions | Own catalog policy or execute work in P4 |
 | JudgmentKit | Future evaluator | P4 evidence | Later evaluation findings | Approve, reject, request changes, defer, route, promote, mutate, render, execute, or override catalog policy or SurfaceOps decision authority |
 
