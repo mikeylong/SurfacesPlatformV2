@@ -10,6 +10,8 @@ This plan does not create a new proof authority, command, schema, fixture, artif
 - implemented behavior: passing `artifacts/**/evidence.json`;
 - presentation output: `demo/**`, only when backed by passing evidence.
 
+[Curated design-partner testing](design-partner-testing.md) material is subordinate research and planning context. It may help design moderated tasks, capture qualitative partner feedback, score observations, and synthesize usability questions against evidence-backed demos, but it does not prove behavior, replace phase evidence, or promote any surface.
+
 ## Evidence Rule
 The platform is usable when a developer, agent, reviewer, CI system, or runtime consumer can answer these questions from deterministic proof output:
 
@@ -49,6 +51,23 @@ A reviewer should be able to demonstrate platform value by walking the evidence 
 - Review time: show the P3 review queue, P4 decision ledger, JudgmentKit-shaped findings, diagnostics, and promotion status without claiming live SurfaceOps or live JudgmentKit behavior.
 - Runtime, protocol, or native consumption time: show hash-bound projections, render plans, protocol projections, native projections, inert envelopes, inert native packets, and review-required rows that produce no executable output.
 - Demo inspection time: show generated demos only as presentation views backed by passing evidence, never as the source of proof.
+
+## Design-Partner Testing Package
+The [Curated Design-Partner Testing Program](design-partner-testing.md), [Session Guide](design-partner-testing/session-guide.md), [Results Capture](design-partner-testing/results-capture.md), [Scorecard](design-partner-testing/scorecard.md), and [Synthesis Template](design-partner-testing/synthesis-template.md) are non-proof research and planning surfaces. Use them to frame partner-facing test tasks around the current evidence loop, gather observations about comprehension and workflow value, and identify future proof or documentation gaps.
+
+Design-partner testing may reference:
+
+- the current proof snapshot in [VISION.md](../VISION.md#current-roadmap-proof-snapshot);
+- evidence paths and proof commands in this plan;
+- generated demos as presentation aids only;
+- product boundary constraints in [Product Portfolio Boundaries](product-portfolio-boundaries.md).
+
+Design-partner testing must not:
+
+- treat qualitative feedback as proof that a phase or target is implemented;
+- use demo output as authority when evidence or phase contracts disagree;
+- broaden P5 beyond `surfaces-protocol-static` and `surfaces-native-static`;
+- claim production adapters, A2UI, live SurfaceOps, live JudgmentKit, SDKs, APIs, live runtimes, or action execution without target-specific passing evidence.
 
 ## Phase Evidence Cards
 

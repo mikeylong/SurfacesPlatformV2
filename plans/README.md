@@ -12,6 +12,9 @@ These documents are subordinate to `VISION.md` and support the phase plans witho
 
 1. [Product Portfolio Boundaries](product-portfolio-boundaries.md)
 2. [Usability And Value Evidence Plan](usability-value-evidence.md)
+3. [Curated Design-Partner Testing Program](design-partner-testing.md)
+
+The curated design-partner testing program and templates under `plans/design-partner-testing/` are also subordinate to `VISION.md`, `PLAN.md`, and passing phase evidence. Treat them as non-proof research and planning surfaces for partner task design, synthetic dry runs, feedback capture, scorecards, and synthesis. They may point testers to evidence-backed demos for inspection, but they must not create implementation claims, proof status, catalog authority, or demo authority.
 
 ## P0 Dependency Order
 1. [Runtime Catalog v0](runtime-catalog-v0.md)
@@ -64,8 +67,8 @@ These documents are subordinate to `VISION.md` and support the phase plans witho
 7. [P4 Validation And Evidence](p4/validation-evidence.md)
 8. [P4 Demo And CI](p4/demo-ci.md)
 
-## P5 Protocol Dependency Order
-The P5 protocol subplans define the implemented `surfaces-protocol-static` proof slice. They do not define a production adapter, protocol API, SDK, live protocol service, A2UI export, A2UI conformance claim, live SurfaceOps integration, or live JudgmentKit integration.
+## P5 Protocol And Native Dependency Order
+The P5 protocol and native subplans define the implemented `surfaces-protocol-static` and `surfaces-native-static` proof slices. They do not define a production adapter, protocol API, SDK, native SDK, live protocol service, live native runtime, A2UI export, A2UI conformance claim, live SurfaceOps integration, or live JudgmentKit integration.
 
 1. [P5 Subplan Index](p5/README.md)
 2. [P5 Product Boundaries](p5/product-boundaries.md)
