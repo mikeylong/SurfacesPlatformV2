@@ -179,6 +179,7 @@ The minimum Wave 1 session output is:
   future target request, out of scope, or no action.
 
 ## Templates
+- [Wave 1 Launch Checklist](design-partner-testing/wave-1-launch-checklist.md)
 - [Session Guide](design-partner-testing/session-guide.md)
 - [Results Capture](design-partner-testing/results-capture.md)
 - [Scorecard](design-partner-testing/scorecard.md)
