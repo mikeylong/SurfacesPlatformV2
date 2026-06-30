@@ -1,0 +1,238 @@
+import assert from "node:assert/strict";
+import { execFile } from "node:child_process";
+import fs from "node:fs/promises";
+import path from "node:path";
+import { promisify } from "node:util";
+import test from "node:test";
+import { canonicalJson } from "../src/p0.js";
+import { SC_FORBIDDEN_CLAIM_KEYS } from "../src/source-conformance-contract.js";
+import { sourceConformanceInternals } from "../src/source-conformance-proof.js";
+
+const execFileAsync = promisify(execFile);
+const root = process.cwd();
+const stalePath = path.join(root, "artifacts/source-conformance/stale.tmp");
+
+test("source conformance proof emits passing evidence with final self-hash", async () => {
+  await runSourceConformanceProof();
+  const evidence = await readJson("artifacts/source-conformance/evidence.json");
+  const report = await readJson("artifacts/source-conformance/source-conformance-report.json");
+
+  assert.equal(evidence.status, "pass");
+  assert.equal(evidence.promotionStatus, "review_required");
+  assert.equal(evidence.validationResults.length, 14);
+  assert.deepEqual(evidence.boundaryRefs.map((entry) => entry.path), [
+    "artifacts/p2/evidence.json",
+    "artifacts/p2/governed-catalog.json"
+  ]);
+  assert.deepEqual(
+    evidence.fixtureRefs
+      .filter((entry) => entry.path.endsWith(".declared-source-manifest.json"))
+      .map((entry) => entry.schemaId),
+    ["declared-source-manifest.v0", "declared-source-manifest.v0"]
+  );
+  assert.equal(evidence.artifacts.at(-1).path, "artifacts/source-conformance/evidence.json");
+  assert.equal(evidence.artifacts.at(-1).hash, sourceConformanceInternals.computeEvidenceSelfHash(evidence));
+  assert.deepEqual(evidence.artifacts.map((entry) => entry.path), [
+    "artifacts/source-conformance/source-inventory.json",
+    "artifacts/source-conformance/source-authority-map.json",
+    "artifacts/source-conformance/source-review-queue.json",
+    "artifacts/source-conformance/source-conformance-report.json",
+    "artifacts/source-conformance/evidence.json"
+  ]);
+  assert.equal(report.status, evidence.status);
+  assert.equal(report.promotionStatus, evidence.promotionStatus);
+});
+
+test("source conformance proof preserves review-required rows without execution", async () => {
+  await runSourceConformanceProof();
+  const evidence = await readJson("artifacts/source-conformance/evidence.json");
+  const reviewQueue = await readJson("artifacts/source-conformance/source-review-queue.json");
+
+  assert.equal(reviewQueue.promotionStatus, "review_required");
+  assert.equal(reviewQueue.queueItems.length, 1);
+  assert.equal(reviewQueue.queueItems[0].executable, false);
+  assert.equal(reviewQueue.queueItems[0].owner, "design-systems-governance");
+  assert.equal(reviewQueue.queueItems[0].rationale, "Brand exception changes action emphasis and requires source-owner review.");
+  assert.equal(reviewQueue.queueItems[0].expiresAt, "1970-01-31T00:00:00.000Z");
+  const reviewRow = evidence.validationResults.find((row) =>
+    row.fixturePath === "fixtures/source-conformance/review/brand-exception.source-conformance.json"
+  );
+  assert.equal(reviewRow.actualResult, "review_required");
+  assert.equal(reviewRow.reviewQueueItemId, "source-review-brand-exception");
+  assert.deepEqual(reviewRow.diagnosticCodes, ["SOURCE_REVIEW_REQUIRED"]);
+});
+
+test("source conformance proof rejects stale output and non-normalized command paths", async () => {
+  await fs.writeFile(stalePath, "stale");
+  try {
+    const result = await runSourceConformanceProofExpectFailure();
+    assert.equal(result.code, 1);
+    assert.match(result.stderr, /stale unexpected output/);
+  } finally {
+    await fs.rm(stalePath, { force: true });
+  }
+
+  const result = await runCommandExpectFailure([
+    "bin/interfacectl.js",
+    "surfaces",
+    "source-conformance",
+    "proof",
+    "--source",
+    "sources/source-conformance/../source-conformance/declared-source-bundle",
+    "--ingestion-evidence",
+    "artifacts/p2/evidence.json",
+    "--catalog",
+    "artifacts/p2/governed-catalog.json",
+    "--fixture",
+    "fixtures/source-conformance",
+    "--out",
+    "artifacts/source-conformance"
+  ]);
+  assert.equal(result.code, 2);
+  assert.match(result.stderr, /without \. or \.\. segments/);
+});
+
+test("source conformance proof fails closed on forbidden production claims", async () => {
+  await runSourceConformanceProof();
+  const fixturePath = path.join(root, "fixtures/source-conformance/valid/button-allowed.source-conformance.json");
+
+  for (const claimKey of SC_FORBIDDEN_CLAIM_KEYS) {
+    await withJsonFileMutation(fixturePath, (fixture) => {
+      fixture.claims[claimKey] = true;
+    }, async () => {
+      const result = await runSourceConformanceProofExpectFailure();
+      assert.equal(result.code, 1);
+      assert.match(result.stderr, /source conformance validation expectation mismatch/);
+      assert.match(result.stderr, /SOURCE_PRODUCTION_CLAIM_FORBIDDEN/);
+    });
+  }
+});
+
+test("source conformance proof binds fixtures to declared source refs and accepted P2 components", async () => {
+  await runSourceConformanceProof();
+  const fixturePath = path.join(root, "fixtures/source-conformance/valid/button-allowed.source-conformance.json");
+
+  await withJsonFileMutation(fixturePath, (fixture) => {
+    fixture.sourceRef = "declared-source://source-conformance/components/private-card.json#/";
+  }, async () => {
+    const result = await runSourceConformanceProofExpectFailure();
+    assert.equal(result.code, 1);
+    assert.match(result.stderr, /DECLARED_SOURCE_REF_UNDECLARED/);
+  });
+
+  await withJsonFileMutation(fixturePath, (fixture) => {
+    fixture.requiredSourceRefs = ["declared-source://source-conformance/components/private-card.json#/"];
+  }, async () => {
+    const result = await runSourceConformanceProofExpectFailure();
+    assert.equal(result.code, 1);
+    assert.match(result.stderr, /DECLARED_SOURCE_REF_UNDECLARED/);
+  });
+
+  await withJsonFileMutation(fixturePath, (fixture) => {
+    fixture.componentId = "UnknownCard";
+  }, async () => {
+    const result = await runSourceConformanceProofExpectFailure();
+    assert.equal(result.code, 1);
+    assert.match(result.stderr, /SOURCE_CATALOG_COMPONENT_UNKNOWN/);
+  });
+
+  await withJsonFileMutation(fixturePath, (fixture) => {
+    fixture.sourceRef = "declared-source://source-conformance/components/in-line-alert.json#/";
+    fixture.requiredSourceRefs = ["declared-source://source-conformance/components/in-line-alert.json#/"];
+  }, async () => {
+    const result = await runSourceConformanceProofExpectFailure();
+    assert.equal(result.code, 1);
+    assert.match(result.stderr, /SOURCE_COMPONENT_SOURCE_MISMATCH/);
+  });
+});
+
+test("source conformance evidence integrity check detects artifact tampering", async () => {
+  await runSourceConformanceProof();
+  const evidence = await readJson("artifacts/source-conformance/evidence.json");
+  const code = await sourceConformanceInternals.firstEvidenceIntegrityFailureCode(root, {
+    ...evidence,
+    artifacts: evidence.artifacts.map((entry) =>
+      entry.path === "artifacts/source-conformance/source-conformance-report.json"
+        ? { ...entry, hash: "0".repeat(64) }
+        : entry
+    )
+  });
+  assert.equal(code, "SOURCE_CONFORMANCE_EVIDENCE_HASH_MISMATCH");
+
+  const boundaryCode = await sourceConformanceInternals.firstEvidenceIntegrityFailureCode(root, {
+    ...evidence,
+    boundaryRefs: evidence.boundaryRefs.map((entry) =>
+      entry.path === "artifacts/p2/governed-catalog.json"
+        ? { ...entry, sourceEvidenceHash: "0".repeat(64) }
+        : entry
+    )
+  });
+  assert.equal(boundaryCode, "SOURCE_CONFORMANCE_EVIDENCE_HASH_MISMATCH");
+});
+
+async function runSourceConformanceProof() {
+  await execFileAsync(process.execPath, [
+    "bin/interfacectl.js",
+    "surfaces",
+    "source-conformance",
+    "proof",
+    "--source",
+    "sources/source-conformance/declared-source-bundle",
+    "--ingestion-evidence",
+    "artifacts/p2/evidence.json",
+    "--catalog",
+    "artifacts/p2/governed-catalog.json",
+    "--fixture",
+    "fixtures/source-conformance",
+    "--out",
+    "artifacts/source-conformance"
+  ], { cwd: root });
+}
+
+async function runSourceConformanceProofExpectFailure() {
+  return runCommandExpectFailure([
+    "bin/interfacectl.js",
+    "surfaces",
+    "source-conformance",
+    "proof",
+    "--source",
+    "sources/source-conformance/declared-source-bundle",
+    "--ingestion-evidence",
+    "artifacts/p2/evidence.json",
+    "--catalog",
+    "artifacts/p2/governed-catalog.json",
+    "--fixture",
+    "fixtures/source-conformance",
+    "--out",
+    "artifacts/source-conformance"
+  ]);
+}
+
+async function runCommandExpectFailure(args) {
+  try {
+    await execFileAsync(process.execPath, args, { cwd: root });
+    assert.fail("expected command to fail");
+  } catch (error) {
+    return {
+      code: error.code,
+      stdout: error.stdout || "",
+      stderr: error.stderr || ""
+    };
+  }
+}
+
+async function withJsonFileMutation(absolutePath, mutate, fn) {
+  const original = await fs.readFile(absolutePath, "utf8");
+  try {
+    const data = JSON.parse(original);
+    mutate(data);
+    await fs.writeFile(absolutePath, canonicalJson(data));
+    await fn();
+  } finally {
+    await fs.writeFile(absolutePath, original);
+  }
+}
+
+async function readJson(relativePath) {
+  return JSON.parse(await fs.readFile(path.join(root, relativePath), "utf8"));
+}

@@ -457,6 +457,38 @@ Given valid P2 ingestion evidence, the P2 governed catalog, valid P4 review/judg
 
 Native target selection records accepted P2/P4 authority in `upstreamRefs[]` and protocol compatibility evidence in `compatibilityPreflightRefs[]`. Native evidence keeps `artifacts/p5/protocol/evidence.json` out of native `boundaryRefs[]`; protocol evidence is a compatibility preflight ref only, not native authority.
 
+## Declared Source Conformance Target
+The declared-source conformance proof is a target-specific proof-only expansion that consumes accepted P2 ingestion evidence and the P2 governed catalog. It proves that one manifest-declared local source bundle can be checked for source refs, source hashes, source authority conflicts, review-required routing, forbidden live/production claims, deterministic diagnostics, reports, and final evidence.
+
+It is not a new numbered roadmap phase, production adapter, public API, SDK, A2UI target, live ingestion path, live SurfaceOps workflow, live JudgmentKit invocation, native runtime, demo authority, or action execution path.
+
+The proof path is:
+
+```text
+artifacts/p2/evidence.json
+artifacts/p2/governed-catalog.json
+sources/source-conformance/declared-source-bundle/manifest.json
+manifest-declared source files
+fixtures/source-conformance/expectations.manifest.json
+  -> validate fixtures/source-conformance/mutations/*.json against expected upstream, source, and evidence failures
+  -> validate fixtures/source-conformance/valid/*.json, review/*.json, and invalid/*.json
+  -> artifacts/source-conformance/source-inventory.json
+  -> artifacts/source-conformance/source-authority-map.json
+  -> artifacts/source-conformance/source-review-queue.json
+  -> artifacts/source-conformance/source-conformance-report.json
+  -> artifacts/source-conformance/evidence.json
+```
+
+Implemented command:
+
+```bash
+interfacectl surfaces source-conformance proof --source sources/source-conformance/declared-source-bundle --ingestion-evidence artifacts/p2/evidence.json --catalog artifacts/p2/governed-catalog.json --fixture fixtures/source-conformance --out artifacts/source-conformance
+```
+
+Given accepted P2 evidence and catalog output, the declared source bundle, and the source-conformance fixture set, the command emits the exact source-conformance artifact set, validates upstream hashes and source manifest hashes, validates every fixture against the expectations manifest, preserves review-required rows as non-executable evidence, records diagnostics before final evidence, and writes reproducible evidence with hashes and provenance for every source-conformance schema, consumed P2 schema, source file, fixture, upstream boundary ref, generated artifact, and final evidence artifact.
+
+The proof currently has no generated demo. Use `source-conformance-report.json`, `source-review-queue.json`, `source-authority-map.json`, and `evidence.json` as report/evidence presentation refs, not as independent proof authority.
+
 ## Subplans
 - [Subplan Index](plans/README.md)
 - [Runtime Catalog v0](plans/runtime-catalog-v0.md)
@@ -509,11 +541,15 @@ Native target selection records accepted P2/P4 authority in `upstreamRefs[]` and
 - [P5 Validation and Evidence](plans/p5/validation-evidence.md)
 - [P5 Demo and CI](plans/p5/demo-ci.md)
 - [P5 Native Static Proof](plans/p5/native-static-proof.md)
+- [Declared Source Conformance Proof](plans/source-conformance/README.md)
+- [Source Conformance Validation and Evidence](plans/source-conformance/validation-evidence.md)
 - [Product Portfolio Boundaries](plans/product-portfolio-boundaries.md)
 - [Usability And Value Evidence Plan](plans/usability-value-evidence.md)
 - [Surfaces.dev Documentation Tracking](plans/surfaces-dev.md)
 
 The P5 subplans linked above define the implemented `surfaces-protocol-static` and `surfaces-native-static` proof slices. They do not implement production adapters, protocol APIs, SDKs, native SDKs, live protocol services, live native runtimes, A2UI export, or A2UI conformance. Future P5 targets remain planned until they add their own proof shape and passing evidence.
+
+The source-conformance subplans define a proof-only declared-source conformance target over accepted P2 evidence. They do not implement live ingestion, production adapter behavior, API/SDK support, A2UI support, live SurfaceOps, live JudgmentKit, native runtime behavior, or action execution.
 
 ## P0 Decisions
 - Runtime catalog name and boundary: Surfaces Catalog / `runtime-catalog.v0`, a governed design-system catalog/compiler artifact.
