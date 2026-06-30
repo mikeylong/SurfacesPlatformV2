@@ -11,8 +11,9 @@ The current implemented proof roadmap is P0-P5, where P5 means only the `surface
 These documents are subordinate to `VISION.md` and support the phase plans without redefining authority or proof status.
 
 1. [Product Portfolio Boundaries](product-portfolio-boundaries.md)
-2. [Usability And Value Evidence Plan](usability-value-evidence.md)
-3. [Curated Design-Partner Testing Program](design-partner-testing.md)
+2. [Product Designer Workflow](product-designer-workflow.md)
+3. [Usability And Value Evidence Plan](usability-value-evidence.md)
+4. [Curated Design-Partner Testing Program](design-partner-testing.md)
 
 The curated design-partner testing program and templates under `plans/design-partner-testing/` are also subordinate to `VISION.md`, `PLAN.md`, and passing phase evidence. Treat them as non-proof research and planning surfaces for partner task design, synthetic dry runs, feedback capture, scorecards, and synthesis. They may point testers to evidence-backed demos for inspection, but they must not create implementation claims, proof status, catalog authority, or demo authority.
 

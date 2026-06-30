@@ -43,6 +43,21 @@ Surfaces Platform creates value when it lets teams:
 - promote safe surfaces, reject invalid surfaces, and route sensitive surfaces to human review;
 - generate adapter-visible render plans without turning demos or runtime projections into hidden sources of truth.
 
+## Product Designer Workflow
+The product designer workflow is the primary human workflow Surfaces Platform must make safer, clearer, and more repeatable. A designer employing Surfaces should not start from a blank-slate prompt and then inspect pixels after the fact. The workflow starts by declaring product authority, then uses Surfaces to make generated UI accountable to the design system, product policy, review, evidence, and proven target boundaries.
+
+1. Declare design authority: identify the authoritative source material for the product surface, including components, variants, tokens, states, slots, accessibility expectations, examples, usage policy, brand rules, content or terminology rules, and review requirements.
+2. Compile governed contracts: run or consume the relevant Surfaces proof so bounded source material becomes a governed Surfaces Catalog with source refs, provenance, diagnostics, promotion status, and evidence.
+3. Generate inside the catalog boundary: ask an agent or generator for a surface only where the catalog defines what may be emitted. Unsupported components, props, variants, tokens, actions, accessibility semantics, or policy claims become deterministic diagnostics or review requirements instead of inferred UI.
+4. Inspect evidence, not only pixels: review source refs, diagnostics, promotion status, accessibility and policy triggers, generated reports, and any demo output. Demos may help inspection, but evidence and proof contracts remain authoritative.
+5. Decide or revise at the authority layer: accept, reject, request changes, or update the declared source material, mappings, or policy. The preferred fix for unsupported UI is to strengthen source authority or governance, not patch a downstream rendering artifact.
+6. Hand off only proven target output: downstream consumers may receive only accepted, hash-bound projections, render plans, protocol envelopes, native packets, or target-specific adapter artifacts whose own proof authorizes that target.
+7. Govern changes over time: when the design system, policy, or target changes, regenerate proof artifacts and evidence so CI, review, and runtime consumers stay aligned with current authority.
+
+This workflow is also the prioritization lens for platform work. Prefer capabilities that shorten or clarify this loop while preserving authority: broader source coverage, better source refs, clearer diagnostics, review-owner routing, accessibility and policy evidence, CI confidence, and target-specific handoff. Deprioritize features that make generated UI look usable while bypassing catalog authority, proof evidence, or review semantics.
+
+The current repo demonstrates this workflow through bounded proof slices and generated evidence, not through a self-serve designer product, live SurfaceOps workflow, live runtime, production adapter, SDK, API, or A2UI support.
+
 ## Product Portfolio Boundaries
 Surfaces Platform is the contract system. The surrounding product portfolio may include human-facing sites, developer docs, review tools, evaluators, workflow products, and downstream adapter targets, but none of those products gain authority by being adjacent to Surfaces.
 

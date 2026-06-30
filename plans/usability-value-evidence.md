@@ -52,6 +52,21 @@ A reviewer should be able to demonstrate platform value by walking the evidence 
 - Runtime, protocol, or native consumption time: show hash-bound projections, render plans, protocol projections, native projections, inert envelopes, inert native packets, and review-required rows that produce no executable output.
 - Demo inspection time: show generated demos only as presentation views backed by passing evidence, never as the source of proof.
 
+## Product Designer Workflow Evidence
+The canonical product designer workflow is defined in [VISION.md](../VISION.md#product-designer-workflow), with subordinate workflow details in [Product Designer Workflow](product-designer-workflow.md). This plan uses that workflow as the human value lens for evidence-backed walkthroughs.
+
+A product designer should be able to trace:
+
+- which source material declares the components, variants, tokens, states, accessibility expectations, usage policy, and review requirements;
+- which governed catalog records what agents or generators may emit;
+- which diagnostics block unsupported UI or route ambiguous and sensitive work to review;
+- which evidence file proves the current status and promotion status;
+- which review queue, decision ledger, or judgment-shaped report makes review-required work inspectable;
+- which projection, render plan, protocol envelope, native packet, or future adapter artifact is authorized for the target;
+- which demo is only presentation output and must not be treated as proof authority.
+
+If a designer cannot complete that trace for a target, the target is not yet a usable Surfaces Platform workflow regardless of how convincing the generated UI looks.
+
 ## Design-Partner Testing Package
 The [Curated Design-Partner Testing Program](design-partner-testing.md), [Session Guide](design-partner-testing/session-guide.md), [Results Capture](design-partner-testing/results-capture.md), [Scorecard](design-partner-testing/scorecard.md), and [Synthesis Template](design-partner-testing/synthesis-template.md) are non-proof research and planning surfaces. Use them to frame partner-facing test tasks around the current evidence loop, gather observations about comprehension and workflow value, and identify future proof or documentation gaps.
 
