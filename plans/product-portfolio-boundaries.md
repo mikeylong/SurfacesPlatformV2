@@ -11,7 +11,8 @@ This file is not proof authority. It summarizes what each named surface may own,
 - SurfaceOps is the review-product direction. `surfaceops.ai` may become product packaging for that direction, but current proof is limited to deterministic P4 artifacts.
 - `kanban.cards` should remain a standalone reusable board and collaboration core by default. SurfaceOps-specific governance, evidence refs, review queues, promotion semantics, and decision ownership should layer on top. White-labeling `kanban.cards` as SurfaceOps remains a fallback only if standalone `kanban.cards` is intentionally deprioritized.
 - JudgmentKit is the evaluator direction. JudgmentKit MCP or connector invocation is a possible future live integration path, not something invoked by the current P4 proof.
-- A2UI is a possible downstream projection, export, or conformance target for a future A2UI-specific P5 proof. The implemented `surfaces-protocol-static` P5 slice does not implement A2UI.
+- A2UI is a possible downstream projection, export, or conformance target for a future A2UI-specific P5 proof. The implemented `surfaces-protocol-static` and `surfaces-native-static` P5 slices do not implement A2UI.
+- [Curated design-partner testing](design-partner-testing.md) material is a subordinate research and planning surface only. It can organize partner-facing tasks and qualitative feedback around evidence-backed demos, but it does not prove behavior or replace phase evidence.
 
 ## Boundary Map
 
@@ -19,7 +20,7 @@ This file is not proof authority. It summarizes what each named surface may own,
 - Owns: the mission to compile design-system source material into governed UI contracts, plus the roadmap sequence described in `VISION.md`.
 - Consumes: design-system source material, schemas, fixtures, phase subplans, proof commands, generated artifacts, diagnostics, demos, and evidence.
 - Emits: governed proof slices, phase reports, generated demos, evidence, and product/documentation context.
-- Current proof status: P0, P1, P2, P3, P4, and the first P5 `surfaces-protocol-static` slice are implemented as deterministic proof contracts only when their evidence passes.
+- Current proof status: P0, P1, P2, P3, P4, and the implemented P5 `surfaces-protocol-static` and `surfaces-native-static` slices are deterministic proof contracts only when their evidence passes.
 - Must not do: present the repo as a conventional live product, production service, broad adapter platform, or authority beyond the catalog and evidence chain.
 - Future proof required before claim: each new capability needs its own schema, fixture, command contract, diagnostics, report or artifact path, evidence path, demo or docs boundary, and passing gate.
 
@@ -35,7 +36,7 @@ This file is not proof authority. It summarizes what each named surface may own,
 - Owns: deterministic compiler, validation, proof-command, stale-output, diagnostics, artifact, and evidence materialization behavior.
 - Consumes: POSIX-relative inputs, schemas, fixtures, upstream evidence, governed catalogs, review artifacts, and phase-specific command arguments.
 - Emits: phase artifacts under `artifacts/`, reports, diagnostics, and final evidence. Package scripts coordinate generated demos under `demo/` from passing evidence.
-- Current proof status: implements the P0 catalog, P1 adapter, P2 ingestion, P3 agents, P4 review, and P5 protocol proof commands documented in `PLAN.md`.
+- Current proof status: implements the P0 catalog, P1 adapter, P2 ingestion, P3 agents, P4 review, P5 protocol, and P5 native proof commands documented in `PLAN.md`.
 - Must not do: call live source APIs, execute work orders, invoke live SurfaceOps or JudgmentKit, expose production APIs, bypass stale-output checks, or infer unsupported behavior.
 - Future proof required before claim: every new command or target needs an exact command contract, path rules, diagnostics, fixtures, generated artifact set, report, final evidence, tests, and CI gate.
 
@@ -83,14 +84,22 @@ This file is not proof authority. It summarizes what each named surface may own,
 - Owns: no current Surfaces data-model authority; it is a possible downstream compatibility, export, or conformance target.
 - Consumes: a future governed catalog projection and conformance fixtures only after an A2UI-specific P5 target exists.
 - Emits: no current artifacts; future output could be A2UI projection/export/conformance artifacts under a separate P5 proof.
-- Current proof status: planned only; P0/P1 do not implement it, and the first P5 `surfaces-protocol-static` proof does not implement A2UI export or conformance.
-- Must not do: become the Surfaces Catalog, redefine Surface IR, claim compatibility from static protocol envelopes, or add behavior absent from governed catalog evidence.
+- Current proof status: planned only; P0/P1 do not implement it, and the implemented P5 `surfaces-protocol-static` and `surfaces-native-static` proofs do not implement A2UI export or conformance.
+- Must not do: become the Surfaces Catalog, redefine Surface IR, claim compatibility from static protocol envelopes or native packets, or add behavior absent from governed catalog evidence.
 - Future proof required before claim: target-specific A2UI schemas, projection/export rules, conformance fixtures, diagnostics, command contract, report, evidence, demo, CI gate, and non-goals.
 
-### P5 Protocol Targets
-- Owns: protocol-boundary proof targets after accepted upstream evidence exists.
-- Consumes: accepted P2 catalog/evidence, accepted P4 review/judgment evidence, decision ledger, review/judgment report, target-selection fixture, protocol fixtures, and P5 schemas.
-- Emits: for the implemented target, `adapter-target-selection.json`, `protocol-projection.json`, inert protocol envelopes, `protocol-adapter-report.json`, final evidence, and generated demo output.
-- Current proof status: only `surfaces-protocol-static` is implemented, and only as a deterministic inert protocol-envelope proof.
-- Must not do: claim production adapter, public API, SDK, live protocol service, transport, A2UI, live SurfaceOps, live JudgmentKit, action execution, or future P5 target support.
+### Curated Design-Partner Testing Program
+- Owns: non-proof research planning for design-partner tests, partner task scripts, qualitative observation capture, and synthesis prompts.
+- Consumes: current proof snapshot, phase evidence paths, product boundaries, and generated demos only as presentation aids backed by passing evidence.
+- Emits: research notes, task plans, observation summaries, scorecards, synthesis outputs, and candidate documentation or proof follow-ups.
+- Current proof status: none; [Curated Design-Partner Testing Program](design-partner-testing.md) and templates under `plans/design-partner-testing/` are not phase proofs, commands, schemas, fixtures, artifacts, evidence files, or generated demos.
+- Must not do: become proof authority, replace evidence, promote surfaces, claim implementation support, treat qualitative feedback as validation, or turn demos into authority.
+- Future proof required before claim: any productized research workflow, partner-feedback artifact, or evaluator/review integration needs its own bounded contracts, artifact/report/evidence ownership, authority rules, and passing gate.
+
+### P5 Protocol And Native Targets
+- Owns: protocol-boundary and native static proof targets after accepted upstream evidence exists.
+- Consumes: accepted P2 catalog/evidence, accepted P4 review/judgment evidence, decision ledger, review/judgment report, target-selection fixtures, target fixtures, and target-owned P5 schemas. Native also consumes protocol evidence as compatibility preflight only.
+- Emits: for `surfaces-protocol-static`, `adapter-target-selection.json`, `protocol-projection.json`, inert protocol envelopes, `protocol-adapter-report.json`, final evidence, and generated demo output; for `surfaces-native-static`, native target selection, `surfaces-native-projection.json`, inert native packets, `surfaces-native-report.json`, final evidence, and generated demo output.
+- Current proof status: `surfaces-protocol-static` is implemented as a deterministic inert protocol-envelope proof, and `surfaces-native-static` is implemented as a deterministic inert native-packet proof, only when their evidence passes.
+- Must not do: claim production adapter, public API, SDK, native SDK, live protocol service, live native runtime, transport, A2UI, live SurfaceOps, live JudgmentKit, action execution, or future P5 target support.
 - Future proof required before claim: each additional P5 target needs its own product boundaries, schemas, fixtures, diagnostics, command contract, generated artifacts, target report, evidence, demo, CI gate, non-goals, and acceptance criteria.

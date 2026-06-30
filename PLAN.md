@@ -6,7 +6,7 @@ Read [Surfaces Platform Vision And Roadmap](VISION.md) before selecting or imple
 ## Plan Scope
 Subordinate to [VISION.md](VISION.md), this plan tracks the mechanical proof contracts for compiling design-system source material into governed UI contracts for bounded generation, CI/CD validation, evidence review, and runtime-safe rendering.
 
-Cross-cutting product and value documentation lives in [Product Portfolio Boundaries](plans/product-portfolio-boundaries.md) and [Usability And Value Evidence Plan](plans/usability-value-evidence.md). Those files are subordinate to `VISION.md` and must not redefine product authority, roadmap sequence, or implemented proof status.
+Cross-cutting product and value documentation lives in [Product Portfolio Boundaries](plans/product-portfolio-boundaries.md), [Product Designer Workflow](plans/product-designer-workflow.md), [Product Designer Workflow Trace](plans/product-designer-workflow-trace.md), and [Usability And Value Evidence Plan](plans/usability-value-evidence.md). Those files are subordinate to `VISION.md` and must not redefine product authority, roadmap sequence, or implemented proof status.
 
 Any implementation or roadmap-status claim should cite the phase proof command, evidence path, evidence `status`, promotion status, and relevant CI gate. Generated demos may help present the claim, but demos are not proof authority.
 
@@ -457,6 +457,78 @@ Given valid P2 ingestion evidence, the P2 governed catalog, valid P4 review/judg
 
 Native target selection records accepted P2/P4 authority in `upstreamRefs[]` and protocol compatibility evidence in `compatibilityPreflightRefs[]`. Native evidence keeps `artifacts/p5/protocol/evidence.json` out of native `boundaryRefs[]`; protocol evidence is a compatibility preflight ref only, not native authority.
 
+## Declared Source Conformance Target
+The declared-source conformance proof is a target-specific proof-only expansion that consumes accepted P2 ingestion evidence and the P2 governed catalog. It proves that one manifest-declared local source bundle can be checked for source refs, source hashes, source authority conflicts, review-required routing, forbidden live/production claims, deterministic diagnostics, reports, and final evidence.
+
+It is not a new numbered roadmap phase, production adapter, public API, SDK, A2UI target, live ingestion path, live SurfaceOps workflow, live JudgmentKit invocation, native runtime, demo authority, or action execution path.
+
+The proof path is:
+
+```text
+artifacts/p2/evidence.json
+artifacts/p2/governed-catalog.json
+sources/source-conformance/declared-source-bundle/manifest.json
+manifest-declared source files
+fixtures/source-conformance/expectations.manifest.json
+  -> validate fixtures/source-conformance/mutations/*.json against expected upstream, source, and evidence failures
+  -> validate fixtures/source-conformance/valid/*.json, review/*.json, and invalid/*.json
+  -> artifacts/source-conformance/source-inventory.json
+  -> artifacts/source-conformance/source-authority-map.json
+  -> artifacts/source-conformance/source-review-queue.json
+  -> artifacts/source-conformance/source-conformance-report.json
+  -> artifacts/source-conformance/evidence.json
+```
+
+Implemented command:
+
+```bash
+interfacectl surfaces source-conformance proof --source sources/source-conformance/declared-source-bundle --ingestion-evidence artifacts/p2/evidence.json --catalog artifacts/p2/governed-catalog.json --fixture fixtures/source-conformance --out artifacts/source-conformance
+```
+
+Given accepted P2 evidence and catalog output, the declared source bundle, and the source-conformance fixture set, the command emits the exact source-conformance artifact set, validates upstream hashes and source manifest hashes, validates every fixture against the expectations manifest, preserves review-required rows as non-executable evidence, records diagnostics before final evidence, and writes reproducible evidence with hashes and provenance for every source-conformance schema, consumed P2 schema, source file, fixture, upstream boundary ref, generated artifact, and final evidence artifact.
+
+The proof currently has no generated demo. Use `source-conformance-report.json`, `source-review-queue.json`, `source-authority-map.json`, and `evidence.json` as report/evidence presentation refs, not as independent proof authority.
+
+## Designer Workflow Trace Target
+The designer-workflow-trace proof is a non-numbered, cross-cutting proof-only target that consumes accepted P2, source-conformance, P3, P4, protocol, and native evidence. It emits one deterministic Button scenario index from design authority through governed catalog, diagnostics/review-required status, review/evaluation refs, static target handoff artifacts, and evidence status.
+
+It is not a product workflow implementation, customer validation, production adoption, live SurfaceOps, live JudgmentKit, production adapter, API, SDK, runtime, A2UI, P6, P7, demo authority, catalog authority, or upstream proof authority.
+
+The proof path is:
+
+```text
+artifacts/p2/evidence.json
+artifacts/p2/governed-catalog.json
+artifacts/p2/ingestion-report.json
+artifacts/source-conformance/evidence.json
+artifacts/source-conformance/source-authority-map.json
+artifacts/source-conformance/source-conformance-report.json
+artifacts/source-conformance/source-review-queue.json
+artifacts/p3/evidence.json
+artifacts/p3/review-queue.json
+artifacts/p4/evidence.json
+artifacts/p4/surfaceops-decision-ledger.json
+artifacts/p4/review-judgment-report.json
+artifacts/p4/judgmentkit-evaluation-report.json
+artifacts/p5/protocol/evidence.json
+artifacts/p5/native/evidence.json
+fixtures/designer-workflow-trace/expectations.manifest.json
+  -> validate fixtures/designer-workflow-trace/valid/*.json, review/*.json, invalid/*.json, and mutations/*.json
+  -> artifacts/designer-workflow-trace/trace-selection.json
+  -> artifacts/designer-workflow-trace/designer-workflow-trace-report.json
+  -> artifacts/designer-workflow-trace/evidence.json
+```
+
+Implemented command:
+
+```bash
+interfacectl surfaces designer-workflow-trace proof --ingestion-evidence artifacts/p2/evidence.json --catalog artifacts/p2/governed-catalog.json --ingestion-report artifacts/p2/ingestion-report.json --source-conformance-evidence artifacts/source-conformance/evidence.json --source-authority-map artifacts/source-conformance/source-authority-map.json --source-conformance-report artifacts/source-conformance/source-conformance-report.json --source-review-queue artifacts/source-conformance/source-review-queue.json --orchestration-evidence artifacts/p3/evidence.json --review-queue artifacts/p3/review-queue.json --review-evidence artifacts/p4/evidence.json --decision-ledger artifacts/p4/surfaceops-decision-ledger.json --review-report artifacts/p4/review-judgment-report.json --evaluation-report artifacts/p4/judgmentkit-evaluation-report.json --protocol-evidence artifacts/p5/protocol/evidence.json --native-evidence artifacts/p5/native/evidence.json --fixture fixtures/designer-workflow-trace --out artifacts/designer-workflow-trace
+```
+
+Given accepted upstream evidence and the designer-workflow-trace fixture set, the command emits the exact trace artifact set, validates upstream hashes and status, verifies current indexed report and review queue files, preserves P4 `status: "pass"` with `promotionStatus: "blocked"`, validates trace fixtures against deterministic diagnostics, records report rows before final evidence, and writes reproducible evidence with hashes and provenance for every trace schema, consumed schema, fixture, upstream boundary ref, generated artifact, and final evidence artifact.
+
+The proof currently has no generated demo. Use `designer-workflow-trace-report.json`, `trace-selection.json`, and `evidence.json` as report/evidence presentation refs. The trace report is an index over accepted evidence; passing trace evidence proves only that the index was generated under the trace contract.
+
 ## Subplans
 - [Subplan Index](plans/README.md)
 - [Runtime Catalog v0](plans/runtime-catalog-v0.md)
@@ -509,11 +581,16 @@ Native target selection records accepted P2/P4 authority in `upstreamRefs[]` and
 - [P5 Validation and Evidence](plans/p5/validation-evidence.md)
 - [P5 Demo and CI](plans/p5/demo-ci.md)
 - [P5 Native Static Proof](plans/p5/native-static-proof.md)
+- [Declared Source Conformance Proof](plans/source-conformance/README.md)
+- [Source Conformance Validation and Evidence](plans/source-conformance/validation-evidence.md)
+- [Product Designer Workflow Trace](plans/product-designer-workflow-trace.md)
 - [Product Portfolio Boundaries](plans/product-portfolio-boundaries.md)
 - [Usability And Value Evidence Plan](plans/usability-value-evidence.md)
 - [Surfaces.dev Documentation Tracking](plans/surfaces-dev.md)
 
 The P5 subplans linked above define the implemented `surfaces-protocol-static` and `surfaces-native-static` proof slices. They do not implement production adapters, protocol APIs, SDKs, native SDKs, live protocol services, live native runtimes, A2UI export, or A2UI conformance. Future P5 targets remain planned until they add their own proof shape and passing evidence.
+
+The source-conformance subplans define a proof-only declared-source conformance target over accepted P2 evidence. They do not implement live ingestion, production adapter behavior, API/SDK support, A2UI support, live SurfaceOps, live JudgmentKit, native runtime behavior, or action execution.
 
 ## P0 Decisions
 - Runtime catalog name and boundary: Surfaces Catalog / `runtime-catalog.v0`, a governed design-system catalog/compiler artifact.

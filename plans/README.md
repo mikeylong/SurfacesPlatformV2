@@ -2,16 +2,21 @@
 
 For product vision, authority taxonomy, roadmap sequence, surface roles, and agent operating rules, read [Surfaces Platform Vision And Roadmap](../VISION.md) first. This index is the mechanical contract reference for phase subplans. Phase subplans add phase-local deltas and mechanics only. Developer and agent documentation obligations for `surfaces.dev` are tracked in [Surfaces.dev Documentation Tracking](surfaces-dev.md).
 
-These subplans define the Surfaces Platform proof contracts and their materialized schemas, fixtures, artifacts, demos, scripts, and tests. P0 specifies the first executable catalog proof, P1 specifies the first runtime projection proof, P2 specifies bounded real design-system ingestion, P3 specifies inert agent orchestration proof, P4 specifies review and judgment proof without turning derived consumers into new authority, and P5 specifies the bounded `surfaces-protocol-static` protocol-envelope proof plus the sibling `surfaces-native-static` native-packet proof. Future P5 targets remain planned until they add their own complete proof shape and passing evidence.
+These subplans define the Surfaces Platform proof contracts and their materialized schemas, fixtures, artifacts, demos, scripts, and tests. P0 specifies the first executable catalog proof, P1 specifies the first runtime projection proof, P2 specifies bounded real design-system ingestion, P3 specifies inert agent orchestration proof, P4 specifies review and judgment proof without turning derived consumers into new authority, and P5 specifies the bounded `surfaces-protocol-static` protocol-envelope proof plus the sibling `surfaces-native-static` native-packet proof. The source-conformance subplan specifies a target-specific declared-source conformance proof over accepted P2 evidence. Product Designer Workflow Trace specifies the implemented non-numbered trace target over accepted P2, source-conformance, P3, P4, protocol, and native evidence. Future targets remain planned until they add their own complete proof shape and passing evidence.
 
 ## Roadmap Status Snapshot
-The current implemented proof roadmap is P0-P5, where P5 means only the `surfaces-protocol-static` and `surfaces-native-static` proof-only slices. The canonical status snapshot lives in [VISION.md](../VISION.md#current-roadmap-proof-snapshot), and the human-readable value map lives in [Usability And Value Evidence Plan](usability-value-evidence.md). Future P5 targets such as A2UI conformance, production APIs, SDKs, live protocol services, live native runtimes, live SurfaceOps, or live JudgmentKit remain planned until they add their own target-specific schema, fixture, diagnostics, command contract, report or artifact path, evidence path, demo boundary, CI gate, and passing evidence.
+The current implemented proof roadmap is P0-P5, where P5 means only the `surfaces-protocol-static` and `surfaces-native-static` proof-only slices. The repo also includes the declared-source conformance and designer-workflow-trace target proofs listed in [VISION.md](../VISION.md#current-roadmap-proof-snapshot). The canonical status snapshot lives in `VISION.md`, and the human-readable value map lives in [Usability And Value Evidence Plan](usability-value-evidence.md). Future P5 targets such as A2UI conformance, production APIs, SDKs, live protocol services, live native runtimes, live SurfaceOps, or live JudgmentKit remain planned until they add their own target-specific schema, fixture, diagnostics, command contract, report or artifact path, evidence path, demo boundary, CI gate, and passing evidence.
 
 ## Cross-Cutting Documentation
 These documents are subordinate to `VISION.md` and support the phase plans without redefining authority or proof status.
 
 1. [Product Portfolio Boundaries](product-portfolio-boundaries.md)
-2. [Usability And Value Evidence Plan](usability-value-evidence.md)
+2. [Product Designer Workflow](product-designer-workflow.md)
+3. [Product Designer Workflow Trace](product-designer-workflow-trace.md)
+4. [Usability And Value Evidence Plan](usability-value-evidence.md)
+5. [Curated Design-Partner Testing Program](design-partner-testing.md)
+
+The curated design-partner testing program and templates under `plans/design-partner-testing/` are also subordinate to `VISION.md`, `PLAN.md`, and passing phase evidence. Treat them as non-proof research and planning surfaces for partner task design, synthetic dry runs, feedback capture, scorecards, and synthesis. They may point testers to evidence-backed demos for inspection, but they must not create implementation claims, proof status, catalog authority, or demo authority.
 
 ## P0 Dependency Order
 1. [Runtime Catalog v0](runtime-catalog-v0.md)
@@ -64,8 +69,8 @@ These documents are subordinate to `VISION.md` and support the phase plans witho
 7. [P4 Validation And Evidence](p4/validation-evidence.md)
 8. [P4 Demo And CI](p4/demo-ci.md)
 
-## P5 Protocol Dependency Order
-The P5 protocol subplans define the implemented `surfaces-protocol-static` proof slice. They do not define a production adapter, protocol API, SDK, live protocol service, A2UI export, A2UI conformance claim, live SurfaceOps integration, or live JudgmentKit integration.
+## P5 Protocol And Native Dependency Order
+The P5 protocol and native subplans define the implemented `surfaces-protocol-static` and `surfaces-native-static` proof slices. They do not define a production adapter, protocol API, SDK, native SDK, live protocol service, live native runtime, A2UI export, A2UI conformance claim, live SurfaceOps integration, or live JudgmentKit integration.
 
 1. [P5 Subplan Index](p5/README.md)
 2. [P5 Product Boundaries](p5/product-boundaries.md)
@@ -88,6 +93,23 @@ Before any future P5 target beyond `surfaces-protocol-static` and `surfaces-nati
 - generated demo and CI expectations that run only after target evidence exists and keep demo output as presentation, not proof;
 - non-goals that exclude live SurfaceOps persistence, live JudgmentKit invocation, unbounded adapter support, unproved production behavior, and any catalog-authority override;
 - acceptance criteria requiring passing P0/P1/P2/P3/P4 proof gates, P4 evidence, decision-ledger, and review/judgment-report preflight, fail-closed unsupported target behavior, non-executable review-required handling, and reproducible final evidence.
+
+## Source Conformance Dependency Order
+The source-conformance subplans define an implemented proof-only declared-source conformance target that consumes accepted P2 evidence and catalog output. It does not define live ingestion, production adapters, APIs, SDKs, A2UI, live SurfaceOps, live JudgmentKit, native runtime behavior, or action execution.
+
+1. [Declared Source Conformance Proof](source-conformance/README.md)
+2. [Source Conformance Validation And Evidence](source-conformance/validation-evidence.md)
+
+## Designer Workflow Trace Contract Summary
+The designer-workflow-trace target consumes accepted P2 ingestion evidence/catalog/report, source-conformance evidence/report/authority/review queue refs, P3 evidence/review queue, P4 review and evaluation evidence, and the implemented P5 protocol/native evidence. It emits `trace-selection.json`, `designer-workflow-trace-report.json`, and `evidence.json` under `artifacts/designer-workflow-trace`.
+
+Designer workflow trace proof command:
+
+```bash
+interfacectl surfaces designer-workflow-trace proof --ingestion-evidence artifacts/p2/evidence.json --catalog artifacts/p2/governed-catalog.json --ingestion-report artifacts/p2/ingestion-report.json --source-conformance-evidence artifacts/source-conformance/evidence.json --source-authority-map artifacts/source-conformance/source-authority-map.json --source-conformance-report artifacts/source-conformance/source-conformance-report.json --source-review-queue artifacts/source-conformance/source-review-queue.json --orchestration-evidence artifacts/p3/evidence.json --review-queue artifacts/p3/review-queue.json --review-evidence artifacts/p4/evidence.json --decision-ledger artifacts/p4/surfaceops-decision-ledger.json --review-report artifacts/p4/review-judgment-report.json --evaluation-report artifacts/p4/judgmentkit-evaluation-report.json --protocol-evidence artifacts/p5/protocol/evidence.json --native-evidence artifacts/p5/native/evidence.json --fixture fixtures/designer-workflow-trace --out artifacts/designer-workflow-trace
+```
+
+This target is proof-only and report/evidence-only. It is not a product workflow implementation, customer validation, production adoption, live SurfaceOps, live JudgmentKit, production adapter, API, SDK, runtime, A2UI, P6, P7, catalog authority, or upstream proof authority. The report indexes accepted evidence; `artifacts/designer-workflow-trace/evidence.json` proves only the trace index contract.
 
 ## P0 Contract Layout
 
@@ -340,3 +362,14 @@ interfacectl surfaces native proof --ingestion-evidence artifacts/p2/evidence.js
 ```
 
 The native implementation is also proof-only. It must not be treated as A2UI, an A2UI clone, A2UI conformance, a production native SDK/API/package, native bridge, live runtime, expansion of `surfaces-protocol-static`, live SurfaceOps integration, live JudgmentKit invocation, or permission to execute actions.
+
+## Source Conformance Contract Summary
+The source-conformance target consumes accepted P2 evidence and `artifacts/p2/governed-catalog.json`, then checks one manifest-declared local source bundle under `sources/source-conformance/declared-source-bundle`. It emits a source inventory, source authority map, review queue, source-conformance report, and final evidence under `artifacts/source-conformance`.
+
+Source-conformance proof command:
+
+```bash
+interfacectl surfaces source-conformance proof --source sources/source-conformance/declared-source-bundle --ingestion-evidence artifacts/p2/evidence.json --catalog artifacts/p2/governed-catalog.json --fixture fixtures/source-conformance --out artifacts/source-conformance
+```
+
+This target is proof-only. It must not be treated as customer validation, production readiness, pilot readiness, self-serve support, live ingestion, API/SDK support, A2UI support, live SurfaceOps, live JudgmentKit, native runtime behavior, or action execution. Additional declared-source families or downstream conformance targets require their own schema, fixture, diagnostics, command, report or artifact path, evidence path, CI gate, and passing evidence.

@@ -10,6 +10,8 @@ This plan does not create a new proof authority, command, schema, fixture, artif
 - implemented behavior: passing `artifacts/**/evidence.json`;
 - presentation output: `demo/**`, only when backed by passing evidence.
 
+[Curated design-partner testing](design-partner-testing.md) material is subordinate research and planning context. It may help design moderated tasks, capture qualitative partner feedback, score observations, and synthesize usability questions against evidence-backed demos, but it does not prove behavior, replace phase evidence, or promote any surface.
+
 ## Evidence Rule
 The platform is usable when a developer, agent, reviewer, CI system, or runtime consumer can answer these questions from deterministic proof output:
 
@@ -36,6 +38,8 @@ The current tracked phase evidence files report passing status for P0 through th
 | P4 | Deterministic review and judgment proof | `artifacts/p4/evidence.json` | `pass` | `blocked` | `demo/p4/index.html` |
 | P5 | `surfaces-protocol-static` inert protocol-envelope proof | `artifacts/p5/protocol/evidence.json` | `pass` | `review_required` | `demo/p5/protocol/index.html` |
 | P5 | `surfaces-native-static` inert native-packet proof | `artifacts/p5/native/evidence.json` | `pass` | `review_required` | `demo/p5/native/index.html` |
+| Target | Declared source conformance proof | `artifacts/source-conformance/evidence.json` | `pass` | `review_required` | none; report/evidence only |
+| Target | Designer workflow trace evidence index | `artifacts/designer-workflow-trace/evidence.json` | `pass` | `blocked` | none; report/evidence only |
 
 The promotion status is not a marketing status. It is part of the proof contract: allowed work may proceed, review-required work stays inspectable but blocked from unattended promotion, and blocked work remains rejected by deterministic diagnostics or review policy.
 
@@ -49,6 +53,61 @@ A reviewer should be able to demonstrate platform value by walking the evidence 
 - Review time: show the P3 review queue, P4 decision ledger, JudgmentKit-shaped findings, diagnostics, and promotion status without claiming live SurfaceOps or live JudgmentKit behavior.
 - Runtime, protocol, or native consumption time: show hash-bound projections, render plans, protocol projections, native projections, inert envelopes, inert native packets, and review-required rows that produce no executable output.
 - Demo inspection time: show generated demos only as presentation views backed by passing evidence, never as the source of proof.
+
+## Product Designer Workflow Evidence
+The canonical product designer workflow is defined in [VISION.md](../VISION.md#product-designer-workflow), with subordinate workflow details in [Product Designer Workflow](product-designer-workflow.md). This plan uses that workflow as the human value lens for evidence-backed walkthroughs.
+
+A product designer should be able to trace:
+
+- which source material declares the components, variants, tokens, states, accessibility expectations, usage policy, and review requirements;
+- which governed catalog records what agents or generators may emit;
+- which diagnostics block unsupported UI or route ambiguous and sensitive work to review;
+- which evidence file proves the current status and promotion status;
+- which review queue, decision ledger, or judgment-shaped report makes review-required work inspectable;
+- which projection, render plan, protocol envelope, native packet, or future adapter artifact is authorized for the target;
+- which demo is only presentation output and must not be treated as proof authority.
+
+If a designer cannot complete that trace for a target, the target is not yet a usable Surfaces Platform workflow regardless of how convincing the generated UI looks.
+
+## Designer Workflow Trace Report
+[Product Designer Workflow Trace](product-designer-workflow-trace.md) defines the implemented first proof-only consolidated trace report. The report indexes existing evidence from source authority through target handoff, but it does not replace the phase evidence files that prove implemented behavior.
+
+Command:
+
+```bash
+interfacectl surfaces designer-workflow-trace proof --ingestion-evidence artifacts/p2/evidence.json --catalog artifacts/p2/governed-catalog.json --ingestion-report artifacts/p2/ingestion-report.json --source-conformance-evidence artifacts/source-conformance/evidence.json --source-authority-map artifacts/source-conformance/source-authority-map.json --source-conformance-report artifacts/source-conformance/source-conformance-report.json --source-review-queue artifacts/source-conformance/source-review-queue.json --orchestration-evidence artifacts/p3/evidence.json --review-queue artifacts/p3/review-queue.json --review-evidence artifacts/p4/evidence.json --decision-ledger artifacts/p4/surfaceops-decision-ledger.json --review-report artifacts/p4/review-judgment-report.json --evaluation-report artifacts/p4/judgmentkit-evaluation-report.json --protocol-evidence artifacts/p5/protocol/evidence.json --native-evidence artifacts/p5/native/evidence.json --fixture fixtures/designer-workflow-trace --out artifacts/designer-workflow-trace
+```
+
+Artifacts:
+
+- `artifacts/designer-workflow-trace/trace-selection.json`
+- `artifacts/designer-workflow-trace/designer-workflow-trace-report.json`
+- `artifacts/designer-workflow-trace/evidence.json`
+
+Promotion status:
+
+- Current tracked evidence records `blocked` because the trace faithfully preserves accepted P4 `promotionStatus: "blocked"` while the trace proof itself records `status: "pass"`.
+
+Non-goals:
+
+- No product workflow implementation, customer validation, production adoption, live SurfaceOps, live JudgmentKit, production adapter, API, SDK, runtime, A2UI, P6, P7, catalog authority, upstream proof authority, or demo authority.
+
+## Design-Partner Testing Package
+The [Curated Design-Partner Testing Program](design-partner-testing.md), [Session Guide](design-partner-testing/session-guide.md), [Results Capture](design-partner-testing/results-capture.md), [Scorecard](design-partner-testing/scorecard.md), and [Synthesis Template](design-partner-testing/synthesis-template.md) are non-proof research and planning surfaces. Use them to frame partner-facing test tasks around the current evidence loop, gather observations about comprehension and workflow value, and identify future proof or documentation gaps.
+
+Design-partner testing may reference:
+
+- the current proof snapshot in [VISION.md](../VISION.md#current-roadmap-proof-snapshot);
+- evidence paths and proof commands in this plan;
+- generated demos as presentation aids only;
+- product boundary constraints in [Product Portfolio Boundaries](product-portfolio-boundaries.md).
+
+Design-partner testing must not:
+
+- treat qualitative feedback as proof that a phase or target is implemented;
+- use demo output as authority when evidence or phase contracts disagree;
+- broaden P5 beyond `surfaces-protocol-static` and `surfaces-native-static`;
+- claim production adapters, A2UI, live SurfaceOps, live JudgmentKit, SDKs, APIs, live runtimes, or action execution without target-specific passing evidence.
 
 ## Phase Evidence Cards
 
@@ -520,6 +579,7 @@ npm run check:p3:ci
 npm run check:p4:ci
 npm run check:p5:protocol:ci
 npm run check:p5:native:ci
+npm run check:designer-workflow-trace:ci
 ```
 
 Usability signal:
