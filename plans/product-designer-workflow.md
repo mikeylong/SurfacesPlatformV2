@@ -42,9 +42,11 @@ A designer or facilitator can inspect the current proof-only workflow with the t
 - Presentation only: generated demos under `demo/**`, only when backed by passing evidence.
 
 ## Designer Workflow Trace
-A designer workflow trace would make the evidence walkthrough easier to inspect by consolidating refs into one deterministic report. The current repo does not implement that report, schema, command, artifact, evidence file, or CI gate yet.
+A designer workflow trace makes the evidence walkthrough easier to inspect by consolidating refs into one deterministic report. The current repo implements the first proof-only trace target for one Button scenario over accepted P2, source-conformance, P3, P4, protocol, and native evidence.
 
-The planning shape is tracked in [Product Designer Workflow Trace](product-designer-workflow-trace.md). Until that proof shape exists and passes, designers and facilitators should treat the trace as a documentation and prioritization target, not an implemented capability.
+The proof shape is tracked in [Product Designer Workflow Trace](product-designer-workflow-trace.md). The generated trace artifacts are `artifacts/designer-workflow-trace/trace-selection.json`, `artifacts/designer-workflow-trace/designer-workflow-trace-report.json`, and `artifacts/designer-workflow-trace/evidence.json`.
+
+The trace report is an index over accepted evidence, not product workflow implementation, customer validation, production adoption, catalog authority, upstream proof authority, live SurfaceOps, live JudgmentKit, production adapter, API, SDK, runtime, A2UI, P6, or P7.
 
 ## Prioritization Use
 Use this workflow to rank platform work. Prefer work that improves a designer's ability to complete the evidence-backed loop without weakening authority:
@@ -66,4 +68,4 @@ Deprioritize work that creates apparent designer value while bypassing the proof
 ## Current Scope
 The repo currently demonstrates this workflow as proof infrastructure. It is suitable for evidence-backed walkthroughs and design-partner discovery, not production adoption or self-serve product use.
 
-Implemented proof slices cover bounded source ingestion, governed catalog output, deterministic diagnostics, inert review and judgment artifacts, and static protocol/native handoff targets. Broader source families, live SurfaceOps workflow, production adapters, APIs, SDKs, live runtimes, live JudgmentKit, A2UI, and production-facing designer experiences remain future target-specific work until they add their own proof shape and passing evidence.
+Implemented proof slices cover bounded source ingestion, governed catalog output, deterministic diagnostics, inert review and judgment artifacts, static protocol/native handoff targets, and the first report/evidence-only designer workflow trace index. Broader trace scenarios, source families, live SurfaceOps workflow, production adapters, APIs, SDKs, live runtimes, live JudgmentKit, A2UI, and production-facing designer experiences remain future target-specific work until they add their own proof shape and passing evidence.

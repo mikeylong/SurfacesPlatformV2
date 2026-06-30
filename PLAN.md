@@ -489,6 +489,46 @@ Given accepted P2 evidence and catalog output, the declared source bundle, and t
 
 The proof currently has no generated demo. Use `source-conformance-report.json`, `source-review-queue.json`, `source-authority-map.json`, and `evidence.json` as report/evidence presentation refs, not as independent proof authority.
 
+## Designer Workflow Trace Target
+The designer-workflow-trace proof is a non-numbered, cross-cutting proof-only target that consumes accepted P2, source-conformance, P3, P4, protocol, and native evidence. It emits one deterministic Button scenario index from design authority through governed catalog, diagnostics/review-required status, review/evaluation refs, static target handoff artifacts, and evidence status.
+
+It is not a product workflow implementation, customer validation, production adoption, live SurfaceOps, live JudgmentKit, production adapter, API, SDK, runtime, A2UI, P6, P7, demo authority, catalog authority, or upstream proof authority.
+
+The proof path is:
+
+```text
+artifacts/p2/evidence.json
+artifacts/p2/governed-catalog.json
+artifacts/p2/ingestion-report.json
+artifacts/source-conformance/evidence.json
+artifacts/source-conformance/source-authority-map.json
+artifacts/source-conformance/source-conformance-report.json
+artifacts/source-conformance/source-review-queue.json
+artifacts/p3/evidence.json
+artifacts/p3/review-queue.json
+artifacts/p4/evidence.json
+artifacts/p4/surfaceops-decision-ledger.json
+artifacts/p4/review-judgment-report.json
+artifacts/p4/judgmentkit-evaluation-report.json
+artifacts/p5/protocol/evidence.json
+artifacts/p5/native/evidence.json
+fixtures/designer-workflow-trace/expectations.manifest.json
+  -> validate fixtures/designer-workflow-trace/valid/*.json, review/*.json, invalid/*.json, and mutations/*.json
+  -> artifacts/designer-workflow-trace/trace-selection.json
+  -> artifacts/designer-workflow-trace/designer-workflow-trace-report.json
+  -> artifacts/designer-workflow-trace/evidence.json
+```
+
+Implemented command:
+
+```bash
+interfacectl surfaces designer-workflow-trace proof --ingestion-evidence artifacts/p2/evidence.json --catalog artifacts/p2/governed-catalog.json --ingestion-report artifacts/p2/ingestion-report.json --source-conformance-evidence artifacts/source-conformance/evidence.json --source-authority-map artifacts/source-conformance/source-authority-map.json --source-conformance-report artifacts/source-conformance/source-conformance-report.json --source-review-queue artifacts/source-conformance/source-review-queue.json --orchestration-evidence artifacts/p3/evidence.json --review-queue artifacts/p3/review-queue.json --review-evidence artifacts/p4/evidence.json --decision-ledger artifacts/p4/surfaceops-decision-ledger.json --review-report artifacts/p4/review-judgment-report.json --evaluation-report artifacts/p4/judgmentkit-evaluation-report.json --protocol-evidence artifacts/p5/protocol/evidence.json --native-evidence artifacts/p5/native/evidence.json --fixture fixtures/designer-workflow-trace --out artifacts/designer-workflow-trace
+```
+
+Given accepted upstream evidence and the designer-workflow-trace fixture set, the command emits the exact trace artifact set, validates upstream hashes and status, verifies current indexed report and review queue files, preserves P4 `status: "pass"` with `promotionStatus: "blocked"`, validates trace fixtures against deterministic diagnostics, records report rows before final evidence, and writes reproducible evidence with hashes and provenance for every trace schema, consumed schema, fixture, upstream boundary ref, generated artifact, and final evidence artifact.
+
+The proof currently has no generated demo. Use `designer-workflow-trace-report.json`, `trace-selection.json`, and `evidence.json` as report/evidence presentation refs. The trace report is an index over accepted evidence; passing trace evidence proves only that the index was generated under the trace contract.
+
 ## Subplans
 - [Subplan Index](plans/README.md)
 - [Runtime Catalog v0](plans/runtime-catalog-v0.md)
@@ -543,6 +583,7 @@ The proof currently has no generated demo. Use `source-conformance-report.json`,
 - [P5 Native Static Proof](plans/p5/native-static-proof.md)
 - [Declared Source Conformance Proof](plans/source-conformance/README.md)
 - [Source Conformance Validation and Evidence](plans/source-conformance/validation-evidence.md)
+- [Product Designer Workflow Trace](plans/product-designer-workflow-trace.md)
 - [Product Portfolio Boundaries](plans/product-portfolio-boundaries.md)
 - [Usability And Value Evidence Plan](plans/usability-value-evidence.md)
 - [Surfaces.dev Documentation Tracking](plans/surfaces-dev.md)

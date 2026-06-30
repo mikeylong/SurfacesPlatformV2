@@ -38,6 +38,8 @@ The current tracked phase evidence files report passing status for P0 through th
 | P4 | Deterministic review and judgment proof | `artifacts/p4/evidence.json` | `pass` | `blocked` | `demo/p4/index.html` |
 | P5 | `surfaces-protocol-static` inert protocol-envelope proof | `artifacts/p5/protocol/evidence.json` | `pass` | `review_required` | `demo/p5/protocol/index.html` |
 | P5 | `surfaces-native-static` inert native-packet proof | `artifacts/p5/native/evidence.json` | `pass` | `review_required` | `demo/p5/native/index.html` |
+| Target | Declared source conformance proof | `artifacts/source-conformance/evidence.json` | `pass` | `review_required` | none; report/evidence only |
+| Target | Designer workflow trace evidence index | `artifacts/designer-workflow-trace/evidence.json` | `pass` | `blocked` | none; report/evidence only |
 
 The promotion status is not a marketing status. It is part of the proof contract: allowed work may proceed, review-required work stays inspectable but blocked from unattended promotion, and blocked work remains rejected by deterministic diagnostics or review policy.
 
@@ -68,9 +70,27 @@ A product designer should be able to trace:
 If a designer cannot complete that trace for a target, the target is not yet a usable Surfaces Platform workflow regardless of how convincing the generated UI looks.
 
 ## Designer Workflow Trace Report
-[Product Designer Workflow Trace](product-designer-workflow-trace.md) defines the docs-only planning shape for a future consolidated trace report. The intended report would index existing evidence from source authority through target handoff, but it would not replace the phase evidence files that prove implemented behavior.
+[Product Designer Workflow Trace](product-designer-workflow-trace.md) defines the implemented first proof-only consolidated trace report. The report indexes existing evidence from source authority through target handoff, but it does not replace the phase evidence files that prove implemented behavior.
 
-The report is not implemented yet. Any future claim requires its own schema, fixtures, diagnostics, command contract, report or artifact path, evidence path, CI gate, and passing evidence.
+Command:
+
+```bash
+interfacectl surfaces designer-workflow-trace proof --ingestion-evidence artifacts/p2/evidence.json --catalog artifacts/p2/governed-catalog.json --ingestion-report artifacts/p2/ingestion-report.json --source-conformance-evidence artifacts/source-conformance/evidence.json --source-authority-map artifacts/source-conformance/source-authority-map.json --source-conformance-report artifacts/source-conformance/source-conformance-report.json --source-review-queue artifacts/source-conformance/source-review-queue.json --orchestration-evidence artifacts/p3/evidence.json --review-queue artifacts/p3/review-queue.json --review-evidence artifacts/p4/evidence.json --decision-ledger artifacts/p4/surfaceops-decision-ledger.json --review-report artifacts/p4/review-judgment-report.json --evaluation-report artifacts/p4/judgmentkit-evaluation-report.json --protocol-evidence artifacts/p5/protocol/evidence.json --native-evidence artifacts/p5/native/evidence.json --fixture fixtures/designer-workflow-trace --out artifacts/designer-workflow-trace
+```
+
+Artifacts:
+
+- `artifacts/designer-workflow-trace/trace-selection.json`
+- `artifacts/designer-workflow-trace/designer-workflow-trace-report.json`
+- `artifacts/designer-workflow-trace/evidence.json`
+
+Promotion status:
+
+- Current tracked evidence records `blocked` because the trace faithfully preserves accepted P4 `promotionStatus: "blocked"` while the trace proof itself records `status: "pass"`.
+
+Non-goals:
+
+- No product workflow implementation, customer validation, production adoption, live SurfaceOps, live JudgmentKit, production adapter, API, SDK, runtime, A2UI, P6, P7, catalog authority, upstream proof authority, or demo authority.
 
 ## Design-Partner Testing Package
 The [Curated Design-Partner Testing Program](design-partner-testing.md), [Session Guide](design-partner-testing/session-guide.md), [Results Capture](design-partner-testing/results-capture.md), [Scorecard](design-partner-testing/scorecard.md), and [Synthesis Template](design-partner-testing/synthesis-template.md) are non-proof research and planning surfaces. Use them to frame partner-facing test tasks around the current evidence loop, gather observations about comprehension and workflow value, and identify future proof or documentation gaps.
@@ -559,6 +579,7 @@ npm run check:p3:ci
 npm run check:p4:ci
 npm run check:p5:protocol:ci
 npm run check:p5:native:ci
+npm run check:designer-workflow-trace:ci
 ```
 
 Usability signal:

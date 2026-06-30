@@ -82,7 +82,7 @@ Surfaces becomes a usable platform per target when a team can complete an eviden
 Generated demos, review queues, protocol envelopes, workflow cards, or adapter-facing outputs can help demonstrate usability, but they are not the signal by themselves. The signal is the closed evidence loop for a declared target.
 
 ## Current Roadmap Proof Snapshot
-The current roadmap evidence is P0-P5, with P5 implemented only for the `surfaces-protocol-static` and `surfaces-native-static` proof-only slices. This repo also implements a target-specific declared-source conformance proof that consumes accepted P2 catalog/evidence; it is not a new numbered phase or live product integration. A row counts as implemented only when the named evidence file records `status: "pass"`. `promotionStatus` records governance outcome, not whether the proof command failed.
+The current roadmap evidence is P0-P5, with P5 implemented only for the `surfaces-protocol-static` and `surfaces-native-static` proof-only slices. This repo also implements target-specific declared-source conformance and designer-workflow-trace proofs that consume accepted evidence; neither is a new numbered phase or live product integration. A row counts as implemented only when the named evidence file records `status: "pass"`. `promotionStatus` records governance outcome, not whether the proof command failed.
 
 | Phase | Implemented slice | Lifecycle value | Evidence | Current status | Current promotion status | CI gate | Demo |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -90,6 +90,7 @@ The current roadmap evidence is P0-P5, with P5 implemented only for the `surface
 | P1 | `web-static` runtime projection and render-plan proof | Runtime-safe derived projection and inert render plans | `artifacts/p1/evidence.json` | `pass` | `review_required` | `npm run check:p1:ci` | `demo/p1/index.html` |
 | P2 | Bounded local Adobe Spectrum Design Data ingestion for `button` and `in-line-alert` | Real design-system source refs, mappings, diagnostics, and governed catalog output | `artifacts/p2/evidence.json` | `pass` | `review_required` | `npm run check:p2:ci` | `demo/p2/index.html` |
 | Target | Declared source conformance proof | Declared-source authority, review, and evidence checks over accepted P2 catalog/evidence | `artifacts/source-conformance/evidence.json` | `pass` | `review_required` | `npm run check:source-conformance:ci` | none; report/evidence only |
+| Target | Designer workflow trace proof | Index over accepted evidence from design authority through governed catalog, review/evaluation refs, static target handoff, and evidence status | `artifacts/designer-workflow-trace/evidence.json` | `pass` | `blocked` | `npm run check:designer-workflow-trace:ci` | none; report/evidence only |
 | P3 | Inert agent orchestration proof | Evidence-bound work orders, task DAG, review queue, and no live execution | `artifacts/p3/evidence.json` | `pass` | `review_required` | `npm run check:p3:ci` | `demo/p3/index.html` |
 | P4 | Deterministic review and judgment proof | SurfaceOps-shaped decisions and JudgmentKit-shaped findings without live persistence or invocation | `artifacts/p4/evidence.json` | `pass` | `blocked` | `npm run check:p4:ci` | `demo/p4/index.html` |
 | P5 | `surfaces-protocol-static` inert protocol-envelope proof | Protocol-boundary consumption of accepted P2/P4 evidence | `artifacts/p5/protocol/evidence.json` | `pass` | `review_required` | `npm run check:p5:protocol:ci` | `demo/p5/protocol/index.html` |
@@ -105,6 +106,8 @@ P1 proves the first runtime-facing surface. It derives a `web-static` runtime pr
 P2 implements the first bounded real design-system ingestion proof from a manifest-declared local source bundle: the pinned `@adobe/spectrum-design-data@0.7.0` snapshot scoped to `button` and `in-line-alert`. The former agent-orchestration draft has moved to `plans/p3/` and should run only after P2 ingestion evidence passes.
 
 The declared-source conformance proof consumes accepted P2 evidence and catalog output, then checks one manifest-declared local source bundle for source refs, source hashes, authority conflicts, review-required routing, forbidden live/production claims, report rows, and final evidence. It is proof-only and emits report/evidence artifacts, not a generated demo or live integration.
+
+The designer-workflow-trace proof consumes accepted P2, source-conformance, P3, P4, protocol, and native evidence, then emits a deterministic trace selection, report, and evidence index for one Button scenario. The trace report is an index over accepted evidence, not catalog authority, upstream proof authority, product workflow implementation, customer validation, production adoption, live SurfaceOps, live JudgmentKit, production adapter, API, SDK, runtime, A2UI, P6, or P7.
 
 P3 implements the first inert agent recruitment and orchestration proof after P2 evidence passes. It materializes a capability registry, deterministic task DAG, scoped non-executable work orders, review queue, report, demo, and evidence without live agents, tool calls, connector calls, file edits, network calls, secrets, callbacks, SurfaceOps persistence, or JudgmentKit execution.
 
@@ -134,6 +137,7 @@ The current P0-P5 sequence is the implemented proof-contract roadmap, not the fu
 
 - Source coverage can broaden only through declared source families that preserve refs, provenance, diagnostics, and evidence.
 - Declared-source conformance can broaden only by adding target-specific source schemas, fixture coverage, diagnostics, report/evidence paths, and passing CI evidence.
+- Designer workflow trace coverage can broaden only by adding trace-specific schemas, fixture coverage, diagnostics, command arguments, report/evidence paths, CI gates, and passing evidence for the additional scenario or target refs.
 - SurfaceOps can move from deterministic decision artifacts toward live operational review only after a proof defines storage, workflow, permissions, and authority boundaries.
 - `kanban.cards` can become the reusable collaboration core only after a proof defines how cards reference Surfaces evidence and SurfaceOps decisions. It should organize work around those decisions, not replace them.
 - A2UI, production adapters, public APIs, SDKs, live runtimes, live SurfaceOps, and live JudgmentKit remain future work until target-specific evidence passes.
@@ -214,6 +218,7 @@ If a product surface consumes evidence, it may explain, evaluate, route, or disp
 - Broader real design-system source families beyond the P2 local source bundle remain open. P2 does not settle Figma, Storybook, Code Connect, docs crawler, production HTML, or multi-source authority policy.
 - Broader Spectrum coverage remains open. The implemented P2 target is Adobe Spectrum Design Data, pinned to `@adobe/spectrum-design-data@0.7.0`, initially scoped to `button` and `in-line-alert`; this is not a claim of full Spectrum support, live ingestion, or Adobe endorsement.
 - Broader declared-source conformance remains open beyond the implemented local source-conformance bundle. Additional declared source families, component coverage, multi-source authority policy, or production-facing conformance targets require their own proof shape and passing evidence.
+- Broader designer workflow trace coverage remains open beyond the first Button trace over accepted P2, source-conformance, P3, P4, protocol, and native evidence. Additional scenarios, targets, components, or partner-facing workflows require their own trace fixture coverage, diagnostics, report/evidence paths, and passing evidence.
 - Broader JudgmentKit execution or live integration beyond the implemented P4 deterministic `judgmentkit-evaluation-report.v0` remains open.
 - Broader SurfaceOps operational storage, workflow, or live product behavior beyond the implemented P4 deterministic `surfaceops-decision-ledger.v0` remains open.
 - The exact packaging relationship between SurfaceOps, `surfaceops.ai`, and `kanban.cards` remains open. The default architecture is `kanban.cards` as reusable collaboration core with SurfaceOps-specific governance layered on top, but white-labeling remains possible if standalone `kanban.cards` is deprioritized.
