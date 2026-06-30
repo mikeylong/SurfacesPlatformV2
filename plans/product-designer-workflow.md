@@ -41,6 +41,11 @@ A designer or facilitator can inspect the current proof-only workflow with the t
 - Proof authority: the relevant `artifacts/**/evidence.json` file for the phase or target.
 - Presentation only: generated demos under `demo/**`, only when backed by passing evidence.
 
+## Designer Workflow Trace
+A designer workflow trace would make the evidence walkthrough easier to inspect by consolidating refs into one deterministic report. The current repo does not implement that report, schema, command, artifact, evidence file, or CI gate yet.
+
+The planning shape is tracked in [Product Designer Workflow Trace](product-designer-workflow-trace.md). Until that proof shape exists and passes, designers and facilitators should treat the trace as a documentation and prioritization target, not an implemented capability.
+
 ## Prioritization Use
 Use this workflow to rank platform work. Prefer work that improves a designer's ability to complete the evidence-backed loop without weakening authority:
 

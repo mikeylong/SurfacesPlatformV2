@@ -12,8 +12,9 @@ These documents are subordinate to `VISION.md` and support the phase plans witho
 
 1. [Product Portfolio Boundaries](product-portfolio-boundaries.md)
 2. [Product Designer Workflow](product-designer-workflow.md)
-3. [Usability And Value Evidence Plan](usability-value-evidence.md)
-4. [Curated Design-Partner Testing Program](design-partner-testing.md)
+3. [Product Designer Workflow Trace](product-designer-workflow-trace.md)
+4. [Usability And Value Evidence Plan](usability-value-evidence.md)
+5. [Curated Design-Partner Testing Program](design-partner-testing.md)
 
 The curated design-partner testing program and templates under `plans/design-partner-testing/` are also subordinate to `VISION.md`, `PLAN.md`, and passing phase evidence. Treat them as non-proof research and planning surfaces for partner task design, synthetic dry runs, feedback capture, scorecards, and synthesis. They may point testers to evidence-backed demos for inspection, but they must not create implementation claims, proof status, catalog authority, or demo authority.
 

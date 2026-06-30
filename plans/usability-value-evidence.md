@@ -67,6 +67,11 @@ A product designer should be able to trace:
 
 If a designer cannot complete that trace for a target, the target is not yet a usable Surfaces Platform workflow regardless of how convincing the generated UI looks.
 
+## Designer Workflow Trace Report
+[Product Designer Workflow Trace](product-designer-workflow-trace.md) defines the docs-only planning shape for a future consolidated trace report. The intended report would index existing evidence from source authority through target handoff, but it would not replace the phase evidence files that prove implemented behavior.
+
+The report is not implemented yet. Any future claim requires its own schema, fixtures, diagnostics, command contract, report or artifact path, evidence path, CI gate, and passing evidence.
+
 ## Design-Partner Testing Package
 The [Curated Design-Partner Testing Program](design-partner-testing.md), [Session Guide](design-partner-testing/session-guide.md), [Results Capture](design-partner-testing/results-capture.md), [Scorecard](design-partner-testing/scorecard.md), and [Synthesis Template](design-partner-testing/synthesis-template.md) are non-proof research and planning surfaces. Use them to frame partner-facing test tasks around the current evidence loop, gather observations about comprehension and workflow value, and identify future proof or documentation gaps.
 
