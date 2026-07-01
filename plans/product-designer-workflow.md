@@ -41,6 +41,22 @@ A designer or facilitator can inspect the current proof-only workflow with the t
 - Proof authority: the relevant `artifacts/**/evidence.json` file for the phase or target.
 - Presentation only: generated demos under `demo/**`, only when backed by passing evidence.
 
+## Button Workflow Walkthrough
+The current repo-owned Button scenario can be used as the first moderated
+walkthrough of the workflow. This walkthrough is still proof-only and
+report/evidence-only; it is not a product workflow implementation or customer
+validation.
+
+| Designer step | What the walkthrough should show | Current repo refs |
+| --- | --- | --- |
+| Declare design authority | The Button scenario is governed by declared local source material, mappings, policy, and source-conformance authority refs. | `sources/p2/design-system-source/manifest.json`; `artifacts/p2/source-inventory.json`; `artifacts/p2/source-mapping.json`; `artifacts/source-conformance/source-authority-map.json` |
+| Compile governed contracts | Bounded source material compiles into a governed catalog with evidence, diagnostics, provenance, and promotion status. | `artifacts/p2/evidence.json`; `artifacts/p2/governed-catalog.json`; `artifacts/p2/ingestion-report.json` |
+| Generate inside the catalog boundary | Allowed, invalid, and review-required cases are handled by fixtures, diagnostics, and review routing rather than inferred UI. | `fixtures/p2/valid`; `fixtures/p2/invalid`; `fixtures/p2/review`; `artifacts/p2/ingestion-report.json` |
+| Inspect evidence, not only pixels | The consolidated trace indexes accepted evidence and presentation links; demos remain non-authoritative. | `artifacts/designer-workflow-trace/designer-workflow-trace-report.json`; `artifacts/designer-workflow-trace/evidence.json`; `demo/p2`; `demo/p5/protocol`; `demo/p5/native` |
+| Decide or revise at the authority layer | Unsupported, blocked, or review-required output should drive source, mapping, policy, review-owner, or future proof-shape decisions. | `artifacts/source-conformance/source-review-queue.json`; `artifacts/p3/review-queue.json`; `artifacts/p4/surfaceops-decision-ledger.json`; `artifacts/p4/review-judgment-report.json` |
+| Hand off only proven target output | Only hash-bound protocol or native static outputs backed by their own evidence are handoff candidates. | `artifacts/p5/protocol/evidence.json`; `artifacts/p5/protocol/protocol-envelope.button.json`; `artifacts/p5/native/evidence.json`; `artifacts/p5/native/surfaces-native-packet.button.json` |
+| Govern changes over time | Any source, policy, review, or target change requires regeneration and fresh evidence before downstream trust. | `npm run check:designer-workflow-trace:ci`; current `artifacts/**/evidence.json` paths |
+
 ## Designer Workflow Trace
 A designer workflow trace makes the evidence walkthrough easier to inspect by consolidating refs into one deterministic report. The current repo implements the first proof-only trace target for one Button scenario over accepted P2, source-conformance, P3, P4, protocol, and native evidence.
 

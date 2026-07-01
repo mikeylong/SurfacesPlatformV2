@@ -45,10 +45,17 @@ Complete this setup before the session.
   - `artifacts/p0/evidence.json`
   - `artifacts/p1/evidence.json`
   - `artifacts/p2/evidence.json`
+  - `artifacts/source-conformance/evidence.json`
+  - `artifacts/source-conformance/source-authority-map.json`
+  - `artifacts/source-conformance/source-conformance-report.json`
+  - `artifacts/source-conformance/source-review-queue.json`
   - `artifacts/p3/evidence.json`
   - `artifacts/p4/evidence.json`
   - `artifacts/p5/protocol/evidence.json`
   - `artifacts/p5/native/evidence.json`
+  - `artifacts/designer-workflow-trace/evidence.json`
+  - `artifacts/designer-workflow-trace/designer-workflow-trace-report.json`
+  - `artifacts/designer-workflow-trace/trace-selection.json`
 - Prepare the presentation-only demo path list:
   - `demo/p0/index.html`
   - `demo/p1/index.html`
@@ -82,9 +89,10 @@ Before the call:
 During the call:
 
 - use the opening script before showing any demo;
-- walk one repo-owned trace from P2 governed catalog evidence through P3 review
-  queue output, P4 review and judgment evidence, and either P5 protocol or P5
-  native static output;
+- walk one repo-owned trace through the seven product designer workflow steps
+  from `VISION.md`: declare authority, compile governed contracts, generate
+  inside the catalog boundary, inspect evidence, decide or revise at the
+  authority layer, hand off proven target output, and govern changes over time;
 - ask the diagnostic or review-required task before asking future-target
   questions;
 - ask the partner to distinguish evidence `status`, `promotionStatus`, demos,
@@ -110,6 +118,21 @@ Surfaces Platform is a proof-contract system for governed generated UI. The desi
 
 The session is not a live integration with your design system. We will use repo-owned examples and ask where this evidence model would or would not fit your workflow. Please avoid sharing proprietary source files, screenshots, recordings, customer data, credentials, or private implementation details.
 
+## Product Designer Workflow Spine
+Use this spine for Wave 1. The session should test whether the partner can
+follow the product designer workflow from `VISION.md`, not just recognize phase
+names.
+
+| VISION workflow step | Facilitator action | Repo-owned aids | Success signal |
+| --- | --- | --- | --- |
+| Declare design authority | Ask which source files, mappings, and policy refs own the Button scenario. | `sources/p2/design-system-source/manifest.json`; `artifacts/p2/source-inventory.json`; `artifacts/source-conformance/source-authority-map.json` | Partner can name source authority without treating demos or generated output as authority. |
+| Compile governed contracts | Show the P2 proof result and governed catalog. | `artifacts/p2/evidence.json`; `artifacts/p2/governed-catalog.json`; `artifacts/p2/ingestion-report.json` | Partner can identify which evidence file proves the bounded catalog output. |
+| Generate inside the catalog boundary | Show allowed, invalid, and review-required fixture behavior. | `fixtures/p2/valid`; `fixtures/p2/invalid`; `fixtures/p2/review`; ingestion/report diagnostics | Partner understands unsupported UI becomes diagnostics or review-required records, not inferred UI. |
+| Inspect evidence, not only pixels | Use the trace report before opening any demo. | `artifacts/designer-workflow-trace/designer-workflow-trace-report.json`; `artifacts/designer-workflow-trace/evidence.json`; matching demos only after evidence | Partner distinguishes evidence, reports, promotion status, and presentation aids. |
+| Decide or revise at the authority layer | Ask where a blocked or review-required case should be fixed. | `artifacts/source-conformance/source-review-queue.json`; `artifacts/p3/review-queue.json`; `artifacts/p4/surfaceops-decision-ledger.json` | Partner routes fixes to source authority, mappings, policy, review ownership, or future proof scope. |
+| Hand off only proven target output | Show protocol or native output only after matching evidence. | `artifacts/p5/protocol/protocol-envelope.button.json`; `artifacts/p5/native/surfaces-native-packet.button.json`; P5 evidence | Partner can separate proof-only static handoff from production adapter, SDK, API, runtime, or A2UI support. |
+| Govern changes over time | Ask what must happen when source material, policy, decisions, or target requirements change. | relevant `npm run check:*:ci` gate names; `artifacts/**/evidence.json` paths | Partner expects regeneration and evidence refresh instead of patching downstream artifacts. |
+
 ## Boundary Sign-Off
 Complete this verbal sign-off before showing task prompts. If any answer cannot
 be confirmed, stop or switch to a general orientation only.
@@ -133,12 +156,12 @@ Use a 75-90 minute session. Shorten by reducing discussion time, not by skipping
 
 | Segment | Time | Goal |
 | --- | --- | --- |
-| Orientation | 10 minutes | Establish authority, implemented scope, proof-only scope, and data guardrails. |
-| Generation boundary | 15 minutes | Test whether governed catalog, Surface IR, diagnostics, and review-required behavior are understandable. |
-| CI evidence | 15 minutes | Test whether proof commands, evidence, promotion status, drift checks, and demos make claims reproducible. |
-| Review governance | 15-20 minutes | Test whether P3 review queue and P4 SurfaceOps/JudgmentKit-shaped artifacts make review traceable without live persistence. |
-| Runtime/protocol/native | 20 minutes | Test whether P1 render plans, P5 protocol envelopes, and P5 native packets read as derived proof-only consumers. |
-| Close | 10 minutes | Capture adoption blockers, unclear boundaries, and future proof targets. |
+| Orientation and guardrails | 10 minutes | Establish authority, implemented scope, proof-only scope, and data guardrails. |
+| Declare and compile | 15 minutes | Test whether source authority, mappings, policy refs, governed catalog output, and proof evidence are understandable. |
+| Generate and inspect | 20 minutes | Test whether catalog-bound generation, diagnostics, review-required behavior, evidence, reports, promotion status, and demos are distinguishable. |
+| Decide or revise | 15-20 minutes | Test whether review queues and P4 SurfaceOps/JudgmentKit-shaped artifacts support authority-layer decisions without live persistence or evaluator invocation. |
+| Handoff and govern changes | 20 minutes | Test whether P5 protocol/native outputs read as proof-only static handoff and whether the partner expects regeneration when authority or targets change. |
+| Close | 10 minutes | Capture adoption blockers, unclear boundaries, and future proof targets by workflow step. |
 
 ## Wave 1 Session 1 Moderated Evidence Walkthrough
 Use this fixed walkthrough for the first Wave 1 session. It keeps the session
@@ -148,10 +171,12 @@ stimulus.
 | Step | Facilitator action | Repo-owned aids | Required prompt | Capture focus |
 | --- | --- | --- | --- | --- |
 | 1 | Establish authority and current proof posture. | `VISION.md`; `plans/usability-value-evidence.md`; current evidence summary table. | "In your own words, what is the authority chain from design-system source material to catalog, evidence, review, and downstream consumption?" | Evidence-loop comprehension; authority confusion; demo-as-proof confusion. |
-| 2 | Trace one repo-owned surface from source ingestion through review and a static target. | `artifacts/p2/evidence.json`; `artifacts/p2/governed-catalog.json`; `artifacts/p3/review-queue.json`; `artifacts/p4/evidence.json`; `artifacts/p5/protocol/evidence.json` or `artifacts/p5/native/evidence.json`; matching demos as presentation aids only. | "Trace where this surface is allowed, where it is review-required or blocked, and which evidence path proves each step." | Trace-task completion; evidence path recall; promotion-status comprehension. |
-| 3 | Show a diagnostic or review-required case before showing the demo. | P0/P1/P2/P5 evidence and report rows; `demo/p0/index.html`, `demo/p1/index.html`, `demo/p2/index.html`, or P5 demo only after evidence is shown. | "Why should this case become a diagnostic, review row, or non-emitted artifact instead of unattended generated UI?" | Diagnostic clarity; governance fit; unsafe inference requests. |
-| 4 | Separate proof status, promotion status, demos, and future requests. | `plans/usability-value-evidence.md`; relevant `artifacts/**/evidence.json`; generated demo path for the same phase. | "Which parts are implemented proof, which are presentation aids, which are review outcomes, and which would need future proof before support is claimed?" | Proof-boundary clarity; production-support confusion; future proof-shape clarity. |
-| 5 | Ask for partner workflow fit without collecting partner material. | External blank capture and scorecard only. | "What requirement from your workflow does current evidence support, and what requirement would need a new proof shape? Please describe it generically." | De-identified workflow fit; future target request; no raw partner data. |
+| 2 | Declare authority for the repo-owned Button scenario. | P2 manifest, inventory, mapping, and source-conformance authority map. | "Which source material and policy refs own this scenario, and which parts are not authority?" | Source-authority comprehension; missing-source-ref questions. |
+| 3 | Compile governed contracts and identify proof authority. | `artifacts/p2/evidence.json`; `artifacts/p2/governed-catalog.json`; `artifacts/p2/ingestion-report.json`. | "Which proof result turns bounded source material into catalog authority for this scenario?" | Evidence path recall; governed-catalog comprehension. |
+| 4 | Generate inside the catalog boundary with a diagnostic or review-required case before showing any demo. | P2 valid, invalid, review fixtures and report rows; demos only after evidence is shown. | "Why should this case become a diagnostic, review row, or non-emitted artifact instead of unattended generated UI?" | Diagnostic clarity; governance fit; unsafe inference requests. |
+| 5 | Inspect the consolidated trace report, then separate proof status, promotion status, demos, and future requests. | `artifacts/designer-workflow-trace/designer-workflow-trace-report.json`; trace evidence; relevant generated demo path for the same phase. | "Which parts are implemented proof, which are presentation aids, which are review outcomes, and which would need future proof before support is claimed?" | Proof-boundary clarity; production-support confusion; future proof-shape clarity. |
+| 6 | Decide or revise at the authority layer. | Source review queue, P3 review queue, P4 decision ledger, and review/judgment report. | "If this output is unsupported, blocked, or review-required, what should change: source material, mapping, policy, review ownership, or future proof scope? What would be wrong with patching only the demo, protocol envelope, or native packet?" | Authority-layer decision fit; review-owner clarity. |
+| 7 | Hand off proven target output and govern changes over time. | P5 protocol or native evidence and static output; relevant CI gate names. | "Which target output is safe to hand off, and what evidence and generated outputs must be regenerated if source authority, policy, review, or target requirements change?" | Handoff comprehension; regeneration expectation; future target request. |
 
 For Step 2, default to the P2-to-P4-to-P5 trace if time is limited:
 
@@ -167,7 +192,8 @@ For Step 2, default to the P2-to-P4-to-P5 trace if time is limited:
 - matching demos only after the evidence path has been named.
 
 The session is complete only if the facilitator can fill all required
-stimulus-pack completion fields in the external results capture and scorecard.
+stimulus-pack completion fields and the product-designer workflow coverage
+fields in the external results capture and scorecard.
 If any required task is skipped, mark the session for retest before treating
 Wave 1 as ready for Wave 2.
 

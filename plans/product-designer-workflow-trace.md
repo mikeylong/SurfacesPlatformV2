@@ -106,6 +106,9 @@ The proof command validates every declared boundary input by exact path and curr
 ## Missing Pieces
 The first slice now has the minimum proof shape for one Button scenario. Broader coverage still needs:
 
+- an explicit one-to-one report mapping from the seven
+  [VISION.md](../VISION.md#product-designer-workflow) workflow steps to trace
+  refs if the trace contract is broadened beyond the current mechanical index;
 - additional scenario fixtures tying more components, source refs, diagnostics, review rows, decisions, target handoffs, and evidence together;
 - additional diagnostics for any broadened trace requirement;
 - target-specific refs for future P5 targets only after those targets have passing evidence;

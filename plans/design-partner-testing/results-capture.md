@@ -81,6 +81,33 @@ Coverage rules:
   transcripts, screenshots, partner component names, customer names, source
   material, credentials, private URLs, or proprietary examples.
 
+## Product Designer Workflow Coverage
+Complete this section for every Wave 1 session. It tracks whether the partner
+could follow the workflow from [VISION.md](../VISION.md#product-designer-workflow)
+using repo-owned evidence.
+
+| VISION workflow step | Completed | Repo-owned refs used | Partner comprehension | Follow-up disposition |
+| --- | --- | --- | --- | --- |
+| Declare design authority | `yes / no` |  | `Strong / Mixed / Weak / Not observed` | `doc update / repeat test / future proof candidate / out of scope / no action` |
+| Compile governed contracts | `yes / no` |  | `Strong / Mixed / Weak / Not observed` | `doc update / repeat test / future proof candidate / out of scope / no action` |
+| Generate inside the catalog boundary | `yes / no` |  | `Strong / Mixed / Weak / Not observed` | `doc update / repeat test / future proof candidate / out of scope / no action` |
+| Inspect evidence, not only pixels | `yes / no` |  | `Strong / Mixed / Weak / Not observed` | `doc update / repeat test / future proof candidate / out of scope / no action` |
+| Decide or revise at the authority layer | `yes / no` |  | `Strong / Mixed / Weak / Not observed` | `doc update / repeat test / future proof candidate / out of scope / no action` |
+| Hand off only proven target output | `yes / no` |  | `Strong / Mixed / Weak / Not observed` | `doc update / repeat test / future proof candidate / out of scope / no action` |
+| Govern changes over time | `yes / no` |  | `Strong / Mixed / Weak / Not observed` | `doc update / repeat test / future proof candidate / out of scope / no action` |
+
+Workflow coverage rules:
+- If any completed workflow step is `Weak` or `Not observed`, synthesis must
+  decide whether the issue is a docs clarification, repeat-test need, product
+  risk, or future proof candidate.
+- If a partner asks to skip authority or evidence and inspect only pixels, mark
+  "Inspect evidence, not only pixels" as `Weak` unless the facilitator corrects
+  the misunderstanding by the close.
+- If a partner wants to fix unsupported output in a downstream demo, render
+  artifact, protocol envelope, or native packet instead of source authority,
+  mappings, policy, review ownership, or future proof scope, mark "Decide or
+  revise at the authority layer" as `Weak` or `Mixed`.
+
 ## Observations
 Use one row per observed behavior, question, friction point, or trust signal.
 
