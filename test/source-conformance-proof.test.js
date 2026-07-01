@@ -5,7 +5,10 @@ import path from "node:path";
 import { promisify } from "node:util";
 import test from "node:test";
 import { canonicalJson } from "../src/p0.js";
-import { SC_FORBIDDEN_CLAIM_KEYS } from "../src/source-conformance-contract.js";
+import {
+  SC_FORBIDDEN_CLAIM_KEYS,
+  SC_REVIEW_POLICY_SOURCE_REF
+} from "../src/source-conformance-contract.js";
 import { sourceConformanceInternals } from "../src/source-conformance-proof.js";
 
 const execFileAsync = promisify(execFile);
@@ -19,7 +22,7 @@ test("source conformance proof emits passing evidence with final self-hash", asy
 
   assert.equal(evidence.status, "pass");
   assert.equal(evidence.promotionStatus, "review_required");
-  assert.equal(evidence.validationResults.length, 14);
+  assert.equal(evidence.validationResults.length, 16);
   assert.deepEqual(evidence.boundaryRefs.map((entry) => entry.path), [
     "artifacts/p2/evidence.json",
     "artifacts/p2/governed-catalog.json"
@@ -54,12 +57,73 @@ test("source conformance proof preserves review-required rows without execution"
   assert.equal(reviewQueue.queueItems[0].owner, "design-systems-governance");
   assert.equal(reviewQueue.queueItems[0].rationale, "Brand exception changes action emphasis and requires source-owner review.");
   assert.equal(reviewQueue.queueItems[0].expiresAt, "1970-01-31T00:00:00.000Z");
+  assert.equal(reviewQueue.queueItems[0].requiredSourceRefs.includes(SC_REVIEW_POLICY_SOURCE_REF), true);
   const reviewRow = evidence.validationResults.find((row) =>
     row.fixturePath === "fixtures/source-conformance/review/brand-exception.source-conformance.json"
   );
   assert.equal(reviewRow.actualResult, "review_required");
   assert.equal(reviewRow.reviewQueueItemId, "source-review-brand-exception");
   assert.deepEqual(reviewRow.diagnosticCodes, ["SOURCE_REVIEW_REQUIRED"]);
+  assert.equal(reviewRow.requiredSourceRefs.includes(SC_REVIEW_POLICY_SOURCE_REF), true);
+});
+
+test("source conformance proof blocks expired review metadata", async () => {
+  await runSourceConformanceProof();
+  const evidence = await readJson("artifacts/source-conformance/evidence.json");
+  const policyRefMissingRow = evidence.validationResults.find((row) =>
+    row.fixturePath === "fixtures/source-conformance/invalid/review-policy-ref-missing.source-conformance.json"
+  );
+  assert.equal(policyRefMissingRow.actualResult, "invalid");
+  assert.equal(policyRefMissingRow.promotionStatus, "blocked");
+  assert.deepEqual(policyRefMissingRow.diagnosticCodes, ["SOURCE_REVIEW_POLICY_REF_MISSING"]);
+
+  const expiredRow = evidence.validationResults.find((row) =>
+    row.fixturePath === "fixtures/source-conformance/invalid/review-expired.source-conformance.json"
+  );
+  assert.equal(expiredRow.actualResult, "invalid");
+  assert.equal(expiredRow.promotionStatus, "blocked");
+  assert.deepEqual(expiredRow.diagnosticCodes, ["SOURCE_REVIEW_EXPIRED"]);
+  assert.equal(expiredRow.review.owner, "design-systems-governance");
+  assert.equal(expiredRow.review.rationale, "Expired brand exception must block until source-owner review metadata is renewed.");
+  assert.equal(expiredRow.review.expiresAt, "1969-12-31T00:00:00.000Z");
+  assert.equal(expiredRow.reviewQueueItemId, null);
+
+  const fixturePath = path.join(root, "fixtures/source-conformance/review/brand-exception.source-conformance.json");
+  await withJsonFileMutation(fixturePath, (fixture) => {
+    fixture.review.required = "true";
+  }, async () => {
+    const result = await runSourceConformanceProofExpectFailure();
+    assert.equal(result.code, 1);
+    assert.match(result.stderr, /schema validation failed/);
+  });
+
+  await withJsonFileMutation(fixturePath, (fixture) => {
+    fixture.requiredSourceRefs = fixture.requiredSourceRefs.filter((ref) =>
+      ref !== "declared-source://source-conformance/governance/review-policy.json#/"
+    );
+  }, async () => {
+    const result = await runSourceConformanceProofExpectFailure();
+    assert.equal(result.code, 1);
+    assert.match(result.stderr, /SOURCE_REVIEW_POLICY_REF_MISSING/);
+  });
+
+  await withJsonFileMutation(fixturePath, (fixture) => {
+    fixture.review.expiresAt = "1969-12-31T00:00:00.000Z";
+  }, async () => {
+    const result = await runSourceConformanceProofExpectFailure();
+    assert.equal(result.code, 1);
+    assert.match(result.stderr, /SOURCE_REVIEW_EXPIRED/);
+  });
+
+  for (const expiresAt of ["1970-01-31T00:00:00Z", "1970-01-01T00:00:00.000Z"]) {
+    await withJsonFileMutation(fixturePath, (fixture) => {
+      fixture.review.expiresAt = expiresAt;
+    }, async () => {
+      const result = await runSourceConformanceProofExpectFailure();
+      assert.equal(result.code, 1);
+      assert.match(result.stderr, /SOURCE_REVIEW_EXPIRED/);
+    });
+  }
 });
 
 test("source conformance proof rejects stale output and non-normalized command paths", async () => {

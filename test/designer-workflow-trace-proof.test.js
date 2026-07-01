@@ -9,6 +9,10 @@ import { canonicalJson } from "../src/p0.js";
 import {
   DWT_ARTIFACT_PATHS,
   DWT_FORBIDDEN_CLAIM_KEYS,
+  DWT_GOVERNED_EXCEPTION_DIAGNOSTIC_CODE,
+  DWT_GOVERNED_EXCEPTION_FIXTURE_PATH,
+  DWT_REVIEW_REQUIRED_EXCEPTION_DIAGNOSTIC_CODE,
+  DWT_REVIEW_REQUIRED_EXCEPTION_FIXTURE_PATH,
   DWT_WORKFLOW_STEPS
 } from "../src/designer-workflow-trace-contract.js";
 import { designerWorkflowTraceInternals } from "../src/designer-workflow-trace-proof.js";
@@ -24,7 +28,7 @@ test("designer workflow trace proof emits passing evidence with blocked promotio
 
   assert.equal(evidence.status, "pass");
   assert.equal(evidence.promotionStatus, "blocked");
-  assert.equal(evidence.validationResults.length, 8);
+  assert.equal(evidence.validationResults.length, 9);
   assert.equal(evidence.artifacts.at(-1).path, "artifacts/designer-workflow-trace/evidence.json");
   assert.equal(evidence.artifacts.at(-1).hash, designerWorkflowTraceInternals.computeEvidenceSelfHash(evidence));
   assert.deepEqual(evidence.artifacts.map((entry) => entry.path), [
@@ -48,10 +52,38 @@ test("designer workflow trace proof emits passing evidence with blocked promotio
   assert.equal(report.designerWorkflowSteps.every((entry) => entry.liveSurfaceOps === false && entry.liveJudgmentKit === false), true);
   assert.equal(report.boundaryClaims.liveAgentExecution, false);
   assert.equal(report.boundaryClaims.workOrderExecution, false);
+  assert.equal(report.sourceConformanceGovernance.blockedFixturePath, DWT_GOVERNED_EXCEPTION_FIXTURE_PATH);
+  assert.equal(report.sourceConformanceGovernance.diagnosticCode, DWT_GOVERNED_EXCEPTION_DIAGNOSTIC_CODE);
+  assert.equal(report.sourceConformanceGovernance.targetHandoffAllowed, false);
+  assert.equal(report.sourceConformanceGovernance.reportAuthority, "index-only");
+  assert.equal(report.sourceConformanceGovernance.proofAuthority, false);
+  assert.equal(report.sourceConformanceGovernance.liveSurfaceOps, false);
+  assert.equal(report.sourceConformanceGovernance.liveJudgmentKit, false);
+  assert.equal(report.sourceConformanceGovernance.productionBehavior, false);
+  assert.equal(report.sourceConformanceGovernance.exceptionLifecycle.status, "expired-blocked");
+  assert.equal(report.sourceConformanceGovernance.exceptionLifecycle.reviewRequiredFixturePath, DWT_REVIEW_REQUIRED_EXCEPTION_FIXTURE_PATH);
+  assert.equal(report.sourceConformanceGovernance.exceptionLifecycle.reviewRequiredDiagnosticCode, DWT_REVIEW_REQUIRED_EXCEPTION_DIAGNOSTIC_CODE);
+  assert.equal(report.sourceConformanceGovernance.exceptionLifecycle.reviewRequiredQueueItemId, "source-review-brand-exception");
+  assert.equal(report.sourceConformanceGovernance.exceptionLifecycle.expiredFixturePath, DWT_GOVERNED_EXCEPTION_FIXTURE_PATH);
+  assert.equal(report.sourceConformanceGovernance.exceptionLifecycle.owner, "design-systems-governance");
+  assert.equal(report.sourceConformanceGovernance.exceptionLifecycle.approvedExpiresAt, "1970-01-31T00:00:00.000Z");
+  assert.equal(report.sourceConformanceGovernance.exceptionLifecycle.expiredExpiresAt, "1969-12-31T00:00:00.000Z");
+  assert.equal(report.sourceConformanceGovernance.exceptionLifecycle.expiredExceptionReviewQueueItemId, null);
+  assert.equal(report.sourceConformanceGovernance.exceptionLifecycle.expiredExceptionExecutable, false);
+  assert.equal(report.sourceConformanceGovernance.exceptionLifecycle.renewalRequiredBeforeHandoff, true);
+  const expiredReviewRow = evidence.validationResults.find((row) =>
+    row.fixturePath === "fixtures/designer-workflow-trace/invalid/source-conformance-review-expired.designer-workflow-trace.json"
+  );
+  assert.equal(expiredReviewRow.actualResult, "invalid");
+  assert.equal(expiredReviewRow.promotionStatus, "blocked");
+  assert.deepEqual(expiredReviewRow.diagnosticCodes, ["TRACE_SOURCE_CONFORMANCE_REVIEW_EXPIRED_INDEXED"]);
   const generationStep = report.designerWorkflowSteps.find((entry) => entry.stepId === "generate-inside-catalog-boundary");
   assert.equal(generationStep.refs.some((ref) => ref.path === "artifacts/p5/protocol/protocol-projection.json"), true);
   assert.equal(generationStep.refs.some((ref) => ref.path === "artifacts/p5/native/surfaces-native-projection.json"), true);
   assert.equal(report.designerWorkflowSteps.find((entry) => entry.stepId === "decide-or-revise-authority-layer").promotionStatus, "blocked");
+  const handoffStep = report.designerWorkflowSteps.find((entry) => entry.stepId === "hand-off-proven-target-output");
+  assert.equal(handoffStep.promotionStatus, "blocked");
+  assert.match(handoffStep.statusNote, /expired governed exception is not handoff-allowed/);
   const governanceStep = report.designerWorkflowSteps.find((entry) => entry.stepId === "govern-changes-over-time");
   assert.equal(governanceStep.refs.length, report.upstreamPreflight.refs.length + 1);
   assert.deepEqual(governanceStep.traceArtifactPaths, DWT_ARTIFACT_PATHS);
@@ -71,6 +103,8 @@ test("designer workflow trace preserves P4 blocked status and target handoff ref
   ]);
   assert.equal(report.targetHandoffArtifacts[0].artifactRefs.some((ref) => ref.path === "artifacts/p5/protocol/protocol-envelope.button.json"), true);
   assert.equal(report.targetHandoffArtifacts[1].artifactRefs.some((ref) => ref.path === "artifacts/p5/native/surfaces-native-packet.button.json"), true);
+  assert.equal(report.targetHandoffArtifacts.every((row) => row.handoffAllowedForGovernedException === false), true);
+  assert.equal(report.targetHandoffArtifacts.every((row) => row.reportAuthority === "index-only"), true);
 });
 
 test("designer workflow trace proof rejects stale output and non-normalized command paths", async () => {
@@ -180,6 +214,23 @@ test("designer workflow trace proof fails closed on trace selection and required
     assert.equal(result.code, 1);
     assert.match(result.stderr, /schema validation failed/);
   });
+
+  const expiredFixturePath = path.join(root, "fixtures/designer-workflow-trace/invalid/source-conformance-review-expired.designer-workflow-trace.json");
+  await withJsonFileMutation(expiredFixturePath, (fixture) => {
+    fixture.sourceConformanceReviewPath = null;
+  }, async () => {
+    const result = await runDesignerWorkflowTraceProofExpectFailure();
+    assert.equal(result.code, 1);
+    assert.match(result.stderr, /schema validation failed/);
+  });
+
+  await withJsonFileMutation(expiredFixturePath, (fixture) => {
+    fixture.sourceConformanceReviewPath = "fixtures/source-conformance/review/brand-exception.source-conformance.json";
+  }, async () => {
+    const result = await runDesignerWorkflowTraceProofExpectFailure();
+    assert.equal(result.code, 1);
+    assert.match(result.stderr, /schema validation failed/);
+  });
 });
 
 test("designer workflow trace proof verifies indexed upstream report files", async () => {
@@ -270,6 +321,41 @@ test("designer workflow trace report schema rejects live or authority overclaims
   };
   assert.equal(validate(productWorkflowClaim), false);
 
+  const executableExpiredException = {
+    ...report,
+    sourceConformanceGovernance: {
+      ...report.sourceConformanceGovernance,
+      exceptionLifecycle: {
+        ...report.sourceConformanceGovernance.exceptionLifecycle,
+        expiredExceptionExecutable: true
+      }
+    }
+  };
+  assert.equal(validate(executableExpiredException), false);
+
+  const nullableGovernanceHash = {
+    ...report,
+    sourceConformanceGovernance: {
+      ...report.sourceConformanceGovernance,
+      sourceConformanceEvidenceRef: {
+        ...report.sourceConformanceGovernance.sourceConformanceEvidenceRef,
+        hash: null
+      }
+    }
+  };
+  assert.equal(validate(nullableGovernanceHash), false);
+
+  const nullableTargetHash = {
+    ...report,
+    targetHandoffArtifacts: report.targetHandoffArtifacts.map((target, index) => index === 0
+      ? {
+          ...target,
+          artifactRefs: target.artifactRefs.map((ref, refIndex) => refIndex === 0 ? { ...ref, hash: null } : ref)
+        }
+      : target)
+  };
+  assert.equal(validate(nullableTargetHash), false);
+
   const emptyWorkflowRefs = {
     ...report,
     designerWorkflowSteps: report.designerWorkflowSteps.map((step, index) => index === 0 ? { ...step, refs: [] } : step)
@@ -303,7 +389,16 @@ test("designer workflow trace report schema rejects live or authority overclaims
 
 test("designer workflow trace evidence integrity detects artifact and boundary tampering", async () => {
   await runDesignerWorkflowTraceProof();
+  const schema = await readJson("schemas/designer-workflow-trace-evidence.v0.schema.json");
   const evidence = await readJson("artifacts/designer-workflow-trace/evidence.json");
+  const ajv = new Ajv2020({ allErrors: true, strict: false, validateFormats: false });
+  const validate = ajv.compile(schema);
+
+  assert.equal(validate(evidence), true);
+  assert.equal(validate({
+    ...evidence,
+    schemaClosure: evidence.schemaClosure.map((entry, index) => index === 0 ? { ...entry, hash: null } : entry)
+  }), false);
 
   const artifactCode = await designerWorkflowTraceInternals.firstEvidenceIntegrityFailureCode(root, {
     ...evidence,

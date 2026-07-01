@@ -68,6 +68,13 @@ Wave 1 output should be an internal synthesis of anonymized observations and a d
 
 Synthetic Wave 1 has been captured in [Synthetic Wave 1 Readout](design-partner-testing/synthetic-wave-1.md). It is a dry-run planning artifact only, not partner evidence or proof authority.
 
+A post-merge synthetic designer-workflow trace dry run is captured in
+[Synthetic Designer Workflow Trace Readout](design-partner-testing/synthetic-designer-workflow-trace.md).
+It reuses the synthetic partner archetypes against the merged Button trace and
+is a dry-run planning artifact only, not partner evidence, proof authority,
+customer validation, implementation-pilot readiness, production adoption, or a
+product workflow claim.
+
 Wave 2 goal: validate whether Wave 1 findings repeat with adjacent design-system teams and whether the session flow supports a broader product conversation.
 
 Wave 2 should test:
@@ -94,6 +101,20 @@ The Wave 2 follow-up proof-candidate memo is [Declared-Source Conformance And Re
 It is planning-only and requires a later phase-placement decision before any
 schema, fixture, command, artifact, evidence, demo, CI, or implementation claim
 exists.
+
+The first richer scenario pack for that candidate is
+[Richer Source Conformance Scenario Pack](design-partner-testing/richer-source-conformance-scenario-pack.md).
+It converts the synthetic archetype signals into planning-only source, fixture,
+diagnostic, ownership-routing, and proof-only P5 wording requirements. It does
+not create source files, fixtures, diagnostics, commands, artifacts, evidence,
+or CI behavior.
+
+The governed-exception implementation retest is captured in
+[Synthetic Governed Exception Retest](design-partner-testing/synthetic-governed-exception-retest.md).
+It records the synthetic archetype check after the trace began indexing
+expired review metadata and its exception lifecycle. It is planning-only; the
+proof authority remains the source-conformance and designer-workflow-trace
+evidence files.
 
 ## Evidence-Backed Governance Loop
 Each session should use the same loop:

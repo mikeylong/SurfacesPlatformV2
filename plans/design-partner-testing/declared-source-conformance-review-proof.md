@@ -2,15 +2,18 @@
 
 ## Status
 This is a subordinate, planning-only proof-candidate memo derived from
-design-partner testing synthesis. It is not a phase subplan, proof contract,
-implementation claim, source-eligibility decision, P2 expansion, P4 review
-target, P5 adapter target, schema, fixture, diagnostic registry, command
-contract, artifact path, evidence path, demo, CI gate, or product claim.
+design-partner testing synthesis. It covers broader declared-source conformance
+and review coverage beyond the currently implemented source-conformance target.
+It is not a phase subplan, proof contract, implementation claim,
+source-eligibility decision, P2 expansion, P4 review target, P5 adapter target,
+schema, fixture, diagnostic registry, command contract, artifact path, evidence
+path, demo, CI gate, or product claim.
 
 Authority remains `VISION.md`, `PLAN.md`, the relevant phase subplans, and
 passing `artifacts/**/evidence.json` for implemented proof slices. Until a later
 placement decision defines the complete proof shape and passing evidence,
-declared-source conformance and review remains planned candidate work only.
+broader declared-source conformance and review remains planned candidate work
+only.
 
 ## Why This Candidate Exists
 Synthetic Wave 2 converged on one practical next proof theme:
@@ -29,9 +32,10 @@ The synthetic partner variants were different, but compatible:
 - LumenHouse needs brand-preserving governance.
 - The regulated-services partner needs audit, approval, and evidence retention.
 
-Treat those as candidate variants under one planning theme. Do not treat this
-memo as proof that the theme is implemented or that a real partner would adopt
-it.
+Treat those as candidate variants under one planning theme. The implemented
+source-conformance target remains limited to its current evidence-backed scope.
+Do not treat this memo as proof that the broader theme is implemented or that a
+real partner would adopt it.
 
 ## Placement
 This memo belongs under `plans/design-partner-testing/` until the project makes
@@ -53,7 +57,7 @@ either split it or choose one target-specific proof boundary.
 
 ## Target Candidate
 The candidate target is a proof-only declared-source conformance and review
-slice.
+slice beyond the currently implemented source-conformance bundle.
 
 The planned slice would validate one bounded, manifest-declared local source
 bundle against accepted Surfaces authority, emit deterministic conformance
@@ -63,6 +67,14 @@ or decision metadata where relevant.
 It would not authorize live ingestion, live review workflow, runtime rendering,
 adapter support, API support, SDK support, A2UI support, action execution, or
 production adoption.
+
+The first planning scenario pack for that broader slice is
+[Richer Source Conformance Scenario Pack](richer-source-conformance-scenario-pack.md).
+It uses planning-only source and fixture names for source conflicts, forked
+variants, multi-brand drift, approval, retention, accessibility, ownership
+routing, and proof-only P5 wording. Those names must not be created under
+`sources/` or `fixtures/` until a future proof target owns their schemas,
+diagnostics, command behavior, artifacts, evidence, and CI gate.
 
 ## Source Bundle Inputs
 The candidate should use a manifest-declared local source bundle only.
@@ -205,15 +217,15 @@ future implementation exists. Candidate evidence should hash:
 - reports;
 - final evidence itself under the existing canonical JSON and self-hash rules.
 
-A future CI gate might be named:
+A future broadened target may reuse the current source-conformance gate name or
+add a target-specific variant. The current implemented gate already exists for
+the current source-conformance target:
 
 ```bash
 npm run check:source-conformance:ci
 ```
 
-This script is not implemented.
-
-If implemented, the gate should fail on:
+If broadened, the gate should fail on:
 
 - blocking diagnostics;
 - stale or unexpected output;
@@ -304,4 +316,4 @@ runtimes, live SurfaceOps workflows, or live JudgmentKit evaluations.
 | SurfaceOps decision ledger | `no change` |
 | JudgmentKit-shaped report | `no change` |
 | Schemas, fixtures, diagnostics, artifacts, demos, or source refs | `no change` |
-| Future proof candidates | Declared-source conformance and review remains planned candidate work until a later placement decision, full proof shape, and passing evidence exist. |
+| Future proof candidates | Broader declared-source conformance and review remains planned candidate work until a later placement decision, full proof shape, and passing evidence exist. |

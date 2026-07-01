@@ -1,0 +1,1539 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:,">
+  <title>SurfaceOps Variant A: Evidence Workbench</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --jk-color-canvas: #f8f7f2;
+      --jk-color-surface: #ffffff;
+      --jk-color-text: #171717;
+      --jk-color-muted: #61615c;
+      --jk-color-border: #d7d3c8;
+      --jk-color-focus: #245f73;
+      --jk-color-success: #2e6b48;
+      --jk-color-warning: #8a5a16;
+      --jk-color-risk: #8f342f;
+      --jk-color-disabled: #8a8f93;
+      --jk-color-receipt: #23615f;
+      --jk-space-2: 0.5rem;
+      --jk-space-3: 0.75rem;
+      --jk-space-4: 1rem;
+      --jk-radius-control: 4px;
+      --jk-radius-panel: 8px;
+      --jk-focus-ring: 0 0 0 3px rgba(36, 95, 115, 0.28);
+      --jk-shadow-panel: 0 16px 42px rgb(23 32 42 / 9%);
+      --jk-shadow-card: 0 8px 20px rgb(23 32 42 / 4%);
+      --jk-font-diagnostic: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      --jk-font-body: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      min-height: 100%;
+      background: var(--jk-color-canvas);
+    }
+
+    body {
+      min-height: 100%;
+      margin: 0;
+      color: var(--jk-color-text);
+      background: var(--jk-color-canvas);
+      font-family: var(--jk-font-body);
+      font-size: 14px;
+      line-height: 1.45;
+      letter-spacing: 0;
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
+      letter-spacing: 0;
+    }
+
+    button {
+      min-height: 36px;
+    }
+
+    button:focus-visible,
+    input:focus-visible,
+    select:focus-visible,
+    textarea:focus-visible,
+    [tabindex]:focus-visible {
+      outline: 3px solid var(--jk-color-focus);
+      outline-offset: 2px;
+      box-shadow: var(--jk-focus-ring);
+    }
+
+    .app {
+      min-height: 100dvh;
+      display: grid;
+      grid-template-rows: auto 1fr;
+    }
+
+    .topbar {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 16px;
+      align-items: end;
+      padding: 18px 20px 14px;
+      border-bottom: 1px solid var(--jk-color-border);
+      background: var(--jk-color-surface);
+    }
+
+    .eyebrow {
+      margin: 0 0 4px;
+      color: var(--jk-color-focus);
+      font-size: 12px;
+      font-weight: 750;
+      letter-spacing: 0;
+      text-transform: uppercase;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      letter-spacing: 0;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 24px;
+      line-height: 1.15;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 16px;
+      line-height: 1.25;
+    }
+
+    h3 {
+      margin: 0;
+      font-size: 13px;
+      line-height: 1.25;
+    }
+
+    p {
+      margin: 0;
+      color: var(--jk-color-muted);
+    }
+
+    code {
+      font-family: var(--jk-font-diagnostic);
+      font-size: 12px;
+      overflow-wrap: anywhere;
+    }
+
+    .boundary-note {
+      max-width: 560px;
+      color: #435160;
+      font-size: 13px;
+    }
+
+    .workspace {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 300px minmax(420px, 1fr) 360px;
+      gap: 0;
+    }
+
+    .pane {
+      min-height: 0;
+      overflow: auto;
+      border-right: 1px solid var(--jk-color-border);
+      background: var(--jk-color-surface);
+    }
+
+    .pane:last-child {
+      border-right: 0;
+    }
+
+    .pane-header {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      display: grid;
+      gap: 10px;
+      padding: 14px 14px 12px;
+      border-bottom: 1px solid var(--jk-color-border);
+      background: rgb(255 255 255 / 96%);
+      backdrop-filter: blur(6px);
+    }
+
+    .pane-title {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: start;
+    }
+
+    .count {
+      min-width: 28px;
+      padding: 2px 8px;
+      border: 1px solid var(--jk-color-border);
+      border-radius: 999px;
+      color: var(--jk-color-muted);
+      background: var(--jk-color-canvas);
+      font-size: 12px;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .filters {
+      display: grid;
+      gap: 8px;
+    }
+
+    .filter-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      border: 0;
+      margin: 0;
+      padding: 0;
+    }
+
+    .filter-group legend,
+    .field-label {
+      margin: 0 0 5px;
+      color: #384656;
+      font-size: 12px;
+      font-weight: 750;
+    }
+
+    .chip-radio {
+      position: relative;
+    }
+
+    .chip-radio input {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+    }
+
+    .chip-radio span {
+      display: inline-flex;
+      min-height: 30px;
+      align-items: center;
+      border: 1px solid var(--jk-color-border);
+      border-radius: 999px;
+      padding: 5px 9px;
+      color: #324253;
+      background: var(--jk-color-canvas);
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .chip-radio input:focus-visible + span {
+      outline: 3px solid var(--jk-color-focus);
+      outline-offset: 2px;
+      box-shadow: var(--jk-focus-ring);
+    }
+
+    .chip-radio input:checked + span {
+      border-color: var(--jk-color-focus);
+      color: var(--jk-color-focus);
+      background: #e8f3f5;
+    }
+
+    .queue {
+      display: grid;
+      gap: 8px;
+      padding: 10px;
+    }
+
+    .queue > [role="listitem"] {
+      min-width: 0;
+    }
+
+    .queue-item {
+      width: 100%;
+      display: grid;
+      gap: 8px;
+      border: 1px solid var(--jk-color-border);
+      border-radius: var(--jk-radius-panel);
+      padding: 10px;
+      color: var(--jk-color-text);
+      background: var(--jk-color-surface);
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .queue-item:hover {
+      border-color: var(--jk-color-border);
+      background: #fbfcfe;
+    }
+
+    .queue-item[aria-pressed="true"] {
+      border-color: var(--jk-color-focus);
+      box-shadow: inset 3px 0 0 var(--jk-color-focus);
+      background: #f3fafb;
+    }
+
+    .queue-topline {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      align-items: start;
+    }
+
+    .queue-title {
+      font-weight: 760;
+      line-height: 1.25;
+    }
+
+    .queue-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      color: var(--jk-color-muted);
+      font-size: 12px;
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 24px;
+      border: 1px solid var(--jk-color-border);
+      border-radius: 999px;
+      padding: 3px 8px;
+      font-size: 12px;
+      font-weight: 750;
+      white-space: nowrap;
+    }
+
+    .status::before {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      content: "";
+      background: currentColor;
+    }
+
+    .status.review {
+      color: var(--jk-color-warning);
+      background: #fff8e9;
+      border-color: #ead8a6;
+    }
+
+    .status.blocked {
+      color: var(--jk-color-risk);
+      background: #fff1ef;
+      border-color: #efc5c0;
+    }
+
+    .status.eligible {
+      color: var(--jk-color-success);
+      background: #eef8f1;
+      border-color: #bbdec8;
+    }
+
+    .status.advisory {
+      color: var(--jk-color-receipt);
+      background: #f3f1ff;
+      border-color: #d7d0fb;
+    }
+
+    .status.receipt {
+      color: var(--jk-color-receipt);
+      background: #edf7f6;
+      border-color: #bbdbd8;
+    }
+
+    .detail {
+      display: grid;
+      align-content: start;
+      gap: 12px;
+      padding: 12px;
+      background: #f8fafb;
+    }
+
+    .panel {
+      border: 1px solid var(--jk-color-border);
+      border-radius: var(--jk-radius-panel);
+      background: var(--jk-color-surface);
+      box-shadow: var(--jk-shadow-card);
+      overflow: hidden;
+    }
+
+    .panel-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: start;
+      padding: 12px 12px 10px;
+      border-bottom: 1px solid var(--jk-color-border);
+      background: var(--jk-color-surface);
+    }
+
+    .panel-body {
+      padding: 12px;
+    }
+
+    .item-summary {
+      display: grid;
+      gap: 12px;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      border: 1px solid var(--jk-color-border);
+      border-radius: var(--jk-radius-panel);
+      background: var(--jk-color-surface);
+      overflow: hidden;
+    }
+
+    .summary-cell {
+      min-width: 0;
+      padding: 10px;
+      border-right: 1px solid var(--jk-color-border);
+    }
+
+    .summary-cell:last-child {
+      border-right: 0;
+    }
+
+    .label {
+      display: block;
+      margin-bottom: 3px;
+      color: var(--jk-color-muted);
+      font-size: 11px;
+      font-weight: 750;
+      text-transform: uppercase;
+      letter-spacing: 0;
+    }
+
+    .value {
+      color: #1c2835;
+      font-weight: 720;
+      overflow-wrap: anywhere;
+    }
+
+    .description {
+      max-width: 820px;
+      color: #435160;
+    }
+
+    .authority-list,
+    .evidence-list,
+    .finding-list,
+    .receipt-list {
+      display: grid;
+      gap: 8px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .authority-row,
+    .evidence-row,
+    .finding-row,
+    .receipt-row {
+      display: grid;
+      gap: 4px;
+      border: 1px solid var(--jk-color-border);
+      border-radius: var(--jk-radius-control);
+      padding: 9px;
+      background: var(--jk-color-canvas);
+    }
+
+    .evidence-row {
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 8px;
+      align-items: start;
+    }
+
+    .evidence-ref {
+      display: grid;
+      gap: 3px;
+      min-width: 0;
+    }
+
+    .copy-ref {
+      border: 1px solid var(--jk-color-border);
+      border-radius: var(--jk-radius-control);
+      padding: 5px 8px;
+      color: #223244;
+      background: var(--jk-color-surface);
+      font-size: 12px;
+      font-weight: 720;
+      cursor: pointer;
+    }
+
+    .copy-ref:disabled {
+      color: var(--jk-color-disabled);
+      cursor: not-allowed;
+      background: #eef1f4;
+    }
+
+    .mini {
+      color: var(--jk-color-muted);
+      font-size: 12px;
+    }
+
+    .diagnostic-table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      font-size: 12px;
+    }
+
+    .diagnostic-table th,
+    .diagnostic-table td {
+      padding: 8px;
+      border-bottom: 1px solid var(--jk-color-border);
+      text-align: left;
+      vertical-align: top;
+      overflow-wrap: anywhere;
+    }
+
+    .diagnostic-table th {
+      color: #2e3d4d;
+      background: #edf1f5;
+      font-weight: 760;
+    }
+
+    .diagnostic-table tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .preview {
+      display: grid;
+      gap: 8px;
+    }
+
+    .preview-frame {
+      border: 1px solid var(--jk-color-border);
+      border-radius: var(--jk-radius-panel);
+      padding: 12px;
+      background: linear-gradient(180deg, #ffffff, #f8fafc);
+    }
+
+    .preview-card {
+      display: grid;
+      gap: 8px;
+      max-width: 520px;
+      border: 1px solid #cfd8e3;
+      border-radius: var(--jk-radius-panel);
+      padding: 12px;
+      background: #ffffff;
+    }
+
+    .preview-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .ghost-button {
+      min-height: 32px;
+      border: 1px solid var(--jk-color-border);
+      border-radius: var(--jk-radius-control);
+      padding: 6px 10px;
+      color: #223244;
+      background: #ffffff;
+      font-weight: 720;
+    }
+
+    .ghost-button.primary {
+      border-color: #1d5f9f;
+      color: #ffffff;
+      background: #1d5f9f;
+    }
+
+    .right-rail {
+      display: grid;
+      align-content: start;
+      gap: 12px;
+      padding: 12px;
+      background: var(--jk-color-surface);
+    }
+
+    .decision-state {
+      display: grid;
+      gap: 8px;
+      padding: 10px;
+      border: 1px solid var(--jk-color-border);
+      border-radius: var(--jk-radius-panel);
+      background: var(--jk-color-canvas);
+    }
+
+    .decision-actions {
+      display: grid;
+      gap: 8px;
+    }
+
+    .decision-button {
+      width: 100%;
+      border: 1px solid var(--jk-color-border);
+      border-radius: var(--jk-radius-control);
+      padding: 8px 10px;
+      color: #223244;
+      background: #ffffff;
+      font-weight: 750;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .decision-button:hover:not(:disabled) {
+      border-color: var(--jk-color-focus);
+      background: #f3fafb;
+    }
+
+    .decision-button[data-decision="approve"] {
+      border-left: 4px solid var(--jk-color-success);
+    }
+
+    .decision-button[data-decision="reject"] {
+      border-left: 4px solid var(--jk-color-risk);
+    }
+
+    .decision-button[data-decision="changes"] {
+      border-left: 4px solid var(--jk-color-warning);
+    }
+
+    .decision-button[data-decision="defer"] {
+      border-left: 4px solid var(--jk-color-focus);
+    }
+
+    .decision-button[data-decision="second"] {
+      border-left: 4px solid var(--jk-color-receipt);
+    }
+
+    .decision-button:disabled {
+      color: var(--jk-color-disabled);
+      cursor: not-allowed;
+      background: #eef1f4;
+      border-color: #d8dee5;
+    }
+
+    .rationale-field {
+      display: grid;
+      gap: 6px;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 82px;
+      resize: vertical;
+      border: 1px solid var(--jk-color-border);
+      border-radius: var(--jk-radius-control);
+      padding: 9px;
+      color: var(--jk-color-text);
+      background: #ffffff;
+    }
+
+    textarea:disabled {
+      color: var(--jk-color-disabled);
+      background: #eef1f4;
+    }
+
+    .receipt-panel {
+      border-color: #a9cfca;
+    }
+
+    .receipt-panel .panel-head {
+      background: #edf7f6;
+    }
+
+    .receipt-row {
+      background: #f5fbfa;
+    }
+
+    .empty-receipt {
+      display: grid;
+      gap: 7px;
+      color: var(--jk-color-muted);
+    }
+
+    .notice {
+      border: 1px solid #ead8a6;
+      border-radius: var(--jk-radius-panel);
+      padding: 10px;
+      color: #57421d;
+      background: #fff8e9;
+    }
+
+    .notice.blocked {
+      border-color: #efc5c0;
+      color: #63201d;
+      background: #fff1ef;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    @media (max-width: 1180px) {
+      .workspace {
+        grid-template-columns: 280px minmax(360px, 1fr) 330px;
+      }
+
+      .summary-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .summary-cell:nth-child(2) {
+        border-right: 0;
+      }
+
+      .summary-cell:nth-child(-n + 2) {
+        border-bottom: 1px solid var(--jk-color-border);
+      }
+    }
+
+    @media (max-width: 920px) {
+      .app {
+        display: block;
+      }
+
+      .topbar {
+        position: static;
+        grid-template-columns: 1fr;
+        padding: 16px 14px 12px;
+      }
+
+      .workspace {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .pane {
+        overflow: visible;
+        border-right: 0;
+        border-bottom: 1px solid var(--jk-color-border);
+      }
+
+      .pane-header {
+        position: static;
+      }
+
+      .queue {
+        grid-template-columns: 1fr;
+      }
+
+      .detail {
+        order: 2;
+      }
+
+      .decision-pane {
+        order: 3;
+      }
+
+      .right-rail {
+        background: #f8fafb;
+      }
+    }
+
+    @media (max-width: 640px) {
+      h1 {
+        font-size: 21px;
+      }
+
+      .summary-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .summary-cell,
+      .summary-cell:nth-child(2) {
+        border-right: 0;
+        border-bottom: 1px solid var(--jk-color-border);
+      }
+
+      .summary-cell:last-child {
+        border-bottom: 0;
+      }
+
+      .evidence-row {
+        grid-template-columns: 1fr;
+      }
+
+      .copy-ref {
+        justify-self: start;
+      }
+
+      .diagnostic-table,
+      .diagnostic-table thead,
+      .diagnostic-table tbody,
+      .diagnostic-table tr,
+      .diagnostic-table th,
+      .diagnostic-table td {
+        display: block;
+      }
+
+      .diagnostic-table thead {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+      }
+
+      .diagnostic-table tr {
+        border-bottom: 1px solid var(--jk-color-border);
+      }
+
+      .diagnostic-table td {
+        display: grid;
+        grid-template-columns: 112px minmax(0, 1fr);
+        gap: 8px;
+        border-bottom: 0;
+      }
+
+      .diagnostic-table td::before {
+        color: var(--jk-color-muted);
+        font-weight: 750;
+        content: attr(data-label);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Prototype A | SurfaceOps operator review</p>
+        <h1>Evidence Workbench</h1>
+      </div>
+      <p class="boundary-note">
+        Static prototype only. Decisions create audit receipts for evidence eligibility; they do not execute work, deploy, mutate upstream artifacts, override the Surfaces Catalog, or record a live JudgmentKit decision.
+      </p>
+    </header>
+
+    <main class="workspace" aria-label="SurfaceOps Evidence Workbench prototype">
+      <aside class="pane queue-pane" aria-label="Review queue and filters">
+        <div class="pane-header">
+          <div class="pane-title">
+            <div>
+              <h2>Review queue</h2>
+              <p class="mini">Filter by promotion status and evidence readiness.</p>
+            </div>
+            <span class="count" id="queueCount">0</span>
+          </div>
+          <form class="filters" aria-label="Queue filters">
+            <fieldset class="filter-group" id="statusFilters">
+              <legend>Status filter</legend>
+              <label class="chip-radio">
+                <input type="radio" name="statusFilter" value="all" checked>
+                <span>All</span>
+              </label>
+              <label class="chip-radio">
+                <input type="radio" name="statusFilter" value="review_required">
+                <span>Review required</span>
+              </label>
+              <label class="chip-radio">
+                <input type="radio" name="statusFilter" value="blocked">
+                <span>Blocked</span>
+              </label>
+              <label class="chip-radio">
+                <input type="radio" name="statusFilter" value="eligible">
+                <span>Eligible</span>
+              </label>
+            </fieldset>
+          </form>
+        </div>
+        <div class="queue" id="queueList" role="list" aria-label="Review items"></div>
+      </aside>
+
+      <section class="pane detail" aria-label="Selected item and evidence detail">
+        <article class="panel" aria-labelledby="itemTitle">
+          <div class="panel-head">
+            <div>
+              <p class="eyebrow" id="itemKicker">Review item</p>
+              <h2 id="itemTitle">Select a review item</h2>
+            </div>
+            <span class="status review" id="itemStatus">Review required</span>
+          </div>
+          <div class="panel-body item-summary">
+            <p class="description" id="itemDescription"></p>
+            <div class="summary-grid" aria-label="Selected item status summary">
+              <div class="summary-cell">
+                <span class="label">Source authority</span>
+                <span class="value" id="sourceAuthority"></span>
+              </div>
+              <div class="summary-cell">
+                <span class="label">Catalog boundary</span>
+                <span class="value" id="catalogBoundary"></span>
+              </div>
+              <div class="summary-cell">
+                <span class="label">Promotion status</span>
+                <span class="value" id="promotionStatus"></span>
+              </div>
+              <div class="summary-cell">
+                <span class="label">Handoff eligibility</span>
+                <span class="value" id="handoffEligibility"></span>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <section class="panel" aria-labelledby="evidenceHeading">
+          <div class="panel-head">
+            <div>
+              <h2 id="evidenceHeading">Evidence refs</h2>
+              <p class="mini">Refs are visible before actions become available.</p>
+            </div>
+            <span class="status receipt" id="evidenceStatus">Evidence ready</span>
+          </div>
+          <div class="panel-body">
+            <ul class="evidence-list" id="evidenceList"></ul>
+            <p class="mini" id="copyStatus" aria-live="polite"></p>
+          </div>
+        </section>
+
+        <section class="panel" aria-labelledby="diagnosticHeading">
+          <div class="panel-head">
+            <div>
+              <h2 id="diagnosticHeading">Diagnostics</h2>
+              <p class="mini">Canonical review diagnostics with promotion results.</p>
+            </div>
+          </div>
+          <div class="panel-body" id="diagnosticRegion"></div>
+        </section>
+
+        <section class="panel" aria-labelledby="previewHeading">
+          <div class="panel-head">
+            <div>
+              <h2 id="previewHeading">Generated UI inspection</h2>
+              <p class="mini">Presentation aid only. Evidence remains authoritative.</p>
+            </div>
+          </div>
+          <div class="panel-body preview">
+            <div class="preview-frame" id="previewFrame"></div>
+          </div>
+        </section>
+      </section>
+
+      <aside class="pane decision-pane" aria-label="Decision panel">
+        <div class="right-rail">
+          <section class="panel" aria-labelledby="decisionHeading">
+            <div class="panel-head">
+              <div>
+                <h2 id="decisionHeading">Decision panel</h2>
+                <p class="mini">Bounded review outcomes only.</p>
+              </div>
+            </div>
+            <div class="panel-body decision-actions">
+              <div class="decision-state" id="decisionState"></div>
+              <label class="rationale-field" for="rationale">
+                <span class="field-label">Reviewer rationale</span>
+                <textarea id="rationale" placeholder="Add rationale tied to visible evidence refs."></textarea>
+              </label>
+              <button class="decision-button" type="button" data-decision="approve">Approve as eligibility only</button>
+              <button class="decision-button" type="button" data-decision="reject">Reject and block unattended promotion</button>
+              <button class="decision-button" type="button" data-decision="changes">Request changes</button>
+              <button class="decision-button" type="button" data-decision="defer">Defer, preserve review required</button>
+              <button class="decision-button" type="button" data-decision="second">Require second review</button>
+            </div>
+          </section>
+
+          <section class="panel" aria-labelledby="findingHeading">
+            <div class="panel-head">
+              <div>
+                <h2 id="findingHeading">Advisory findings</h2>
+                <p class="mini">Evaluation context, separate from decisions.</p>
+              </div>
+              <span class="status advisory">Advisory only</span>
+            </div>
+            <div class="panel-body">
+              <ul class="finding-list" id="findingList"></ul>
+            </div>
+          </section>
+
+          <section class="panel receipt-panel" aria-labelledby="receiptHeading">
+            <div class="panel-head">
+              <div>
+                <h2 id="receiptHeading">Audit receipt</h2>
+                <p class="mini">Receipt is local to this static prototype.</p>
+              </div>
+            </div>
+            <div class="panel-body" id="receiptRegion" aria-live="polite"></div>
+          </section>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <script>
+    const reviewItems = [
+      {
+        id: "surface.review.button-confirm",
+        title: "Button confirm panel",
+        owner: "Product designer",
+        age: "18m",
+        component: "button",
+        target: "web-static",
+        status: "review_required",
+        statusLabel: "Review required",
+        statusClass: "review",
+        description: "Generated confirm panel is structurally valid, but review is required because the request includes a confirm action that cannot advance unattended.",
+        sourceAuthority: "P2 Adobe Spectrum Design Data source refs for button",
+        catalogBoundary: "Surfaces Catalog permits button variants and inert action descriptors only",
+        promotionStatus: "review_required",
+        handoffEligibility: "Not eligible until a reviewer records an evidence-backed receipt",
+        evidenceReady: true,
+        evidenceStatus: "Evidence ready",
+        canDecide: true,
+        decisionDisabledReason: "",
+        evidenceRefs: [
+          {
+            label: "P3 review queue",
+            path: "artifacts/p3/review-queue.json",
+            hash: "57a5a357f1c0c47604f58b719f25ff0edaf919c25ac0c7a63f91f6f773b49d07",
+            note: "Queue item routes the generated work to human review."
+          },
+          {
+            label: "P4 review evidence",
+            path: "artifacts/p4/evidence.json",
+            hash: "54fa03840c1e2948850f07c106f0488625deddf8723bfdc161ff1e1ea2c93a43",
+            note: "Evidence status passes while promotion remains review-bound."
+          },
+          {
+            label: "Decision ledger boundary",
+            path: "artifacts/p4/surfaceops-decision-ledger.json",
+            hash: "0ec17be965f80c9305d621c35df31aee05c37ce37b6fd69b3163ab4dc152f94c",
+            note: "Ledger rows are evidence eligibility records only."
+          }
+        ],
+        diagnostics: [
+          {
+            code: "GOVERNANCE_REVIEW_REQUIRED",
+            message: "Usage requires review before unattended promotion.",
+            stage: "govern",
+            promotion: "review_required",
+            artifact: "fixtures/p0/review/review-required-action.json",
+            pointer: "/root/actions/confirm/execute",
+            sourceRef: "fixture://p0/review/review-required-action#/root/actions/confirm",
+            coverage: "review-required-action"
+          }
+        ],
+        findings: [
+          {
+            label: "Evidence quality",
+            result: "Warning",
+            text: "Evidence is complete enough for deterministic review while still requiring human handoff."
+          },
+          {
+            label: "Action boundary",
+            result: "Pass",
+            text: "Confirm action remains an inert descriptor in this prototype."
+          }
+        ],
+        preview: {
+          heading: "Confirm account update",
+          body: "This generated panel uses allowed button primitives and requires human review before any later consumer may treat it as eligible.",
+          primary: "Confirm later",
+          secondary: "Cancel"
+        }
+      },
+      {
+        id: "surface.blocked.catalog-override",
+        title: "Catalog override attempt",
+        owner: "Design-system owner",
+        age: "42m",
+        component: "in-line-alert",
+        target: "protocol-static",
+        status: "blocked",
+        statusLabel: "Blocked",
+        statusClass: "blocked",
+        description: "Generated work attempts to override catalog policy and is missing a bound evidence ref. The item is visible for audit, but it has no approval path.",
+        sourceAuthority: "Declared source authority is unresolved for the requested override",
+        catalogBoundary: "Surfaces Catalog rejects unsupported policy overrides",
+        promotionStatus: "blocked",
+        handoffEligibility: "Blocked. No target-specific handoff is eligible.",
+        evidenceReady: false,
+        evidenceStatus: "Evidence missing",
+        canDecide: false,
+        decisionDisabledReason: "Decision controls are disabled because evidence is missing and promotion status is blocked.",
+        evidenceRefs: [
+          {
+            label: "Expected review evidence",
+            path: "artifacts/p4/evidence.json",
+            hash: "missing",
+            note: "Required evidence ref is absent for this item."
+          },
+          {
+            label: "Blocked fixture coverage",
+            path: "fixtures/p4/invalid/decision-overrides-catalog.review-judgment.json",
+            hash: "fixture coverage only",
+            note: "Models a decision that attempts to override catalog or upstream policy."
+          }
+        ],
+        diagnostics: [
+          {
+            code: "SURFACEOPS_EVIDENCE_REF_MISSING",
+            message: "SurfaceOps decision is missing required evidence references.",
+            stage: "review",
+            promotion: "blocked",
+            artifact: "fixtures/p4/invalid/missing-evidence-ref.review-judgment.json",
+            pointer: "/decisions/0/evidenceRefs",
+            sourceRef: "null",
+            coverage: "missing-evidence-ref"
+          },
+          {
+            code: "SURFACEOPS_DECISION_OVERRIDE",
+            message: "SurfaceOps decision attempts to override catalog or upstream policy.",
+            stage: "review",
+            promotion: "blocked",
+            artifact: "fixtures/p4/invalid/decision-overrides-catalog.review-judgment.json",
+            pointer: "/decisions/0/catalogBoundary",
+            sourceRef: "null",
+            coverage: "decision-overrides-catalog"
+          }
+        ],
+        findings: [
+          {
+            label: "Policy boundary",
+            result: "Blocked",
+            text: "The requested review outcome would collapse catalog policy into reviewer discretion."
+          },
+          {
+            label: "Evidence binding",
+            result: "Blocked",
+            text: "Required evidence refs are absent, so no bounded decision can be recorded."
+          }
+        ],
+        preview: {
+          heading: "Unsupported alert variant",
+          body: "The generated alert asks for an unsupported severity and has no accepted evidence ref.",
+          primary: "Unavailable",
+          secondary: "Audit only"
+        }
+      },
+      {
+        id: "surface.eligible.reviewed-button",
+        title: "Reviewed button handoff packet",
+        owner: "Frontend engineer",
+        age: "7m",
+        component: "button",
+        target: "native-static",
+        status: "eligible",
+        statusLabel: "Approved / eligible",
+        statusClass: "eligible",
+        description: "A prior reviewer recorded an eligibility receipt. The item remains non-executable and only a later authorized target-specific consumer may use the handoff.",
+        sourceAuthority: "P2 governed catalog and accepted P4 decision evidence",
+        catalogBoundary: "Native static target consumes accepted P2 and P4 authority; protocol evidence is compatibility preflight only",
+        promotionStatus: "allowed",
+        handoffEligibility: "Eligible for later authorized target-specific handoff, without execution here",
+        evidenceReady: true,
+        evidenceStatus: "Evidence ready",
+        canDecide: false,
+        decisionDisabledReason: "A receipt is already recorded for this queue item. This prototype does not create duplicate decisions.",
+        evidenceRefs: [
+          {
+            label: "P4 decision ledger",
+            path: "artifacts/p4/surfaceops-decision-ledger.json",
+            hash: "0ec17be965f80c9305d621c35df31aee05c37ce37b6fd69b3163ab4dc152f94c",
+            note: "Records approval as evidence eligibility only."
+          },
+          {
+            label: "Native evidence",
+            path: "artifacts/p5/native/evidence.json",
+            hash: "accepted target evidence",
+            note: "Target proof remains separate from the review receipt."
+          },
+          {
+            label: "Protocol compatibility preflight",
+            path: "artifacts/p5/protocol/evidence.json",
+            hash: "compatibility preflight ref",
+            note: "Compatibility evidence is not native authority."
+          }
+        ],
+        diagnostics: [
+          {
+            code: "none",
+            message: "No active blocking diagnostic for the recorded receipt.",
+            stage: "review",
+            promotion: "allowed",
+            artifact: "artifacts/p4/review-judgment-report.json",
+            pointer: "/manifestResults/0",
+            sourceRef: "null",
+            coverage: "approve-reviewed-work"
+          }
+        ],
+        findings: [
+          {
+            label: "Handoff clarity",
+            result: "Pass",
+            text: "Review receipt, target eligibility, and target proof status remain separate."
+          },
+          {
+            label: "Authority chain",
+            result: "Pass",
+            text: "Design source, catalog boundary, evidence, decision, and target handoff are all visible."
+          }
+        ],
+        receipt: {
+          decision: "Approved as eligibility only",
+          result: "allowed",
+          reviewer: "reviewer: frontend-platform",
+          rationale: "Evidence-backed ledger row confirms this item may be considered by a later authorized native-static consumer.",
+          note: "No execution, deployment, upstream mutation, catalog override, or live JudgmentKit decision occurred."
+        },
+        preview: {
+          heading: "Reviewed button packet",
+          body: "This packet has a prior SurfaceOps receipt and remains inert until a target-specific proof consumer handles it later.",
+          primary: "Eligible later",
+          secondary: "View evidence"
+        }
+      }
+    ];
+
+    const decisionLabels = {
+      approve: "Approved as eligibility only",
+      reject: "Rejected",
+      changes: "Changes requested",
+      defer: "Deferred",
+      second: "Second review required"
+    };
+
+    const decisionResults = {
+      approve: "allowed",
+      reject: "blocked",
+      changes: "blocked",
+      defer: "review_required",
+      second: "review_required"
+    };
+
+    const decisionNotes = {
+      approve: "Eligibility recorded for a later authorized consumer only.",
+      reject: "Unattended promotion remains blocked.",
+      changes: "Requested changes do not mutate upstream artifacts.",
+      defer: "Review required is preserved while waiting.",
+      second: "A separate reviewer must inspect the same evidence refs."
+    };
+
+    const state = {
+      selectedId: reviewItems[0].id,
+      filter: "all",
+      receipts: {}
+    };
+
+    const queueList = document.getElementById("queueList");
+    const queueCount = document.getElementById("queueCount");
+    const itemKicker = document.getElementById("itemKicker");
+    const itemTitle = document.getElementById("itemTitle");
+    const itemStatus = document.getElementById("itemStatus");
+    const itemDescription = document.getElementById("itemDescription");
+    const sourceAuthority = document.getElementById("sourceAuthority");
+    const catalogBoundary = document.getElementById("catalogBoundary");
+    const promotionStatus = document.getElementById("promotionStatus");
+    const handoffEligibility = document.getElementById("handoffEligibility");
+    const evidenceStatus = document.getElementById("evidenceStatus");
+    const evidenceList = document.getElementById("evidenceList");
+    const copyStatus = document.getElementById("copyStatus");
+    const diagnosticRegion = document.getElementById("diagnosticRegion");
+    const previewFrame = document.getElementById("previewFrame");
+    const decisionState = document.getElementById("decisionState");
+    const rationale = document.getElementById("rationale");
+    const findingList = document.getElementById("findingList");
+    const receiptRegion = document.getElementById("receiptRegion");
+
+    function getSelectedItem() {
+      return reviewItems.find((item) => item.id === state.selectedId) || reviewItems[0];
+    }
+
+    function getReceipt(item) {
+      return state.receipts[item.id] || item.receipt || null;
+    }
+
+    function matchesFilter(item) {
+      return state.filter === "all" || item.status === state.filter;
+    }
+
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>"']/g, (character) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+      })[character]);
+    }
+
+    function renderQueue() {
+      const visibleItems = reviewItems.filter(matchesFilter);
+      queueCount.textContent = String(visibleItems.length);
+      queueList.innerHTML = "";
+
+      visibleItems.forEach((item) => {
+        const row = document.createElement("div");
+        row.setAttribute("role", "listitem");
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "queue-item";
+        button.setAttribute("aria-pressed", String(item.id === state.selectedId));
+        button.dataset.id = item.id;
+        button.innerHTML = `
+          <span class="queue-topline">
+            <span class="queue-title">${item.title}</span>
+            <span class="status ${item.statusClass}">${item.statusLabel}</span>
+          </span>
+          <span class="queue-meta">
+            <span>${item.component}</span>
+            <span>${item.target}</span>
+            <span>${item.owner}</span>
+            <span>${item.age}</span>
+          </span>
+        `;
+        button.addEventListener("click", () => {
+          state.selectedId = item.id;
+          copyStatus.textContent = "";
+          render();
+        });
+        row.appendChild(button);
+        queueList.appendChild(row);
+      });
+
+      if (visibleItems.length === 0) {
+        const row = document.createElement("div");
+        row.setAttribute("role", "listitem");
+        const empty = document.createElement("p");
+        empty.className = "notice";
+        empty.textContent = "No review items match this filter. Proof boundary and evidence requirements still apply.";
+        row.appendChild(empty);
+        queueList.appendChild(row);
+      }
+    }
+
+    function renderItem() {
+      const item = getSelectedItem();
+      const receipt = getReceipt(item);
+
+      itemKicker.textContent = item.id;
+      itemTitle.textContent = item.title;
+      itemDescription.textContent = item.description;
+      itemStatus.className = `status ${item.statusClass}`;
+      itemStatus.textContent = item.statusLabel;
+      sourceAuthority.textContent = item.sourceAuthority;
+      catalogBoundary.textContent = item.catalogBoundary;
+      promotionStatus.textContent = item.promotionStatus;
+      handoffEligibility.textContent = item.handoffEligibility;
+      evidenceStatus.className = `status ${item.evidenceReady ? "receipt" : "blocked"}`;
+      evidenceStatus.textContent = item.evidenceStatus;
+
+      evidenceList.innerHTML = "";
+      item.evidenceRefs.forEach((ref) => {
+        const row = document.createElement("li");
+        row.className = "evidence-row";
+        const copyText = `${ref.label}: ${ref.path} ${ref.hash}`;
+        row.innerHTML = `
+          <span class="evidence-ref">
+            <strong>${ref.label}</strong>
+            <code>${ref.path}</code>
+            <span class="mini">Hash: <code>${ref.hash}</code></span>
+            <span class="mini">${ref.note}</span>
+          </span>
+          <button class="copy-ref" type="button" ${ref.hash === "missing" ? "disabled" : ""}>Copy ref</button>
+        `;
+        const copyButton = row.querySelector("button");
+        copyButton.addEventListener("click", () => copyReference(copyText));
+        evidenceList.appendChild(row);
+      });
+
+      diagnosticRegion.innerHTML = `
+        <table class="diagnostic-table">
+          <thead>
+            <tr>
+              <th>Code</th>
+              <th>Message</th>
+              <th>Stage</th>
+              <th>Promotion</th>
+              <th>Artifact and pointer</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${item.diagnostics.map((diagnostic) => `
+              <tr>
+                <td data-label="Code"><code>${diagnostic.code}</code></td>
+                <td data-label="Message">${diagnostic.message}<br><span class="mini">Coverage: ${diagnostic.coverage}</span></td>
+                <td data-label="Stage">${diagnostic.stage}</td>
+                <td data-label="Promotion">${diagnostic.promotion}</td>
+                <td data-label="Artifact"><code>${diagnostic.artifact}</code><br><span class="mini">Pointer: <code>${diagnostic.pointer}</code></span><br><span class="mini">Source ref: <code>${diagnostic.sourceRef}</code></span></td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      `;
+
+      previewFrame.innerHTML = `
+        <div class="preview-card" aria-label="Generated UI presentation aid">
+          <h3>${item.preview.heading}</h3>
+          <p>${item.preview.body}</p>
+          <div class="preview-actions" aria-label="Inert preview controls">
+            <button class="ghost-button primary" type="button" disabled>${item.preview.primary}</button>
+            <button class="ghost-button" type="button" disabled>${item.preview.secondary}</button>
+          </div>
+          <p class="mini">Preview controls are disabled because this is evidence inspection, not execution.</p>
+        </div>
+      `;
+
+      findingList.innerHTML = "";
+      item.findings.forEach((finding) => {
+        const row = document.createElement("li");
+        row.className = "finding-row";
+        row.innerHTML = `
+          <strong>${finding.label}: ${finding.result}</strong>
+          <span>${finding.text}</span>
+          <span class="mini">Advisory only. This finding cannot approve, reject, route, mutate, render, execute, or override policy.</span>
+        `;
+        findingList.appendChild(row);
+      });
+
+      renderDecisionState(item, receipt);
+      renderReceipt(item, receipt);
+    }
+
+    function renderDecisionState(item, receipt) {
+      const controls = document.querySelectorAll(".decision-button");
+      const canRecordDecision = item.canDecide && !receipt;
+      rationale.disabled = !canRecordDecision;
+
+      controls.forEach((control) => {
+        control.disabled = !canRecordDecision;
+      });
+
+      if (canRecordDecision) {
+        decisionState.className = "decision-state";
+        decisionState.innerHTML = `
+          <span class="status review">Decision needed</span>
+          <p>Evidence is bound to this queue item. Choose one bounded outcome to create a non-executable audit receipt.</p>
+        `;
+        return;
+      }
+
+      const reason = receipt
+        ? "Decision controls are disabled because an audit receipt is already visible for this item."
+        : item.decisionDisabledReason;
+      decisionState.className = `decision-state ${item.evidenceReady ? "" : "blocked"}`;
+      decisionState.innerHTML = `
+        <span class="status ${item.evidenceReady ? item.statusClass : "blocked"}">${item.evidenceReady ? item.statusLabel : "Decision blocked"}</span>
+        <p>${reason}</p>
+      `;
+    }
+
+    function renderReceipt(item, receipt) {
+      if (!receipt) {
+        receiptRegion.innerHTML = `
+          <div class="empty-receipt">
+            <p>No decision receipt recorded for this selected item.</p>
+            <p class="mini">A receipt will cite visible evidence refs and state that no execution, deployment, upstream mutation, catalog override, or live JudgmentKit decision occurred.</p>
+          </div>
+        `;
+        return;
+      }
+
+      const safeReceipt = {
+        decision: escapeHtml(receipt.decision),
+        result: escapeHtml(receipt.result),
+        reviewer: escapeHtml(receipt.reviewer),
+        rationale: escapeHtml(receipt.rationale),
+        note: escapeHtml(receipt.note)
+      };
+      const safeEvidenceRefs = item.evidenceRefs
+        .map((ref) => `<code>${escapeHtml(ref.path)}</code>`)
+        .join("<br>");
+
+      receiptRegion.innerHTML = `
+        <ul class="receipt-list">
+          <li class="receipt-row">
+            <span class="label">Decision recorded</span>
+            <strong>${safeReceipt.decision}</strong>
+          </li>
+          <li class="receipt-row">
+            <span class="label">Promotion result</span>
+            <strong>${safeReceipt.result}</strong>
+          </li>
+          <li class="receipt-row">
+            <span class="label">Reviewer provenance</span>
+            <strong>${safeReceipt.reviewer}</strong>
+          </li>
+          <li class="receipt-row">
+            <span class="label">Rationale</span>
+            <span>${safeReceipt.rationale}</span>
+          </li>
+          <li class="receipt-row">
+            <span class="label">Boundary statement</span>
+            <span>${safeReceipt.note}</span>
+          </li>
+          <li class="receipt-row">
+            <span class="label">Evidence refs</span>
+            <span>${safeEvidenceRefs}</span>
+          </li>
+        </ul>
+      `;
+    }
+
+    async function copyReference(text) {
+      try {
+        await navigator.clipboard.writeText(text);
+        copyStatus.textContent = "Evidence ref copied for local review.";
+      } catch (error) {
+        copyStatus.textContent = "Copy unavailable in this browser context; the evidence ref remains selectable.";
+      }
+    }
+
+    function recordDecision(decision) {
+      const item = getSelectedItem();
+      if (!item.canDecide || getReceipt(item)) {
+        return;
+      }
+
+      const rationaleText = rationale.value.trim() || decisionNotes[decision];
+      state.receipts[item.id] = {
+        decision: decisionLabels[decision],
+        result: decisionResults[decision],
+        reviewer: "reviewer: static-prototype",
+        rationale: rationaleText,
+        note: "No execution, deployment, upstream mutation, catalog override, hidden review state, production adapter behavior, or live JudgmentKit decision occurred."
+      };
+      rationale.value = "";
+      render();
+    }
+
+    function render() {
+      renderQueue();
+      renderItem();
+    }
+
+    document.getElementById("statusFilters").addEventListener("change", (event) => {
+      if (event.target.name !== "statusFilter") {
+        return;
+      }
+      state.filter = event.target.value;
+      const firstVisible = reviewItems.find(matchesFilter);
+      if (firstVisible && !matchesFilter(getSelectedItem())) {
+        state.selectedId = firstVisible.id;
+      }
+      render();
+    });
+
+    document.querySelectorAll(".decision-button").forEach((button) => {
+      button.addEventListener("click", () => recordDecision(button.dataset.decision));
+    });
+
+    render();
+  </script>
+</body>
+</html>
