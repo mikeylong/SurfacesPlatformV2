@@ -67,6 +67,7 @@ import {
   DWT_TARGET_IDS,
   DWT_TIMESTAMP,
   DWT_VERSION,
+  DWT_WORKFLOW_STEPS,
   artifactRef,
   defaultBoundaryRefs,
   defaultCommandArgs,
@@ -853,18 +854,22 @@ function buildReport({ runId, upstream, selectionRef, validationResults, diagnos
     componentScope: [DWT_COMPONENT_ID],
     targetIds: DWT_TARGET_IDS,
     scopeStatement: "First executable designer workflow trace indexes the accepted Button evidence path across P2, source-conformance, P3, P4, and the implemented static P5 targets.",
-    nonAuthorityStatement: "This report is an index over accepted evidence. It is not catalog authority, proof authority for upstream phases, review authority, demo authority, customer validation, production adoption, live SurfaceOps, live JudgmentKit, a production adapter, API, SDK, runtime, A2UI, P6, or P7.",
+    nonAuthorityStatement: "This report is an index over accepted evidence. It is not catalog authority, proof authority for upstream phases, review authority, demo authority, customer validation, production adoption, live SurfaceOps, live JudgmentKit, live agent execution, tool calls, network calls, callbacks, secrets, action execution, work-order execution, a production adapter, API, SDK, runtime, A2UI, P6, or P7.",
     upstreamPreflight: {
       status: "pass",
       refs: upstream.boundaryRefs
     },
     traceSelectionRef: selectionRef,
-    workflowTrace: [
+    designerWorkflowSteps: orderedDesignerWorkflowSteps([
       {
-        stepId: "design-authority",
-        label: "Design authority",
+        stepId: "declare-design-authority",
+        visionStepNumber: 1,
+        label: "Declare design authority",
+        designerAction: "Identify the source material, mappings, and policy refs that govern the Button scenario.",
+        proofTrace: "Accepted P2 and source-conformance refs establish declared source authority for the trace.",
         status: upstream.sourceEvidence.status,
         promotionStatus: upstream.sourceEvidence.promotionStatus,
+        proofAuthority: false,
         refs: [
           upstream.boundaryRefs.find((ref) => ref.path === DWT_P2_EVIDENCE_PATH),
           upstream.boundaryRefs.find((ref) => ref.path === DWT_SOURCE_AUTHORITY_MAP_PATH),
@@ -872,34 +877,64 @@ function buildReport({ runId, upstream, selectionRef, validationResults, diagnos
         ]
       },
       {
-        stepId: "governed-catalog",
-        label: "Governed catalog",
+        stepId: "compile-governed-contracts",
+        visionStepNumber: 2,
+        label: "Compile governed contracts",
+        designerAction: "Confirm that bounded source material compiles into a governed catalog with evidence.",
+        proofTrace: "The P2 governed catalog, ingestion report, and P2 evidence are hash-bound accepted inputs.",
         status: upstream.p2Evidence.status,
         promotionStatus: upstream.p2Evidence.promotionStatus,
+        proofAuthority: false,
         componentId: DWT_COMPONENT_ID,
         catalogSourceRef: catalogComponent.sourceRef,
         refs: [
           upstream.boundaryRefs.find((ref) => ref.path === DWT_P2_CATALOG_PATH),
-          upstream.boundaryRefs.find((ref) => ref.path === DWT_P2_EVIDENCE_PATH)
+          upstream.boundaryRefs.find((ref) => ref.path === DWT_P2_EVIDENCE_PATH),
+          upstream.boundaryRefs.find((ref) => ref.path === DWT_P2_INGESTION_REPORT_PATH)
         ]
       },
       {
-        stepId: "diagnostics-review-required-status",
-        label: "Diagnostics and review-required status",
+        stepId: "generate-inside-catalog-boundary",
+        visionStepNumber: 3,
+        label: "Generate inside the catalog boundary",
+        designerAction: "Check that allowed, invalid, and review-required output stays inside catalog authority.",
+        proofTrace: "Ingestion diagnostics, source review queue output, inert P3 review queue refs, and static target projections preserve catalog boundaries instead of inferring UI.",
         status: "pass",
         promotionStatus: "review_required",
+        proofAuthority: false,
         refs: [
           upstream.boundaryRefs.find((ref) => ref.path === DWT_P2_INGESTION_REPORT_PATH),
           upstream.boundaryRefs.find((ref) => ref.path === DWT_SOURCE_REVIEW_QUEUE_PATH),
-          upstream.boundaryRefs.find((ref) => ref.path === DWT_P3_REVIEW_QUEUE_PATH)
-        ]
+          upstream.boundaryRefs.find((ref) => ref.path === DWT_P3_REVIEW_QUEUE_PATH),
+          protocolHandoffRefs.find((ref) => ref.path === "artifacts/p5/protocol/protocol-projection.json"),
+          nativeHandoffRefs.find((ref) => ref.path === "artifacts/p5/native/surfaces-native-projection.json")
+        ],
+        statusNote: "This indexes bounded generated artifacts; it does not implement a live generator or product workflow."
       },
       {
-        stepId: "review-evaluation-refs",
-        label: "Review and evaluation refs",
+        stepId: "inspect-evidence-not-pixels",
+        visionStepNumber: 4,
+        label: "Inspect evidence, not only pixels",
+        designerAction: "Review evidence status, promotion status, reports, diagnostics, and demos as presentation only.",
+        proofTrace: "The trace selection plus accepted phase and target evidence make the current status inspectable before demos are considered.",
+        status: "pass",
+        promotionStatus,
+        proofAuthority: false,
+        refs: [selectionRef, ...upstream.evidenceRefs],
+        traceArtifactPaths: DWT_ARTIFACT_PATHS
+      },
+      {
+        stepId: "decide-or-revise-authority-layer",
+        visionStepNumber: 5,
+        label: "Decide or revise at the authority layer",
+        designerAction: "Route unsupported or review-required output to source material, mapping, policy, review ownership, or future proof scope.",
+        proofTrace: "Source review queue, P3 review queue, P4 decision ledger, review report, and evaluation report keep decisions evidence-bound.",
         status: upstream.p4Evidence.status,
         promotionStatus: upstream.p4Evidence.promotionStatus,
+        proofAuthority: false,
         refs: [
+          upstream.boundaryRefs.find((ref) => ref.path === DWT_SOURCE_REVIEW_QUEUE_PATH),
+          upstream.boundaryRefs.find((ref) => ref.path === DWT_P3_REVIEW_QUEUE_PATH),
           upstream.boundaryRefs.find((ref) => ref.path === DWT_P4_DECISION_LEDGER_PATH),
           upstream.boundaryRefs.find((ref) => ref.path === DWT_P4_REVIEW_REPORT_PATH),
           upstream.boundaryRefs.find((ref) => ref.path === DWT_P4_EVALUATION_REPORT_PATH)
@@ -907,20 +942,35 @@ function buildReport({ runId, upstream, selectionRef, validationResults, diagnos
         statusNote: "P4 status is pass while promotionStatus is blocked; the trace preserves that governed outcome."
       },
       {
-        stepId: "target-handoff-artifacts",
-        label: "Target handoff artifacts",
+        stepId: "hand-off-proven-target-output",
+        visionStepNumber: 6,
+        label: "Hand off only proven target output",
+        designerAction: "Identify only hash-bound static protocol or native output backed by target evidence as handoff candidates.",
+        proofTrace: "Protocol and native selections, projections, envelopes, packets, and reports are inert proof-only handoff artifacts.",
         status: "pass",
         promotionStatus: "review_required",
-        refs: [...protocolHandoffRefs, ...nativeHandoffRefs]
+        proofAuthority: false,
+        refs: [
+          upstream.evidenceRefs.find((ref) => ref.path === DWT_PROTOCOL_EVIDENCE_PATH),
+          upstream.evidenceRefs.find((ref) => ref.path === DWT_NATIVE_EVIDENCE_PATH),
+          ...protocolHandoffRefs,
+          ...nativeHandoffRefs
+        ]
       },
       {
-        stepId: "evidence-status",
-        label: "Evidence status",
+        stepId: "govern-changes-over-time",
+        visionStepNumber: 7,
+        label: "Govern changes over time",
+        designerAction: "Regenerate proof artifacts and evidence when source authority, policy, review decisions, or target requirements change.",
+        proofTrace: "Accepted boundary refs and evidence hashes define the current change-governance closure for this trace.",
         status: "pass",
         promotionStatus,
-        refs: upstream.evidenceRefs
+        proofAuthority: false,
+        refs: [selectionRef, ...upstream.boundaryRefs],
+        traceArtifactPaths: DWT_ARTIFACT_PATHS,
+        statusNote: "Any source, policy, review, or target change requires refreshed proof evidence before downstream trust."
       }
-    ],
+    ].map(designerWorkflowStep)),
     evidenceStatus: evidenceStatusRows(upstream),
     targetHandoffArtifacts: [
       {
@@ -950,6 +1000,13 @@ function buildReport({ runId, upstream, selectionRef, validationResults, diagnos
       reportAuthority: "index-only",
       implementedScope: "non-numbered cross-cutting proof target over accepted evidence",
       liveBehavior: false,
+      liveAgentExecution: false,
+      toolCallExecution: false,
+      networkCallExecution: false,
+      callbackExecution: false,
+      secretAccess: false,
+      actionExecution: false,
+      workOrderExecution: false,
       productionBehavior: false
     },
     validationResults: validationResults.map(stripResult),
@@ -965,6 +1022,35 @@ function buildReport({ runId, upstream, selectionRef, validationResults, diagnos
       DWT_PROTOCOL_EVIDENCE_PATH,
       DWT_NATIVE_EVIDENCE_PATH
     ])
+  };
+}
+
+function orderedDesignerWorkflowSteps(steps) {
+  assertOrderedPaths(
+    "designer workflow trace product designer workflow step order",
+    steps.map((step) => step.stepId),
+    DWT_WORKFLOW_STEPS
+  );
+  return steps;
+}
+
+function designerWorkflowStep(step) {
+  const refs = (step.refs || []).filter(Boolean);
+  if (refs.length !== (step.refs || []).length) {
+    throw contractError(`designer workflow trace product designer workflow step has missing refs: ${step.stepId}`, 1);
+  }
+  return {
+    ...step,
+    refs,
+    visionSourceRef: `VISION.md#product-designer-workflow-step-${step.visionStepNumber}`,
+    traceArtifactPaths: step.traceArtifactPaths || refs.map((ref) => ref.path),
+    reportAuthority: "index-only",
+    proofAuthority: false,
+    productAuthority: false,
+    productWorkflowImplementation: false,
+    liveSurfaceOps: false,
+    liveJudgmentKit: false,
+    productionBehavior: false
   };
 }
 

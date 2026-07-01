@@ -3,7 +3,7 @@
 ## Status
 This is a subordinate trace plan and the mechanical reference for the first implemented designer-workflow-trace target. [VISION.md](../VISION.md#product-designer-workflow) is canonical for the product designer workflow and prioritization lens.
 
-The implemented target creates a proof command, schema suite, fixture root, diagnostic registry, report artifacts, evidence file, and CI gate for one Button trace scenario. The trace report is an index over accepted evidence. It does not create catalog authority, upstream proof authority, product behavior, live review workflow, production adapter, API, SDK, runtime, A2UI claim, SurfaceOps persistence, or JudgmentKit invocation.
+The implemented target creates a proof command, schema suite, fixture root, diagnostic registry, report artifacts, evidence file, and CI gate for one Button trace scenario. The trace report is an index over accepted evidence. It does not create catalog authority, upstream proof authority, product behavior, live review workflow, live agent execution, work-order execution, production adapter, API, SDK, runtime, A2UI claim, SurfaceOps persistence, or JudgmentKit invocation.
 
 Current governed generated UI claims remain proof-only and non-production. Passing phase and target evidence proves implemented behavior. Passing trace evidence proves only that the trace index was generated under this target contract.
 
@@ -41,10 +41,12 @@ P1 runtime artifacts are useful context for runtime projection mechanics, but th
 The implemented first trace report is deterministic and scenario-oriented. A minimum useful report includes:
 
 1. Trace scope: schema id, scenario id, target ids, status, promotion status, and current proof-only scope.
-2. Workflow trace: source authority refs, governed catalog refs, diagnostics and review-required refs, P4 review/evaluation refs, target handoff refs, and evidence status refs.
+2. Designer workflow steps: a required `designerWorkflowSteps` array that maps
+   the seven [VISION.md](../VISION.md#product-designer-workflow) workflow steps
+   to accepted trace refs without turning the report into authority.
 3. Target handoff: protocol and native target selections, projections, emitted envelopes or packets, and review-required rows that intentionally emit no target artifact.
 4. Presentation links: demo paths labeled as non-authoritative presentation output.
-5. Boundary claims: explicit non-goals and excluded claims for live behavior, production behavior, and future targets.
+5. Boundary claims: explicit non-goals and excluded claims for live behavior, live agent or work-order execution, production behavior, and future targets.
 6. Evidence refs: every consumed and generated artifact path with schema id, hash, status, promotion status, and source evidence hash where present.
 7. Evidence metadata: command, arguments, generated-at metadata, fixture refs, schema closure, and generated artifact refs live in final trace evidence.
 
@@ -106,9 +108,6 @@ The proof command validates every declared boundary input by exact path and curr
 ## Missing Pieces
 The first slice now has the minimum proof shape for one Button scenario. Broader coverage still needs:
 
-- an explicit one-to-one report mapping from the seven
-  [VISION.md](../VISION.md#product-designer-workflow) workflow steps to trace
-  refs if the trace contract is broadened beyond the current mechanical index;
 - additional scenario fixtures tying more components, source refs, diagnostics, review rows, decisions, target handoffs, and evidence together;
 - additional diagnostics for any broadened trace requirement;
 - target-specific refs for future P5 targets only after those targets have passing evidence;

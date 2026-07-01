@@ -6,7 +6,11 @@ import { promisify } from "node:util";
 import Ajv2020 from "ajv/dist/2020.js";
 import test from "node:test";
 import { canonicalJson } from "../src/p0.js";
-import { DWT_FORBIDDEN_CLAIM_KEYS } from "../src/designer-workflow-trace-contract.js";
+import {
+  DWT_ARTIFACT_PATHS,
+  DWT_FORBIDDEN_CLAIM_KEYS,
+  DWT_WORKFLOW_STEPS
+} from "../src/designer-workflow-trace-contract.js";
 import { designerWorkflowTraceInternals } from "../src/designer-workflow-trace-proof.js";
 
 const execFileAsync = promisify(execFile);
@@ -32,14 +36,25 @@ test("designer workflow trace proof emits passing evidence with blocked promotio
   assert.equal(evidence.args.sourceReviewQueue, "artifacts/source-conformance/source-review-queue.json");
   assert.equal(evidence.boundaryRefs.some((entry) => entry.path === "artifacts/p2/ingestion-report.json"), true);
   assert.equal(evidence.boundaryRefs.some((entry) => entry.path === "artifacts/source-conformance/source-review-queue.json"), true);
-  assert.deepEqual(report.workflowTrace.map((entry) => entry.stepId), [
-    "design-authority",
-    "governed-catalog",
-    "diagnostics-review-required-status",
-    "review-evaluation-refs",
-    "target-handoff-artifacts",
-    "evidence-status"
-  ]);
+  assert.equal(report.workflowTrace, undefined);
+  assert.deepEqual(report.designerWorkflowSteps.map((entry) => entry.stepId), DWT_WORKFLOW_STEPS);
+  assert.deepEqual(report.designerWorkflowSteps.map((entry) => entry.visionStepNumber), [1, 2, 3, 4, 5, 6, 7]);
+  assert.equal(report.designerWorkflowSteps.every((entry) => entry.visionSourceRef.startsWith("VISION.md#product-designer-workflow-step-")), true);
+  assert.equal(report.designerWorkflowSteps.every((entry) => entry.refs.length > 0), true);
+  assert.equal(report.designerWorkflowSteps.every((entry) => entry.reportAuthority === "index-only"), true);
+  assert.equal(report.designerWorkflowSteps.every((entry) => entry.proofAuthority === false), true);
+  assert.equal(report.designerWorkflowSteps.every((entry) => entry.productAuthority === false), true);
+  assert.equal(report.designerWorkflowSteps.every((entry) => entry.productWorkflowImplementation === false), true);
+  assert.equal(report.designerWorkflowSteps.every((entry) => entry.liveSurfaceOps === false && entry.liveJudgmentKit === false), true);
+  assert.equal(report.boundaryClaims.liveAgentExecution, false);
+  assert.equal(report.boundaryClaims.workOrderExecution, false);
+  const generationStep = report.designerWorkflowSteps.find((entry) => entry.stepId === "generate-inside-catalog-boundary");
+  assert.equal(generationStep.refs.some((ref) => ref.path === "artifacts/p5/protocol/protocol-projection.json"), true);
+  assert.equal(generationStep.refs.some((ref) => ref.path === "artifacts/p5/native/surfaces-native-projection.json"), true);
+  assert.equal(report.designerWorkflowSteps.find((entry) => entry.stepId === "decide-or-revise-authority-layer").promotionStatus, "blocked");
+  const governanceStep = report.designerWorkflowSteps.find((entry) => entry.stepId === "govern-changes-over-time");
+  assert.equal(governanceStep.refs.length, report.upstreamPreflight.refs.length + 1);
+  assert.deepEqual(governanceStep.traceArtifactPaths, DWT_ARTIFACT_PATHS);
   assert.match(report.nonAuthorityStatement, /index over accepted evidence/);
 });
 
@@ -150,7 +165,7 @@ test("designer workflow trace proof fails closed on trace selection and required
   });
 
   await withJsonFileMutation(selectionPath, (fixture) => {
-    fixture.workflowSteps = fixture.workflowSteps.filter((step) => step !== "evidence-status");
+    fixture.workflowSteps = fixture.workflowSteps.filter((step) => step !== "govern-changes-over-time");
   }, async () => {
     const result = await runDesignerWorkflowTraceProofExpectFailure();
     assert.equal(result.code, 1);
@@ -219,11 +234,71 @@ test("designer workflow trace report schema rejects live or authority overclaims
   };
   assert.equal(validate(authorityClaim), false);
 
+  const liveAgentClaim = {
+    ...report,
+    boundaryClaims: {
+      ...report.boundaryClaims,
+      liveAgentExecution: true
+    }
+  };
+  assert.equal(validate(liveAgentClaim), false);
+
+  const workOrderClaim = {
+    ...report,
+    boundaryClaims: {
+      ...report.boundaryClaims,
+      workOrderExecution: true
+    }
+  };
+  assert.equal(validate(workOrderClaim), false);
+
   const workflowAuthorityClaim = {
     ...report,
-    workflowTrace: report.workflowTrace.map((step, index) => index === 0 ? { ...step, liveSurfaceOps: true } : step)
+    designerWorkflowSteps: report.designerWorkflowSteps.map((step, index) => index === 0 ? { ...step, liveSurfaceOps: true } : step)
   };
   assert.equal(validate(workflowAuthorityClaim), false);
+
+  const productAuthorityClaim = {
+    ...report,
+    designerWorkflowSteps: report.designerWorkflowSteps.map((step, index) => index === 1 ? { ...step, productAuthority: true } : step)
+  };
+  assert.equal(validate(productAuthorityClaim), false);
+
+  const productWorkflowClaim = {
+    ...report,
+    designerWorkflowSteps: report.designerWorkflowSteps.map((step, index) => index === 2 ? { ...step, productWorkflowImplementation: true } : step)
+  };
+  assert.equal(validate(productWorkflowClaim), false);
+
+  const emptyWorkflowRefs = {
+    ...report,
+    designerWorkflowSteps: report.designerWorkflowSteps.map((step, index) => index === 0 ? { ...step, refs: [] } : step)
+  };
+  assert.equal(validate(emptyWorkflowRefs), false);
+
+  const nullableWorkflowRefHash = {
+    ...report,
+    designerWorkflowSteps: report.designerWorkflowSteps.map((step, index) => index === 0
+      ? { ...step, refs: step.refs.map((ref, refIndex) => refIndex === 0 ? { ...ref, hash: null } : ref) }
+      : step)
+  };
+  assert.equal(validate(nullableWorkflowRefHash), false);
+
+  const reorderedDesignerWorkflow = {
+    ...report,
+    designerWorkflowSteps: [
+      report.designerWorkflowSteps[1],
+      report.designerWorkflowSteps[0],
+      ...report.designerWorkflowSteps.slice(2)
+    ]
+  };
+  assert.equal(validate(reorderedDesignerWorkflow), false);
+
+  const missingWorkflowStep = {
+    ...report,
+    designerWorkflowSteps: report.designerWorkflowSteps.filter((step) => step.stepId !== "govern-changes-over-time")
+  };
+  assert.equal(validate(missingWorkflowStep), false);
 });
 
 test("designer workflow trace evidence integrity detects artifact and boundary tampering", async () => {
