@@ -142,6 +142,21 @@ Blocker synthesis guidance:
 | P5 native static |  |  |  |
 | Future target candidates |  |  |  |
 
+## Product Designer Workflow Readout
+Use this section to roll findings up by the workflow in
+[VISION.md](../VISION.md#product-designer-workflow). Do not treat partner
+comprehension as proof authority.
+
+| VISION workflow step | What partners understood | What blocked or confused partners | Likely follow-up | Proof impact |
+| --- | --- | --- | --- | --- |
+| Declare design authority |  |  | `doc update / repeat test / future proof candidate / out of scope / no action` | `none / requires future full proof shape` |
+| Compile governed contracts |  |  | `doc update / repeat test / future proof candidate / out of scope / no action` | `none / requires future full proof shape` |
+| Generate inside the catalog boundary |  |  | `doc update / repeat test / future proof candidate / out of scope / no action` | `none / requires future full proof shape` |
+| Inspect evidence, not only pixels |  |  | `doc update / repeat test / future proof candidate / out of scope / no action` | `none / requires future full proof shape` |
+| Decide or revise at the authority layer |  |  | `doc update / repeat test / future proof candidate / out of scope / no action` | `none / requires future full proof shape` |
+| Hand off only proven target output |  |  | `doc update / repeat test / future proof candidate / out of scope / no action` | `none / requires future full proof shape` |
+| Govern changes over time |  |  | `doc update / repeat test / future proof candidate / out of scope / no action` | `none / requires future full proof shape` |
+
 ## Follow-Up Disposition Register
 | Disposition id | Source pattern ids | Disposition | Owner alias | Due date | Next step | Proof impact |
 | --- | --- | --- | --- | --- | --- | --- |

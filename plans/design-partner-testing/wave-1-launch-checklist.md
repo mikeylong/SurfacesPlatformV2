@@ -23,6 +23,10 @@ Run one controlled session that answers three practical questions:
   material to governed catalog, evidence, review, and downstream consumption?
 - Can the partner distinguish implemented proof, proof-only static targets,
   generated demos, review outcomes, and planned future work?
+- Can the partner follow the product designer workflow from `VISION.md`:
+  declare authority, compile governed contracts, generate inside the catalog
+  boundary, inspect evidence, decide or revise at the authority layer, hand off
+  proven target output, and govern changes over time?
 - Can the team complete capture, scorecard, boundary review, and first-session
   disposition without storing raw partner material in this repo?
 
@@ -123,19 +127,26 @@ Evidence refs:
 - `artifacts/p0/evidence.json`
 - `artifacts/p1/evidence.json`
 - `artifacts/p2/evidence.json`
+- `artifacts/source-conformance/evidence.json`
 - `artifacts/p3/evidence.json`
 - `artifacts/p4/evidence.json`
 - `artifacts/p5/protocol/evidence.json`
 - `artifacts/p5/native/evidence.json`
+- `artifacts/designer-workflow-trace/evidence.json`
 
 Trace-task refs:
 
 - `artifacts/p2/governed-catalog.json`
+- `artifacts/source-conformance/source-authority-map.json`
+- `artifacts/source-conformance/source-conformance-report.json`
+- `artifacts/source-conformance/source-review-queue.json`
 - `artifacts/p3/review-queue.json`
 - `artifacts/p4/surfaceops-decision-ledger.json`
 - `artifacts/p4/review-judgment-report.json`
 - `artifacts/p5/protocol/protocol-envelope.button.json`
 - `artifacts/p5/native/surfaces-native-packet.button.json`
+- `artifacts/designer-workflow-trace/designer-workflow-trace-report.json`
+- `artifacts/designer-workflow-trace/trace-selection.json`
 
 Presentation refs:
 
@@ -155,10 +166,10 @@ time before skipping the authority or evidence framing.
 2. Complete boundary sign-off before showing task prompts.
 3. Establish the authority chain using `VISION.md` and
    `plans/usability-value-evidence.md`.
-4. Trace one repo-owned surface from `artifacts/p2/evidence.json` and
-   `artifacts/p2/governed-catalog.json` through `artifacts/p3/review-queue.json`,
-   P4 review and judgment evidence, and either P5 protocol or P5 native static
-   output.
+4. Trace one repo-owned surface through the product designer workflow:
+   source authority, governed catalog, catalog-bound generation, evidence
+   inspection, review decision, static target handoff, and regeneration
+   expectations.
 5. Show one diagnostic or review-required case before showing the matching demo.
 6. Ask the partner to separate evidence `status`, `promotionStatus`, demos,
    review outcomes, and future target requests.

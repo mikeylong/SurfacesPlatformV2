@@ -22,6 +22,14 @@ The practical questions are:
 - Can a partner understand why unsupported, ambiguous, review-required, or target-out-of-scope behavior becomes a diagnostic, review row, or non-emitted artifact?
 - Can a partner explain where their own design-system workflow would need source refs, governance policy, CI evidence, review decisions, or runtime target proofs before adoption?
 
+The program should test the product designer workflow in
+[VISION.md](../VISION.md#product-designer-workflow), not a generic tour of
+proof phases. Every Wave 1 session should make the partner walk the repo-owned
+Button trace through the designer actions: declare authority, compile governed
+contracts, generate inside the catalog boundary, inspect evidence, decide or
+revise at the authority layer, hand off proven target output, and govern changes
+over time.
+
 ## Partner Shape
 The program should recruit 6-8 partners total. Do not expand the cohort until
 the first two-wave readout has been reviewed.
@@ -123,10 +131,17 @@ Required evidence refs:
 - `artifacts/p0/evidence.json`
 - `artifacts/p1/evidence.json`
 - `artifacts/p2/evidence.json`
+- `artifacts/source-conformance/evidence.json`
+- `artifacts/source-conformance/source-authority-map.json`
+- `artifacts/source-conformance/source-conformance-report.json`
+- `artifacts/source-conformance/source-review-queue.json`
 - `artifacts/p3/evidence.json`
 - `artifacts/p4/evidence.json`
 - `artifacts/p5/protocol/evidence.json`
 - `artifacts/p5/native/evidence.json`
+- `artifacts/designer-workflow-trace/evidence.json`
+- `artifacts/designer-workflow-trace/designer-workflow-trace-report.json`
+- `artifacts/designer-workflow-trace/trace-selection.json`
 
 Required presentation refs:
 
@@ -137,6 +152,18 @@ Required presentation refs:
 - `demo/p4/index.html`
 - `demo/p5/protocol/index.html`
 - `demo/p5/native/index.html`
+
+Required product-designer workflow spine:
+
+| VISION workflow step | Wave 1 task | Repo-owned refs |
+| --- | --- | --- |
+| Declare design authority | Identify the source material and policy refs that govern the Button scenario. | `sources/p2/design-system-source/manifest.json`; `artifacts/p2/source-inventory.json`; `artifacts/p2/source-mapping.json`; `artifacts/source-conformance/source-authority-map.json` |
+| Compile governed contracts | Confirm which proof command and evidence file turn source material into governed catalog output. | `artifacts/p2/evidence.json`; `artifacts/p2/governed-catalog.json`; `artifacts/p2/ingestion-report.json` |
+| Generate inside the catalog boundary | Explain why allowed, invalid, and review-required cases do not rely on agent inference. | `fixtures/p2/valid`; `fixtures/p2/invalid`; `fixtures/p2/review`; `artifacts/p2/ingestion-report.json` |
+| Inspect evidence, not only pixels | Name evidence, diagnostics, promotion status, reports, and demos for the scenario. | `artifacts/designer-workflow-trace/designer-workflow-trace-report.json`; `artifacts/designer-workflow-trace/evidence.json`; matching `demo/**` paths as presentation only |
+| Decide or revise at the authority layer | Classify whether an issue should update source material, mappings, policy, review ownership, or future proof scope. | `artifacts/source-conformance/source-review-queue.json`; `artifacts/p3/review-queue.json`; `artifacts/p4/surfaceops-decision-ledger.json`; `artifacts/p4/review-judgment-report.json` |
+| Hand off only proven target output | Identify which protocol or native static output is authorized, and which review-required cases intentionally emit no target artifact. | `artifacts/p5/protocol/protocol-envelope.button.json`; `artifacts/p5/native/surfaces-native-packet.button.json`; P5 evidence files |
+| Govern changes over time | State what must be regenerated or re-proved when source authority, policy, review decisions, or target requirements change. | relevant `npm run check:*:ci` gate names; current `artifacts/**/evidence.json` paths |
 
 Required partner tasks:
 

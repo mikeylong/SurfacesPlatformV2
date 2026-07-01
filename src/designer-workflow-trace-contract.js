@@ -56,6 +56,13 @@ export const DWT_FORBIDDEN_CLAIM_KEYS = [
   "productionAdoption",
   "liveSurfaceOps",
   "liveJudgmentKit",
+  "liveAgentExecution",
+  "toolCallExecution",
+  "networkCallExecution",
+  "callbackExecution",
+  "secretAccess",
+  "actionExecution",
+  "workOrderExecution",
   "productionAdapter",
   "api",
   "sdk",
@@ -68,12 +75,13 @@ export const DWT_FORBIDDEN_CLAIM_KEYS = [
 export const DWT_TARGET_IDS = ["surfaces-protocol-static", "surfaces-native-static"];
 
 export const DWT_WORKFLOW_STEPS = [
-  "design-authority",
-  "governed-catalog",
-  "diagnostics-review-required-status",
-  "review-evaluation-refs",
-  "target-handoff-artifacts",
-  "evidence-status"
+  "declare-design-authority",
+  "compile-governed-contracts",
+  "generate-inside-catalog-boundary",
+  "inspect-evidence-not-pixels",
+  "decide-or-revise-authority-layer",
+  "hand-off-proven-target-output",
+  "govern-changes-over-time"
 ];
 
 export const DWT_PROTOCOL_HANDOFF_PATHS = [
@@ -237,8 +245,8 @@ export const DWT_DIAGNOSTIC_ROWS = [
   }),
   diagnosticRow({
     code: "TRACE_FORBIDDEN_CLAIM",
-    trigger: "Trace fixture claims product workflow implementation, customer validation, production adoption, live behavior, A2UI, P6, or P7",
-    canonicalMessage: "Designer workflow trace fixtures cannot claim product workflow implementation, customer validation, production adoption, live integrations, production adapters, APIs, SDKs, runtimes, A2UI, P6, or P7.",
+    trigger: "Trace fixture claims product workflow implementation, customer validation, production adoption, live behavior, live agent or work-order execution, A2UI, P6, or P7",
+    canonicalMessage: "Designer workflow trace fixtures cannot claim product workflow implementation, customer validation, production adoption, live integrations, live agent execution, tool calls, network calls, callbacks, secrets, action execution, work-order execution, production adapters, APIs, SDKs, runtimes, A2UI, P6, or P7.",
     stage: "claim-boundary",
     phase: "designer-workflow-trace-fixture",
     artifactPath: "fixtures/designer-workflow-trace/invalid/forbidden-claim.designer-workflow-trace.json",
@@ -273,7 +281,7 @@ export const DWT_EXPECTATION_ROWS = [
     promotionStatus: "allowed",
     diagnosticCodes: [],
     artifactPath: "artifacts/designer-workflow-trace/designer-workflow-trace-report.json",
-    jsonPointer: "/workflowTrace"
+    jsonPointer: "/designerWorkflowSteps"
   }),
   expectationRow({
     fixturePath: "fixtures/designer-workflow-trace/review/review-required-status.designer-workflow-trace.json",
@@ -654,12 +662,16 @@ function objectSchema(schemaId, properties, required, options = {}) {
   return schema;
 }
 
-function artifactRefSchema(withProvenance = false) {
+function artifactRefSchema(options = false) {
+  const withProvenance = typeof options === "object" && options !== null ? options.provenance ?? false : options;
+  const nullableHash = typeof options === "object" && options !== null ? options.nullableHash !== false : true;
   const properties = {
     path: { type: "string" },
     schemaId: { type: "string" },
     hashAlgorithm: { const: "sha256" },
-    hash: { type: ["string", "null"], pattern: "^[0-9a-f]{64}$" },
+    hash: nullableHash
+      ? { type: ["string", "null"], pattern: "^[0-9a-f]{64}$" }
+      : { type: "string", pattern: "^[0-9a-f]{64}$" },
     sourceRef: { type: ["string", "null"] },
     sourceEvidenceHash: { type: "string", pattern: "^[0-9a-f]{64}$" }
   };
@@ -716,17 +728,50 @@ function expectationRowSchema() {
   }, ["fixturePath", "kind", "stage", "phase", "expectedResult", "promotionStatus", "diagnosticCodes", "artifactPath", "jsonPointer"]);
 }
 
-function workflowStepSchema() {
+function designerWorkflowStepSchema(stepId, visionStepNumber) {
   return objectSchema(null, {
-    stepId: { enum: DWT_WORKFLOW_STEPS },
+    stepId: { const: stepId },
+    visionStepNumber: { const: visionStepNumber },
+    visionSourceRef: { const: `VISION.md#product-designer-workflow-step-${visionStepNumber}` },
     label: { type: "string" },
+    designerAction: { type: "string" },
+    proofTrace: { type: "string" },
     status: { enum: ["pass", "fail"] },
     promotionStatus: { enum: ["allowed", "review_required", "blocked"] },
-    refs: { type: "array", items: artifactRefSchema("optional") },
+    refs: {
+      type: "array",
+      minItems: 1,
+      items: artifactRefSchema({ provenance: "optional", nullableHash: false })
+    },
+    traceArtifactPaths: { type: "array", minItems: 1, items: { type: "string" } },
+    reportAuthority: { const: "index-only" },
+    proofAuthority: { const: false },
+    productAuthority: { const: false },
+    productWorkflowImplementation: { const: false },
+    liveSurfaceOps: { const: false },
+    liveJudgmentKit: { const: false },
+    productionBehavior: { const: false },
     componentId: { const: DWT_COMPONENT_ID },
     catalogSourceRef: { type: "string" },
     statusNote: { type: "string" }
-  }, ["stepId", "label", "status", "promotionStatus", "refs"]);
+  }, [
+    "stepId",
+    "visionStepNumber",
+    "visionSourceRef",
+    "label",
+    "designerAction",
+    "proofTrace",
+    "status",
+    "promotionStatus",
+    "refs",
+    "reportAuthority",
+    "proofAuthority",
+    "productAuthority",
+    "productWorkflowImplementation",
+    "liveSurfaceOps",
+    "liveJudgmentKit",
+    "productionBehavior"
+  ]);
 }
 
 function evidenceStatusRowSchema() {
@@ -765,8 +810,15 @@ function boundaryClaimsSchema() {
     reportAuthority: { const: "index-only" },
     implementedScope: { const: "non-numbered cross-cutting proof target over accepted evidence" },
     liveBehavior: { const: false },
+    liveAgentExecution: { const: false },
+    toolCallExecution: { const: false },
+    networkCallExecution: { const: false },
+    callbackExecution: { const: false },
+    secretAccess: { const: false },
+    actionExecution: { const: false },
+    workOrderExecution: { const: false },
     productionBehavior: { const: false }
-  }, ["excludedClaims", "reportAuthority", "implementedScope", "liveBehavior", "productionBehavior"]);
+  }, ["excludedClaims", "reportAuthority", "implementedScope", "liveBehavior", "liveAgentExecution", "toolCallExecution", "networkCallExecution", "callbackExecution", "secretAccess", "actionExecution", "workOrderExecution", "productionBehavior"]);
 }
 
 function targetIdArraySchema() {
@@ -820,11 +872,12 @@ function traceReportSchema() {
       refs: { const: defaultBoundaryRefs() }
     }, ["status", "refs"]),
     traceSelectionRef: artifactRefSchema(),
-    workflowTrace: {
+    designerWorkflowSteps: {
       type: "array",
       minItems: DWT_WORKFLOW_STEPS.length,
       maxItems: DWT_WORKFLOW_STEPS.length,
-      items: workflowStepSchema()
+      prefixItems: DWT_WORKFLOW_STEPS.map((stepId, index) => designerWorkflowStepSchema(stepId, index + 1)),
+      items: false
     },
     evidenceStatus: {
       type: "array",
@@ -856,7 +909,7 @@ function traceReportSchema() {
     status: { enum: ["pass", "fail"] },
     promotionStatus: { enum: ["allowed", "review_required", "blocked"] },
     provenance: provenanceSchema()
-  }, ["schemaId", "version", "runId", "targetId", "scenarioId", "componentScope", "targetIds", "scopeStatement", "nonAuthorityStatement", "upstreamPreflight", "traceSelectionRef", "workflowTrace", "evidenceStatus", "targetHandoffArtifacts", "presentationLinks", "boundaryClaims", "validationResults", "diagnostics", "diagnosticsRegistry", "status", "promotionStatus", "provenance"]);
+  }, ["schemaId", "version", "runId", "targetId", "scenarioId", "componentScope", "targetIds", "scopeStatement", "nonAuthorityStatement", "upstreamPreflight", "traceSelectionRef", "designerWorkflowSteps", "evidenceStatus", "targetHandoffArtifacts", "presentationLinks", "boundaryClaims", "validationResults", "diagnostics", "diagnosticsRegistry", "status", "promotionStatus", "provenance"]);
 }
 
 function traceEvidenceSchema() {

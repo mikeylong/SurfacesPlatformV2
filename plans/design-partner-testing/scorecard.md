@@ -63,6 +63,7 @@ in this scorecard.
 | Runtime, protocol, or native target fit | `Strong / Mixed / Weak / Not observed` | `High / Medium / Low` | `High / Medium / Low` |  |  |
 | Demo-as-presentation clarity | `Strong / Mixed / Weak / Not observed` | `High / Medium / Low` | `High / Medium / Low` |  |  |
 | Future proof-shape clarity | `Strong / Mixed / Weak / Not observed` | `High / Medium / Low` | `High / Medium / Low` |  |  |
+| Product designer workflow completion | `Strong / Mixed / Weak / Not observed` | `High / Medium / Low` | `High / Medium / Low` |  |  |
 
 ## Program And Wave Decision Thresholds
 Use these thresholds for program decisions. They are research thresholds only
@@ -74,7 +75,7 @@ and do not affect proof evidence.
 | Program authority distinction | At least 75% of completed sessions, rounded up, distinguish proof authority, generated demos, review decisions, and planned future targets: 5 of 6, 6 of 7, or 6 of 8. |
 | Program trace task | At least 60% of completed sessions, rounded up, trace one repo-owned surface through generation, CI evidence, review governance, and runtime/protocol/native consumption: 4 of 6, 5 of 7, or 5 of 8. |
 | Program unresolved confusion limit | Fewer than 2 completed sessions end with unresolved High severity confusion about live SurfaceOps, live JudgmentKit, production API or SDK support, A2UI, or demo authority. |
-| Proceed from Wave 1 to Wave 2 | For a 3-session Wave 1, all 3 scorecards must mark evidence-loop comprehension as `Strong` or `Mixed`; for a 4-session Wave 1, at least 3 of 4 must do so. In both cases, all required stimulus-pack tasks must be completed. |
+| Proceed from Wave 1 to Wave 2 | For a 3-session Wave 1, all 3 scorecards must mark evidence-loop comprehension and product designer workflow completion as `Strong` or `Mixed`; for a 4-session Wave 1, at least 3 of 4 must do so. In both cases, all required stimulus-pack tasks and all seven product designer workflow steps must be completed with no step marked `Not observed`. |
 | Revise session guide before Wave 2 | 2 or more Wave 1 scorecards mark authority confusion, demo-as-proof confusion, or production-support confusion as High severity. |
 | Retest before Wave 2 | Any Wave 1 session skipped a required stimulus-pack task or failed the boundary sign-off. |
 | Treat a signal as recurring | The same acceptance signal or blocker appears in at least 2 sessions. |
@@ -106,6 +107,20 @@ Check only signals observed in the session.
 | Partner sees a credible review path without live SurfaceOps claims | `yes / no / partial / not tested` |  |
 | Partner sees evaluator value without live JudgmentKit claims | `yes / no / partial / not tested` |  |
 | Partner can name a bounded future adapter or target candidate | `yes / no / partial / not tested` |  |
+
+## Product Designer Workflow Checklist
+Check only signals observed against the workflow in
+[VISION.md](../VISION.md#product-designer-workflow).
+
+| Workflow signal | Observed | Notes |
+| --- | --- | --- |
+| Partner can declare which source material and policy refs own the scenario | `yes / no / partial / not tested` |  |
+| Partner can identify the governed catalog and evidence produced from that authority | `yes / no / partial / not tested` |  |
+| Partner understands generation must stay inside catalog authority | `yes / no / partial / not tested` |  |
+| Partner inspects evidence, reports, diagnostics, and promotion status before relying on pixels | `yes / no / partial / not tested` |  |
+| Partner routes unsupported or ambiguous output to source, mapping, policy, review ownership, or future proof scope | `yes / no / partial / not tested` |  |
+| Partner can identify which protocol or native static output is safe to hand off under current evidence | `yes / no / partial / not tested` |  |
+| Partner expects proof artifacts and evidence to be regenerated when authority, policy, review, or target requirements change | `yes / no / partial / not tested` |  |
 
 ## Blocker Summary
 | Blocker category | Severity | Description | Current proof impact | Recommended disposition |
