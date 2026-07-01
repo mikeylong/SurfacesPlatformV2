@@ -40,10 +40,19 @@ Review-required rows are proof artifacts only. They must preserve:
 
 - review owner;
 - rationale;
-- expiry metadata;
+- canonical future expiry metadata;
+- the declared review-policy source ref in `requiredSourceRefs`;
 - evidence path;
 - `executable: false`;
 - `promotionStatus: "review_required"`.
+
+Expired or non-canonical review expiry metadata is blocked with
+`SOURCE_REVIEW_EXPIRED`. The expired-review fixture is invalid coverage; it
+keeps stale exceptions from becoming unattended generated UI.
+The blocked result row preserves owner, rationale, and expiry metadata for
+downstream index-only consumers, but it does not create a review queue item.
+Review-required output missing the review-policy source ref is blocked with
+`SOURCE_REVIEW_POLICY_REF_MISSING`.
 
 They must not execute actions, persist decisions, call tools, call connectors, invoke SurfaceOps, or invoke JudgmentKit.
 

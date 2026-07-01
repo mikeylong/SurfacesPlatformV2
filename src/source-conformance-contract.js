@@ -20,6 +20,7 @@ export const SC_P2_EVIDENCE_PATH = "artifacts/p2/evidence.json";
 export const SC_P2_CATALOG_PATH = "artifacts/p2/governed-catalog.json";
 export const SC_COMMAND = "interfacectl surfaces source-conformance proof";
 export const SC_CONTRACT_ID = "surfaces-source-conformance-proof";
+export const SC_REVIEW_POLICY_SOURCE_REF = "declared-source://source-conformance/governance/review-policy.json#/";
 
 export const SC_ENVIRONMENT = Object.freeze({
   generatedAt: SC_TIMESTAMP,
@@ -83,7 +84,7 @@ export const SC_SOURCE_DOCUMENTS = {
     authoritativeFields: ["props", "variants", "states", "actions", "accessibility", "tokens"],
     policyRefs: [
       "declared-source://source-conformance/policies/accessibility.json#/",
-      "declared-source://source-conformance/governance/review-policy.json#/"
+      SC_REVIEW_POLICY_SOURCE_REF
     ],
     notes: "Button may be emitted only with declared variants, token refs, accessibility, and inert action policy."
   },
@@ -128,7 +129,7 @@ export const SC_SOURCE_DOCUMENTS = {
     version: SC_VERSION,
     documentId: "review-policy",
     sourceType: "review-policy",
-    sourceRef: "declared-source://source-conformance/governance/review-policy.json#/",
+    sourceRef: SC_REVIEW_POLICY_SOURCE_REF,
     reviewRequiredWhen: [
       "source-precedence-ambiguous",
       "brand-exception-requested",
@@ -243,7 +244,7 @@ export const SC_DIAGNOSTIC_ROWS = [
     phase: "source-review-routing",
     artifactPath: "fixtures/source-conformance/review/brand-exception.source-conformance.json",
     jsonPointer: "/review",
-    sourceRef: "declared-source://source-conformance/governance/review-policy.json#/",
+    sourceRef: SC_REVIEW_POLICY_SOURCE_REF,
     validationResult: "review_required",
     promotionStatus: "review_required",
     fixtureCoverage: "review/brand-exception.source-conformance.json",
@@ -256,10 +257,34 @@ export const SC_DIAGNOSTIC_ROWS = [
     phase: "source-review-routing",
     artifactPath: "fixtures/source-conformance/invalid/review-owner-missing.source-conformance.json",
     jsonPointer: "/review",
-    sourceRef: "declared-source://source-conformance/governance/review-policy.json#/",
+    sourceRef: SC_REVIEW_POLICY_SOURCE_REF,
     validationResult: "invalid",
     promotionStatus: "blocked",
     fixtureCoverage: "invalid/review-owner-missing.source-conformance.json"
+  }),
+  diagnosticRow({
+    code: "SOURCE_REVIEW_POLICY_REF_MISSING",
+    canonicalMessage: "Review-required source output must include the declared review policy source ref.",
+    stage: "review",
+    phase: "source-review-routing",
+    artifactPath: "fixtures/source-conformance/invalid/review-policy-ref-missing.source-conformance.json",
+    jsonPointer: "/requiredSourceRefs",
+    sourceRef: SC_REVIEW_POLICY_SOURCE_REF,
+    validationResult: "invalid",
+    promotionStatus: "blocked",
+    fixtureCoverage: "invalid/review-policy-ref-missing.source-conformance.json"
+  }),
+  diagnosticRow({
+    code: "SOURCE_REVIEW_EXPIRED",
+    canonicalMessage: "Review-required source output has expired or non-canonical expiry metadata.",
+    stage: "review",
+    phase: "source-review-routing",
+    artifactPath: "fixtures/source-conformance/invalid/review-expired.source-conformance.json",
+    jsonPointer: "/review/expiresAt",
+    sourceRef: SC_REVIEW_POLICY_SOURCE_REF,
+    validationResult: "invalid",
+    promotionStatus: "blocked",
+    fixtureCoverage: "invalid/review-expired.source-conformance.json"
   }),
   diagnosticRow({
     code: "SOURCE_PRODUCTION_CLAIM_FORBIDDEN",
@@ -386,6 +411,28 @@ export const SC_EXPECTATION_ROWS = [
     diagnosticCodes: ["SOURCE_REVIEW_OWNER_MISSING"],
     artifactPath: "fixtures/source-conformance/invalid/review-owner-missing.source-conformance.json",
     jsonPointer: "/review"
+  }),
+  expectationRow({
+    fixturePath: "fixtures/source-conformance/invalid/review-policy-ref-missing.source-conformance.json",
+    kind: "invalid",
+    stage: "review",
+    phase: "source-review-routing",
+    expectedResult: "invalid",
+    promotionStatus: "blocked",
+    diagnosticCodes: ["SOURCE_REVIEW_POLICY_REF_MISSING"],
+    artifactPath: "fixtures/source-conformance/invalid/review-policy-ref-missing.source-conformance.json",
+    jsonPointer: "/requiredSourceRefs"
+  }),
+  expectationRow({
+    fixturePath: "fixtures/source-conformance/invalid/review-expired.source-conformance.json",
+    kind: "invalid",
+    stage: "review",
+    phase: "source-review-routing",
+    expectedResult: "invalid",
+    promotionStatus: "blocked",
+    diagnosticCodes: ["SOURCE_REVIEW_EXPIRED"],
+    artifactPath: "fixtures/source-conformance/invalid/review-expired.source-conformance.json",
+    jsonPointer: "/review/expiresAt"
   }),
   expectationRow({
     fixturePath: "fixtures/source-conformance/invalid/production-claim.source-conformance.json",
@@ -541,7 +588,7 @@ export function buildSourceConformanceFixtures() {
     sourceRef: "declared-source://source-conformance/components/button.json#/",
     requiredSourceRefs: [
       "declared-source://source-conformance/components/button.json#/",
-      "declared-source://source-conformance/governance/review-policy.json#/"
+      SC_REVIEW_POLICY_SOURCE_REF
     ],
     review: {
       required: true,
@@ -601,6 +648,23 @@ export function buildSourceConformanceFixtures() {
         owner: null,
         rationale: null,
         expiresAt: null
+      }
+    },
+    "invalid/review-policy-ref-missing.source-conformance.json": {
+      ...deepClone(review),
+      fixtureId: "review-policy-ref-missing",
+      requiredSourceRefs: [
+        "declared-source://source-conformance/components/button.json#/"
+      ]
+    },
+    "invalid/review-expired.source-conformance.json": {
+      ...deepClone(review),
+      fixtureId: "review-expired",
+      review: {
+        required: true,
+        owner: "design-systems-governance",
+        rationale: "Expired brand exception must block until source-owner review metadata is renewed.",
+        expiresAt: "1969-12-31T00:00:00.000Z"
       }
     },
     "invalid/production-claim.source-conformance.json": {
@@ -790,6 +854,8 @@ function diagnosticSourceForStage(stage) {
 }
 
 function suggestedActionForCode(code) {
+  if (code === "SOURCE_REVIEW_EXPIRED") return "Renew source-owner approval and canonical expiry metadata before handoff or promotion.";
+  if (code === "SOURCE_REVIEW_POLICY_REF_MISSING") return "Bind review-required output to the declared review policy source ref.";
   if (code.includes("UPSTREAM")) return "Restore accepted P2 catalog and evidence before source conformance proof continues.";
   if (code.includes("EVIDENCE")) return "Regenerate source conformance artifacts and evidence from checked-in schemas, source files, and fixtures.";
   if (code.includes("PATH") || code.includes("HASH")) return "Regenerate the declared source manifest from checked-in source files.";
@@ -858,8 +924,19 @@ function resultRowSchema() {
     jsonPointer: { type: "string" },
     componentId: { type: ["string", "null"] },
     reviewQueueItemId: { type: ["string", "null"] },
+    review: {
+      oneOf: [
+        objectSchema(null, {
+          owner: { type: "string" },
+          rationale: { type: "string" },
+          expiresAt: { type: "string" }
+        }, ["owner", "rationale", "expiresAt"]),
+        { type: "null" }
+      ]
+    },
+    requiredSourceRefs: { type: "array", items: sourceRefSchema(false) },
     matched: { type: "boolean" }
-  }, ["fixturePath", "kind", "stage", "phase", "expectedResult", "actualResult", "promotionStatus", "diagnosticCodes", "artifactPath", "jsonPointer", "componentId", "reviewQueueItemId", "matched"]);
+  }, ["fixturePath", "kind", "stage", "phase", "expectedResult", "actualResult", "promotionStatus", "diagnosticCodes", "artifactPath", "jsonPointer", "componentId", "reviewQueueItemId", "review", "requiredSourceRefs", "matched"]);
 }
 
 function expectationRowSchema() {
@@ -948,12 +1025,27 @@ function sourceReviewQueueSchema() {
   return objectSchema("source-review-queue.v0", {
     schemaId: { const: "source-review-queue.v0" },
     version: { type: "string" },
-    queueItems: { type: "array", items: { type: "object", additionalProperties: true } },
+    queueItems: { type: "array", items: reviewQueueItemSchema() },
     promotionStatus: { enum: ["allowed", "review_required", "blocked"] },
     diagnostics: { type: "array", items: diagnosticObjectSchema() },
     diagnosticsRegistry: { const: diagnosticsRegistry() },
     provenance: provenanceSchema()
   }, ["schemaId", "version", "queueItems", "promotionStatus", "diagnostics", "diagnosticsRegistry", "provenance"]);
+}
+
+function reviewQueueItemSchema() {
+  return objectSchema(null, {
+    reviewQueueItemId: { type: "string" },
+    fixturePath: { type: "string" },
+    componentId: { type: "string" },
+    owner: { type: "string" },
+    rationale: { type: "string" },
+    expiresAt: { type: "string" },
+    requiredSourceRefs: { type: "array", items: sourceRefSchema(false) },
+    evidencePath: { const: `${SC_ARTIFACT_ROOT}/evidence.json` },
+    executable: { const: false },
+    promotionStatus: { const: "review_required" }
+  }, ["reviewQueueItemId", "fixturePath", "componentId", "owner", "rationale", "expiresAt", "requiredSourceRefs", "evidencePath", "executable", "promotionStatus"]);
 }
 
 function sourceConformanceReportSchema() {
@@ -1038,11 +1130,20 @@ function sourceConformanceFixtureSchema() {
     sourceRef: sourceRefSchema(true),
     requiredSourceRefs: { type: "array", items: sourceRefSchema(false) },
     proposedUsage: { type: "object", additionalProperties: true },
-    review: { type: "object", additionalProperties: true },
+    review: reviewMetadataSchema(),
     claims: claimsSchema(),
     authorityConflict: { type: ["object", "null"], additionalProperties: true },
     provenance: provenanceSchema()
   }, ["schemaId", "version", "fixtureId", "componentId", "sourceRef", "requiredSourceRefs", "proposedUsage", "review", "claims", "authorityConflict", "provenance"]);
+}
+
+function reviewMetadataSchema() {
+  return objectSchema(null, {
+    required: { type: "boolean" },
+    owner: { type: ["string", "null"] },
+    rationale: { type: ["string", "null"] },
+    expiresAt: { type: ["string", "null"] }
+  }, ["required", "owner", "rationale", "expiresAt"]);
 }
 
 function sourceRefSchema(nullable) {

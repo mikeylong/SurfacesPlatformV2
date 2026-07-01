@@ -44,11 +44,18 @@ The implemented first trace report is deterministic and scenario-oriented. A min
 2. Designer workflow steps: a required `designerWorkflowSteps` array that maps
    the seven [VISION.md](../VISION.md#product-designer-workflow) workflow steps
    to accepted trace refs without turning the report into authority.
-3. Target handoff: protocol and native target selections, projections, emitted envelopes or packets, and review-required rows that intentionally emit no target artifact.
-4. Presentation links: demo paths labeled as non-authoritative presentation output.
-5. Boundary claims: explicit non-goals and excluded claims for live behavior, live agent or work-order execution, production behavior, and future targets.
-6. Evidence refs: every consumed and generated artifact path with schema id, hash, status, promotion status, and source evidence hash where present.
-7. Evidence metadata: command, arguments, generated-at metadata, fixture refs, schema closure, and generated artifact refs live in final trace evidence.
+3. Target handoff: protocol and native target selections, projections, emitted
+   envelopes or packets, and review-required rows that intentionally emit no
+   target artifact. Target artifacts may be indexed as accepted upstream proof
+   refs while a governed exception remains blocked from handoff.
+4. Source-conformance governance: an index-only path for blocked governed
+   exceptions, including expired review metadata, the source-conformance
+   diagnostic code, upstream evidence refs, and an explicit
+   `targetHandoffAllowed: false` outcome.
+5. Presentation links: demo paths labeled as non-authoritative presentation output.
+6. Boundary claims: explicit non-goals and excluded claims for live behavior, live agent or work-order execution, production behavior, and future targets.
+7. Evidence refs: every consumed and generated artifact path with schema id, hash, status, promotion status, and source evidence hash where present.
+8. Evidence metadata: command, arguments, generated-at metadata, fixture refs, schema closure, and generated artifact refs live in final trace evidence.
 
 P4 requires explicit handling: current tracked P4 evidence has `status: "pass"` and `promotionStatus: "blocked"` intentionally. A trace must explain that the proof passed while unsafe or invalid review outcomes remain blocked.
 
@@ -104,6 +111,31 @@ Package scripts:
 The CI gate is `npm run check:designer-workflow-trace:ci`. The generated report has no demo; it is report/evidence-only.
 
 The proof command validates every declared boundary input by exact path and current hash. The indexed P2 ingestion report and source-conformance review queue are command inputs, not hidden ambient files.
+
+The current trace also indexes the source-conformance governed-exception expiry
+fixture:
+
+- source-conformance fixture: `fixtures/source-conformance/invalid/review-expired.source-conformance.json`;
+- source-conformance diagnostic: `SOURCE_REVIEW_EXPIRED`;
+- trace fixture: `fixtures/designer-workflow-trace/invalid/source-conformance-review-expired.designer-workflow-trace.json`;
+- trace diagnostic: `TRACE_SOURCE_CONFORMANCE_REVIEW_EXPIRED_INDEXED`;
+- report field: `sourceConformanceGovernance`.
+
+This path is intentionally blocked and index-only. It routes the stale
+exception back to the authority layer and does not permit target handoff for
+that governed exception, SurfaceOps persistence, JudgmentKit invocation,
+production behavior, or action execution.
+
+The trace report includes `sourceConformanceGovernance.exceptionLifecycle` so
+the governed exception path is visible without treating the invalid expired row
+as an executable queue item. That lifecycle records the review-required
+exception fixture, review queue item id, owner, rationale, approved expiry,
+expired fixture, expired expiry, governance policy source ref, renewal
+requirement, and `expiredExceptionExecutable: false`.
+The target-handoff artifact section is still an index over accepted upstream
+P5 artifacts for the base Button path; it records
+`handoffAllowedForGovernedException: false` so those refs are not mistaken for
+permission to hand off the expired exception.
 
 ## Missing Pieces
 The first slice now has the minimum proof shape for one Button scenario. Broader coverage still needs:

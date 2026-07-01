@@ -52,8 +52,8 @@ validation.
 | Declare design authority | The Button scenario is governed by declared local source material, mappings, policy, and source-conformance authority refs. | `sources/p2/design-system-source/manifest.json`; `artifacts/p2/source-inventory.json`; `artifacts/p2/source-mapping.json`; `artifacts/source-conformance/source-authority-map.json` |
 | Compile governed contracts | Bounded source material compiles into a governed catalog with evidence, diagnostics, provenance, and promotion status. | `artifacts/p2/evidence.json`; `artifacts/p2/governed-catalog.json`; `artifacts/p2/ingestion-report.json` |
 | Generate inside the catalog boundary | Allowed, invalid, and review-required cases are handled by fixtures, diagnostics, and review routing rather than inferred UI. | `fixtures/p2/valid`; `fixtures/p2/invalid`; `fixtures/p2/review`; `artifacts/p2/ingestion-report.json` |
-| Inspect evidence, not only pixels | The consolidated trace indexes accepted evidence and presentation links; demos remain non-authoritative. | `artifacts/designer-workflow-trace/designer-workflow-trace-report.json`; `artifacts/designer-workflow-trace/evidence.json`; `demo/p2`; `demo/p5/protocol`; `demo/p5/native` |
-| Decide or revise at the authority layer | Unsupported, blocked, or review-required output should drive source, mapping, policy, review-owner, or future proof-shape decisions. | `artifacts/source-conformance/source-review-queue.json`; `artifacts/p3/review-queue.json`; `artifacts/p4/surfaceops-decision-ledger.json`; `artifacts/p4/review-judgment-report.json` |
+| Inspect evidence, not only pixels | The consolidated trace indexes accepted evidence, governed-exception status, and presentation links; demos remain non-authoritative. | `artifacts/designer-workflow-trace/designer-workflow-trace-report.json`; `artifacts/designer-workflow-trace/evidence.json`; `demo/p2`; `demo/p5/protocol`; `demo/p5/native` |
+| Decide or revise at the authority layer | Unsupported, blocked, expired-exception, or review-required output should drive source, mapping, policy, review-owner, or future proof-shape decisions. | `artifacts/source-conformance/source-review-queue.json`; `artifacts/p3/review-queue.json`; `artifacts/p4/surfaceops-decision-ledger.json`; `artifacts/p4/review-judgment-report.json` |
 | Hand off only proven target output | Only hash-bound protocol or native static outputs backed by their own evidence are handoff candidates. | `artifacts/p5/protocol/evidence.json`; `artifacts/p5/protocol/protocol-envelope.button.json`; `artifacts/p5/native/evidence.json`; `artifacts/p5/native/surfaces-native-packet.button.json` |
 | Govern changes over time | Any source, policy, review, or target change requires regeneration and fresh evidence before downstream trust. | `npm run check:designer-workflow-trace:ci`; current `artifacts/**/evidence.json` paths |
 
@@ -61,6 +61,12 @@ validation.
 A designer workflow trace makes the evidence walkthrough easier to inspect by consolidating refs into one deterministic report. The current repo implements the first proof-only trace target for one Button scenario over accepted P2, source-conformance, P3, P4, protocol, and native evidence.
 
 The proof shape is tracked in [Product Designer Workflow Trace](product-designer-workflow-trace.md). The generated trace artifacts are `artifacts/designer-workflow-trace/trace-selection.json`, `artifacts/designer-workflow-trace/designer-workflow-trace-report.json`, and `artifacts/designer-workflow-trace/evidence.json`.
+
+For the governed Button exception path, the trace report indexes the
+source-conformance review-required row and the expired blocked row together in
+`sourceConformanceGovernance.exceptionLifecycle`. That lifecycle records the
+owner, rationale, approved expiry, expired expiry, renewal requirement, and
+non-executable expired state.
 
 The trace report is an index over accepted evidence, not product workflow implementation, customer validation, production adoption, catalog authority, upstream proof authority, live SurfaceOps, live JudgmentKit, production adapter, API, SDK, runtime, A2UI, P6, or P7.
 

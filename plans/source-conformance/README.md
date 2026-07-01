@@ -80,6 +80,8 @@ The diagnostic registry covers:
 - unresolved source authority conflicts;
 - review-required routing;
 - missing review owner, rationale, or expiry metadata;
+- missing declared review-policy source ref for review-required output;
+- expired or non-canonical review expiry metadata;
 - forbidden customer validation, production readiness, pilot readiness, self-serve, live integration, API/SDK/A2UI, native runtime, action execution, live SurfaceOps, or live JudgmentKit claims;
 - source-conformance evidence hash mismatches.
 
@@ -91,7 +93,9 @@ Given accepted P2 evidence and catalog, the manifest-declared local source bundl
 - reject non-normalized or non-contract command paths;
 - fail closed on missing upstream P2 evidence, invalid P2 evidence, stale output, undeclared source files, and source hash drift;
 - validate every fixture against `fixtures/source-conformance/expectations.manifest.json`;
-- preserve review-required rows as non-executable output with owner, rationale, and expiry metadata;
+- preserve review-required rows as non-executable output with owner, rationale, and canonical future expiry metadata;
+- require review-required output to include the declared review-policy source ref;
+- block expired or non-canonical review expiry metadata with `SOURCE_REVIEW_EXPIRED`;
 - emit a source inventory, source authority map, review queue, report, and final evidence;
 - hash schemas, declared source files, fixtures, upstream refs, generated artifacts, and final evidence;
 - finish with `status: "pass"` and the expected aggregate `promotionStatus: "review_required"` when all expectations match.
