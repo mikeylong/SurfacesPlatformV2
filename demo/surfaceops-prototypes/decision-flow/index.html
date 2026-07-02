@@ -1167,10 +1167,10 @@
           promotionStatus: "review_required",
           targetEligibility: "Waiting for review decision",
           targetProofStatus: "P5 protocol/static target proofs remain separate",
-          sourceAuthority: "fixture://p2/source#/components/button",
-          catalogBoundary: "artifacts/p2/governed-catalog.json#/components/button",
-          evidenceRef: "artifacts/p4/evidence.json#/upstream",
-          queueRef: "artifacts/p3/review-queue.json#/items/review-confirm-panel",
+          sourceAuthority: "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/button.json#/",
+          catalogBoundary: "artifacts/p2/governed-catalog.json#/components/Button",
+          evidenceRef: "artifacts/p4/evidence.json#/boundaryRefs/0",
+          queueRef: "artifacts/p3/review-queue.json#/items/0",
           ledgerRef: "artifacts/p4/surfaceops-decision-ledger.json#/decisions",
           handoffRef: "Target-specific handoff waits for an evidence-bound decision",
           why: "The generated confirm panel is structurally valid but includes an action descriptor that cannot advance unattended. A reviewer must inspect source authority, catalog boundary, and evidence refs before deciding whether it is eligible for a later authorized consumer.",
@@ -1180,12 +1180,12 @@
               status: "review_required",
               stage: "review",
               message: "Evidence refs must be present before a review decision can be recorded.",
-              artifact: "artifacts/p3/review-queue.json#/items/review-confirm-panel"
+              artifact: "artifacts/p3/review-queue.json#/items/0"
             }
           ],
           evidence: [
             { label: "P4 evidence", status: "pass", ref: "artifacts/p4/evidence.json" },
-            { label: "Review queue item", status: "review_required", ref: "artifacts/p3/review-queue.json#/items/review-confirm-panel" },
+            { label: "Review queue item", status: "review_required", ref: "artifacts/p3/review-queue.json#/items/0" },
             { label: "Decision ledger target", status: "not recorded", ref: "artifacts/p4/surfaceops-decision-ledger.json#/decisions" }
           ],
           findings: [
@@ -1212,10 +1212,10 @@
           promotionStatus: "blocked",
           targetEligibility: "Blocked until requested changes are resolved",
           targetProofStatus: "Target proof not reached while promotion is blocked",
-          sourceAuthority: "fixture://p2/source#/components/in-line-alert",
-          catalogBoundary: "artifacts/p2/governed-catalog.json#/components/in-line-alert",
-          evidenceRef: "artifacts/p4/review-judgment-report.json#/rows/changes-inline-alert",
-          queueRef: "artifacts/p3/review-queue.json#/items/changes-inline-alert",
+          sourceAuthority: "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/in-line-alert.json#/",
+          catalogBoundary: "artifacts/p2/governed-catalog.json#/components/InLineAlert",
+          evidenceRef: "artifacts/p4/review-judgment-report.json#/results/2",
+          queueRef: "fixtures/p4/valid/request-changes.review-judgment.json#/reviewItemRef",
           ledgerRef: "Coverage row only unless a new decision is recorded",
           handoffRef: "No handoff while changes_requested remains blocked",
           why: "A previous review outcome requested changes because source refs and diagnostic explanation were not clear enough for target handoff. The item remains blocked without mutating the upstream queue or catalog rules.",
@@ -1230,8 +1230,8 @@
           ],
           evidence: [
             { label: "P4 evidence", status: "pass", ref: "artifacts/p4/evidence.json" },
-            { label: "Review report row", status: "changes_requested", ref: "artifacts/p4/review-judgment-report.json#/rows/changes-inline-alert" },
-            { label: "Affected artifact", status: "blocked", ref: "artifacts/p3/agent-orchestration-report.json#/workOrders/inline-alert" }
+            { label: "Review report row", status: "changes_requested", ref: "artifacts/p4/review-judgment-report.json#/results/2" },
+            { label: "Affected artifact", status: "blocked", ref: "artifacts/p3/agent-orchestration-report.json#/workOrderRefs/1" }
           ],
           findings: [
             {
@@ -1257,10 +1257,10 @@
           promotionStatus: "blocked",
           targetEligibility: "Not eligible",
           targetProofStatus: "Target proof not reached while blocked",
-          sourceAuthority: "fixture://p2/source#/components/button",
-          catalogBoundary: "artifacts/p2/governed-catalog.json#/components/button",
+          sourceAuthority: "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/button.json#/",
+          catalogBoundary: "artifacts/p2/governed-catalog.json#/components/Button",
           evidenceRef: "fixtures/p4/invalid/executes-work-order.review-judgment.json",
-          queueRef: "artifacts/p3/review-queue.json#/items/blocked-execution-attempt",
+          queueRef: "fixtures/p4/invalid/executes-work-order.review-judgment.json#/decision/execution",
           ledgerRef: "No committed ledger row permitted for an execution attempt",
           handoffRef: "No handoff path while execution attempt remains blocked",
           why: "The review fixture attempted to execute a work order from a review decision. SurfaceOps must fail closed: the item can be rejected or returned for changes, but it cannot be approved from this state.",
@@ -1302,10 +1302,10 @@
           promotionStatus: "review_required",
           targetEligibility: "Waiting for second reviewer",
           targetProofStatus: "Target proofs may inspect only after review requirement is resolved",
-          sourceAuthority: "fixture://p2/source#/components/button",
-          catalogBoundary: "artifacts/p2/governed-catalog.json#/components/button",
+          sourceAuthority: "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/button.json#/",
+          catalogBoundary: "artifacts/p2/governed-catalog.json#/components/Button",
           evidenceRef: "fixtures/p4/review/second-review-required.review-judgment.json",
-          queueRef: "artifacts/p3/review-queue.json#/items/second-review-button",
+          queueRef: "fixtures/p4/review/second-review-required.review-judgment.json#/reviewItemRef",
           ledgerRef: "Second-review case preserves review_required",
           handoffRef: "No unattended promotion before second review",
           why: "The item has enough evidence for review, but separation rules require another reviewer before it can become evidence eligible. The correct receipt preserves review_required instead of treating the first review as final.",

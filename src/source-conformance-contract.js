@@ -1040,8 +1040,15 @@ function reviewQueueItemSchema() {
     componentId: { type: "string" },
     owner: { type: "string" },
     rationale: { type: "string" },
-    expiresAt: { type: "string" },
-    requiredSourceRefs: { type: "array", items: sourceRefSchema(false) },
+    expiresAt: { const: "1970-01-31T00:00:00.000Z" },
+    requiredSourceRefs: {
+      type: "array",
+      minItems: 1,
+      uniqueItems: true,
+      items: sourceRefSchema(false),
+      contains: { const: SC_REVIEW_POLICY_SOURCE_REF },
+      minContains: 1
+    },
     evidencePath: { const: `${SC_ARTIFACT_ROOT}/evidence.json` },
     executable: { const: false },
     promotionStatus: { const: "review_required" }

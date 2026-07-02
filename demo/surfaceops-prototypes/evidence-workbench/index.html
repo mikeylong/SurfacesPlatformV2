@@ -988,7 +988,7 @@
         statusLabel: "Review required",
         statusClass: "review",
         description: "Generated confirm panel is structurally valid, but review is required because the request includes a confirm action that cannot advance unattended.",
-        sourceAuthority: "P2 Adobe Spectrum Design Data source refs for button",
+        sourceAuthority: "P0 synthetic fixture source refs for the confirm-action review case",
         catalogBoundary: "Surfaces Catalog permits button variants and inert action descriptors only",
         promotionStatus: "review_required",
         handoffEligibility: "Not eligible until a reviewer records an evidence-backed receipt",
@@ -1076,7 +1076,7 @@
           {
             label: "Blocked fixture coverage",
             path: "fixtures/p4/invalid/decision-overrides-catalog.review-judgment.json",
-            hash: "fixture coverage only",
+            hash: "dca6f09dfa2ddadd8da65edd68a2663278791a13f21d8407734f3141fb0d75e5",
             note: "Models a decision that attempts to override catalog or upstream policy."
           }
         ],
@@ -1087,7 +1087,7 @@
             stage: "review",
             promotion: "blocked",
             artifact: "fixtures/p4/invalid/missing-evidence-ref.review-judgment.json",
-            pointer: "/decisions/0/evidenceRefs",
+            pointer: "/decision/evidenceRefs",
             sourceRef: "null",
             coverage: "missing-evidence-ref"
           },
@@ -1097,7 +1097,7 @@
             stage: "review",
             promotion: "blocked",
             artifact: "fixtures/p4/invalid/decision-overrides-catalog.review-judgment.json",
-            pointer: "/decisions/0/catalogBoundary",
+            pointer: "/decision/catalogOverride",
             sourceRef: "null",
             coverage: "decision-overrides-catalog"
           }
@@ -1150,13 +1150,13 @@
           {
             label: "Native evidence",
             path: "artifacts/p5/native/evidence.json",
-            hash: "accepted target evidence",
+            hash: "ce468b89c18921e89c36fc033f0842a36ad07843dced05243faf7df14128b316",
             note: "Target proof remains separate from the review receipt."
           },
           {
             label: "Protocol compatibility preflight",
             path: "artifacts/p5/protocol/evidence.json",
-            hash: "compatibility preflight ref",
+            hash: "ed70d2b60e72063d13e8c08d40258bd94fa412fd7cc75b6825255c9d8e1afdde",
             note: "Compatibility evidence is not native authority."
           }
         ],
@@ -1167,7 +1167,7 @@
             stage: "review",
             promotion: "allowed",
             artifact: "artifacts/p4/review-judgment-report.json",
-            pointer: "/manifestResults/0",
+            pointer: "/results/0",
             sourceRef: "null",
             coverage: "approve-reviewed-work"
           }

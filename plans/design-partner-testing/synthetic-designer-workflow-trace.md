@@ -41,7 +41,7 @@ Each synthetic partner received the same current-scope stimulus:
   execution, or customer validation.
 
 Each synthetic partner reacted to the seven product designer workflow steps from
-[VISION.md](../VISION.md#product-designer-workflow):
+[VISION.md](../../VISION.md#product-designer-workflow):
 
 1. Declare design authority.
 2. Compile governed contracts.

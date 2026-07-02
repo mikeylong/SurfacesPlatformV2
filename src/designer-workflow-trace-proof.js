@@ -809,7 +809,7 @@ function evaluateFixture(expectation, fixture, upstream) {
     if (fixture.sourceConformanceReviewPath === DWT_GOVERNED_EXCEPTION_FIXTURE_PATH && upstreamHasGovernedExceptionExpiry(upstream)) {
       return invalidResult("TRACE_SOURCE_CONFORMANCE_REVIEW_EXPIRED_INDEXED");
     }
-    return invalidResult("TRACE_SOURCE_CONFORMANCE_REVIEW_EXPIRED_INDEXED");
+    return { result: "valid", promotionStatus: "allowed", diagnostics: [] };
   }
   if (fixture.requiresReviewStatus === true) {
     return {
@@ -894,8 +894,13 @@ function sourceConformanceExceptionLifecycle(upstream) {
 }
 
 function findSourceConformanceResult(upstream, fixturePath, diagnosticCode) {
+  const expectedStatus = diagnosticCode === DWT_REVIEW_REQUIRED_EXCEPTION_DIAGNOSTIC_CODE
+    ? { actualResult: "review_required", promotionStatus: "review_required" }
+    : { actualResult: "invalid", promotionStatus: "blocked" };
   const rows = [...(upstream.sourceEvidence.validationResults || []), ...(upstream.sourceReport.results || [])].filter((row) =>
     row.fixturePath === fixturePath &&
+    row.actualResult === expectedStatus.actualResult &&
+    row.promotionStatus === expectedStatus.promotionStatus &&
     (row.diagnosticCodes || []).includes(diagnosticCode)
   );
   if (rows.length === 0) {
@@ -1432,5 +1437,7 @@ function contractError(message, exitCode) {
 
 export const designerWorkflowTraceInternals = {
   computeEvidenceSelfHash,
-  firstEvidenceIntegrityFailureCode
+  firstEvidenceIntegrityFailureCode,
+  sourceConformanceExceptionLifecycle,
+  upstreamHasGovernedExceptionExpiry
 };

@@ -261,6 +261,54 @@ test("designer workflow trace report schema rejects live or authority overclaims
   const validate = ajv.compile(schema);
 
   assert.equal(validate(report), true);
+  const cloneReport = () => JSON.parse(JSON.stringify(report));
+  const duplicateProtocolRows = {
+    ...report,
+    targetHandoffArtifacts: [report.targetHandoffArtifacts[0], report.targetHandoffArtifacts[0]]
+  };
+  assert.equal(validate(duplicateProtocolRows), false);
+
+  const swappedTargetRows = {
+    ...report,
+    targetHandoffArtifacts: [report.targetHandoffArtifacts[1], report.targetHandoffArtifacts[0]]
+  };
+  assert.equal(validate(swappedTargetRows), false);
+
+  const wrongTargetArtifactPath = {
+    ...report,
+    targetHandoffArtifacts: report.targetHandoffArtifacts.map((target, index) => index === 1
+      ? {
+          ...target,
+          artifactRefs: target.artifactRefs.map((ref, refIndex) => refIndex === 2
+            ? { ...ref, path: "artifacts/p5/protocol/protocol-envelope.button.json" }
+            : ref)
+        }
+      : target)
+  };
+  assert.equal(validate(wrongTargetArtifactPath), false);
+
+  const wrongTargetEvidenceHash = cloneReport();
+  wrongTargetEvidenceHash.targetHandoffArtifacts[0].evidenceRef.hash = "0".repeat(64);
+  assert.equal(validate(wrongTargetEvidenceHash), false);
+
+  const wrongTargetArtifactHash = cloneReport();
+  wrongTargetArtifactHash.targetHandoffArtifacts[0].artifactRefs[0].hash = "0".repeat(64);
+  assert.equal(validate(wrongTargetArtifactHash), false);
+
+  const wrongTargetArtifactSourceRef = cloneReport();
+  wrongTargetArtifactSourceRef.targetHandoffArtifacts[0].artifactRefs[0].sourceRef = "artifacts/p5/native/adapter-target-selection.json";
+  assert.equal(validate(wrongTargetArtifactSourceRef), false);
+
+  const addedTargetArtifactSourceEvidenceHash = cloneReport();
+  addedTargetArtifactSourceEvidenceHash.targetHandoffArtifacts[0].artifactRefs[0].sourceEvidenceHash = "0".repeat(64);
+  assert.equal(validate(addedTargetArtifactSourceEvidenceHash), false);
+
+  const wrongTargetArtifactProvenance = cloneReport();
+  wrongTargetArtifactProvenance.targetHandoffArtifacts[1].artifactRefs[2].provenance.sourceRefs = [
+    "artifacts/p5/protocol/protocol-envelope.button.json"
+  ];
+  assert.equal(validate(wrongTargetArtifactProvenance), false);
+
   const liveClaim = {
     ...report,
     boundaryClaims: {
@@ -385,6 +433,33 @@ test("designer workflow trace report schema rejects live or authority overclaims
     designerWorkflowSteps: report.designerWorkflowSteps.filter((step) => step.stepId !== "govern-changes-over-time")
   };
   assert.equal(validate(missingWorkflowStep), false);
+});
+
+test("designer workflow trace requires blocked source-conformance expiry rows before indexing lifecycle", async () => {
+  await runDesignerWorkflowTraceProof();
+  const sourceEvidence = await readJson("artifacts/source-conformance/evidence.json");
+  const sourceReport = await readJson("artifacts/source-conformance/source-conformance-report.json");
+  const sourceReviewQueue = await readJson("artifacts/source-conformance/source-review-queue.json");
+  const upstream = { sourceEvidence, sourceReport, sourceReviewQueue };
+
+  assert.equal(designerWorkflowTraceInternals.upstreamHasGovernedExceptionExpiry(upstream), true);
+  assert.equal(designerWorkflowTraceInternals.sourceConformanceExceptionLifecycle(upstream).status, "expired-blocked");
+
+  const unblockedUpstream = JSON.parse(JSON.stringify(upstream));
+  for (const rowSet of [unblockedUpstream.sourceEvidence.validationResults, unblockedUpstream.sourceReport.results]) {
+    for (const row of rowSet) {
+      if (row.fixturePath === DWT_GOVERNED_EXCEPTION_FIXTURE_PATH) {
+        row.actualResult = "valid";
+        row.promotionStatus = "allowed";
+      }
+    }
+  }
+
+  assert.equal(designerWorkflowTraceInternals.upstreamHasGovernedExceptionExpiry(unblockedUpstream), false);
+  assert.throws(
+    () => designerWorkflowTraceInternals.sourceConformanceExceptionLifecycle(unblockedUpstream),
+    /source-conformance result is missing/
+  );
 });
 
 test("designer workflow trace evidence integrity detects artifact and boundary tampering", async () => {

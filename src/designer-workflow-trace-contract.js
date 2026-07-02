@@ -36,7 +36,7 @@ export const DWT_NATIVE_EVIDENCE_PATH = "artifacts/p5/native/evidence.json";
 export const DWT_ACCEPTED_P2_EVIDENCE_HASH = "ec5fe3e0bf4f2ac0b8f10ba746610df94175085ee35904186a23c0f27282906f";
 export const DWT_ACCEPTED_P2_CATALOG_HASH = "2ba1d418bc51051bb642a0c675efbc7e16f4f315dae62674a6b6e363461c9d29";
 export const DWT_ACCEPTED_P2_INGESTION_REPORT_HASH = "5db246399a04eae4ea557bd3fdaec0fd278194970feeecbd751dc0b677f64a5b";
-export const DWT_ACCEPTED_SOURCE_CONFORMANCE_EVIDENCE_HASH = "c02ad84f669307d67d18ab09f65e304b5e8a93bd1e729b8606d0145c08ae921f";
+export const DWT_ACCEPTED_SOURCE_CONFORMANCE_EVIDENCE_HASH = "15a270885a32f6b2204a349fce4f75aa62f326bc29f7ddf0d7282078b2f2282c";
 export const DWT_ACCEPTED_SOURCE_AUTHORITY_MAP_HASH = "904516b9543ac883902958092874abfbb4390de50d4c89eb48e1d61fa8ddb8fb";
 export const DWT_ACCEPTED_SOURCE_CONFORMANCE_REPORT_HASH = "d3f456df337494bdaa5d7c7fc2ff57f7001e1756671efb3b7f30c8879fa22e68";
 export const DWT_ACCEPTED_SOURCE_REVIEW_QUEUE_HASH = "68d4e87f22734af134ae28cca2796a8acb62f64467a2555907781aa9f19fcfd6";
@@ -95,11 +95,39 @@ export const DWT_PROTOCOL_HANDOFF_PATHS = [
   "artifacts/p5/protocol/protocol-adapter-report.json"
 ];
 
+const DWT_PROTOCOL_HANDOFF_SCHEMA_IDS = [
+  "protocol-target-selection.v0",
+  "protocol-projection.v0",
+  "protocol-envelope.v0",
+  "protocol-adapter-report.v0"
+];
+
+const DWT_PROTOCOL_HANDOFF_HASHES = [
+  "b78e7a025cc750122c9ad65003c261985dd03aad42cf79be142eb81ffe0b205a",
+  "44e00a05fc57fb7ed6511d943da95b81d6c79ce3c5018decd2ef41ad61df9231",
+  "129f87fa4beda939bd08ab7d3633ae6cca2e234710012cbd6515b0b13dbc9316",
+  "f375449cceac68ee35eb24161b69f37040cfa2d631366f22359af5504d1fe014"
+];
+
 export const DWT_NATIVE_HANDOFF_PATHS = [
   "artifacts/p5/native/adapter-target-selection.json",
   "artifacts/p5/native/surfaces-native-projection.json",
   "artifacts/p5/native/surfaces-native-packet.button.json",
   "artifacts/p5/native/surfaces-native-report.json"
+];
+
+const DWT_NATIVE_HANDOFF_SCHEMA_IDS = [
+  "surfaces-native-target-selection.v0",
+  "surfaces-native-projection.v0",
+  "surfaces-native-packet.v0",
+  "surfaces-native-report.v0"
+];
+
+const DWT_NATIVE_HANDOFF_HASHES = [
+  "8029ab7253d75539bff1947deb3542361306670dab031a67fbe99e1a327bb3b0",
+  "db085df991e8d408fd104332db1e158553572129c52cad902fed64b4b4aeff79",
+  "d883b88ca5f5bd4e470133ffafd1ba6d7fe7f49002a076b4976d9c2087db7fff",
+  "c63c9366c8f8dc523a066d19351ade9abaffb58c6e1175178063eaf290987a00"
 ];
 
 export const DWT_REQUIRED_EVIDENCE_PATHS = [
@@ -577,6 +605,40 @@ export function artifactRef(pathValue, schemaId, hash, extra = {}) {
   };
 }
 
+function targetHandoffArtifactRef(pathValue, schemaId, hash, generator) {
+  return artifactRef(pathValue, schemaId, hash, {
+    provenance: {
+      generatedAt: DWT_TIMESTAMP,
+      generator,
+      sourceRefs: [pathValue]
+    }
+  });
+}
+
+function targetHandoffArtifactRefs(paths, schemaIds, hashes, generator) {
+  return paths.map((artifactPath, index) =>
+    targetHandoffArtifactRef(artifactPath, schemaIds[index], hashes[index], generator)
+  );
+}
+
+function protocolTargetHandoffArtifactRefs() {
+  return targetHandoffArtifactRefs(
+    DWT_PROTOCOL_HANDOFF_PATHS,
+    DWT_PROTOCOL_HANDOFF_SCHEMA_IDS,
+    DWT_PROTOCOL_HANDOFF_HASHES,
+    "interfacectl-p5-protocol-boundary-ref"
+  );
+}
+
+function nativeTargetHandoffArtifactRefs() {
+  return targetHandoffArtifactRefs(
+    DWT_NATIVE_HANDOFF_PATHS,
+    DWT_NATIVE_HANDOFF_SCHEMA_IDS,
+    DWT_NATIVE_HANDOFF_HASHES,
+    "interfacectl-p5-native-boundary-ref"
+  );
+}
+
 export function provenance(generator, sourceRefs) {
   return {
     generatedAt: DWT_TIMESTAMP,
@@ -722,6 +784,10 @@ function artifactRefSchema(options = false) {
   return objectSchema(null, properties, required);
 }
 
+function exactArtifactRefSchema(expectedRef) {
+  return { const: expectedRef };
+}
+
 function provenanceSchema() {
   return objectSchema(null, {
     generatedAt: { const: DWT_TIMESTAMP },
@@ -823,11 +889,17 @@ function evidenceStatusRowSchema() {
   }, ["label", "path", "schemaId", "status", "promotionStatus", "hashAlgorithm", "hash"]);
 }
 
-function targetHandoffArtifactSchema() {
+function targetHandoffArtifactSchema({ targetId, evidenceRef, artifactRefs }) {
   return objectSchema(null, {
-    targetId: { enum: DWT_TARGET_IDS },
-    evidenceRef: artifactRefSchema({ nullableHash: false }),
-    artifactRefs: { type: "array", minItems: 4, maxItems: 4, items: artifactRefSchema({ provenance: true, nullableHash: false }) },
+    targetId: { const: targetId },
+    evidenceRef: exactArtifactRefSchema(evidenceRef),
+    artifactRefs: {
+      type: "array",
+      minItems: artifactRefs.length,
+      maxItems: artifactRefs.length,
+      prefixItems: artifactRefs.map((artifactRefRow) => exactArtifactRefSchema(artifactRefRow)),
+      items: false
+    },
     emittedForComponent: { const: DWT_COMPONENT_ID },
     liveBehavior: { const: false },
     handoffAllowedForGovernedException: { const: false },
@@ -969,7 +1041,19 @@ function traceReportSchema() {
       type: "array",
       minItems: DWT_TARGET_IDS.length,
       maxItems: DWT_TARGET_IDS.length,
-      items: targetHandoffArtifactSchema()
+      prefixItems: [
+        targetHandoffArtifactSchema({
+          targetId: "surfaces-protocol-static",
+          evidenceRef: artifactRef(DWT_PROTOCOL_EVIDENCE_PATH, "protocol-adapter-evidence.v0", DWT_ACCEPTED_PROTOCOL_EVIDENCE_HASH),
+          artifactRefs: protocolTargetHandoffArtifactRefs()
+        }),
+        targetHandoffArtifactSchema({
+          targetId: "surfaces-native-static",
+          evidenceRef: artifactRef(DWT_NATIVE_EVIDENCE_PATH, "surfaces-native-evidence.v0", DWT_ACCEPTED_NATIVE_EVIDENCE_HASH),
+          artifactRefs: nativeTargetHandoffArtifactRefs()
+        })
+      ],
+      items: false
     },
     sourceConformanceGovernance: sourceConformanceGovernanceSchema(),
     presentationLinks: {

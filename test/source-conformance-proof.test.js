@@ -3,6 +3,7 @@ import { execFile } from "node:child_process";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { promisify } from "node:util";
+import Ajv2020 from "ajv/dist/2020.js";
 import test from "node:test";
 import { canonicalJson } from "../src/p0.js";
 import {
@@ -50,6 +51,9 @@ test("source conformance proof preserves review-required rows without execution"
   await runSourceConformanceProof();
   const evidence = await readJson("artifacts/source-conformance/evidence.json");
   const reviewQueue = await readJson("artifacts/source-conformance/source-review-queue.json");
+  const schema = await readJson("schemas/source-review-queue.v0.schema.json");
+  const ajv = new Ajv2020({ allErrors: true, strict: false, validateFormats: false });
+  const validate = ajv.compile(schema);
 
   assert.equal(reviewQueue.promotionStatus, "review_required");
   assert.equal(reviewQueue.queueItems.length, 1);
@@ -65,6 +69,18 @@ test("source conformance proof preserves review-required rows without execution"
   assert.equal(reviewRow.reviewQueueItemId, "source-review-brand-exception");
   assert.deepEqual(reviewRow.diagnosticCodes, ["SOURCE_REVIEW_REQUIRED"]);
   assert.equal(reviewRow.requiredSourceRefs.includes(SC_REVIEW_POLICY_SOURCE_REF), true);
+  assert.equal(validate(reviewQueue), true);
+  assert.equal(validate({
+    ...reviewQueue,
+    queueItems: reviewQueue.queueItems.map((item) => ({ ...item, expiresAt: "1969-12-31T00:00:00.000Z" }))
+  }), false);
+  assert.equal(validate({
+    ...reviewQueue,
+    queueItems: reviewQueue.queueItems.map((item) => ({
+      ...item,
+      requiredSourceRefs: item.requiredSourceRefs.filter((ref) => ref !== SC_REVIEW_POLICY_SOURCE_REF)
+    }))
+  }), false);
 });
 
 test("source conformance proof blocks expired review metadata", async () => {
