@@ -988,6 +988,7 @@ function diagnosticSourceForStage(stage) {
 function suggestedActionForCode(code) {
   if (code === "SOURCE_REVIEW_EXPIRED") return "Renew source-owner approval and canonical expiry metadata before handoff or promotion.";
   if (code === "SOURCE_REVIEW_POLICY_REF_MISSING") return "Bind review-required output to the declared review policy source ref.";
+  if (code === "SOURCE_MAPPING_AMBIGUOUS") return "Route the ambiguous source mapping to non-executable review with source-precedence and review-policy refs, owner, rationale, and expiry metadata.";
   if (code.includes("UPSTREAM")) return "Restore accepted P2 catalog and evidence before source conformance proof continues.";
   if (code.includes("EVIDENCE")) return "Regenerate source conformance artifacts and evidence from checked-in schemas, source files, and fixtures.";
   if (code.includes("PATH") || code.includes("HASH")) return "Regenerate the declared source manifest from checked-in source files.";
@@ -1278,20 +1279,29 @@ function sourceConformanceFixtureSchema() {
 }
 
 function authorityConflictSchema() {
+  const conflictingRefs = {
+    type: "array",
+    minItems: 1,
+    uniqueItems: true,
+    items: sourceRefSchema(false)
+  };
   return {
     oneOf: [
       objectSchema(null, {
-        conflictingRefs: {
-          type: "array",
-          minItems: 1,
-          uniqueItems: true,
-          items: sourceRefSchema(false)
-        },
-        resolutionRule: {
-          enum: ["declared-source-precedence", "review-required", null]
-        },
-        resolvedBy: sourceRefSchema(true),
-        selectedSourceRef: sourceRefSchema(true)
+        conflictingRefs,
+        resolutionRule: { const: "declared-source-precedence" },
+        resolvedBy: sourceRefSchema(false),
+        selectedSourceRef: sourceRefSchema(false)
+      }, ["conflictingRefs", "resolutionRule", "resolvedBy", "selectedSourceRef"]),
+      objectSchema(null, {
+        conflictingRefs,
+        resolutionRule: { const: "review-required" },
+        resolvedBy: sourceRefSchema(false),
+        selectedSourceRef: { type: "null" }
+      }, ["conflictingRefs", "resolutionRule", "resolvedBy", "selectedSourceRef"]),
+      objectSchema(null, {
+        conflictingRefs,
+        resolutionRule: { type: "null" }
       }, ["conflictingRefs", "resolutionRule"]),
       { type: "null" }
     ]

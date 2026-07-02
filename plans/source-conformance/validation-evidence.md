@@ -50,9 +50,9 @@ Review-required rows are proof artifacts only. They must preserve:
 
 Ambiguous Button source mappings are routed to review with
 `SOURCE_MAPPING_AMBIGUOUS`. The queue item remains non-executable and does not
-resolve product authority; it preserves the declared source refs, source
-precedence policy ref, owner, rationale, expiry, and evidence path for
-authority-layer follow-up.
+resolve product authority; it preserves the actual conflicting Button source
+refs, source-precedence policy ref, review-policy ref, owner, rationale, expiry,
+and evidence path for authority-layer follow-up.
 
 Expired or non-canonical review expiry metadata is blocked with
 `SOURCE_REVIEW_EXPIRED`. The expired-review fixture is invalid coverage; it

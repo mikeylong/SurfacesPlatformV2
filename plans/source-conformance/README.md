@@ -100,7 +100,8 @@ Given accepted P2 evidence and catalog, the manifest-declared local source bundl
   selects the primary Button source;
 - block unresolved Button source conflicts with `SOURCE_AUTHORITY_CONFLICT`;
 - route ambiguous Button source mappings to non-executable review with
-  `SOURCE_MAPPING_AMBIGUOUS`;
+  `SOURCE_MAPPING_AMBIGUOUS`, preserving the actual conflicting Button source
+  refs in `requiredSourceRefs`;
 - preserve review-required rows as non-executable output with owner, rationale, and canonical future expiry metadata;
 - require review-required output to include the declared review-policy source ref;
 - block expired or non-canonical review expiry metadata with `SOURCE_REVIEW_EXPIRED`;

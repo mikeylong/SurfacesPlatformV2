@@ -623,6 +623,12 @@ function evaluateAuthorityConflict(fixture, context) {
   if (conflictRefs.some((sourceRef) => !context.declaredSourceRoots.has(declaredSourceRootForRef(sourceRef)))) {
     return invalidResult("DECLARED_SOURCE_REF_UNDECLARED");
   }
+  if (!conflictingRefs.every((sourceRef) => isComponentSourceRefForFixture(fixture, context, sourceRef))) {
+    return invalidResult("SOURCE_AUTHORITY_CONFLICT");
+  }
+  if (!allRefsRequired(fixture, conflictingRefs)) {
+    return invalidResult("SOURCE_AUTHORITY_CONFLICT");
+  }
   if (conflict.resolutionRule === null) {
     return invalidResult("SOURCE_AUTHORITY_CONFLICT");
   }
@@ -641,14 +647,15 @@ function evaluateAuthorityConflict(fixture, context) {
   if (conflict.resolutionRule === "review-required") {
     if (
       conflict.resolvedBy !== SC_REVIEW_POLICY_SOURCE_REF ||
-      conflict.selectedSourceRef !== null
+      conflict.selectedSourceRef !== null ||
+      !isExpectedButtonAmbiguousMapping(fixture.componentId, conflictingRefs)
     ) {
       return invalidResult("SOURCE_AUTHORITY_CONFLICT");
     }
-    if (
-      !fixture.requiredSourceRefs.includes(SC_SOURCE_PRECEDENCE_POLICY_SOURCE_REF) ||
-      !fixture.requiredSourceRefs.includes(SC_REVIEW_POLICY_SOURCE_REF)
-    ) {
+    if (!fixture.requiredSourceRefs.includes(SC_SOURCE_PRECEDENCE_POLICY_SOURCE_REF)) {
+      return invalidResult("SOURCE_AUTHORITY_CONFLICT");
+    }
+    if (!fixture.requiredSourceRefs.includes(SC_REVIEW_POLICY_SOURCE_REF)) {
       return invalidResult("SOURCE_REVIEW_POLICY_REF_MISSING");
     }
     if (fixture.review?.required !== true) {
@@ -662,6 +669,21 @@ function evaluateAuthorityConflict(fixture, context) {
 function isExpectedButtonSupportingConflict(componentId, conflictingRefs) {
   if (componentId !== "Button") return false;
   return canonicalJson([...conflictingRefs].sort()) === canonicalJson([...BUTTON_SUPPORTING_SOURCE_REFS].sort());
+}
+
+function isExpectedButtonAmbiguousMapping(componentId, conflictingRefs) {
+  if (componentId !== "Button" || conflictingRefs.length < 2) return false;
+  const allowedRefs = new Set([BUTTON_PRIMARY_SOURCE_REF, ...BUTTON_SUPPORTING_SOURCE_REFS]);
+  return conflictingRefs.includes(BUTTON_PRIMARY_SOURCE_REF) &&
+    conflictingRefs.every((sourceRef) => allowedRefs.has(sourceRef));
+}
+
+function isComponentSourceRefForFixture(fixture, context, sourceRef) {
+  return context.componentSourceRoots.get(fixture.componentId)?.has(declaredSourceRootForRef(sourceRef)) === true;
+}
+
+function allRefsRequired(fixture, refs) {
+  return refs.every((sourceRef) => fixture.requiredSourceRefs.includes(sourceRef));
 }
 
 function evaluateMutationFixture(expectation, fixture) {
