@@ -42,9 +42,17 @@ Review-required rows are proof artifacts only. They must preserve:
 - rationale;
 - canonical future expiry metadata;
 - the declared review-policy source ref in `requiredSourceRefs`;
+- any source-precedence or source-authority refs needed to explain the review
+  route;
 - evidence path;
 - `executable: false`;
 - `promotionStatus: "review_required"`.
+
+Ambiguous Button source mappings are routed to review with
+`SOURCE_MAPPING_AMBIGUOUS`. The queue item remains non-executable and does not
+resolve product authority; it preserves the declared source refs, source
+precedence policy ref, owner, rationale, expiry, and evidence path for
+authority-layer follow-up.
 
 Expired or non-canonical review expiry metadata is blocked with
 `SOURCE_REVIEW_EXPIRED`. The expired-review fixture is invalid coverage; it
@@ -64,5 +72,8 @@ The final evidence must validate its own ref closure. Schema, source, fixture, u
 - `npm run check:source-conformance:ci` runs the upstream P2 gate and source-conformance phase gate.
 - `artifacts/source-conformance/source-conformance-report.json` records every expected and actual result before final evidence.
 - `artifacts/source-conformance/source-review-queue.json` contains only non-executable review-required rows.
+- Button source precedence is allowed only when the declared source-precedence
+  policy selects the primary Button source; unresolved conflicts block, and
+  ambiguous mappings route to review.
 - `artifacts/source-conformance/evidence.json` records `status: "pass"` and `promotionStatus: "review_required"` for the current fixture set.
 - No source-conformance artifact claims customer validation, production readiness, pilot readiness, self-serve support, live integration, API/SDK support, A2UI support, native runtime support, live SurfaceOps, live JudgmentKit, or action execution.

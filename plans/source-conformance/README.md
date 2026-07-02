@@ -77,7 +77,10 @@ The diagnostic registry covers:
 - missing, malformed, or undeclared source refs;
 - components absent from accepted P2 catalog evidence;
 - component/source-ref mismatches against manifest-declared component source documents;
-- unresolved source authority conflicts;
+- explicit Button source precedence over supporting acquired-system Button
+  source refs;
+- unresolved Button source authority conflicts;
+- ambiguous Button source mappings routed to review;
 - review-required routing;
 - missing review owner, rationale, or expiry metadata;
 - missing declared review-policy source ref for review-required output;
@@ -93,6 +96,11 @@ Given accepted P2 evidence and catalog, the manifest-declared local source bundl
 - reject non-normalized or non-contract command paths;
 - fail closed on missing upstream P2 evidence, invalid P2 evidence, stale output, undeclared source files, and source hash drift;
 - validate every fixture against `fixtures/source-conformance/expectations.manifest.json`;
+- allow a Button multi-source path only when declared source-precedence policy
+  selects the primary Button source;
+- block unresolved Button source conflicts with `SOURCE_AUTHORITY_CONFLICT`;
+- route ambiguous Button source mappings to non-executable review with
+  `SOURCE_MAPPING_AMBIGUOUS`;
 - preserve review-required rows as non-executable output with owner, rationale, and canonical future expiry metadata;
 - require review-required output to include the declared review-policy source ref;
 - block expired or non-canonical review expiry metadata with `SOURCE_REVIEW_EXPIRED`;

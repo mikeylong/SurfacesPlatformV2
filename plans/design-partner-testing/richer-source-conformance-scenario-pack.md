@@ -14,6 +14,15 @@ Broader coverage remains planned until a later target adds its own schema,
 fixture coverage, diagnostics, command behavior, generated reports or artifacts,
 evidence path, CI gate, and passing evidence.
 
+Current implementation note: the first multi-source authority reconciliation
+subset is implemented inside the existing source-conformance target when
+`artifacts/source-conformance/evidence.json` passes. That subset covers
+manifest-declared Button supporting source refs, declared source-precedence
+policy, an accepted precedence path, an unresolved conflict blocked by
+`SOURCE_AUTHORITY_CONFLICT`, and an ambiguous mapping routed to review by
+`SOURCE_MAPPING_AMBIGUOUS`. The remaining scenario variants in this pack remain
+planning-only.
+
 ## Objective
 The synthetic designer-workflow trace dry run found that one Button scenario is
 enough to explain the evidence loop, but not enough to test partner-shaped
@@ -73,8 +82,9 @@ The first retest should include:
 | Regulated release control | Regulated-services partner needs auditability, approvals, evidence retention, accessibility compliance, and release controls. | Accessibility-sensitive Button change, approval record, retention manifest, release-gate policy, stale approval, and accessibility regression case. | Complete approval and retention metadata permits review-required inspection; stale approval or accessibility regression blocks. | Proves audit and release-control metadata can be evidence-bound without live workflow claims. |
 
 ## Candidate Source Files
-These are planning names only. Do not create them under `sources/` until the
-future proof target owns the schema and fixture contract.
+These are planning names only for broader future variants. The implemented
+source-precedence subset uses the existing source-conformance source root under
+`sources/source-conformance/declared-source-bundle`.
 
 ```text
 sources/next-proof/richer-source-conformance/
@@ -94,8 +104,9 @@ sources/next-proof/richer-source-conformance/
 ```
 
 ## Candidate Fixture Coverage
-These are planning names only. Do not create them under `fixtures/` until the
-future proof target owns the schema and fixture contract.
+These are planning names only for broader future variants. The implemented
+source-precedence subset uses the existing source-conformance fixture root under
+`fixtures/source-conformance`.
 
 ```text
 fixtures/next-proof/richer-source-conformance/
@@ -118,10 +129,12 @@ fixtures/next-proof/richer-source-conformance/
 The existing source-conformance registry already covers several narrow cases.
 A broader target would need additional diagnostics or stricter variants.
 
-Current implementation note: the narrow governed-exception expiry slice uses
-`SOURCE_REVIEW_EXPIRED` in source-conformance evidence. The broader
-`SOURCE_EXCEPTION_EXPIRED` row below remains planning terminology for a future
-generalized scenario pack unless that target adds its own full proof shape.
+Current implementation note: the source-conformance evidence now includes
+`SOURCE_MAPPING_AMBIGUOUS` for the first ambiguous Button mapping review route,
+`SOURCE_AUTHORITY_CONFLICT` for unresolved Button source conflicts, and
+`SOURCE_REVIEW_EXPIRED` for the narrow governed-exception expiry slice. The
+broader diagnostic rows below remain planning terminology for future generalized
+scenario coverage unless that target adds its own full proof shape.
 
 | Candidate code | Trigger | Intended promotion status |
 | --- | --- | --- |

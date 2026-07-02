@@ -70,3 +70,9 @@ review, and no policy invention.
 That candidate should remain proof-only and must add schema, fixture,
 diagnostic, report or artifact path, evidence path, and passing proof evidence
 before any implementation claim is made.
+
+Follow-up status: the first source-precedence/conflict subset is now implemented
+inside the existing source-conformance proof when
+`artifacts/source-conformance/evidence.json` passes. It remains proof-only and
+does not claim live ingestion, live review workflow, production handoff, or
+partner adoption.

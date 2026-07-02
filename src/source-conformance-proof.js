@@ -28,6 +28,7 @@ import {
   SC_SCHEMA_FILES,
   SC_SCHEMA_ROOT,
   SC_SOURCE_ROOT,
+  SC_SOURCE_PRECEDENCE_POLICY_SOURCE_REF,
   SC_TIMESTAMP,
   SC_VERSION,
   artifactRef,
@@ -43,6 +44,11 @@ import {
 } from "./source-conformance-contract.js";
 
 const SCHEMA_FILE_NAME_PATTERN = /^[a-z0-9][a-z0-9-]*\.v[0-9]+\.schema\.json$/;
+const BUTTON_PRIMARY_SOURCE_REF = "declared-source://source-conformance/components/button.json#/";
+const BUTTON_SUPPORTING_SOURCE_REFS = [
+  "declared-source://source-conformance/components/button-acquired-a.json#/",
+  "declared-source://source-conformance/components/button-acquired-b.json#/"
+];
 
 export async function runSourceConformanceInterfacectl(argv, io) {
   const parsed = parseSourceConformanceProofArgs(argv);
@@ -174,7 +180,8 @@ export async function runSourceConformanceProof({
   const validationResults = evaluateExpectations(fixtureRows, {
     declaredSourceRoots: new Set(manifest.sourceFiles.map((entry) => entry.sourceRefRoot)),
     catalogComponentIds: new Set(Object.keys(upstream.p2Catalog.components || {})),
-    componentSourceRoots
+    componentSourceRoots,
+    primaryComponentSourceRoots: primaryComponentSourceRoots()
   });
   const diagnostics = sortDiagnostics(validationResults.flatMap((row) => row.diagnostics));
   const status = validationResults.every((row) => row.matched) ? "pass" : "fail";
@@ -466,19 +473,34 @@ function buildAuthorityMap({ upstream }) {
     version: SC_VERSION,
     catalogRef: upstream.p2CatalogRef,
     ingestionEvidenceRef: upstream.p2EvidenceRef,
-    componentAuthority: ["Button", "InLineAlert"].map((componentId) => ({
-      componentId,
-      catalogRef: `catalog://p2/components/${componentId}`,
-      declaredSourceRef: componentId === "Button"
-        ? "declared-source://source-conformance/components/button.json#/"
-        : "declared-source://source-conformance/components/in-line-alert.json#/",
-      conformanceRole: "must-match-declared-source-and-accepted-p2-catalog"
-    })),
+    componentAuthority: [
+      {
+        componentId: "Button",
+        catalogRef: "catalog://p2/components/Button",
+        declaredSourceRef: BUTTON_PRIMARY_SOURCE_REF,
+        additionalDeclaredSourceRefs: BUTTON_SUPPORTING_SOURCE_REFS,
+        precedencePolicyRef: SC_SOURCE_PRECEDENCE_POLICY_SOURCE_REF,
+        conformanceRole: "primary-source-wins-when-explicit-precedence-policy-is-declared"
+      },
+      {
+        componentId: "InLineAlert",
+        catalogRef: "catalog://p2/components/InLineAlert",
+        declaredSourceRef: "declared-source://source-conformance/components/in-line-alert.json#/",
+        additionalDeclaredSourceRefs: [],
+        precedencePolicyRef: null,
+        conformanceRole: "must-match-declared-source-and-accepted-p2-catalog"
+      }
+    ],
     policyAuthority: [
       {
         policyId: "accessibility-policy",
         sourceRef: "declared-source://source-conformance/policies/accessibility.json#/",
         conformanceRole: "blocks missing accessibility semantics"
+      },
+      {
+        policyId: "source-precedence-policy",
+        sourceRef: SC_SOURCE_PRECEDENCE_POLICY_SOURCE_REF,
+        conformanceRole: "resolves declared Button source conflicts or routes ambiguity to review"
       },
       {
         policyId: "review-policy",
@@ -513,6 +535,7 @@ function evaluateExpectations(fixtureRows, context) {
       artifactPath: expectation.artifactPath,
       jsonPointer: expectation.jsonPointer,
       componentId: fixture.componentId || null,
+      authorityConflict: fixture.authorityConflict || null,
       reviewQueueItemId: actual.reviewQueueItemId,
       review: actual.review || null,
       requiredSourceRefs: fixture.requiredSourceRefs || [],
@@ -540,11 +563,15 @@ function evaluateFixture(expectation, fixture, context) {
   if (!context.catalogComponentIds.has(fixture.componentId)) {
     return invalidResult("SOURCE_CATALOG_COMPONENT_UNKNOWN");
   }
-  if (declaredSourceRootForRef(fixture.sourceRef) !== context.componentSourceRoots.get(fixture.componentId)) {
+  if (!context.componentSourceRoots.get(fixture.componentId)?.has(declaredSourceRootForRef(fixture.sourceRef))) {
     return invalidResult("SOURCE_COMPONENT_SOURCE_MISMATCH");
   }
-  if (fixture.authorityConflict && fixture.authorityConflict.resolutionRule === null) {
-    return invalidResult("SOURCE_AUTHORITY_CONFLICT");
+  if (context.primaryComponentSourceRoots.get(fixture.componentId) !== declaredSourceRootForRef(fixture.sourceRef)) {
+    return invalidResult("SOURCE_COMPONENT_SOURCE_MISMATCH");
+  }
+  const authorityConflictResult = evaluateAuthorityConflict(fixture, context);
+  if (authorityConflictResult.result !== "valid") {
+    return authorityConflictResult;
   }
   if (hasForbiddenProductionClaim(fixture.claims)) {
     return invalidResult("SOURCE_PRODUCTION_CLAIM_FORBIDDEN");
@@ -565,10 +592,11 @@ function evaluateFixture(expectation, fixture, context) {
         }
       });
     }
+    const diagnosticCode = authorityConflictResult.reviewDiagnosticCode || "SOURCE_REVIEW_REQUIRED";
     return {
       result: "review_required",
       promotionStatus: "review_required",
-      diagnostics: [diagnosticForCode("SOURCE_REVIEW_REQUIRED")],
+      diagnostics: [diagnosticForCode(diagnosticCode)],
       reviewQueueItemId: `source-review-${fixture.fixtureId}`,
       review: {
         owner: fixture.review.owner,
@@ -578,6 +606,62 @@ function evaluateFixture(expectation, fixture, context) {
     };
   }
   return { result: "valid", promotionStatus: "allowed", diagnostics: [], reviewQueueItemId: null };
+}
+
+function evaluateAuthorityConflict(fixture, context) {
+  const conflict = fixture.authorityConflict;
+  if (!conflict) return { result: "valid" };
+  const conflictingRefs = Array.isArray(conflict.conflictingRefs) ? conflict.conflictingRefs : [];
+  const conflictRefs = [
+    ...conflictingRefs,
+    conflict.resolvedBy,
+    conflict.selectedSourceRef
+  ].filter((sourceRef) => sourceRef !== null && sourceRef !== undefined);
+  if (conflictRefs.some((sourceRef) => !isDeclaredSourceRef(sourceRef))) {
+    return invalidResult("DECLARED_SOURCE_REF_INVALID");
+  }
+  if (conflictRefs.some((sourceRef) => !context.declaredSourceRoots.has(declaredSourceRootForRef(sourceRef)))) {
+    return invalidResult("DECLARED_SOURCE_REF_UNDECLARED");
+  }
+  if (conflict.resolutionRule === null) {
+    return invalidResult("SOURCE_AUTHORITY_CONFLICT");
+  }
+  if (conflict.resolutionRule === "declared-source-precedence") {
+    if (
+      conflict.resolvedBy !== SC_SOURCE_PRECEDENCE_POLICY_SOURCE_REF ||
+      !fixture.requiredSourceRefs.includes(SC_SOURCE_PRECEDENCE_POLICY_SOURCE_REF) ||
+      conflict.selectedSourceRef !== context.primaryComponentSourceRoots.get(fixture.componentId) ||
+      !fixture.requiredSourceRefs.includes(conflict.selectedSourceRef) ||
+      !isExpectedButtonSupportingConflict(fixture.componentId, conflictingRefs)
+    ) {
+      return invalidResult("SOURCE_AUTHORITY_CONFLICT");
+    }
+    return { result: "valid" };
+  }
+  if (conflict.resolutionRule === "review-required") {
+    if (
+      conflict.resolvedBy !== SC_REVIEW_POLICY_SOURCE_REF ||
+      conflict.selectedSourceRef !== null
+    ) {
+      return invalidResult("SOURCE_AUTHORITY_CONFLICT");
+    }
+    if (
+      !fixture.requiredSourceRefs.includes(SC_SOURCE_PRECEDENCE_POLICY_SOURCE_REF) ||
+      !fixture.requiredSourceRefs.includes(SC_REVIEW_POLICY_SOURCE_REF)
+    ) {
+      return invalidResult("SOURCE_REVIEW_POLICY_REF_MISSING");
+    }
+    if (fixture.review?.required !== true) {
+      return invalidResult("SOURCE_REVIEW_OWNER_MISSING");
+    }
+    return { result: "valid", reviewDiagnosticCode: "SOURCE_MAPPING_AMBIGUOUS" };
+  }
+  return invalidResult("SOURCE_AUTHORITY_CONFLICT");
+}
+
+function isExpectedButtonSupportingConflict(componentId, conflictingRefs) {
+  if (componentId !== "Button") return false;
+  return canonicalJson([...conflictingRefs].sort()) === canonicalJson([...BUTTON_SUPPORTING_SOURCE_REFS].sort());
 }
 
 function evaluateMutationFixture(expectation, fixture) {
@@ -634,7 +718,9 @@ async function componentSourceRootsForManifest(cwd, manifest) {
   for (const sourceFile of manifest.sourceFiles) {
     const document = await readJson(path.join(cwd, SC_SOURCE_ROOT, sourceFile.path));
     if (document.sourceType === "component" && document.componentId) {
-      componentSourceRoots.set(document.componentId, sourceFile.sourceRefRoot);
+      const roots = componentSourceRoots.get(document.componentId) || new Set();
+      roots.add(sourceFile.sourceRefRoot);
+      componentSourceRoots.set(document.componentId, roots);
     }
   }
   return componentSourceRoots;
@@ -655,15 +741,25 @@ function buildReviewQueue({ validationResults, diagnostics }) {
       executable: false,
       promotionStatus: "review_required"
     }));
+  const reviewCodes = new Set(validationResults
+    .filter((row) => row.actualResult === "review_required")
+    .flatMap((row) => row.diagnosticCodes));
   return {
     schemaId: "source-review-queue.v0",
     version: SC_VERSION,
     queueItems,
     promotionStatus: queueItems.length > 0 ? "review_required" : "allowed",
-    diagnostics: sortDiagnostics(diagnostics.filter((diagnostic) => diagnostic.code === "SOURCE_REVIEW_REQUIRED")),
+    diagnostics: sortDiagnostics(diagnostics.filter((diagnostic) => reviewCodes.has(diagnostic.code))),
     diagnosticsRegistry: diagnosticsRegistry(),
     provenance: provenance("interfacectl-source-conformance-review-queue", queueItems.map((item) => item.fixturePath))
   };
+}
+
+function primaryComponentSourceRoots() {
+  return new Map([
+    ["Button", BUTTON_PRIMARY_SOURCE_REF],
+    ["InLineAlert", "declared-source://source-conformance/components/in-line-alert.json#/"]
+  ]);
 }
 
 function buildReport({ runId, upstream, inventoryRef, authorityMapRef, reviewQueueRef, validationResults, diagnostics, status, promotionStatus }) {
@@ -772,6 +868,7 @@ function stripResult(row) {
     artifactPath: row.artifactPath,
     jsonPointer: row.jsonPointer,
     componentId: row.componentId,
+    authorityConflict: row.authorityConflict || null,
     reviewQueueItemId: row.reviewQueueItemId,
     review: row.review || null,
     requiredSourceRefs: row.requiredSourceRefs,
