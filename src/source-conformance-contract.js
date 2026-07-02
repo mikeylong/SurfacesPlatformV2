@@ -21,6 +21,7 @@ export const SC_P2_CATALOG_PATH = "artifacts/p2/governed-catalog.json";
 export const SC_COMMAND = "interfacectl surfaces source-conformance proof";
 export const SC_CONTRACT_ID = "surfaces-source-conformance-proof";
 export const SC_REVIEW_POLICY_SOURCE_REF = "declared-source://source-conformance/governance/review-policy.json#/";
+export const SC_SOURCE_PRECEDENCE_POLICY_SOURCE_REF = "declared-source://source-conformance/policies/source-precedence.json#/";
 
 export const SC_ENVIRONMENT = Object.freeze({
   generatedAt: SC_TIMESTAMP,
@@ -88,6 +89,34 @@ export const SC_SOURCE_DOCUMENTS = {
     ],
     notes: "Button may be emitted only with declared variants, token refs, accessibility, and inert action policy."
   },
+  "components/button-acquired-a.json": {
+    schemaId: "declared-source-document.v0",
+    version: SC_VERSION,
+    documentId: "button-acquired-a",
+    sourceType: "component",
+    componentId: "Button",
+    sourceRef: "declared-source://source-conformance/components/button-acquired-a.json#/",
+    authoritativeFields: ["terminology", "variants", "accessibility"],
+    policyRefs: [
+      SC_SOURCE_PRECEDENCE_POLICY_SOURCE_REF,
+      "declared-source://source-conformance/policies/accessibility.json#/"
+    ],
+    notes: "Acquired system A Button source is declared for source-precedence conflict coverage only."
+  },
+  "components/button-acquired-b.json": {
+    schemaId: "declared-source-document.v0",
+    version: SC_VERSION,
+    documentId: "button-acquired-b",
+    sourceType: "component",
+    componentId: "Button",
+    sourceRef: "declared-source://source-conformance/components/button-acquired-b.json#/",
+    authoritativeFields: ["terminology", "variants", "accessibility"],
+    policyRefs: [
+      SC_SOURCE_PRECEDENCE_POLICY_SOURCE_REF,
+      "declared-source://source-conformance/policies/accessibility.json#/"
+    ],
+    notes: "Acquired system B Button source is declared for source-precedence conflict coverage only."
+  },
   "components/in-line-alert.json": {
     schemaId: "declared-source-document.v0",
     version: SC_VERSION,
@@ -124,6 +153,19 @@ export const SC_SOURCE_DOCUMENTS = {
     sourceRef: "declared-source://source-conformance/policies/content.json#/",
     requirements: ["plain-language", "no-unsafe-markup", "status-copy-matches-severity"]
   },
+  "policies/source-precedence.json": {
+    schemaId: "declared-source-document.v0",
+    version: SC_VERSION,
+    documentId: "source-precedence-policy",
+    sourceType: "source-precedence-policy",
+    sourceRef: SC_SOURCE_PRECEDENCE_POLICY_SOURCE_REF,
+    requirements: [
+      "button-primary-source-wins-over-acquired-sources",
+      "unresolved-button-source-conflicts-block",
+      "ambiguous-button-source-mapping-routes-to-review"
+    ],
+    notes: "Button source conflicts are resolved only by explicit declared precedence or non-executable review routing."
+  },
   "governance/review-policy.json": {
     schemaId: "declared-source-document.v0",
     version: SC_VERSION,
@@ -132,6 +174,7 @@ export const SC_SOURCE_DOCUMENTS = {
     sourceRef: SC_REVIEW_POLICY_SOURCE_REF,
     reviewRequiredWhen: [
       "source-precedence-ambiguous",
+      "source-mapping-ambiguous",
       "brand-exception-requested",
       "new-action-semantics-requested",
       "accessibility-judgment-required"
@@ -238,6 +281,19 @@ export const SC_DIAGNOSTIC_ROWS = [
     fixtureCoverage: "invalid/source-authority-conflict.source-conformance.json"
   }),
   diagnosticRow({
+    code: "SOURCE_MAPPING_AMBIGUOUS",
+    canonicalMessage: "Declared source mapping is ambiguous and requires human review before unattended promotion.",
+    stage: "review",
+    phase: "source-authority",
+    artifactPath: "fixtures/source-conformance/review/source-mapping-ambiguous.source-conformance.json",
+    jsonPointer: "/authorityConflict",
+    sourceRef: SC_SOURCE_PRECEDENCE_POLICY_SOURCE_REF,
+    validationResult: "review_required",
+    promotionStatus: "review_required",
+    fixtureCoverage: "review/source-mapping-ambiguous.source-conformance.json",
+    severity: "review"
+  }),
+  diagnosticRow({
     code: "SOURCE_REVIEW_REQUIRED",
     canonicalMessage: "Declared source material requires human review before unattended promotion.",
     stage: "review",
@@ -336,6 +392,17 @@ export const SC_EXPECTATION_ROWS = [
     jsonPointer: "/"
   }),
   expectationRow({
+    fixturePath: "fixtures/source-conformance/valid/button-source-precedence-accepted.source-conformance.json",
+    kind: "valid",
+    stage: "conformance",
+    phase: "source-authority",
+    expectedResult: "valid",
+    promotionStatus: "allowed",
+    diagnosticCodes: [],
+    artifactPath: "artifacts/source-conformance/source-conformance-report.json",
+    jsonPointer: "/authorityConflict"
+  }),
+  expectationRow({
     fixturePath: "fixtures/source-conformance/review/brand-exception.source-conformance.json",
     kind: "review",
     stage: "review",
@@ -345,6 +412,17 @@ export const SC_EXPECTATION_ROWS = [
     diagnosticCodes: ["SOURCE_REVIEW_REQUIRED"],
     artifactPath: "artifacts/source-conformance/source-review-queue.json",
     jsonPointer: "/review"
+  }),
+  expectationRow({
+    fixturePath: "fixtures/source-conformance/review/source-mapping-ambiguous.source-conformance.json",
+    kind: "review",
+    stage: "review",
+    phase: "source-authority",
+    expectedResult: "review_required",
+    promotionStatus: "review_required",
+    diagnosticCodes: ["SOURCE_MAPPING_AMBIGUOUS"],
+    artifactPath: "artifacts/source-conformance/source-review-queue.json",
+    jsonPointer: "/authorityConflict"
   }),
   expectationRow({
     fixturePath: "fixtures/source-conformance/invalid/missing-source-ref.source-conformance.json",
@@ -597,10 +675,59 @@ export function buildSourceConformanceFixtures() {
       expiresAt: "1970-01-31T00:00:00.000Z"
     }
   });
+  const precedenceAccepted = sourceConformanceFixture({
+    fixtureId: "button-source-precedence-accepted",
+    componentId: "Button",
+    sourceRef: "declared-source://source-conformance/components/button.json#/",
+    requiredSourceRefs: [
+      "declared-source://source-conformance/components/button.json#/",
+      "declared-source://source-conformance/components/button-acquired-a.json#/",
+      "declared-source://source-conformance/components/button-acquired-b.json#/",
+      SC_SOURCE_PRECEDENCE_POLICY_SOURCE_REF,
+      "declared-source://source-conformance/policies/accessibility.json#/"
+    ],
+    authorityConflict: {
+      conflictingRefs: [
+        "declared-source://source-conformance/components/button-acquired-a.json#/",
+        "declared-source://source-conformance/components/button-acquired-b.json#/"
+      ],
+      resolvedBy: SC_SOURCE_PRECEDENCE_POLICY_SOURCE_REF,
+      resolutionRule: "declared-source-precedence",
+      selectedSourceRef: "declared-source://source-conformance/components/button.json#/"
+    }
+  });
+  const ambiguousMapping = sourceConformanceFixture({
+    fixtureId: "source-mapping-ambiguous",
+    componentId: "Button",
+    sourceRef: "declared-source://source-conformance/components/button.json#/",
+    requiredSourceRefs: [
+      "declared-source://source-conformance/components/button.json#/",
+      "declared-source://source-conformance/components/button-acquired-a.json#/",
+      SC_SOURCE_PRECEDENCE_POLICY_SOURCE_REF,
+      SC_REVIEW_POLICY_SOURCE_REF
+    ],
+    authorityConflict: {
+      conflictingRefs: [
+        "declared-source://source-conformance/components/button.json#/",
+        "declared-source://source-conformance/components/button-acquired-a.json#/"
+      ],
+      resolvedBy: SC_REVIEW_POLICY_SOURCE_REF,
+      resolutionRule: "review-required",
+      selectedSourceRef: null
+    },
+    review: {
+      required: true,
+      owner: "design-systems-governance",
+      rationale: "Button source mapping is ambiguous across declared sources and requires source-owner review.",
+      expiresAt: "1970-01-31T00:00:00.000Z"
+    }
+  });
   return {
     "valid/button-allowed.source-conformance.json": button,
     "valid/in-line-alert-allowed.source-conformance.json": alert,
+    "valid/button-source-precedence-accepted.source-conformance.json": precedenceAccepted,
     "review/brand-exception.source-conformance.json": review,
+    "review/source-mapping-ambiguous.source-conformance.json": ambiguousMapping,
     "invalid/missing-source-ref.source-conformance.json": {
       ...deepClone(button),
       fixtureId: "missing-source-ref",
@@ -632,10 +759,15 @@ export function buildSourceConformanceFixtures() {
     "invalid/source-authority-conflict.source-conformance.json": {
       ...deepClone(button),
       fixtureId: "source-authority-conflict",
+      requiredSourceRefs: [
+        "declared-source://source-conformance/components/button.json#/",
+        "declared-source://source-conformance/components/button-acquired-a.json#/",
+        "declared-source://source-conformance/components/button-acquired-b.json#/"
+      ],
       authorityConflict: {
         conflictingRefs: [
-          "declared-source://source-conformance/components/button.json#/",
-          "declared-source://source-conformance/policies/content.json#/"
+          "declared-source://source-conformance/components/button-acquired-a.json#/",
+          "declared-source://source-conformance/components/button-acquired-b.json#/"
         ],
         resolutionRule: null
       }
@@ -856,6 +988,7 @@ function diagnosticSourceForStage(stage) {
 function suggestedActionForCode(code) {
   if (code === "SOURCE_REVIEW_EXPIRED") return "Renew source-owner approval and canonical expiry metadata before handoff or promotion.";
   if (code === "SOURCE_REVIEW_POLICY_REF_MISSING") return "Bind review-required output to the declared review policy source ref.";
+  if (code === "SOURCE_MAPPING_AMBIGUOUS") return "Route the ambiguous source mapping to non-executable review with source-precedence and review-policy refs, owner, rationale, and expiry metadata.";
   if (code.includes("UPSTREAM")) return "Restore accepted P2 catalog and evidence before source conformance proof continues.";
   if (code.includes("EVIDENCE")) return "Regenerate source conformance artifacts and evidence from checked-in schemas, source files, and fixtures.";
   if (code.includes("PATH") || code.includes("HASH")) return "Regenerate the declared source manifest from checked-in source files.";
@@ -923,6 +1056,7 @@ function resultRowSchema() {
     artifactPath: { type: "string" },
     jsonPointer: { type: "string" },
     componentId: { type: ["string", "null"] },
+    authorityConflict: authorityConflictSchema(),
     reviewQueueItemId: { type: ["string", "null"] },
     review: {
       oneOf: [
@@ -936,7 +1070,7 @@ function resultRowSchema() {
     },
     requiredSourceRefs: { type: "array", items: sourceRefSchema(false) },
     matched: { type: "boolean" }
-  }, ["fixturePath", "kind", "stage", "phase", "expectedResult", "actualResult", "promotionStatus", "diagnosticCodes", "artifactPath", "jsonPointer", "componentId", "reviewQueueItemId", "review", "requiredSourceRefs", "matched"]);
+  }, ["fixturePath", "kind", "stage", "phase", "expectedResult", "actualResult", "promotionStatus", "diagnosticCodes", "artifactPath", "jsonPointer", "componentId", "authorityConflict", "reviewQueueItemId", "review", "requiredSourceRefs", "matched"]);
 }
 
 function expectationRowSchema() {
@@ -1012,8 +1146,8 @@ function sourceAuthorityMapSchema() {
     version: { type: "string" },
     catalogRef: artifactRefSchema(),
     ingestionEvidenceRef: artifactRefSchema(),
-    componentAuthority: { type: "array", items: { type: "object", additionalProperties: true } },
-    policyAuthority: { type: "array", items: { type: "object", additionalProperties: true } },
+    componentAuthority: { type: "array", items: componentAuthorityRowSchema() },
+    policyAuthority: { type: "array", items: policyAuthorityRowSchema() },
     nonAuthorityStatement: { type: "string" },
     diagnostics: { type: "array", items: diagnosticObjectSchema() },
     diagnosticsRegistry: { const: diagnosticsRegistry() },
@@ -1139,9 +1273,62 @@ function sourceConformanceFixtureSchema() {
     proposedUsage: { type: "object", additionalProperties: true },
     review: reviewMetadataSchema(),
     claims: claimsSchema(),
-    authorityConflict: { type: ["object", "null"], additionalProperties: true },
+    authorityConflict: authorityConflictSchema(),
     provenance: provenanceSchema()
   }, ["schemaId", "version", "fixtureId", "componentId", "sourceRef", "requiredSourceRefs", "proposedUsage", "review", "claims", "authorityConflict", "provenance"]);
+}
+
+function authorityConflictSchema() {
+  const conflictingRefs = {
+    type: "array",
+    minItems: 1,
+    uniqueItems: true,
+    items: sourceRefSchema(false)
+  };
+  return {
+    oneOf: [
+      objectSchema(null, {
+        conflictingRefs,
+        resolutionRule: { const: "declared-source-precedence" },
+        resolvedBy: sourceRefSchema(false),
+        selectedSourceRef: sourceRefSchema(false)
+      }, ["conflictingRefs", "resolutionRule", "resolvedBy", "selectedSourceRef"]),
+      objectSchema(null, {
+        conflictingRefs,
+        resolutionRule: { const: "review-required" },
+        resolvedBy: sourceRefSchema(false),
+        selectedSourceRef: { type: "null" }
+      }, ["conflictingRefs", "resolutionRule", "resolvedBy", "selectedSourceRef"]),
+      objectSchema(null, {
+        conflictingRefs,
+        resolutionRule: { type: "null" }
+      }, ["conflictingRefs", "resolutionRule"]),
+      { type: "null" }
+    ]
+  };
+}
+
+function componentAuthorityRowSchema() {
+  return objectSchema(null, {
+    componentId: { type: "string" },
+    catalogRef: { type: "string" },
+    declaredSourceRef: sourceRefSchema(false),
+    additionalDeclaredSourceRefs: {
+      type: "array",
+      uniqueItems: true,
+      items: sourceRefSchema(false)
+    },
+    precedencePolicyRef: sourceRefSchema(true),
+    conformanceRole: { type: "string" }
+  }, ["componentId", "catalogRef", "declaredSourceRef", "additionalDeclaredSourceRefs", "precedencePolicyRef", "conformanceRole"]);
+}
+
+function policyAuthorityRowSchema() {
+  return objectSchema(null, {
+    policyId: { type: "string" },
+    sourceRef: sourceRefSchema(false),
+    conformanceRole: { type: "string" }
+  }, ["policyId", "sourceRef", "conformanceRole"]);
 }
 
 function reviewMetadataSchema() {

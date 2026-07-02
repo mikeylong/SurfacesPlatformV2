@@ -32,10 +32,13 @@ The synthetic partner variants were different, but compatible:
 - LumenHouse needs brand-preserving governance.
 - The regulated-services partner needs audit, approval, and evidence retention.
 
-Treat those as candidate variants under one planning theme. The implemented
-source-conformance target remains limited to its current evidence-backed scope.
-Do not treat this memo as proof that the broader theme is implemented or that a
-real partner would adopt it.
+Treat those as candidate variants under one planning theme. The first
+source-precedence/conflict subset has since been implemented inside the existing
+source-conformance target when `artifacts/source-conformance/evidence.json`
+passes: declared Button supporting source refs, source-precedence policy,
+accepted explicit precedence, blocked unresolved conflict, and ambiguous mapping
+review routing. Do not treat this memo as proof that the broader theme is
+implemented or that a real partner would adopt it.
 
 ## Placement
 This memo belongs under `plans/design-partner-testing/` until the project makes
@@ -56,8 +59,9 @@ The current candidate crosses those concerns. A later planning pass should
 either split it or choose one target-specific proof boundary.
 
 ## Target Candidate
-The candidate target is a proof-only declared-source conformance and review
-slice beyond the currently implemented source-conformance bundle.
+The candidate target is broader proof-only declared-source conformance and
+review coverage beyond the currently implemented source-conformance bundle and
+the first source-precedence/conflict subset now covered there.
 
 The planned slice would validate one bounded, manifest-declared local source
 bundle against accepted Surfaces authority, emit deterministic conformance
@@ -70,11 +74,12 @@ production adoption.
 
 The first planning scenario pack for that broader slice is
 [Richer Source Conformance Scenario Pack](richer-source-conformance-scenario-pack.md).
-It uses planning-only source and fixture names for source conflicts, forked
-variants, multi-brand drift, approval, retention, accessibility, ownership
-routing, and proof-only P5 wording. Those names must not be created under
-`sources/` or `fixtures/` until a future proof target owns their schemas,
-diagnostics, command behavior, artifacts, evidence, and CI gate.
+It uses planning-only source and fixture names for broader source conflicts,
+forked variants, multi-brand drift, approval, retention, accessibility,
+ownership routing, and proof-only P5 wording. Names outside the implemented
+source-conformance subset must not be created under `sources/` or `fixtures/`
+until a future proof target owns their schemas, diagnostics, command behavior,
+artifacts, evidence, and CI gate.
 
 ## Source Bundle Inputs
 The candidate should use a manifest-declared local source bundle only.
@@ -297,7 +302,8 @@ runtimes, live SurfaceOps workflows, or live JudgmentKit evaluations.
 - No P4 review target claim.
 - No P5 adapter target claim.
 - No implemented schema, fixture, diagnostic, command, artifact, evidence path,
-  demo, or CI gate.
+  demo, or CI gate beyond the existing source-conformance proof and its first
+  source-precedence/conflict subset.
 - No live ingestion, connector, crawler, API, network, or partner-data storage.
 - No production adapter, API, SDK, native SDK, A2UI export, A2UI conformance,
   live runtime, or action execution.

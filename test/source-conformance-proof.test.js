@@ -8,7 +8,8 @@ import test from "node:test";
 import { canonicalJson } from "../src/p0.js";
 import {
   SC_FORBIDDEN_CLAIM_KEYS,
-  SC_REVIEW_POLICY_SOURCE_REF
+  SC_REVIEW_POLICY_SOURCE_REF,
+  SC_SOURCE_PRECEDENCE_POLICY_SOURCE_REF
 } from "../src/source-conformance-contract.js";
 import { sourceConformanceInternals } from "../src/source-conformance-proof.js";
 
@@ -23,7 +24,7 @@ test("source conformance proof emits passing evidence with final self-hash", asy
 
   assert.equal(evidence.status, "pass");
   assert.equal(evidence.promotionStatus, "review_required");
-  assert.equal(evidence.validationResults.length, 16);
+  assert.equal(evidence.validationResults.length, 18);
   assert.deepEqual(evidence.boundaryRefs.map((entry) => entry.path), [
     "artifacts/p2/evidence.json",
     "artifacts/p2/governed-catalog.json"
@@ -56,12 +57,23 @@ test("source conformance proof preserves review-required rows without execution"
   const validate = ajv.compile(schema);
 
   assert.equal(reviewQueue.promotionStatus, "review_required");
-  assert.equal(reviewQueue.queueItems.length, 1);
+  assert.equal(reviewQueue.queueItems.length, 2);
   assert.equal(reviewQueue.queueItems[0].executable, false);
   assert.equal(reviewQueue.queueItems[0].owner, "design-systems-governance");
   assert.equal(reviewQueue.queueItems[0].rationale, "Brand exception changes action emphasis and requires source-owner review.");
   assert.equal(reviewQueue.queueItems[0].expiresAt, "1970-01-31T00:00:00.000Z");
   assert.equal(reviewQueue.queueItems[0].requiredSourceRefs.includes(SC_REVIEW_POLICY_SOURCE_REF), true);
+  assert.equal(reviewQueue.queueItems[1].executable, false);
+  assert.equal(reviewQueue.queueItems[1].reviewQueueItemId, "source-review-source-mapping-ambiguous");
+  assert.equal(reviewQueue.queueItems[1].owner, "design-systems-governance");
+  assert.equal(reviewQueue.queueItems[1].rationale, "Button source mapping is ambiguous across declared sources and requires source-owner review.");
+  assert.equal(reviewQueue.queueItems[1].expiresAt, "1970-01-31T00:00:00.000Z");
+  assert.equal(reviewQueue.queueItems[1].requiredSourceRefs.includes(SC_REVIEW_POLICY_SOURCE_REF), true);
+  assert.equal(reviewQueue.queueItems[1].requiredSourceRefs.includes(SC_SOURCE_PRECEDENCE_POLICY_SOURCE_REF), true);
+  assert.deepEqual(reviewQueue.diagnostics.map((diagnostic) => diagnostic.code), [
+    "SOURCE_MAPPING_AMBIGUOUS",
+    "SOURCE_REVIEW_REQUIRED"
+  ]);
   const reviewRow = evidence.validationResults.find((row) =>
     row.fixturePath === "fixtures/source-conformance/review/brand-exception.source-conformance.json"
   );
@@ -69,6 +81,25 @@ test("source conformance proof preserves review-required rows without execution"
   assert.equal(reviewRow.reviewQueueItemId, "source-review-brand-exception");
   assert.deepEqual(reviewRow.diagnosticCodes, ["SOURCE_REVIEW_REQUIRED"]);
   assert.equal(reviewRow.requiredSourceRefs.includes(SC_REVIEW_POLICY_SOURCE_REF), true);
+  const ambiguousRow = evidence.validationResults.find((row) =>
+    row.fixturePath === "fixtures/source-conformance/review/source-mapping-ambiguous.source-conformance.json"
+  );
+  assert.equal(ambiguousRow.actualResult, "review_required");
+  assert.equal(ambiguousRow.reviewQueueItemId, "source-review-source-mapping-ambiguous");
+  assert.deepEqual(ambiguousRow.diagnosticCodes, ["SOURCE_MAPPING_AMBIGUOUS"]);
+  assert.equal(ambiguousRow.requiredSourceRefs.includes(SC_REVIEW_POLICY_SOURCE_REF), true);
+  assert.equal(ambiguousRow.requiredSourceRefs.includes(SC_SOURCE_PRECEDENCE_POLICY_SOURCE_REF), true);
+  assert.equal(ambiguousRow.authorityConflict.resolutionRule, "review-required");
+  assert.equal(ambiguousRow.authorityConflict.selectedSourceRef, null);
+  assert.equal(ambiguousRow.authorityConflict.conflictingRefs.length >= 2, true);
+  assert.equal(ambiguousRow.authorityConflict.conflictingRefs.every((sourceRef) =>
+    sourceRef.startsWith("declared-source://source-conformance/components/button")
+  ), true);
+  assert.equal(ambiguousRow.authorityConflict.conflictingRefs.every((sourceRef) =>
+    ambiguousRow.requiredSourceRefs.includes(sourceRef)
+  ), true);
+  const ambiguousDiagnostic = reviewQueue.diagnostics.find((diagnostic) => diagnostic.code === "SOURCE_MAPPING_AMBIGUOUS");
+  assert.match(ambiguousDiagnostic.suggestedAction, /Route the ambiguous source mapping to non-executable review/);
   assert.equal(validate(reviewQueue), true);
   assert.equal(validate({
     ...reviewQueue,
@@ -140,6 +171,125 @@ test("source conformance proof blocks expired review metadata", async () => {
       assert.match(result.stderr, /SOURCE_REVIEW_EXPIRED/);
     });
   }
+});
+
+test("source conformance proof requires ambiguous source mappings to stay review-required", async () => {
+  await runSourceConformanceProof();
+  const fixturePath = path.join(root, "fixtures/source-conformance/review/source-mapping-ambiguous.source-conformance.json");
+
+  await withJsonFileMutation(fixturePath, (fixture) => {
+    fixture.review.required = false;
+    fixture.review.owner = null;
+    fixture.review.rationale = null;
+    fixture.review.expiresAt = null;
+  }, async () => {
+    const result = await runSourceConformanceProofExpectFailure();
+    assert.equal(result.code, 1);
+    assert.match(result.stderr, /SOURCE_REVIEW_OWNER_MISSING/);
+  });
+
+  await withJsonFileMutation(fixturePath, (fixture) => {
+    fixture.authorityConflict.selectedSourceRef = "declared-source://source-conformance/components/button.json#/";
+  }, async () => {
+    const result = await runSourceConformanceProofExpectFailure();
+    assert.equal(result.code, 1);
+    assert.match(result.stderr, /schema validation failed/);
+  });
+
+  await withJsonFileMutation(fixturePath, (fixture) => {
+    fixture.authorityConflict.resolvedBy = "declared-source://source-conformance/policies/source-precedence.json#/";
+  }, async () => {
+    const result = await runSourceConformanceProofExpectFailure();
+    assert.equal(result.code, 1);
+    assert.match(result.stderr, /SOURCE_AUTHORITY_CONFLICT/);
+  });
+
+  await withJsonFileMutation(fixturePath, (fixture) => {
+    fixture.requiredSourceRefs = fixture.requiredSourceRefs.filter((sourceRef) =>
+      sourceRef !== "declared-source://source-conformance/components/button-acquired-a.json#/"
+    );
+  }, async () => {
+    const result = await runSourceConformanceProofExpectFailure();
+    assert.equal(result.code, 1);
+    assert.match(result.stderr, /SOURCE_AUTHORITY_CONFLICT/);
+  });
+
+  await withJsonFileMutation(fixturePath, (fixture) => {
+    fixture.requiredSourceRefs = fixture.requiredSourceRefs.filter((sourceRef) =>
+      sourceRef !== SC_SOURCE_PRECEDENCE_POLICY_SOURCE_REF
+    );
+  }, async () => {
+    const result = await runSourceConformanceProofExpectFailure();
+    assert.equal(result.code, 1);
+    assert.match(result.stderr, /SOURCE_AUTHORITY_CONFLICT/);
+  });
+
+  await withJsonFileMutation(fixturePath, (fixture) => {
+    fixture.authorityConflict.conflictingRefs = [
+      "declared-source://source-conformance/components/button.json#/"
+    ];
+  }, async () => {
+    const result = await runSourceConformanceProofExpectFailure();
+    assert.equal(result.code, 1);
+    assert.match(result.stderr, /SOURCE_AUTHORITY_CONFLICT/);
+  });
+
+  await withJsonFileMutation(fixturePath, (fixture) => {
+    fixture.authorityConflict.conflictingRefs = [
+      "declared-source://source-conformance/components/button-acquired-a.json#/",
+      "declared-source://source-conformance/components/button-acquired-b.json#/"
+    ];
+    fixture.requiredSourceRefs = [
+      ...fixture.requiredSourceRefs,
+      "declared-source://source-conformance/components/button-acquired-b.json#/"
+    ];
+  }, async () => {
+    const result = await runSourceConformanceProofExpectFailure();
+    assert.equal(result.code, 1);
+    assert.match(result.stderr, /SOURCE_AUTHORITY_CONFLICT/);
+  });
+
+  await withJsonFileMutation(fixturePath, (fixture) => {
+    fixture.authorityConflict.conflictingRefs = [
+      "declared-source://source-conformance/components/button.json#/",
+      "declared-source://source-conformance/components/in-line-alert.json#/"
+    ];
+    fixture.requiredSourceRefs = [
+      ...fixture.requiredSourceRefs,
+      "declared-source://source-conformance/components/in-line-alert.json#/"
+    ];
+  }, async () => {
+    const result = await runSourceConformanceProofExpectFailure();
+    assert.equal(result.code, 1);
+    assert.match(result.stderr, /SOURCE_AUTHORITY_CONFLICT/);
+  });
+
+  await withJsonFileMutation(fixturePath, (fixture) => {
+    fixture.authorityConflict.conflictingRefs = [
+      "declared-source://source-conformance/components/button.json#/",
+      "declared-source://source-conformance/policies/accessibility.json#/"
+    ];
+  }, async () => {
+    const result = await runSourceConformanceProofExpectFailure();
+    assert.equal(result.code, 1);
+    assert.match(result.stderr, /SOURCE_AUTHORITY_CONFLICT/);
+  });
+
+  await withJsonFileMutation(fixturePath, (fixture) => {
+    delete fixture.authorityConflict.resolvedBy;
+  }, async () => {
+    const result = await runSourceConformanceProofExpectFailure();
+    assert.equal(result.code, 1);
+    assert.match(result.stderr, /schema validation failed/);
+  });
+
+  await withJsonFileMutation(fixturePath, (fixture) => {
+    delete fixture.authorityConflict.selectedSourceRef;
+  }, async () => {
+    const result = await runSourceConformanceProofExpectFailure();
+    assert.equal(result.code, 1);
+    assert.match(result.stderr, /schema validation failed/);
+  });
 });
 
 test("source conformance proof rejects stale output and non-normalized command paths", async () => {
@@ -223,6 +373,97 @@ test("source conformance proof binds fixtures to declared source refs and accept
     const result = await runSourceConformanceProofExpectFailure();
     assert.equal(result.code, 1);
     assert.match(result.stderr, /SOURCE_COMPONENT_SOURCE_MISMATCH/);
+  });
+
+  await withJsonFileMutation(fixturePath, (fixture) => {
+    fixture.sourceRef = "declared-source://source-conformance/components/button-acquired-a.json#/";
+    fixture.requiredSourceRefs = [
+      "declared-source://source-conformance/components/button-acquired-a.json#/",
+      "declared-source://source-conformance/policies/accessibility.json#/"
+    ];
+  }, async () => {
+    const result = await runSourceConformanceProofExpectFailure();
+    assert.equal(result.code, 1);
+    assert.match(result.stderr, /SOURCE_COMPONENT_SOURCE_MISMATCH/);
+  });
+});
+
+test("source conformance proof accepts explicit Button source precedence", async () => {
+  await runSourceConformanceProof();
+  const evidence = await readJson("artifacts/source-conformance/evidence.json");
+  const report = await readJson("artifacts/source-conformance/source-conformance-report.json");
+  const authorityMap = await readJson("artifacts/source-conformance/source-authority-map.json");
+
+  const precedenceRow = evidence.validationResults.find((row) =>
+    row.fixturePath === "fixtures/source-conformance/valid/button-source-precedence-accepted.source-conformance.json"
+  );
+  assert.equal(precedenceRow.actualResult, "valid");
+  assert.equal(precedenceRow.promotionStatus, "allowed");
+  assert.deepEqual(precedenceRow.diagnosticCodes, []);
+  assert.equal(precedenceRow.authorityConflict.resolutionRule, "declared-source-precedence");
+  assert.equal(precedenceRow.authorityConflict.resolvedBy, SC_SOURCE_PRECEDENCE_POLICY_SOURCE_REF);
+  assert.equal(precedenceRow.authorityConflict.selectedSourceRef, "declared-source://source-conformance/components/button.json#/");
+  assert.equal(precedenceRow.requiredSourceRefs.includes("declared-source://source-conformance/components/button-acquired-a.json#/"), true);
+  assert.equal(precedenceRow.requiredSourceRefs.includes("declared-source://source-conformance/components/button-acquired-b.json#/"), true);
+  assert.equal(precedenceRow.requiredSourceRefs.includes(SC_SOURCE_PRECEDENCE_POLICY_SOURCE_REF), true);
+
+  const reportRow = report.results.find((row) => row.fixturePath === precedenceRow.fixturePath);
+  assert.deepEqual(reportRow.authorityConflict, precedenceRow.authorityConflict);
+
+  const buttonAuthority = authorityMap.componentAuthority.find((row) => row.componentId === "Button");
+  assert.equal(buttonAuthority.declaredSourceRef, "declared-source://source-conformance/components/button.json#/");
+  assert.deepEqual(buttonAuthority.additionalDeclaredSourceRefs, [
+    "declared-source://source-conformance/components/button-acquired-a.json#/",
+    "declared-source://source-conformance/components/button-acquired-b.json#/"
+  ]);
+  assert.equal(buttonAuthority.precedencePolicyRef, SC_SOURCE_PRECEDENCE_POLICY_SOURCE_REF);
+
+  const fixturePath = path.join(root, "fixtures/source-conformance/valid/button-source-precedence-accepted.source-conformance.json");
+  await withJsonFileMutation(fixturePath, (fixture) => {
+    fixture.authorityConflict.conflictingRefs = [
+      "declared-source://source-conformance/components/button-acquired-a.json#/"
+    ];
+  }, async () => {
+    const result = await runSourceConformanceProofExpectFailure();
+    assert.equal(result.code, 1);
+    assert.match(result.stderr, /SOURCE_AUTHORITY_CONFLICT/);
+  });
+
+  await withJsonFileMutation(fixturePath, (fixture) => {
+    fixture.authorityConflict.conflictingRefs = [
+      "declared-source://source-conformance/components/button-acquired-a.json#/",
+      "declared-source://source-conformance/policies/accessibility.json#/"
+    ];
+  }, async () => {
+    const result = await runSourceConformanceProofExpectFailure();
+    assert.equal(result.code, 1);
+    assert.match(result.stderr, /SOURCE_AUTHORITY_CONFLICT/);
+  });
+
+  await withJsonFileMutation(fixturePath, (fixture) => {
+    fixture.requiredSourceRefs = fixture.requiredSourceRefs.filter((sourceRef) =>
+      sourceRef !== "declared-source://source-conformance/components/button-acquired-b.json#/"
+    );
+  }, async () => {
+    const result = await runSourceConformanceProofExpectFailure();
+    assert.equal(result.code, 1);
+    assert.match(result.stderr, /SOURCE_AUTHORITY_CONFLICT/);
+  });
+
+  await withJsonFileMutation(fixturePath, (fixture) => {
+    delete fixture.authorityConflict.resolvedBy;
+  }, async () => {
+    const result = await runSourceConformanceProofExpectFailure();
+    assert.equal(result.code, 1);
+    assert.match(result.stderr, /schema validation failed/);
+  });
+
+  await withJsonFileMutation(fixturePath, (fixture) => {
+    delete fixture.authorityConflict.selectedSourceRef;
+  }, async () => {
+    const result = await runSourceConformanceProofExpectFailure();
+    assert.equal(result.code, 1);
+    assert.match(result.stderr, /schema validation failed/);
   });
 });
 
