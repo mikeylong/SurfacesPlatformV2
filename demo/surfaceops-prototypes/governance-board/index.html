@@ -1,0 +1,508 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SurfaceOps Prototype C - Governance Board</title>
+  <link rel="icon" href="data:,">
+  <style>
+    :root {
+      color-scheme: light;
+      --jk-color-canvas: #f8f7f2;
+      --jk-color-surface: #ffffff;
+      --jk-color-text: #171717;
+      --jk-color-muted: #61615c;
+      --jk-color-border: #d7d3c8;
+      --jk-color-focus: #245f73;
+      --jk-color-success: #2e6b48;
+      --jk-color-warning: #8a5a16;
+      --jk-color-risk: #8f342f;
+      --jk-color-disabled: #8a8f93;
+      --jk-color-receipt: #23615f;
+      --jk-space-2: 0.5rem;
+      --jk-space-3: 0.75rem;
+      --jk-space-4: 1rem;
+      --jk-radius-control: 4px;
+      --jk-radius-panel: 8px;
+      --jk-focus-ring: 0 0 0 3px rgba(36, 95, 115, 0.28);
+      --jk-shadow-card: 0 8px 18px rgb(23 32 42 / 5%);
+      --jk-shadow-panel: 0 10px 24px rgb(23 32 42 / 6%);
+      --jk-font-body: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-family: var(--jk-font-body);
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--jk-color-canvas); color: var(--jk-color-text); }
+    button, textarea { font: inherit; }
+    header {
+      border-bottom: 1px solid var(--jk-color-border);
+      background: white;
+      padding: 16px 20px;
+    }
+    .wrap { max-width: 1460px; margin: 0 auto; }
+    h1 { margin: 0 0 6px; font-size: 24px; letter-spacing: 0; }
+    p { margin: 0; color: var(--jk-color-muted); line-height: 1.5; }
+    .shell {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 390px;
+      gap: 14px;
+      padding: 14px;
+      max-width: 1460px;
+      margin: 0 auto;
+    }
+    .board {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(230px, 1fr));
+      gap: 12px;
+      align-items: start;
+      overflow-x: auto;
+      padding-bottom: 8px;
+    }
+    .lane {
+      border: 1px solid var(--jk-color-border);
+      border-radius: 8px;
+      background: #fbfcfe;
+      min-height: 420px;
+      overflow: hidden;
+    }
+    .lane-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid var(--jk-color-border);
+      padding: 11px 12px;
+      background: white;
+    }
+    h2 { margin: 0; font-size: 15px; letter-spacing: 0; }
+    .lane-body { display: grid; gap: 10px; padding: 10px; }
+    .card-button {
+      width: 100%;
+      border: 1px solid var(--jk-color-border);
+      border-radius: 8px;
+      background: white;
+      text-align: left;
+      padding: 11px;
+      cursor: pointer;
+      box-shadow: var(--jk-shadow-card);
+    }
+    .card-button[aria-current="true"] {
+      border-color: var(--jk-color-focus);
+      box-shadow: inset 3px 0 0 var(--jk-color-focus), var(--jk-shadow-card);
+    }
+    button:focus-visible, textarea:focus-visible, .card-button:focus-visible {
+      outline: 3px solid var(--jk-color-focus);
+      outline-offset: 2px;
+      box-shadow: var(--jk-focus-ring);
+    }
+    .row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .title { font-weight: 760; }
+    .small { color: var(--jk-color-muted); font-size: 12px; line-height: 1.35; }
+    .badge {
+      display: inline-flex;
+      border: 1px solid #d2dae4;
+      border-radius: 999px;
+      padding: 4px 8px;
+      font-size: 12px;
+      font-weight: 720;
+      white-space: nowrap;
+      background: #f7f9fb;
+    }
+    .review { color: var(--jk-color-warning); border-color: #e4c878; background: #fff8e6; }
+    .blocked { color: var(--jk-color-risk); border-color: #e5aea9; background: #fff1f0; }
+    .deferred { color: var(--jk-color-receipt); border-color: #c7bee8; background: #f5f1ff; }
+    .allowed { color: var(--jk-color-success); border-color: #9bd0ba; background: #edfff6; }
+    .detail {
+      position: sticky;
+      top: 14px;
+      border: 1px solid var(--jk-color-border);
+      border-radius: 8px;
+      background: white;
+      overflow: hidden;
+      max-height: calc(100vh - 28px);
+      display: grid;
+      grid-template-rows: auto 1fr;
+      box-shadow: var(--jk-shadow-panel);
+    }
+    .detail-head {
+      border-bottom: 1px solid var(--jk-color-border);
+      padding: 12px 14px;
+      background: #fbfcfe;
+    }
+    .detail-body {
+      display: grid;
+      gap: 12px;
+      overflow: auto;
+      padding: 14px;
+    }
+    h3 { margin: 0 0 9px; font-size: 14px; letter-spacing: 0; }
+    .section {
+      border: 1px solid var(--jk-color-border);
+      border-radius: 8px;
+      padding: 12px;
+      background: white;
+    }
+    .kv { display: grid; grid-template-columns: minmax(120px, .42fr) 1fr; gap: 8px; margin: 7px 0; }
+    .key { color: var(--jk-color-muted); font-size: 12px; }
+    .value { font-size: 13px; font-weight: 650; min-width: 0; overflow-wrap: anywhere; }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; }
+    .chain { display: flex; flex-wrap: wrap; gap: 7px; }
+    .chain span {
+      border: 1px solid #d3dce6;
+      border-radius: 999px;
+      background: #f7f9fb;
+      padding: 5px 8px;
+      color: #425266;
+      font-size: 12px;
+    }
+    .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    button {
+      border: 1px solid #bec9d7;
+      border-radius: 7px;
+      background: white;
+      color: var(--jk-color-text);
+      padding: 8px 10px;
+      cursor: pointer;
+    }
+    button:hover:not(:disabled) { border-color: #8ba4c2; background: #f8fbff; }
+    button:disabled { cursor: not-allowed; color: #8a96a3; background: #f3f5f7; }
+    .primary { background: #eaf2ff; color: #164c9f; border-color: #b4cdf4; font-weight: 760; }
+    .danger { background: #fff1f0; color: var(--jk-color-risk); border-color: #e5aea9; }
+    .warning { background: #fff8e6; color: var(--jk-color-warning); border-color: #e4c878; }
+    label { display: grid; gap: 6px; font-size: 12px; font-weight: 760; color: #425266; }
+    textarea {
+      width: 100%;
+      border: 1px solid #c6d0dd;
+      border-radius: 8px;
+      padding: 9px;
+      min-height: 92px;
+      resize: vertical;
+    }
+    .notice {
+      border: 1px solid #d2dae4;
+      border-radius: 8px;
+      background: #f8fafc;
+      color: #435160;
+      padding: 11px;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+    .error { border-color: #e5aea9; background: #fff1f0; color: #7a1a12; }
+    .receipt { border-color: #9bd0ba; background: #edfff6; color: #174d35; }
+    @media (max-width: 1100px) {
+      .shell { grid-template-columns: 1fr; }
+      .detail { position: static; max-height: none; }
+      .board { grid-template-columns: repeat(4, minmax(260px, 1fr)); }
+    }
+    @media (max-width: 640px) {
+      header { padding: 15px 14px; }
+      .shell { padding: 10px; }
+      .board { display: grid; grid-template-columns: 1fr; overflow: visible; }
+      .lane { min-height: 0; }
+      .actions { grid-template-columns: 1fr; }
+      .kv { grid-template-columns: 1fr; gap: 2px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <h1>SurfaceOps Governance Board</h1>
+      <p>Prototype C tests a board-shaped operator review surface. Cards organize review items only; evidence refs, decision semantics, promotion status, and handoff eligibility remain in the detail panel.</p>
+    </div>
+  </header>
+
+  <main class="shell">
+    <section class="board" aria-label="Governance board" id="board"></section>
+    <aside class="detail" aria-live="polite" aria-label="Evidence detail">
+      <div class="detail-head">
+        <div class="row">
+          <h2 id="detail-title">Review item</h2>
+          <span id="detail-status" class="badge"></span>
+        </div>
+      </div>
+      <div class="detail-body">
+        <div class="notice">The board is a collaboration view only. SurfaceOps semantics live in evidence refs, promotion status, decision rules, and audit receipts.</div>
+        <div class="notice">Prototype boundary: no live SurfaceOps, live JudgmentKit, persistent review storage, production adapters, deployment approval, work-order execution, upstream mutation, catalog override, hidden review state, or live decision authority is implemented here.</div>
+        <section class="section">
+          <h3>Authority chain</h3>
+          <div class="chain">
+            <span>source authority</span><span>Surfaces Catalog</span><span>proof evidence</span><span>review queue</span><span>SurfaceOps decision</span><span>target-specific handoff</span>
+          </div>
+        </section>
+        <section class="section" id="details"></section>
+        <section class="section" id="evidence"></section>
+        <section class="section">
+          <h3>Decision controls</h3>
+          <div id="guard" class="notice"></div>
+          <label for="rationale">Rationale
+            <textarea id="rationale" placeholder="Use the evidence-backed reason."></textarea>
+          </label>
+          <div class="actions" id="actions"></div>
+        </section>
+        <section id="receipt"></section>
+      </div>
+    </aside>
+  </main>
+
+  <script>
+    const items = [
+      {
+        id: "card-button-action",
+        lane: "review_required",
+        title: "Button action review",
+        component: "Spectrum Button",
+        owner: "Reviewer",
+        status: "review_required",
+        promotion: "review_required",
+        diagnostic: "GOVERNANCE_REVIEW_REQUIRED",
+        source: "fixtures/p0/review/review-required-action.json",
+        catalog: "Surfaces Catalog allows the Button component and token refs, but review-required governance blocks unattended promotion.",
+        evidence: "artifacts/p3/review-queue.json",
+        artifact: "fixtures/p0/review/review-required-action.json",
+        pointer: "/root/actions/confirm/execute",
+        sourceRef: "fixture://p0/review/review-required-action#/root/actions/confirm",
+        hash: "57a5a357f1c0c47604f58b719f25ff0edaf919c25ac0c7a63f91f6f773b49d07",
+        handoff: "Blocked until SurfaceOps records an evidence-backed decision.",
+        finding: "JudgmentKit-shaped finding may support evidence review, but cannot approve or promote this item.",
+        preview: "Button preview is presentation only. Evidence refs and diagnostics remain authoritative.",
+        canDecide: true,
+        canApprove: true
+      },
+      {
+        id: "card-hidden-state",
+        lane: "blocked",
+        title: "Hidden decision state",
+        component: "In-line alert",
+        owner: "Platform",
+        status: "blocked",
+        promotion: "blocked",
+        diagnostic: "SURFACEOPS_DECISION_HIDDEN",
+        source: "fixtures/p4/invalid/hidden-decision.review-judgment.json",
+        catalog: "SurfaceOps can record only explicit, evidence-backed, ledger-visible decisions; hidden review state fails closed.",
+        evidence: "artifacts/p4/review-judgment-report.json",
+        artifact: "fixtures/p4/invalid/hidden-decision.review-judgment.json",
+        pointer: "/decision/hiddenState",
+        sourceRef: "fixture://p4/invalid/hidden-decision#/decision",
+        hash: "25cf3cfdeb316b8d63e7c9e2f5573baf380c682427bda315f5b9749282bc3ec1",
+        handoff: "No approval path. Remove hidden review state and rerun proof.",
+        finding: "Advisory findings cannot clear hidden state or override SurfaceOps diagnostics.",
+        preview: "No preview substitutes for this blocked diagnostic.",
+        canDecide: true,
+        canApprove: false
+      },
+      {
+        id: "card-copy-update",
+        lane: "changes_requested",
+        title: "Terminology drift",
+        component: "In-line alert",
+        owner: "Design system",
+        status: "changes_requested",
+        promotion: "blocked",
+        diagnostic: "SURFACEOPS_EVIDENCE_REF_MISSING",
+        source: "fixtures/p4/invalid/missing-evidence-ref.review-judgment.json",
+        catalog: "The component remains catalog-bound, but requested changes block unattended promotion until refreshed evidence is bound.",
+        evidence: "artifacts/p4/evidence.json",
+        artifact: "fixtures/p4/invalid/missing-evidence-ref.review-judgment.json",
+        pointer: "/decision/evidenceRefs",
+        sourceRef: "fixture://p4/invalid/missing-evidence-ref#/decision",
+        hash: "54fa03840c1e2948850f07c106f0488625deddf8723bfdc161ff1e1ea2c93a43",
+        handoff: "Requested changes block unattended promotion. Source authority should be corrected first.",
+        finding: "Evidence quality warnings are supporting context only; SurfaceOps owns the requested-change decision.",
+        preview: "Alert copy preview is presentation only and does not prove support.",
+        canDecide: true,
+        canApprove: false
+      },
+      {
+        id: "card-second-review",
+        lane: "changes_requested",
+        title: "Second review required",
+        component: "Destructive Button",
+        owner: "Accessibility",
+        status: "deferred",
+        promotion: "review_required",
+        diagnostic: "SURFACEOPS_SECOND_REVIEW_REQUIRED",
+        source: "fixtures/p4/review/second-review-required.review-judgment.json",
+        catalog: "Catalog authority remains unchanged while SurfaceOps preserves review_required for reviewer separation.",
+        evidence: "artifacts/p4/evidence.json",
+        artifact: "fixtures/p4/review/second-review-required.review-judgment.json",
+        pointer: "/decision/secondReviewRequired",
+        sourceRef: "fixture://p4/review/second-review-required#/decision",
+        hash: "54fa03840c1e2948850f07c106f0488625deddf8723bfdc161ff1e1ea2c93a43",
+        handoff: "Still review_required. No unattended promotion until reviewer separation is satisfied.",
+        finding: "Second-review routing is a SurfaceOps review condition, not a live JudgmentKit decision.",
+        preview: "Second-review preview is presentation only while ownership is unresolved.",
+        canDecide: true,
+        canApprove: false
+      },
+      {
+        id: "card-eligible-packet",
+        lane: "eligible",
+        title: "Reviewed Button packet",
+        component: "Spectrum Button",
+        owner: "Frontend",
+        status: "allowed",
+        promotion: "allowed",
+        diagnostic: "none",
+        source: "fixtures/p4/valid/approve-reviewed-work.review-judgment.json",
+        catalog: "Approved receipt is bound to existing catalog and proof evidence; it does not add component, action, or policy authority.",
+        evidence: "artifacts/p4/surfaceops-decision-ledger.json",
+        artifact: "artifacts/p4/surfaceops-decision-ledger.json",
+        pointer: "/decisions/0",
+        sourceRef: "review.review-required-work#approve-reviewed-work",
+        hash: "0ec17be965f80c9305d621c35df31aee05c37ce37b6fd69b3163ab4dc152f94c",
+        handoff: "Eligible only for later authorized consumers that verify target evidence.",
+        finding: "JudgmentKit-shaped finding supported review context but did not approve this item.",
+        preview: "Approved preview is still presentation only and cannot replace evidence.",
+        existingReceipt: "P3 review queue item is structurally valid, evidence-backed, and remains non-executable.",
+        canDecide: false,
+        canApprove: false
+      }
+    ];
+
+    const lanes = [
+      ["review_required", "review_required"],
+      ["blocked", "blocked"],
+      ["changes_requested", "changes_requested / deferred"],
+      ["eligible", "eligible / approved"]
+    ];
+    const state = { selectedId: items[0].id, receipt: "" };
+
+    function statusLabel(status) {
+      return { review_required: "Review required", blocked: "Blocked", changes_requested: "Changes requested", deferred: "Second review", allowed: "Eligible" }[status] || status;
+    }
+
+    function statusClass(status) {
+      return status === "allowed" ? "allowed" : status === "blocked" || status === "changes_requested" ? "blocked" : status === "deferred" ? "deferred" : "review";
+    }
+
+    function selected() {
+      return items.find((item) => item.id === state.selectedId) || items[0];
+    }
+
+    function kv(key, value) {
+      return `<div class="kv"><div class="key">${key}</div><div class="value">${value}</div></div>`;
+    }
+
+    function renderBoard() {
+      document.getElementById("board").innerHTML = lanes.map(([laneId, label]) => {
+        const laneItems = items.filter((item) => item.lane === laneId);
+        const laneCards = laneItems.length ? laneItems.map((item) => `
+          <button type="button" class="card-button" data-id="${item.id}" aria-current="${item.id === state.selectedId}">
+            <div class="row"><span class="title">${item.title}</span><span class="badge ${statusClass(item.status)}">${statusLabel(item.status)}</span></div>
+            <div class="small">${item.component}</div>
+            <div class="small"><code>${item.diagnostic}</code></div>
+          </button>
+        `).join("") : '<div class="notice">No review items in this lane.</div>';
+        return `
+          <section class="lane" aria-label="${label}">
+            <div class="lane-head"><h2>${label}</h2><span class="small">${laneItems.length}</span></div>
+            <div class="lane-body">
+              ${laneCards}
+            </div>
+          </section>
+        `;
+      }).join("");
+    }
+
+    function renderDetail() {
+      const item = selected();
+      document.getElementById("detail-title").textContent = item.title;
+      const status = document.getElementById("detail-status");
+      status.className = `badge ${statusClass(item.status)}`;
+      status.textContent = statusLabel(item.status);
+      document.getElementById("details").innerHTML = `
+        <h3>Review item</h3>
+        ${kv("Card", `<code>${item.id}</code>`)}
+        ${kv("Component", item.component)}
+        ${kv("Owner", item.owner)}
+        ${kv("Source authority", `<code>${item.source}</code>`)}
+        ${kv("Catalog boundary", item.catalog)}
+        ${kv("Promotion status", `<code>${item.promotion}</code>`)}
+        ${kv("Handoff eligibility", item.handoff)}
+      `;
+      document.getElementById("evidence").innerHTML = `
+        <h3>Evidence and diagnostics</h3>
+        ${kv("Diagnostic", `<code>${item.diagnostic}</code>`)}
+        ${kv("Artifact path", `<code>${item.artifact}</code>`)}
+        ${kv("JSON pointer", `<code>${item.pointer}</code>`)}
+        ${kv("Source ref", `<code>${item.sourceRef}</code>`)}
+        ${kv("Evidence ref", `<code>${item.evidence}</code>`)}
+        ${kv("Artifact hash", `<code>${item.hash}</code>`)}
+        ${kv("Advisory finding", item.finding)}
+        ${kv("Preview", item.preview)}
+      `;
+      const guard = document.getElementById("guard");
+      if (!item.canDecide) {
+        guard.className = "notice";
+        guard.textContent = "A visible receipt already exists for this review item. Duplicate committed decisions are blocked.";
+      } else if (item.canApprove) {
+        guard.className = "notice";
+        guard.textContent = "Decisions record evidence eligibility only. No work order runs and no catalog rule changes.";
+      } else {
+        guard.className = "notice error";
+        guard.textContent = "This card fails closed. Approval is disabled because the item is blocked or missing required evidence.";
+      }
+      const choices = [
+        ["approved", "Approve eligibility", "primary"],
+        ["rejected", "Reject", "danger"],
+        ["changes_requested", "Request changes", "warning"],
+        ["deferred", "Defer", ""],
+        ["second_review_required", "Require second review", ""]
+      ];
+      document.getElementById("actions").innerHTML = choices.map(([key, label, cls]) => {
+        const disabled = !item.canDecide || (key === "approved" && !item.canApprove);
+        return `<button type="button" data-decision="${key}" class="${cls}" ${disabled ? "disabled" : ""}>${label}</button>`;
+      }).join("");
+      document.getElementById("receipt").innerHTML = state.receipt || (item.existingReceipt ? `
+        <section class="section notice receipt" role="status">
+          <h3>Audit receipt</h3>
+          ${kv("Decision recorded", "approved")}
+          ${kv("Rationale", item.existingReceipt)}
+          ${kv("Promotion result", "allowed for later authorized consumer")}
+          ${kv("Evidence", `<code>${item.evidence}</code>`)}
+          ${kv("Artifact hash", `<code>${item.hash}</code>`)}
+          ${kv("Board effect", "Card organization only. Proof authority remains evidence.")}
+        </section>
+      ` : "");
+    }
+
+    function render() {
+      renderBoard();
+      renderDetail();
+    }
+
+    document.addEventListener("click", (event) => {
+      const card = event.target.closest("[data-id]");
+      if (card) {
+        state.selectedId = card.dataset.id;
+        state.receipt = "";
+        document.getElementById("rationale").value = "";
+        render();
+        return;
+      }
+      const decision = event.target.closest("[data-decision]");
+      if (decision) {
+        const item = selected();
+        const rationale = document.getElementById("rationale").value.trim() || "Reviewer preserved evidence refs and SurfaceOps boundaries.";
+        const key = decision.dataset.decision;
+        const result = key === "approved" ? "allowed for later authorized consumer" : key === "deferred" || key === "second_review_required" ? "review_required" : "blocked";
+        state.receipt = `
+          <section class="section notice receipt" role="status">
+            <h3>Audit receipt</h3>
+            ${kv("Decision recorded", key.replaceAll("_", " "))}
+            ${kv("Rationale", rationale)}
+            ${kv("Promotion result", result)}
+            ${kv("Evidence", `<code>${item.evidence}</code>`)}
+            ${kv("Artifact hash", `<code>${item.hash}</code>`)}
+            ${kv("Handoff eligibility", key === "approved" ? "Eligible for later authorized consumer only." : "Not eligible for unattended promotion.")}
+            ${kv("Board effect", "Card organization only. Proof authority remains evidence.")}
+          </section>
+        `;
+        render();
+      }
+    });
+
+    render();
+  </script>
+</body>
+</html>

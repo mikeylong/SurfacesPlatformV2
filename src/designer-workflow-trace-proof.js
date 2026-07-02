@@ -41,6 +41,8 @@ import {
   DWT_FIXTURE_ROOT,
   DWT_FORBIDDEN_CLAIM_KEYS,
   DWT_GENERATED_ARTIFACTS,
+  DWT_GOVERNED_EXCEPTION_DIAGNOSTIC_CODE,
+  DWT_GOVERNED_EXCEPTION_FIXTURE_PATH,
   DWT_NATIVE_EVIDENCE_PATH,
   DWT_NATIVE_HANDOFF_PATHS,
   DWT_P2_CATALOG_PATH,
@@ -54,6 +56,8 @@ import {
   DWT_P4_REVIEW_REPORT_PATH,
   DWT_PROTOCOL_EVIDENCE_PATH,
   DWT_PROTOCOL_HANDOFF_PATHS,
+  DWT_REVIEW_REQUIRED_EXCEPTION_DIAGNOSTIC_CODE,
+  DWT_REVIEW_REQUIRED_EXCEPTION_FIXTURE_PATH,
   DWT_REQUIRED_ARTIFACT_PATHS,
   DWT_REQUIRED_EVIDENCE_PATHS,
   DWT_SCENARIO_ID,
@@ -801,6 +805,12 @@ function evaluateFixture(expectation, fixture, upstream) {
   if (hasForbiddenClaim(fixture.claims)) {
     return invalidResult("TRACE_FORBIDDEN_CLAIM");
   }
+  if (fixture.sourceConformanceReviewStatus === "expired") {
+    if (fixture.sourceConformanceReviewPath === DWT_GOVERNED_EXCEPTION_FIXTURE_PATH && upstreamHasGovernedExceptionExpiry(upstream)) {
+      return invalidResult("TRACE_SOURCE_CONFORMANCE_REVIEW_EXPIRED_INDEXED");
+    }
+    return { result: "valid", promotionStatus: "allowed", diagnostics: [] };
+  }
   if (fixture.requiresReviewStatus === true) {
     return {
       result: "review_required",
@@ -837,6 +847,68 @@ function hasForbiddenClaim(claims = {}) {
   return DWT_FORBIDDEN_CLAIM_KEYS.some((key) => claims[key] === true);
 }
 
+function upstreamHasGovernedExceptionExpiry(upstream) {
+  return [...(upstream.sourceEvidence.validationResults || []), ...(upstream.sourceReport.results || [])].some((row) =>
+    row.fixturePath === DWT_GOVERNED_EXCEPTION_FIXTURE_PATH &&
+    row.actualResult === "invalid" &&
+    row.promotionStatus === "blocked" &&
+    (row.diagnosticCodes || []).includes(DWT_GOVERNED_EXCEPTION_DIAGNOSTIC_CODE)
+  );
+}
+
+function sourceConformanceExceptionLifecycle(upstream) {
+  const reviewRequiredRow = findSourceConformanceResult(
+    upstream,
+    DWT_REVIEW_REQUIRED_EXCEPTION_FIXTURE_PATH,
+    DWT_REVIEW_REQUIRED_EXCEPTION_DIAGNOSTIC_CODE
+  );
+  const expiredRow = findSourceConformanceResult(
+    upstream,
+    DWT_GOVERNED_EXCEPTION_FIXTURE_PATH,
+    DWT_GOVERNED_EXCEPTION_DIAGNOSTIC_CODE
+  );
+  const reviewQueueItem = (upstream.sourceReviewQueue.queueItems || []).find((item) =>
+    item.reviewQueueItemId === reviewRequiredRow.reviewQueueItemId
+  );
+  if (!reviewRequiredRow.review || !expiredRow.review || !reviewQueueItem) {
+    throw contractError("designer workflow trace source-conformance exception lifecycle metadata is missing.", 1);
+  }
+  return {
+    status: "expired-blocked",
+    reviewRequiredFixturePath: DWT_REVIEW_REQUIRED_EXCEPTION_FIXTURE_PATH,
+    reviewRequiredDiagnosticCode: DWT_REVIEW_REQUIRED_EXCEPTION_DIAGNOSTIC_CODE,
+    reviewRequiredQueueItemId: reviewRequiredRow.reviewQueueItemId,
+    expiredFixturePath: DWT_GOVERNED_EXCEPTION_FIXTURE_PATH,
+    expiredDiagnosticCode: DWT_GOVERNED_EXCEPTION_DIAGNOSTIC_CODE,
+    owner: reviewRequiredRow.review.owner,
+    approvedRationale: reviewRequiredRow.review.rationale,
+    expiredRationale: expiredRow.review.rationale,
+    approvedExpiresAt: reviewRequiredRow.review.expiresAt,
+    expiredExpiresAt: expiredRow.review.expiresAt,
+    governancePolicySourceRef: "declared-source://source-conformance/governance/review-policy.json#/",
+    expiredExceptionReviewQueueItemId: expiredRow.reviewQueueItemId,
+    expiredExceptionExecutable: false,
+    renewalRequiredBeforeHandoff: true,
+    routeToAuthorityLayer: true
+  };
+}
+
+function findSourceConformanceResult(upstream, fixturePath, diagnosticCode) {
+  const expectedStatus = diagnosticCode === DWT_REVIEW_REQUIRED_EXCEPTION_DIAGNOSTIC_CODE
+    ? { actualResult: "review_required", promotionStatus: "review_required" }
+    : { actualResult: "invalid", promotionStatus: "blocked" };
+  const rows = [...(upstream.sourceEvidence.validationResults || []), ...(upstream.sourceReport.results || [])].filter((row) =>
+    row.fixturePath === fixturePath &&
+    row.actualResult === expectedStatus.actualResult &&
+    row.promotionStatus === expectedStatus.promotionStatus &&
+    (row.diagnosticCodes || []).includes(diagnosticCode)
+  );
+  if (rows.length === 0) {
+    throw contractError(`designer workflow trace source-conformance result is missing for ${fixturePath}.`, 1);
+  }
+  return rows[0];
+}
+
 function arrayEquals(actual, expected) {
   return canonicalJson(actual) === canonicalJson(expected);
 }
@@ -845,6 +917,7 @@ function buildReport({ runId, upstream, selectionRef, validationResults, diagnos
   const catalogComponent = upstream.p2Catalog.components[DWT_COMPONENT_ID];
   const protocolHandoffRefs = DWT_PROTOCOL_HANDOFF_PATHS.map((artifactPath) => findSingleArtifactRef(upstream.protocolEvidence, artifactPath));
   const nativeHandoffRefs = DWT_NATIVE_HANDOFF_PATHS.map((artifactPath) => findSingleArtifactRef(upstream.nativeEvidence, artifactPath));
+  const exceptionLifecycle = sourceConformanceExceptionLifecycle(upstream);
   return {
     schemaId: "designer-workflow-trace-report.v0",
     version: DWT_VERSION,
@@ -948,14 +1021,15 @@ function buildReport({ runId, upstream, selectionRef, validationResults, diagnos
         designerAction: "Identify only hash-bound static protocol or native output backed by target evidence as handoff candidates.",
         proofTrace: "Protocol and native selections, projections, envelopes, packets, and reports are inert proof-only handoff artifacts.",
         status: "pass",
-        promotionStatus: "review_required",
+        promotionStatus: "blocked",
         proofAuthority: false,
         refs: [
           upstream.evidenceRefs.find((ref) => ref.path === DWT_PROTOCOL_EVIDENCE_PATH),
           upstream.evidenceRefs.find((ref) => ref.path === DWT_NATIVE_EVIDENCE_PATH),
           ...protocolHandoffRefs,
           ...nativeHandoffRefs
-        ]
+        ],
+        statusNote: "Target artifacts remain upstream proof refs for the accepted Button path; the expired governed exception is not handoff-allowed."
       },
       {
         stepId: "govern-changes-over-time",
@@ -978,16 +1052,37 @@ function buildReport({ runId, upstream, selectionRef, validationResults, diagnos
         evidenceRef: upstream.evidenceRefs.find((ref) => ref.path === DWT_PROTOCOL_EVIDENCE_PATH),
         artifactRefs: protocolHandoffRefs,
         emittedForComponent: DWT_COMPONENT_ID,
-        liveBehavior: false
+        liveBehavior: false,
+        handoffAllowedForGovernedException: false,
+        reportAuthority: "index-only"
       },
       {
         targetId: "surfaces-native-static",
         evidenceRef: upstream.evidenceRefs.find((ref) => ref.path === DWT_NATIVE_EVIDENCE_PATH),
         artifactRefs: nativeHandoffRefs,
         emittedForComponent: DWT_COMPONENT_ID,
-        liveBehavior: false
+        liveBehavior: false,
+        handoffAllowedForGovernedException: false,
+        reportAuthority: "index-only"
       }
     ],
+    sourceConformanceGovernance: {
+      status: "indexed",
+      blockedFixturePath: DWT_GOVERNED_EXCEPTION_FIXTURE_PATH,
+      diagnosticCode: DWT_GOVERNED_EXCEPTION_DIAGNOSTIC_CODE,
+      sourceConformanceEvidenceRef: upstream.evidenceRefs.find((ref) => ref.path === DWT_SOURCE_CONFORMANCE_EVIDENCE_PATH),
+      sourceConformanceReportRef: upstream.boundaryRefs.find((ref) => ref.path === DWT_SOURCE_CONFORMANCE_REPORT_PATH),
+      sourceReviewQueueRef: upstream.boundaryRefs.find((ref) => ref.path === DWT_SOURCE_REVIEW_QUEUE_PATH),
+      exceptionLifecycle,
+      routeToAuthorityLayer: true,
+      targetHandoffAllowed: false,
+      reportAuthority: "index-only",
+      proofAuthority: false,
+      liveSurfaceOps: false,
+      liveJudgmentKit: false,
+      actionExecution: false,
+      productionBehavior: false
+    },
     presentationLinks: [
       { path: "demo/p2/index.html", role: "presentation-only", proofAuthority: false },
       { path: "demo/p3/index.html", role: "presentation-only", proofAuthority: false },
@@ -1342,5 +1437,7 @@ function contractError(message, exitCode) {
 
 export const designerWorkflowTraceInternals = {
   computeEvidenceSelfHash,
-  firstEvidenceIntegrityFailureCode
+  firstEvidenceIntegrityFailureCode,
+  sourceConformanceExceptionLifecycle,
+  upstreamHasGovernedExceptionExpiry
 };

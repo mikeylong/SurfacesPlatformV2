@@ -12,6 +12,10 @@ export const DWT_CONTRACT_ID = "surfaces-designer-workflow-trace-proof";
 export const DWT_TARGET_ID = "designer-workflow-trace";
 export const DWT_SCENARIO_ID = "p2-button-authority-to-static-handoff";
 export const DWT_COMPONENT_ID = "Button";
+export const DWT_REVIEW_REQUIRED_EXCEPTION_FIXTURE_PATH = "fixtures/source-conformance/review/brand-exception.source-conformance.json";
+export const DWT_GOVERNED_EXCEPTION_FIXTURE_PATH = "fixtures/source-conformance/invalid/review-expired.source-conformance.json";
+export const DWT_GOVERNED_EXCEPTION_DIAGNOSTIC_CODE = "SOURCE_REVIEW_EXPIRED";
+export const DWT_REVIEW_REQUIRED_EXCEPTION_DIAGNOSTIC_CODE = "SOURCE_REVIEW_REQUIRED";
 
 export const DWT_P2_EVIDENCE_PATH = "artifacts/p2/evidence.json";
 export const DWT_P2_CATALOG_PATH = "artifacts/p2/governed-catalog.json";
@@ -32,10 +36,10 @@ export const DWT_NATIVE_EVIDENCE_PATH = "artifacts/p5/native/evidence.json";
 export const DWT_ACCEPTED_P2_EVIDENCE_HASH = "ec5fe3e0bf4f2ac0b8f10ba746610df94175085ee35904186a23c0f27282906f";
 export const DWT_ACCEPTED_P2_CATALOG_HASH = "2ba1d418bc51051bb642a0c675efbc7e16f4f315dae62674a6b6e363461c9d29";
 export const DWT_ACCEPTED_P2_INGESTION_REPORT_HASH = "5db246399a04eae4ea557bd3fdaec0fd278194970feeecbd751dc0b677f64a5b";
-export const DWT_ACCEPTED_SOURCE_CONFORMANCE_EVIDENCE_HASH = "ee545ad9ced148fc881d62abb26ac4e2ebc6e5d843bf78e0d8cf5c3ddd6fc856";
-export const DWT_ACCEPTED_SOURCE_AUTHORITY_MAP_HASH = "d12e31726b76562c0d00f353ffd1a06ea516f8e3e3d603b67d679a8691838f37";
-export const DWT_ACCEPTED_SOURCE_CONFORMANCE_REPORT_HASH = "68027d8e8de7e392df8424e258e13c3f1dbdb83e073f83023dce97227ad865ef";
-export const DWT_ACCEPTED_SOURCE_REVIEW_QUEUE_HASH = "38a94372c3aff0a5b71536d9353067c88e857112c4a1f7a1ed6382ad464e7691";
+export const DWT_ACCEPTED_SOURCE_CONFORMANCE_EVIDENCE_HASH = "15a270885a32f6b2204a349fce4f75aa62f326bc29f7ddf0d7282078b2f2282c";
+export const DWT_ACCEPTED_SOURCE_AUTHORITY_MAP_HASH = "904516b9543ac883902958092874abfbb4390de50d4c89eb48e1d61fa8ddb8fb";
+export const DWT_ACCEPTED_SOURCE_CONFORMANCE_REPORT_HASH = "d3f456df337494bdaa5d7c7fc2ff57f7001e1756671efb3b7f30c8879fa22e68";
+export const DWT_ACCEPTED_SOURCE_REVIEW_QUEUE_HASH = "68d4e87f22734af134ae28cca2796a8acb62f64467a2555907781aa9f19fcfd6";
 export const DWT_ACCEPTED_P3_EVIDENCE_HASH = "9a1ae85b240561ab39e427ff5495beeff03088a17f623d2ce35cb633ca9914d7";
 export const DWT_ACCEPTED_P3_REVIEW_QUEUE_HASH = "57a5a357f1c0c47604f58b719f25ff0edaf919c25ac0c7a63f91f6f773b49d07";
 export const DWT_ACCEPTED_P4_EVIDENCE_HASH = "54fa03840c1e2948850f07c106f0488625deddf8723bfdc161ff1e1ea2c93a43";
@@ -91,11 +95,39 @@ export const DWT_PROTOCOL_HANDOFF_PATHS = [
   "artifacts/p5/protocol/protocol-adapter-report.json"
 ];
 
+const DWT_PROTOCOL_HANDOFF_SCHEMA_IDS = [
+  "protocol-target-selection.v0",
+  "protocol-projection.v0",
+  "protocol-envelope.v0",
+  "protocol-adapter-report.v0"
+];
+
+const DWT_PROTOCOL_HANDOFF_HASHES = [
+  "b78e7a025cc750122c9ad65003c261985dd03aad42cf79be142eb81ffe0b205a",
+  "44e00a05fc57fb7ed6511d943da95b81d6c79ce3c5018decd2ef41ad61df9231",
+  "129f87fa4beda939bd08ab7d3633ae6cca2e234710012cbd6515b0b13dbc9316",
+  "f375449cceac68ee35eb24161b69f37040cfa2d631366f22359af5504d1fe014"
+];
+
 export const DWT_NATIVE_HANDOFF_PATHS = [
   "artifacts/p5/native/adapter-target-selection.json",
   "artifacts/p5/native/surfaces-native-projection.json",
   "artifacts/p5/native/surfaces-native-packet.button.json",
   "artifacts/p5/native/surfaces-native-report.json"
+];
+
+const DWT_NATIVE_HANDOFF_SCHEMA_IDS = [
+  "surfaces-native-target-selection.v0",
+  "surfaces-native-projection.v0",
+  "surfaces-native-packet.v0",
+  "surfaces-native-report.v0"
+];
+
+const DWT_NATIVE_HANDOFF_HASHES = [
+  "8029ab7253d75539bff1947deb3542361306670dab031a67fbe99e1a327bb3b0",
+  "db085df991e8d408fd104332db1e158553572129c52cad902fed64b4b4aeff79",
+  "d883b88ca5f5bd4e470133ffafd1ba6d7fe7f49002a076b4976d9c2087db7fff",
+  "c63c9366c8f8dc523a066d19351ade9abaffb58c6e1175178063eaf290987a00"
 ];
 
 export const DWT_REQUIRED_EVIDENCE_PATHS = [
@@ -160,6 +192,7 @@ export const DWT_FIXTURE_FILES = [
   "trace-selection.fixture.json",
   "valid/button-authority-to-handoff.designer-workflow-trace.json",
   "review/review-required-status.designer-workflow-trace.json",
+  "invalid/source-conformance-review-expired.designer-workflow-trace.json",
   "invalid/unknown-component.designer-workflow-trace.json",
   "invalid/missing-target-handoff.designer-workflow-trace.json",
   "invalid/forbidden-claim.designer-workflow-trace.json",
@@ -244,6 +277,19 @@ export const DWT_DIAGNOSTIC_ROWS = [
     severity: "review"
   }),
   diagnosticRow({
+    code: "TRACE_SOURCE_CONFORMANCE_REVIEW_EXPIRED_INDEXED",
+    trigger: "Trace fixture requires expired source-conformance review metadata to remain visible in the index",
+    canonicalMessage: "Designer workflow trace indexes expired source-conformance review metadata as blocked evidence.",
+    stage: "status-index",
+    phase: "designer-workflow-trace-fixture",
+    artifactPath: "fixtures/designer-workflow-trace/invalid/source-conformance-review-expired.designer-workflow-trace.json",
+    jsonPointer: "/sourceConformanceReviewStatus",
+    sourceRef: "fixture://designer-workflow-trace/invalid/source-conformance-review-expired#/sourceConformanceReviewStatus",
+    validationResult: "invalid",
+    promotionStatus: "blocked",
+    fixtureCoverage: "invalid/source-conformance-review-expired.designer-workflow-trace.json"
+  }),
+  diagnosticRow({
     code: "TRACE_FORBIDDEN_CLAIM",
     trigger: "Trace fixture claims product workflow implementation, customer validation, production adoption, live behavior, live agent or work-order execution, A2UI, P6, or P7",
     canonicalMessage: "Designer workflow trace fixtures cannot claim product workflow implementation, customer validation, production adoption, live integrations, live agent execution, tool calls, network calls, callbacks, secrets, action execution, work-order execution, production adapters, APIs, SDKs, runtimes, A2UI, P6, or P7.",
@@ -293,6 +339,17 @@ export const DWT_EXPECTATION_ROWS = [
     diagnosticCodes: ["TRACE_REVIEW_REQUIRED_STATUS_INDEXED"],
     artifactPath: "artifacts/designer-workflow-trace/designer-workflow-trace-report.json",
     jsonPointer: "/evidenceStatus"
+  }),
+  expectationRow({
+    fixturePath: "fixtures/designer-workflow-trace/invalid/source-conformance-review-expired.designer-workflow-trace.json",
+    kind: "invalid",
+    stage: "status-index",
+    phase: "designer-workflow-trace-fixture",
+    expectedResult: "invalid",
+    promotionStatus: "blocked",
+    diagnosticCodes: ["TRACE_SOURCE_CONFORMANCE_REVIEW_EXPIRED_INDEXED"],
+    artifactPath: "artifacts/designer-workflow-trace/designer-workflow-trace-report.json",
+    jsonPointer: "/sourceConformanceGovernance"
   }),
   expectationRow({
     fixturePath: "fixtures/designer-workflow-trace/invalid/unknown-component.designer-workflow-trace.json",
@@ -431,10 +488,16 @@ export function buildDesignerWorkflowTraceFixtures() {
     fixtureId: "review-required-status",
     requiresReviewStatus: true
   });
+  const expiredReview = traceFixture({
+    fixtureId: "source-conformance-review-expired",
+    sourceConformanceReviewStatus: "expired",
+    sourceConformanceReviewPath: DWT_GOVERNED_EXCEPTION_FIXTURE_PATH
+  });
   return {
     "trace-selection.fixture.json": traceSelectionFixture(),
     "valid/button-authority-to-handoff.designer-workflow-trace.json": valid,
     "review/review-required-status.designer-workflow-trace.json": review,
+    "invalid/source-conformance-review-expired.designer-workflow-trace.json": expiredReview,
     "invalid/unknown-component.designer-workflow-trace.json": {
       ...deepClone(valid),
       fixtureId: "unknown-component",
@@ -542,6 +605,40 @@ export function artifactRef(pathValue, schemaId, hash, extra = {}) {
   };
 }
 
+function targetHandoffArtifactRef(pathValue, schemaId, hash, generator) {
+  return artifactRef(pathValue, schemaId, hash, {
+    provenance: {
+      generatedAt: DWT_TIMESTAMP,
+      generator,
+      sourceRefs: [pathValue]
+    }
+  });
+}
+
+function targetHandoffArtifactRefs(paths, schemaIds, hashes, generator) {
+  return paths.map((artifactPath, index) =>
+    targetHandoffArtifactRef(artifactPath, schemaIds[index], hashes[index], generator)
+  );
+}
+
+function protocolTargetHandoffArtifactRefs() {
+  return targetHandoffArtifactRefs(
+    DWT_PROTOCOL_HANDOFF_PATHS,
+    DWT_PROTOCOL_HANDOFF_SCHEMA_IDS,
+    DWT_PROTOCOL_HANDOFF_HASHES,
+    "interfacectl-p5-protocol-boundary-ref"
+  );
+}
+
+function nativeTargetHandoffArtifactRefs() {
+  return targetHandoffArtifactRefs(
+    DWT_NATIVE_HANDOFF_PATHS,
+    DWT_NATIVE_HANDOFF_SCHEMA_IDS,
+    DWT_NATIVE_HANDOFF_HASHES,
+    "interfacectl-p5-native-boundary-ref"
+  );
+}
+
 export function provenance(generator, sourceRefs) {
   return {
     generatedAt: DWT_TIMESTAMP,
@@ -599,6 +696,8 @@ function traceFixture(overrides = {}) {
     requiredEvidencePaths: DWT_REQUIRED_EVIDENCE_PATHS,
     requiredArtifactPaths: DWT_REQUIRED_ARTIFACT_PATHS,
     requiresReviewStatus: overrides.requiresReviewStatus === true,
+    sourceConformanceReviewStatus: overrides.sourceConformanceReviewStatus || "none",
+    sourceConformanceReviewPath: overrides.sourceConformanceReviewPath || null,
     claims: overrides.claims || Object.fromEntries(DWT_FORBIDDEN_CLAIM_KEYS.map((key) => [key, false])),
     provenance: provenance("interfacectl-designer-workflow-trace-materialize", [`fixture://designer-workflow-trace/${overrides.fixtureId}`])
   };
@@ -683,6 +782,10 @@ function artifactRefSchema(options = false) {
     required.push("provenance");
   }
   return objectSchema(null, properties, required);
+}
+
+function exactArtifactRefSchema(expectedRef) {
+  return { const: expectedRef };
 }
 
 function provenanceSchema() {
@@ -786,14 +889,63 @@ function evidenceStatusRowSchema() {
   }, ["label", "path", "schemaId", "status", "promotionStatus", "hashAlgorithm", "hash"]);
 }
 
-function targetHandoffArtifactSchema() {
+function targetHandoffArtifactSchema({ targetId, evidenceRef, artifactRefs }) {
   return objectSchema(null, {
-    targetId: { enum: DWT_TARGET_IDS },
-    evidenceRef: artifactRefSchema(),
-    artifactRefs: { type: "array", minItems: 4, maxItems: 4, items: artifactRefSchema(true) },
+    targetId: { const: targetId },
+    evidenceRef: exactArtifactRefSchema(evidenceRef),
+    artifactRefs: {
+      type: "array",
+      minItems: artifactRefs.length,
+      maxItems: artifactRefs.length,
+      prefixItems: artifactRefs.map((artifactRefRow) => exactArtifactRefSchema(artifactRefRow)),
+      items: false
+    },
     emittedForComponent: { const: DWT_COMPONENT_ID },
-    liveBehavior: { const: false }
-  }, ["targetId", "evidenceRef", "artifactRefs", "emittedForComponent", "liveBehavior"]);
+    liveBehavior: { const: false },
+    handoffAllowedForGovernedException: { const: false },
+    reportAuthority: { const: "index-only" }
+  }, ["targetId", "evidenceRef", "artifactRefs", "emittedForComponent", "liveBehavior", "handoffAllowedForGovernedException", "reportAuthority"]);
+}
+
+function sourceConformanceGovernanceSchema() {
+  return objectSchema(null, {
+    status: { const: "indexed" },
+    blockedFixturePath: { const: DWT_GOVERNED_EXCEPTION_FIXTURE_PATH },
+    diagnosticCode: { const: DWT_GOVERNED_EXCEPTION_DIAGNOSTIC_CODE },
+    sourceConformanceEvidenceRef: artifactRefSchema({ nullableHash: false }),
+    sourceConformanceReportRef: artifactRefSchema({ nullableHash: false }),
+    sourceReviewQueueRef: artifactRefSchema({ nullableHash: false }),
+    exceptionLifecycle: sourceConformanceExceptionLifecycleSchema(),
+    routeToAuthorityLayer: { const: true },
+    targetHandoffAllowed: { const: false },
+    reportAuthority: { const: "index-only" },
+    proofAuthority: { const: false },
+    liveSurfaceOps: { const: false },
+    liveJudgmentKit: { const: false },
+    actionExecution: { const: false },
+    productionBehavior: { const: false }
+  }, ["status", "blockedFixturePath", "diagnosticCode", "sourceConformanceEvidenceRef", "sourceConformanceReportRef", "sourceReviewQueueRef", "exceptionLifecycle", "routeToAuthorityLayer", "targetHandoffAllowed", "reportAuthority", "proofAuthority", "liveSurfaceOps", "liveJudgmentKit", "actionExecution", "productionBehavior"]);
+}
+
+function sourceConformanceExceptionLifecycleSchema() {
+  return objectSchema(null, {
+    status: { const: "expired-blocked" },
+    reviewRequiredFixturePath: { const: DWT_REVIEW_REQUIRED_EXCEPTION_FIXTURE_PATH },
+    reviewRequiredDiagnosticCode: { const: DWT_REVIEW_REQUIRED_EXCEPTION_DIAGNOSTIC_CODE },
+    reviewRequiredQueueItemId: { const: "source-review-brand-exception" },
+    expiredFixturePath: { const: DWT_GOVERNED_EXCEPTION_FIXTURE_PATH },
+    expiredDiagnosticCode: { const: DWT_GOVERNED_EXCEPTION_DIAGNOSTIC_CODE },
+    owner: { type: "string" },
+    approvedRationale: { type: "string" },
+    expiredRationale: { type: "string" },
+    approvedExpiresAt: { type: "string" },
+    expiredExpiresAt: { type: "string" },
+    governancePolicySourceRef: { const: "declared-source://source-conformance/governance/review-policy.json#/" },
+    expiredExceptionReviewQueueItemId: { type: "null" },
+    expiredExceptionExecutable: { const: false },
+    renewalRequiredBeforeHandoff: { const: true },
+    routeToAuthorityLayer: { const: true }
+  }, ["status", "reviewRequiredFixturePath", "reviewRequiredDiagnosticCode", "reviewRequiredQueueItemId", "expiredFixturePath", "expiredDiagnosticCode", "owner", "approvedRationale", "expiredRationale", "approvedExpiresAt", "expiredExpiresAt", "governancePolicySourceRef", "expiredExceptionReviewQueueItemId", "expiredExceptionExecutable", "renewalRequiredBeforeHandoff", "routeToAuthorityLayer"]);
 }
 
 function presentationLinkSchema() {
@@ -846,7 +998,7 @@ function traceSelectionSchema() {
     targetHandoffRefs: {
       oneOf: [
         { const: [] },
-        { type: "array", minItems: 2, maxItems: 2, items: artifactRefSchema(true) }
+        { type: "array", minItems: 2, maxItems: 2, items: artifactRefSchema({ provenance: true, nullableHash: false }) }
       ]
     },
     traceSelectionRef: { type: ["object", "null"], additionalProperties: true },
@@ -871,7 +1023,7 @@ function traceReportSchema() {
       status: { const: "pass" },
       refs: { const: defaultBoundaryRefs() }
     }, ["status", "refs"]),
-    traceSelectionRef: artifactRefSchema(),
+    traceSelectionRef: artifactRefSchema({ nullableHash: false }),
     designerWorkflowSteps: {
       type: "array",
       minItems: DWT_WORKFLOW_STEPS.length,
@@ -889,8 +1041,21 @@ function traceReportSchema() {
       type: "array",
       minItems: DWT_TARGET_IDS.length,
       maxItems: DWT_TARGET_IDS.length,
-      items: targetHandoffArtifactSchema()
+      prefixItems: [
+        targetHandoffArtifactSchema({
+          targetId: "surfaces-protocol-static",
+          evidenceRef: artifactRef(DWT_PROTOCOL_EVIDENCE_PATH, "protocol-adapter-evidence.v0", DWT_ACCEPTED_PROTOCOL_EVIDENCE_HASH),
+          artifactRefs: protocolTargetHandoffArtifactRefs()
+        }),
+        targetHandoffArtifactSchema({
+          targetId: "surfaces-native-static",
+          evidenceRef: artifactRef(DWT_NATIVE_EVIDENCE_PATH, "surfaces-native-evidence.v0", DWT_ACCEPTED_NATIVE_EVIDENCE_HASH),
+          artifactRefs: nativeTargetHandoffArtifactRefs()
+        })
+      ],
+      items: false
     },
+    sourceConformanceGovernance: sourceConformanceGovernanceSchema(),
     presentationLinks: {
       type: "array",
       minItems: 5,
@@ -909,7 +1074,7 @@ function traceReportSchema() {
     status: { enum: ["pass", "fail"] },
     promotionStatus: { enum: ["allowed", "review_required", "blocked"] },
     provenance: provenanceSchema()
-  }, ["schemaId", "version", "runId", "targetId", "scenarioId", "componentScope", "targetIds", "scopeStatement", "nonAuthorityStatement", "upstreamPreflight", "traceSelectionRef", "designerWorkflowSteps", "evidenceStatus", "targetHandoffArtifacts", "presentationLinks", "boundaryClaims", "validationResults", "diagnostics", "diagnosticsRegistry", "status", "promotionStatus", "provenance"]);
+  }, ["schemaId", "version", "runId", "targetId", "scenarioId", "componentScope", "targetIds", "scopeStatement", "nonAuthorityStatement", "upstreamPreflight", "traceSelectionRef", "designerWorkflowSteps", "evidenceStatus", "targetHandoffArtifacts", "sourceConformanceGovernance", "presentationLinks", "boundaryClaims", "validationResults", "diagnostics", "diagnosticsRegistry", "status", "promotionStatus", "provenance"]);
 }
 
 function traceEvidenceSchema() {
@@ -922,10 +1087,10 @@ function traceEvidenceSchema() {
     command: { const: DWT_COMMAND },
     args: { const: defaultCommandArgs() },
     environment: { type: "object", additionalProperties: true },
-    schemaClosure: { type: "array", items: artifactRefSchema() },
-    fixtureRefs: { type: "array", items: artifactRefSchema() },
-    boundaryRefs: { type: "array", items: artifactRefSchema(true) },
-    artifacts: { type: "array", items: artifactRefSchema(true) },
+    schemaClosure: { type: "array", items: artifactRefSchema({ nullableHash: false }) },
+    fixtureRefs: { type: "array", items: artifactRefSchema({ nullableHash: false }) },
+    boundaryRefs: { type: "array", items: artifactRefSchema({ provenance: true, nullableHash: false }) },
+    artifacts: { type: "array", items: artifactRefSchema({ provenance: true, nullableHash: false }) },
     diagnostics: { type: "array", items: diagnosticObjectSchema() },
     diagnosticsRegistry: { const: diagnosticsRegistry() },
     validationResults: { type: "array", items: resultRowSchema() },
@@ -962,7 +1127,7 @@ function traceDiagnosticsSchema() {
 }
 
 function traceFixtureSchema() {
-  return objectSchema("designer-workflow-trace-fixture.v0", {
+  const schema = objectSchema("designer-workflow-trace-fixture.v0", {
     schemaId: { const: "designer-workflow-trace-fixture.v0" },
     version: { type: "string" },
     fixtureId: { type: "string" },
@@ -972,9 +1137,34 @@ function traceFixtureSchema() {
     requiredEvidencePaths: { const: DWT_REQUIRED_EVIDENCE_PATHS },
     requiredArtifactPaths: { const: DWT_REQUIRED_ARTIFACT_PATHS },
     requiresReviewStatus: { type: "boolean" },
+    sourceConformanceReviewStatus: { enum: ["none", "expired"] },
+    sourceConformanceReviewPath: { type: ["string", "null"] },
     claims: claimsSchema(),
     provenance: provenanceSchema()
-  }, ["schemaId", "version", "fixtureId", "scenarioId", "componentId", "targetIds", "requiredEvidencePaths", "requiredArtifactPaths", "requiresReviewStatus", "claims", "provenance"]);
+  }, ["schemaId", "version", "fixtureId", "scenarioId", "componentId", "targetIds", "requiredEvidencePaths", "requiredArtifactPaths", "requiresReviewStatus", "sourceConformanceReviewStatus", "sourceConformanceReviewPath", "claims", "provenance"]);
+  schema.allOf = [
+    {
+      if: {
+        properties: { sourceConformanceReviewStatus: { const: "expired" } },
+        required: ["sourceConformanceReviewStatus"]
+      },
+      then: {
+        properties: { sourceConformanceReviewPath: { const: DWT_GOVERNED_EXCEPTION_FIXTURE_PATH } },
+        required: ["sourceConformanceReviewPath"]
+      }
+    },
+    {
+      if: {
+        properties: { sourceConformanceReviewStatus: { const: "none" } },
+        required: ["sourceConformanceReviewStatus"]
+      },
+      then: {
+        properties: { sourceConformanceReviewPath: { type: "null" } },
+        required: ["sourceConformanceReviewPath"]
+      }
+    }
+  ];
+  return schema;
 }
 
 function tracePreflightMutationSchema() {

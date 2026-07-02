@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SurfaceOps Prototype Review Set</title>
+  <link rel="icon" href="data:,">
+  <style>
+    :root {
+      color-scheme: light;
+      --jk-color-canvas: #f8f7f2;
+      --jk-color-surface: #ffffff;
+      --jk-color-text: #171717;
+      --jk-color-muted: #61615c;
+      --jk-color-border: #d7d3c8;
+      --jk-color-focus: #245f73;
+      --jk-color-success: #2e6b48;
+      --jk-color-warning: #8a5a16;
+      --jk-color-risk: #8f342f;
+      --jk-color-disabled: #8a8f93;
+      --jk-color-receipt: #23615f;
+      --jk-space-2: 0.5rem;
+      --jk-space-3: 0.75rem;
+      --jk-space-4: 1rem;
+      --jk-radius-control: 4px;
+      --jk-radius-panel: 8px;
+      --jk-focus-ring: 0 0 0 3px rgba(36, 95, 115, 0.28);
+      --jk-shadow-card: 0 10px 30px rgb(23 32 42 / 7%);
+      --jk-font-body: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --jk-font-diagnostic: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-family: var(--jk-font-body);
+      color: var(--jk-color-text);
+      background: var(--jk-color-canvas);
+    }
+
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    main { max-width: 1160px; margin: 0 auto; padding: 32px 20px 48px; }
+    header { margin-bottom: 24px; }
+    h1 { margin: 0 0 8px; font-size: 40px; letter-spacing: 0; }
+    h2 { margin: 0 0 10px; font-size: 18px; letter-spacing: 0; }
+    p { margin: 0; color: var(--jk-color-muted); line-height: 1.55; max-width: 820px; }
+    .notice {
+      border: 1px solid var(--jk-color-border);
+      background: var(--jk-color-surface);
+      border-radius: var(--jk-radius-panel);
+      padding: 14px 16px;
+      margin: 20px 0 26px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+    .card {
+      display: flex;
+      min-height: 290px;
+      flex-direction: column;
+      justify-content: space-between;
+      border: 1px solid var(--jk-color-border);
+      border-radius: var(--jk-radius-panel);
+      background: var(--jk-color-surface);
+      padding: 18px;
+      text-decoration: none;
+      color: var(--jk-color-text);
+      box-shadow: var(--jk-shadow-card);
+    }
+    .card:focus-visible { outline: 3px solid var(--jk-color-focus); outline-offset: 3px; box-shadow: var(--jk-focus-ring); }
+    .eyebrow { font-size: 12px; font-weight: 750; color: var(--jk-color-focus); text-transform: uppercase; letter-spacing: 0; }
+    ul { margin: 14px 0 0; padding-left: 18px; color: var(--jk-color-muted); line-height: 1.45; }
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 18px;
+    }
+    .pill {
+      border: 1px solid var(--jk-color-border);
+      border-radius: 999px;
+      padding: 5px 9px;
+      font-size: 12px;
+      color: var(--jk-color-muted);
+      background: var(--jk-color-canvas);
+    }
+    .open { color: var(--jk-color-focus); font-weight: 750; margin-top: 18px; }
+    .refs {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 24px;
+    }
+    .ref {
+      border: 1px solid var(--jk-color-border);
+      border-radius: var(--jk-radius-panel);
+      background: var(--jk-color-surface);
+      padding: 14px;
+    }
+    code { font-family: var(--jk-font-diagnostic); font-size: 12px; overflow-wrap: anywhere; }
+    @media (max-width: 860px) {
+      .grid, .refs { grid-template-columns: 1fr; }
+      main { padding: 24px 14px 36px; }
+      .card { min-height: 0; }
+      h1 { font-size: 30px; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div class="eyebrow">SurfaceOps prototype review</div>
+      <h1>Three evidence-first review prototypes</h1>
+      <p>Each prototype explores a different working shape for SurfaceOps. They are static review artifacts guided by JudgmentKit activity criteria and the repo's SurfaceOps UI criteria.</p>
+    </header>
+
+    <section class="notice" aria-label="Prototype boundary">
+      <strong>Boundary:</strong> these prototypes do not implement live SurfaceOps, live JudgmentKit, persistent review storage, production adapters, APIs, SDKs, A2UI, or work-order execution. Approval means evidence eligibility for a later authorized consumer.
+    </section>
+
+    <section class="grid" aria-label="Prototype variants">
+      <a class="card" href="evidence-workbench/index.html">
+        <div>
+          <div class="eyebrow">Prototype A</div>
+          <h2>Evidence Workbench</h2>
+          <p>A dense three-pane console for reviewers who need queue scanning, evidence inspection, and decision controls in one view.</p>
+          <ul>
+            <li>Queue rail with status filters.</li>
+            <li>Evidence and diagnostics beside item detail.</li>
+            <li>State-gated decision panel.</li>
+          </ul>
+        </div>
+        <div>
+          <div class="meta"><span class="pill">Workbench</span><span class="pill">Evidence-first</span><span class="pill">Dense review</span></div>
+          <div class="open">Open prototype</div>
+        </div>
+      </a>
+
+      <a class="card" href="decision-flow/index.html">
+        <div>
+          <div class="eyebrow">Prototype B</div>
+          <h2>Decision Flow</h2>
+          <p>A guided review sequence that makes the decision receipt and handoff meaning hard to miss.</p>
+          <ul>
+            <li>Step-by-step review path.</li>
+            <li>Rationale validation.</li>
+            <li>Receipt separates decision from target proof.</li>
+          </ul>
+        </div>
+        <div>
+          <div class="meta"><span class="pill">Guided flow</span><span class="pill">Receipt</span><span class="pill">Review training</span></div>
+          <div class="open">Open prototype</div>
+        </div>
+      </a>
+
+      <a class="card" href="governance-board/index.html">
+        <div>
+          <div class="eyebrow">Prototype C</div>
+          <h2>Governance Board</h2>
+          <p>A board-shaped review surface that keeps cards lightweight while evidence and decisions stay in a dedicated panel.</p>
+          <ul>
+            <li>Status lanes for review work.</li>
+            <li>Evidence drawer for selected cards.</li>
+            <li>Board state does not become proof authority.</li>
+          </ul>
+        </div>
+        <div>
+          <div class="meta"><span class="pill">Board</span><span class="pill">Triage</span><span class="pill">Handoff eligibility</span></div>
+          <div class="open">Open prototype</div>
+        </div>
+      </a>
+    </section>
+
+    <section class="refs" aria-label="Source references">
+      <div class="ref">
+        <h2>Product source</h2>
+        <p><code>plans/surfaceops-product-brief.md</code></p>
+      </div>
+      <div class="ref">
+        <h2>UI criteria source</h2>
+        <p><code>plans/surfaceops-ui-decisions-review-criteria.md</code></p>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

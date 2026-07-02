@@ -24,6 +24,7 @@ import {
   SC_GENERATED_ARTIFACTS,
   SC_P2_CATALOG_PATH,
   SC_P2_EVIDENCE_PATH,
+  SC_REVIEW_POLICY_SOURCE_REF,
   SC_SCHEMA_FILES,
   SC_SCHEMA_ROOT,
   SC_SOURCE_ROOT,
@@ -514,6 +515,7 @@ function evaluateExpectations(fixtureRows, context) {
       componentId: fixture.componentId || null,
       reviewQueueItemId: actual.reviewQueueItemId,
       review: actual.review || null,
+      requiredSourceRefs: fixture.requiredSourceRefs || [],
       matched
     };
   });
@@ -548,8 +550,20 @@ function evaluateFixture(expectation, fixture, context) {
     return invalidResult("SOURCE_PRODUCTION_CLAIM_FORBIDDEN");
   }
   if (fixture.review?.required === true) {
+    if (!(fixture.requiredSourceRefs || []).includes(SC_REVIEW_POLICY_SOURCE_REF)) {
+      return invalidResult("SOURCE_REVIEW_POLICY_REF_MISSING");
+    }
     if (!fixture.review.owner || !fixture.review.rationale || !fixture.review.expiresAt) {
       return invalidResult("SOURCE_REVIEW_OWNER_MISSING");
+    }
+    if (!isFutureCanonicalUtcTimestamp(fixture.review.expiresAt, SC_TIMESTAMP)) {
+      return invalidResult("SOURCE_REVIEW_EXPIRED", {
+        review: {
+          owner: fixture.review.owner,
+          rationale: fixture.review.rationale,
+          expiresAt: fixture.review.expiresAt
+        }
+      });
     }
     return {
       result: "review_required",
@@ -583,12 +597,13 @@ function evaluateMutationFixture(expectation, fixture) {
   return { result: "valid", promotionStatus: "allowed", diagnostics: [], reviewQueueItemId: null };
 }
 
-function invalidResult(code) {
+function invalidResult(code, options = {}) {
   return {
     result: "invalid",
     promotionStatus: "blocked",
     diagnostics: [diagnosticForCode(code)],
-    reviewQueueItemId: null
+    reviewQueueItemId: null,
+    review: options.review || null
   };
 }
 
@@ -604,6 +619,14 @@ function declaredSourceRootForRef(sourceRef) {
 
 function hasForbiddenProductionClaim(claims = {}) {
   return SC_FORBIDDEN_CLAIM_KEYS.some((key) => claims[key] === true);
+}
+
+function isFutureCanonicalUtcTimestamp(value, minimumExclusive) {
+  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.000Z$/.test(value)) return false;
+  const timestamp = Date.parse(value);
+  const minimum = Date.parse(minimumExclusive);
+  if (!Number.isFinite(timestamp) || !Number.isFinite(minimum)) return false;
+  return timestamp > minimum && new Date(timestamp).toISOString() === value;
 }
 
 async function componentSourceRootsForManifest(cwd, manifest) {
@@ -627,6 +650,7 @@ function buildReviewQueue({ validationResults, diagnostics }) {
       owner: row.review.owner,
       rationale: row.review.rationale,
       expiresAt: row.review.expiresAt,
+      requiredSourceRefs: row.requiredSourceRefs,
       evidencePath: `${SC_ARTIFACT_ROOT}/evidence.json`,
       executable: false,
       promotionStatus: "review_required"
@@ -749,6 +773,8 @@ function stripResult(row) {
     jsonPointer: row.jsonPointer,
     componentId: row.componentId,
     reviewQueueItemId: row.reviewQueueItemId,
+    review: row.review || null,
+    requiredSourceRefs: row.requiredSourceRefs,
     matched: row.matched
   };
 }
