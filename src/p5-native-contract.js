@@ -19,12 +19,12 @@ export const P5_P4_REVIEW_REPORT_PATH = "artifacts/p4/review-judgment-report.jso
 export const P5_PROTOCOL_EVIDENCE_PATH = "artifacts/p5/protocol/evidence.json";
 export const P5_TARGET_ID = "surfaces-native-static";
 
-export const P5_ACCEPTED_P2_EVIDENCE_HASH = "ec5fe3e0bf4f2ac0b8f10ba746610df94175085ee35904186a23c0f27282906f";
+export const P5_ACCEPTED_P2_EVIDENCE_HASH = "e9f1e26db4cc05efe3f8cb3807c2cacc72930b66ce10afba779d68788a412bf8";
 export const P5_ACCEPTED_P2_CATALOG_HASH = "2ba1d418bc51051bb642a0c675efbc7e16f4f315dae62674a6b6e363461c9d29";
-export const P5_ACCEPTED_P4_EVIDENCE_HASH = "54fa03840c1e2948850f07c106f0488625deddf8723bfdc161ff1e1ea2c93a43";
-export const P5_ACCEPTED_P4_DECISION_LEDGER_HASH = "0ec17be965f80c9305d621c35df31aee05c37ce37b6fd69b3163ab4dc152f94c";
-export const P5_ACCEPTED_P4_REVIEW_REPORT_HASH = "25cf3cfdeb316b8d63e7c9e2f5573baf380c682427bda315f5b9749282bc3ec1";
-export const P5_ACCEPTED_PROTOCOL_EVIDENCE_HASH = "ed70d2b60e72063d13e8c08d40258bd94fa412fd7cc75b6825255c9d8e1afdde";
+export const P5_ACCEPTED_P4_EVIDENCE_HASH = "bbc6b4538438896eb68add346308b3edde3831d32e675a7a35d96a9869937e69";
+export const P5_ACCEPTED_P4_DECISION_LEDGER_HASH = "5cad7aca09a0d21cf3b18bbdba8c8e22c0ca23eb6d83a56e51d3b7c31b2c9631";
+export const P5_ACCEPTED_P4_REVIEW_REPORT_HASH = "814650d1903905fef73ecb131280fa88211ac2c7477d76692b13ccae803c98fa";
+export const P5_ACCEPTED_PROTOCOL_EVIDENCE_HASH = "a4e1f335cc8c9697fcd77114fa2217535db20c089d4a1009344c856a50ee79bb";
 
 export const P5_ENVIRONMENT = Object.freeze({
   generatedAt: P5_TIMESTAMP,
@@ -788,7 +788,7 @@ function nativeProjectionSchema() {
     p4ReviewReportRef: artifactRefSchema(),
     compatibilityPreflightRef: artifactRefSchema(),
     components: { type: "object", additionalProperties: true },
-    tokens: { type: "object", additionalProperties: true },
+    tokens: tokenRecordMapSchema(),
     actions: { type: "object", additionalProperties: true },
     events: { type: "object", additionalProperties: true },
     dataBindings: { type: "object", additionalProperties: true },
@@ -822,7 +822,7 @@ function nativePacketSchema() {
     sideEffects: { type: "array", maxItems: 0 },
     transport: { const: "none" },
     accessibility: { type: "object", additionalProperties: true },
-    tokens: { type: "object", additionalProperties: true },
+    tokens: tokenRecordMapSchema(),
     provenance: provenanceSchema(),
     diagnostics: { type: "array", items: diagnosticObjectSchema() }
   }, ["schemaId", "version", "adapter", "surfaceRef", "projectionRef", "promotionStatus", "message", "actions", "sideEffects", "transport", "accessibility", "tokens", "provenance", "diagnostics"]);
@@ -1246,6 +1246,22 @@ function objectSchema(schemaId, properties, required) {
     schema.$id = `https://surfaces.dev/schemas/p5/${schemaId}.schema.json`;
   }
   return schema;
+}
+
+function tokenRecordMapSchema() {
+  return {
+    type: "object",
+    propertyNames: { type: "string", pattern: "^[A-Za-z0-9._-]+$" },
+    additionalProperties: tokenRecordSchema()
+  };
+}
+
+function tokenRecordSchema() {
+  return objectSchema(null, {
+    type: { type: "string", minLength: 1 },
+    value: true,
+    sourceRef: { type: "string" }
+  }, ["type", "value", "sourceRef"]);
 }
 
 function artifactRefSchema(withProvenance = false, options = {}) {

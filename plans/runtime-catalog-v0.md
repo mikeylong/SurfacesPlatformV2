@@ -124,7 +124,11 @@ Surface IR root and instance entries must require `id`, `component`, `props`, `v
 }
 ```
 
-`tokens` must use only this fixture-backed DTCG 2025.10-compatible subset or projection: `$value`, `$type`, `$description`, alias references, JSON Pointer `$ref`, `$extensions`, `$extends` group inheritance, token path diagnostics, and composite expansion for `typography` and `shadow` tokens. DTCG features not named here are out of P0.
+`tokens` must use only this fixture-backed DTCG 2025.10-compatible subset or projection: `$value`, `$type`, `$description`, alias references, JSON Pointer `$ref`, `$extensions.surfaces.sourceRef`, `$extends` group inheritance, token path diagnostics, and composite expansion for `typography` and `shadow` tokens. DTCG features not named here are out of P0.
+
+`schemas/extract.v0.schema.json` and `schemas/runtime-catalog.v0.schema.json` must encode this boundary directly. DTCG token leaves are closed over `$value`, `$type`, optional `$description`, optional `$extensions.surfaces.sourceRef`, required `sourceRef`, and the phase-specific resolution fields below. Normalized catalog token records are closed over `type`, `value`, and `sourceRef`. Token groups may contain token children plus group metadata explicitly allowed by the phase. CSS variables, CSS property names, renderer metadata, platform-adapter metadata, and arbitrary `$` metadata must not validate as token object fields.
+
+Extract artifacts may preserve JSON Pointer `$ref`, group `$extends`, `resolvedValue`, and composite `resolvedSubvalues` so the proof can show how source references resolved. Runtime catalog artifacts may preserve composite `resolvedSubvalues`, but must not accept extract-only `resolvedValue`, `$ref`, or `$extends` fields.
 
 P0 token handling must be exact enough to prove these cases:
 

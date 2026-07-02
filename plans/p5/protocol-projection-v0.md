@@ -52,6 +52,7 @@ P5 valid, review, invalid, and mutation fixtures are not projection inputs. They
 ## Projection Rules
 - Projection generation must not inspect P5 Surface IR fixture contents to decide supported components, props, actions, events, tokens, data bindings, accessibility, or governance.
 - Components, props, variants, states, slots, actions, events, token refs, data bindings, and accessibility fields must be copied from or narrowed from the governed catalog.
+- Protocol projection `tokens` must validate as normalized catalog-derived token records closed over `type`, `value`, and `sourceRef`; CSS variables, CSS property names, renderer metadata, transport metadata, and arbitrary implementation fields are not protocol token authority.
 - Initial component scope cannot exceed the P2 real-source subset unless later proof extends the governed catalog.
 - Projection must not convert `blocked` or `review_required` to `allowed`.
 - Review-required and destructive actions remain inert descriptors only.

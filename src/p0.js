@@ -2543,7 +2543,126 @@ function surfaceIrSchema() {
   };
 }
 
+function tokenTreeSchemaDefs({ allowExtractResolution = false, allowCatalogResolution = false, allowNormalizedTokens = false } = {}) {
+  const tokenTreeNodeSchemas = [
+    dtcgTokenSchema({ allowExtractResolution, allowCatalogResolution }),
+    tokenGroupSchema({ allowExtractResolution })
+  ];
+  if (allowNormalizedTokens) {
+    tokenTreeNodeSchemas.splice(1, 0, normalizedCatalogTokenSchema());
+  }
+
+  return {
+    tokenTree: {
+      type: "object",
+      propertyNames: tokenNameSchema(),
+      additionalProperties: { $ref: "#/$defs/tokenTreeNode" }
+    },
+    tokenTreeNode: {
+      anyOf: tokenTreeNodeSchemas
+    },
+    resolvedSubvalues: {
+      type: "object",
+      propertyNames: tokenNameSchema(),
+      additionalProperties: {
+        type: "object",
+        required: ["value", "sourceRef"],
+        properties: {
+          value: true,
+          sourceRef: { type: "string" }
+        },
+        unevaluatedProperties: false
+      }
+    }
+  };
+}
+
+function tokenNameSchema() {
+  return { type: "string", pattern: "^[A-Za-z0-9._-]+$" };
+}
+
+function tokenGroupSchema({ allowExtractResolution = false } = {}) {
+  const metadataNames = allowExtractResolution ? ["sourceRef", "$extends"] : ["sourceRef"];
+  const properties = {
+    sourceRef: { type: "string" }
+  };
+  if (allowExtractResolution) {
+    properties.$extends = jsonPointerSchema();
+  }
+  return {
+    type: "object",
+    minProperties: 1,
+    propertyNames: {
+      anyOf: [
+        { enum: metadataNames },
+        tokenNameSchema()
+      ]
+    },
+    properties,
+    additionalProperties: { $ref: "#/$defs/tokenTreeNode" }
+  };
+}
+
+function dtcgTokenSchema({ allowExtractResolution = false, allowCatalogResolution = false } = {}) {
+  const properties = {
+    $value: true,
+    $type: { type: "string", minLength: 1 },
+    $description: { type: "string" },
+    $extensions: tokenExtensionsSchema(),
+    sourceRef: { type: "string" }
+  };
+  if (allowExtractResolution) {
+    properties.$ref = jsonPointerSchema();
+    properties.resolvedValue = true;
+  }
+  if (allowExtractResolution || allowCatalogResolution) {
+    properties.resolvedSubvalues = { $ref: "#/$defs/resolvedSubvalues" };
+  }
+  return {
+    type: "object",
+    required: ["$value", "$type", "sourceRef"],
+    properties,
+    unevaluatedProperties: false
+  };
+}
+
+function tokenExtensionsSchema() {
+  return {
+    type: "object",
+    required: ["surfaces"],
+    properties: {
+      surfaces: {
+        type: "object",
+        required: ["sourceRef"],
+        properties: {
+          sourceRef: { type: "string" }
+        },
+        unevaluatedProperties: false
+      }
+    },
+    unevaluatedProperties: false
+  };
+}
+
+function normalizedCatalogTokenSchema() {
+  return {
+    type: "object",
+    required: ["type", "value", "sourceRef"],
+    properties: {
+      type: { type: "string", minLength: 1 },
+      value: true,
+      sourceRef: { type: "string" }
+    },
+    unevaluatedProperties: false
+  };
+}
+
+function jsonPointerSchema() {
+  return { type: "string", pattern: "^(/([^/~]|~0|~1)*)*$" };
+}
+
 function runtimeCatalogSchema() {
+  const tokenDefs = tokenTreeSchemaDefs({ allowCatalogResolution: true, allowNormalizedTokens: true });
   const propSchema = {
     type: "object",
     required: ["id", "type", "required", "default", "allowedValues", "tokenRefs", "sourceRef", "diagnostics", "minLength", "maxLength", "allowMarkup"],
@@ -2615,6 +2734,7 @@ function runtimeCatalogSchema() {
     ...schemaBase("runtime-catalog.v0"),
     schemaId: "runtime-catalog.v0",
     version: VERSION,
+    $defs: tokenDefs,
     required: ["catalogId", "schemaId", "artifactKind", "version", "sourceRefs", "tokens", "components", "runtimeCapabilities", "governance", "provenance", "diagnostics", "compatibility"],
     properties: {
       catalogId: { type: "string" },
@@ -2622,7 +2742,7 @@ function runtimeCatalogSchema() {
       artifactKind: { enum: ["catalog", "governed-catalog"] },
       version: semverSchema(),
       sourceRefs: { type: "object", additionalProperties: { type: "string" } },
-      tokens: { type: "object", additionalProperties: true },
+      tokens: { $ref: "#/$defs/tokenTree" },
       components: { type: "object", additionalProperties: componentSchema },
       runtimeCapabilities: { type: "object", additionalProperties: { type: "string" } },
       governance: {
@@ -2736,10 +2856,12 @@ function fixtureExpectationsSchema() {
 }
 
 function extractSchema() {
+  const tokenDefs = tokenTreeSchemaDefs({ allowExtractResolution: true });
   return {
     ...schemaBase("extract.v0"),
     schemaId: "extract.v0",
     version: VERSION,
+    $defs: tokenDefs,
     required: ["schemaId", "version", "fixtureId", "generatedAt", "sourceUri", "sourceHash", "tokens", "components", "sourceRefs", "provenance", "diagnostics"],
     properties: {
       schemaId: { const: "extract.v0" },
@@ -2748,7 +2870,7 @@ function extractSchema() {
       generatedAt: { const: TIMESTAMP },
       sourceUri: { type: "string" },
       sourceHash: { type: "string" },
-      tokens: { type: "object", additionalProperties: true },
+      tokens: { $ref: "#/$defs/tokenTree" },
       components: { type: "array", items: { type: "object", additionalProperties: true } },
       sourceRefs: { type: "object", additionalProperties: { type: "string" } },
       provenance: { type: "object", additionalProperties: true },

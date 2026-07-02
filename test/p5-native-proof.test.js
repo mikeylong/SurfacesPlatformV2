@@ -340,6 +340,31 @@ test("P5 evidence integrity detects schema, fixture, upstream, artifact, and sel
   assert.equal(await p5NativeInternals.firstEvidenceIntegrityFailureCode(root, selfHashTamper), "NATIVE_EVIDENCE_HASH_MISMATCH");
 });
 
+test("P5 native token schemas reject loose token records", async () => {
+  await runP5Proof();
+  const projectionSchema = await readJson("schemas/surfaces-native-projection.v0.schema.json");
+  const packetSchema = await readJson("schemas/surfaces-native-packet.v0.schema.json");
+  const validateProjection = compileSchema(projectionSchema);
+  const validatePacket = compileSchema(packetSchema);
+  const projection = await readJson("artifacts/p5/native/surfaces-native-projection.json");
+  const packet = await readJson("artifacts/p5/native/surfaces-native-packet.button.json");
+
+  assert.equal(validateProjection(projection), true, `projection must validate: ${JSON.stringify(validateProjection.errors)}`);
+  assert.equal(validatePacket(packet), true, `packet must validate: ${JSON.stringify(validatePacket.errors)}`);
+
+  const looseProjection = structuredClone(projection);
+  looseProjection.tokens["component-height-75"].cssVariable = "--surfaces-component-height-75";
+  assert.equal(validateProjection(looseProjection), false, "native projection tokens must reject CSS implementation metadata");
+
+  const missingProjectionSource = structuredClone(projection);
+  delete missingProjectionSource.tokens["component-height-75"].sourceRef;
+  assert.equal(validateProjection(missingProjectionSource), false, "native projection tokens must require source refs");
+
+  const loosePacket = structuredClone(packet);
+  loosePacket.tokens.height.cssProperty = "height";
+  assert.equal(validatePacket(loosePacket), false, "native packet tokens must reject runtime implementation metadata");
+});
+
 test("P5 native demo writes static HTML from passing evidence", async () => {
   await runP5Proof();
   await execFileAsync("node", [

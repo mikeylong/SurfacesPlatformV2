@@ -564,6 +564,7 @@ async function validateSchemasFixturesAndArtifacts() {
   validateWith(ajv, "runtime-catalog.v0", await readJson("artifacts/p0/governed-catalog.json"), "governed catalog artifact");
   validateWith(ajv, "adapter-diagnostics.v0", await readJson("artifacts/p0/adapter-diagnostics.json"), "adapter diagnostics artifact");
   await assertNormalizedTokenArtifacts();
+  await assertTokenSchemasRejectLooseObjects(ajv);
   const evidence = await readJson("artifacts/p0/evidence.json");
   validateWith(ajv, "evidence.v0", evidence, "evidence artifact");
   for (const artifactPath of ["package.json", "/tmp/x", "../x"]) {
@@ -677,6 +678,75 @@ async function assertNormalizedTokenArtifacts() {
   assert.equal(Object.prototype.hasOwnProperty.call(catalog.tokens.color.action.dangerBg, "resolvedValue"), false);
   assert.equal(Object.prototype.hasOwnProperty.call(catalog.tokens.spacing.compact, "$extends"), false);
   assert.equal(catalog.tokens.spacing.compact.md.$value, 12);
+}
+
+async function assertTokenSchemasRejectLooseObjects(ajv) {
+  const extract = await readJson("artifacts/p0/extract.json");
+  const catalog = await readJson("artifacts/p0/catalog.json");
+
+  const looseExtractToken = structuredClone(extract);
+  looseExtractToken.tokens.color.brand.primary.cssVariable = "--surfaces-color-brand-primary";
+  assert.equal(
+    validateResult(ajv, "extract.v0", looseExtractToken).valid,
+    false,
+    "extract token schema must reject CSS implementation metadata on DTCG tokens"
+  );
+
+  const missingExtractSourceRef = structuredClone(extract);
+  delete missingExtractSourceRef.tokens.color.brand.primary.sourceRef;
+  assert.equal(
+    validateResult(ajv, "extract.v0", missingExtractSourceRef).valid,
+    false,
+    "extract token schema must require source refs on DTCG tokens"
+  );
+
+  const normalizedExtractToken = structuredClone(extract);
+  normalizedExtractToken.tokens.color.brand.primary = {
+    type: "color",
+    value: "#0B5FFF",
+    sourceRef: "fixture://p0/source#/tokens/color/brand/primary"
+  };
+  assert.equal(
+    validateResult(ajv, "extract.v0", normalizedExtractToken).valid,
+    false,
+    "extract token schema must reject normalized catalog token records"
+  );
+
+  const implementationChildInExtract = structuredClone(extract);
+  implementationChildInExtract.tokens.spacing.compact.cssVariable = {
+    type: "dimension",
+    value: "12px",
+    sourceRef: "fixture://p0/source#/tokens/spacing/compact"
+  };
+  assert.equal(
+    validateResult(ajv, "extract.v0", implementationChildInExtract).valid,
+    false,
+    "extract token groups must reject implementation-looking normalized child records"
+  );
+
+  const looseExtractGroup = structuredClone(extract);
+  looseExtractGroup.tokens.spacing.compact.$css = { property: "gap" };
+  assert.equal(
+    validateResult(ajv, "extract.v0", looseExtractGroup).valid,
+    false,
+    "extract token groups must reject unsupported DTCG metadata"
+  );
+
+  const looseCatalogToken = structuredClone(catalog);
+  looseCatalogToken.tokens.color.brand.primary.cssProperty = "background-color";
+  assert.equal(
+    validateResult(ajv, "runtime-catalog.v0", looseCatalogToken).valid,
+    false,
+    "catalog token schema must reject CSS implementation metadata"
+  );
+
+  const extractResolutionInCatalog = structuredClone(catalog);
+  extractResolutionInCatalog.tokens.color.action.primaryBg.resolvedValue = "#0B5FFF";
+  assert.equal(
+    validateResult(ajv, "runtime-catalog.v0", extractResolutionInCatalog).valid,
+    false,
+    "catalog token schema must reject extract-only resolvedValue fields"
+  );
 }
 
 async function readReadmeDiagnosticsRegistry() {
