@@ -15,7 +15,7 @@ export const P3_FIXTURE_ROOT = "fixtures/p3";
 export const P3_ARTIFACT_ROOT = "artifacts/p3";
 export const P3_INGESTION_EVIDENCE_PATH = "artifacts/p2/evidence.json";
 export const P3_CATALOG_PATH = "artifacts/p2/governed-catalog.json";
-export const P3_ACCEPTED_P2_EVIDENCE_HASH = "e9f1e26db4cc05efe3f8cb3807c2cacc72930b66ce10afba779d68788a412bf8";
+export const P3_ACCEPTED_P2_EVIDENCE_HASH = "d469eb7027a724c87e237b6b0e92d7526bb9a9dfee58dd47e4830bf64352a0f4";
 export const P3_ACCEPTED_P2_CATALOG_HASH = "2ba1d418bc51051bb642a0c675efbc7e16f4f315dae62674a6b6e363461c9d29";
 
 export const P3_ENVIRONMENT = Object.freeze({

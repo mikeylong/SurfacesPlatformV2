@@ -1,6 +1,8 @@
 import path from "node:path";
+import { canonicalJson } from "./p0.js";
 import {
   deepClone,
+  sha256Hex,
   writeCanonicalJson
 } from "./p2-contract.js";
 
@@ -16,11 +18,11 @@ export const P5_P4_DECISION_LEDGER_PATH = "artifacts/p4/surfaceops-decision-ledg
 export const P5_P4_REVIEW_REPORT_PATH = "artifacts/p4/review-judgment-report.json";
 export const P5_TARGET_ID = "surfaces-protocol-static";
 
-export const P5_ACCEPTED_P2_EVIDENCE_HASH = "e9f1e26db4cc05efe3f8cb3807c2cacc72930b66ce10afba779d68788a412bf8";
+export const P5_ACCEPTED_P2_EVIDENCE_HASH = "d469eb7027a724c87e237b6b0e92d7526bb9a9dfee58dd47e4830bf64352a0f4";
 export const P5_ACCEPTED_P2_CATALOG_HASH = "2ba1d418bc51051bb642a0c675efbc7e16f4f315dae62674a6b6e363461c9d29";
-export const P5_ACCEPTED_P4_EVIDENCE_HASH = "bbc6b4538438896eb68add346308b3edde3831d32e675a7a35d96a9869937e69";
-export const P5_ACCEPTED_P4_DECISION_LEDGER_HASH = "5cad7aca09a0d21cf3b18bbdba8c8e22c0ca23eb6d83a56e51d3b7c31b2c9631";
-export const P5_ACCEPTED_P4_REVIEW_REPORT_HASH = "814650d1903905fef73ecb131280fa88211ac2c7477d76692b13ccae803c98fa";
+export const P5_ACCEPTED_P4_EVIDENCE_HASH = "a9de1573bc5c4dcd9e0d509d8b60885470a4d6cb2bfcbc0eff5ed451997d71f3";
+export const P5_ACCEPTED_P4_DECISION_LEDGER_HASH = "91dd2b08dc7c99f2ff28c6dca2862379269f0f89c7feb63a073bd51fc5f1ebb8";
+export const P5_ACCEPTED_P4_REVIEW_REPORT_HASH = "ca31dcd66c7037e0b8eff4e24ad5a41ae99497d7a44bc7a558f85bd981f32add";
 
 export const P5_ENVIRONMENT = Object.freeze({
   generatedAt: P5_TIMESTAMP,
@@ -75,6 +77,10 @@ export const P5_FIXTURE_FILES = [
   "mutations/target-selection-hash-mismatch.protocol-target-selection.json",
   "mutations/missing-projection-ref.protocol-projection.json",
   "mutations/projection-hash-mismatch.protocol-projection.json",
+  "mutations/projection-target-selection-hash-mismatch.protocol-projection.json",
+  "mutations/projection-token-extra-property.protocol-projection.json",
+  "mutations/projection-token-missing-source-ref.protocol-projection.json",
+  "mutations/envelope-token-extra-property.protocol-envelope.json",
   "mutations/report-projection-hash-mismatch.protocol-adapter-report.json",
   "mutations/hash-mismatch.protocol-adapter-evidence.json"
 ].map((file) => `${P5_FIXTURE_ROOT}/${file}`);
@@ -276,7 +282,7 @@ export const P5_DIAGNOSTIC_ROWS = [
   diagnosticRow({
     code: "PROTOCOL_SOURCE_HASH_MISMATCH",
     trigger: "Projection upstream hash differs from accepted evidence",
-    canonicalMessage: "Protocol projection source hash does not match accepted evidence.",
+    canonicalMessage: "Protocol projection source hash does not match generated target selection or accepted evidence.",
     stage: "projection",
     phase: "protocol-projection",
     artifactPath: "fixtures/p5/protocol/mutations/projection-hash-mismatch.protocol-projection.json",
@@ -285,6 +291,58 @@ export const P5_DIAGNOSTIC_ROWS = [
     validationResult: "invalid",
     promotionStatus: "blocked",
     fixtureCoverage: "mutations/projection-hash-mismatch.protocol-projection.json"
+  }),
+  diagnosticRow({
+    code: "PROTOCOL_SOURCE_HASH_MISMATCH",
+    trigger: "Projection target selection hash differs from generated target selection",
+    canonicalMessage: "Protocol projection source hash does not match generated target selection or accepted evidence.",
+    stage: "projection",
+    phase: "protocol-projection",
+    artifactPath: "fixtures/p5/protocol/mutations/projection-target-selection-hash-mismatch.protocol-projection.json",
+    jsonPointer: "/targetSelectionRef/hash",
+    sourceRef: null,
+    validationResult: "invalid",
+    promotionStatus: "blocked",
+    fixtureCoverage: "mutations/projection-target-selection-hash-mismatch.protocol-projection.json"
+  }),
+  diagnosticRow({
+    code: "PROTOCOL_TOKEN_RECORD_INVALID",
+    trigger: "Protocol projection token record is missing source refs or contains implementation metadata",
+    canonicalMessage: "Protocol token records must stay closed over type, value, and sourceRef.",
+    stage: "projection",
+    phase: "protocol-projection",
+    artifactPath: "fixtures/p5/protocol/mutations/projection-token-extra-property.protocol-projection.json",
+    jsonPointer: "/tokens/component-height-75/cssVariable",
+    sourceRef: null,
+    validationResult: "invalid",
+    promotionStatus: "blocked",
+    fixtureCoverage: "mutations/projection-token-extra-property.protocol-projection.json"
+  }),
+  diagnosticRow({
+    code: "PROTOCOL_TOKEN_RECORD_INVALID",
+    trigger: "Protocol projection token record is missing source refs or contains implementation metadata",
+    canonicalMessage: "Protocol token records must stay closed over type, value, and sourceRef.",
+    stage: "projection",
+    phase: "protocol-projection",
+    artifactPath: "fixtures/p5/protocol/mutations/projection-token-missing-source-ref.protocol-projection.json",
+    jsonPointer: "/tokens/component-height-75/sourceRef",
+    sourceRef: null,
+    validationResult: "invalid",
+    promotionStatus: "blocked",
+    fixtureCoverage: "mutations/projection-token-missing-source-ref.protocol-projection.json"
+  }),
+  diagnosticRow({
+    code: "PROTOCOL_TOKEN_RECORD_INVALID",
+    trigger: "Protocol envelope token record contains implementation metadata",
+    canonicalMessage: "Protocol token records must stay closed over type, value, and sourceRef.",
+    stage: "protocol-boundary",
+    phase: "protocol-invalid",
+    artifactPath: "fixtures/p5/protocol/mutations/envelope-token-extra-property.protocol-envelope.json",
+    jsonPointer: "/tokens/height/cssProperty",
+    sourceRef: null,
+    validationResult: "invalid",
+    promotionStatus: "blocked",
+    fixtureCoverage: "mutations/envelope-token-extra-property.protocol-envelope.json"
   }),
   diagnosticRow({
     code: "PROTOCOL_AUTHORITY_ESCALATION",
@@ -471,6 +529,10 @@ export const P5_EXPECTATION_ROWS = [
     ["mutations/target-selection-hash-mismatch.protocol-target-selection.json", "target-selection", "protocol-target-selection", "PROTOCOL_TARGET_SELECTION_HASH_MISMATCH", "/targetSelectionRef/hash"],
     ["mutations/missing-projection-ref.protocol-projection.json", "projection", "protocol-projection", "PROTOCOL_PROJECTION_REF_MISSING", "/targetSelectionRef"],
     ["mutations/projection-hash-mismatch.protocol-projection.json", "projection", "protocol-projection", "PROTOCOL_SOURCE_HASH_MISMATCH", "/catalogRef/hash"],
+    ["mutations/projection-target-selection-hash-mismatch.protocol-projection.json", "projection", "protocol-projection", "PROTOCOL_SOURCE_HASH_MISMATCH", "/targetSelectionRef/hash"],
+    ["mutations/projection-token-extra-property.protocol-projection.json", "projection", "protocol-projection", "PROTOCOL_TOKEN_RECORD_INVALID", "/tokens/component-height-75/cssVariable"],
+    ["mutations/projection-token-missing-source-ref.protocol-projection.json", "projection", "protocol-projection", "PROTOCOL_TOKEN_RECORD_INVALID", "/tokens/component-height-75/sourceRef"],
+    ["mutations/envelope-token-extra-property.protocol-envelope.json", "protocol-boundary", "protocol-invalid", "PROTOCOL_TOKEN_RECORD_INVALID", "/tokens/height/cssProperty"],
     ["mutations/report-projection-hash-mismatch.protocol-adapter-report.json", "report", "protocol-adapter-report", "PROTOCOL_REPORT_HASH_MISMATCH", "/projectionRef/hash"],
     ["mutations/hash-mismatch.protocol-adapter-evidence.json", "evidence", "protocol-adapter-evidence", "PROTOCOL_EVIDENCE_HASH_MISMATCH", "/artifacts"]
   ].map(([file, stage, phase, code, jsonPointer]) => expectationRow({
@@ -680,6 +742,41 @@ export function buildP5ProtocolFixtures() {
       sourceRef: "fixture://p5/protocol/mutations/projection-hash-mismatch#/catalogRef/hash",
       catalogRef: artifactRef(P5_P2_CATALOG_PATH, "runtime-catalog.v0", "0".repeat(64))
     }),
+    "mutations/projection-target-selection-hash-mismatch.protocol-projection.json": projectionMutation({
+      sourceRef: "fixture://p5/protocol/mutations/projection-target-selection-hash-mismatch#/targetSelectionRef/hash",
+      targetSelectionRef: targetSelectionArtifactRef("0".repeat(64))
+    }),
+    "mutations/projection-token-extra-property.protocol-projection.json": projectionMutation({
+      sourceRef: "fixture://p5/protocol/mutations/projection-token-extra-property#/tokens/component-height-75/cssVariable",
+      tokens: {
+        "component-height-75": {
+          type: "dimension",
+          value: "32px",
+          sourceRef: "fixture://p2/spectrum/button#/tokens/component-height-75",
+          cssVariable: "--spectrum-component-height-75"
+        }
+      }
+    }),
+    "mutations/projection-token-missing-source-ref.protocol-projection.json": projectionMutation({
+      sourceRef: "fixture://p5/protocol/mutations/projection-token-missing-source-ref#/tokens/component-height-75/sourceRef",
+      tokens: {
+        "component-height-75": {
+          type: "dimension",
+          value: "32px"
+        }
+      }
+    }),
+    "mutations/envelope-token-extra-property.protocol-envelope.json": protocolEnvelopeMutation({
+      sourceRef: "fixture://p5/protocol/mutations/envelope-token-extra-property#/tokens/height/cssProperty",
+      tokens: {
+        height: {
+          type: "dimension",
+          value: "32px",
+          sourceRef: "fixture://p2/spectrum/button#/tokens/component-height-75",
+          cssProperty: "height"
+        }
+      }
+    }),
     "mutations/report-projection-hash-mismatch.protocol-adapter-report.json": reportMutation(),
     "mutations/hash-mismatch.protocol-adapter-evidence.json": evidenceMutation()
   };
@@ -882,6 +979,25 @@ export function artifactRef(pathValue, schemaId, hash, extra = {}) {
   };
 }
 
+export function targetSelectionArtifactHash() {
+  return sha256Hex(canonicalJson(targetSelectionArtifact()));
+}
+
+export function targetSelectionArtifactRef(hash = targetSelectionArtifactHash()) {
+  return artifactRef(`${P5_ARTIFACT_ROOT}/adapter-target-selection.json`, "protocol-target-selection.v0", hash);
+}
+
+export function targetSelectionArtifact() {
+  const fixture = targetSelectionFixture();
+  return {
+    ...deepClone(fixture),
+    targetSelectionRef: null,
+    diagnostics: [],
+    diagnosticsRegistry: diagnosticsRegistry(),
+    provenance: provenance("interfacectl-p5-protocol-target-selection", [fixture.provenance.sourceRefs[0]])
+  };
+}
+
 export function provenance(generator, sourceRefs) {
   return {
     generatedAt: P5_TIMESTAMP,
@@ -980,12 +1096,12 @@ function projectionMutation(overrides = {}) {
     schemaId: "protocol-projection.v0",
     version: P5_VERSION,
     adapter: P5_TARGET_ID,
-    targetSelectionRef: artifactRef(`${P5_ARTIFACT_ROOT}/adapter-target-selection.json`, "protocol-target-selection.v0", P5_ACCEPTED_P4_EVIDENCE_HASH),
-    catalogRef: artifactRef(P5_P2_CATALOG_PATH, "runtime-catalog.v0", P5_ACCEPTED_P2_CATALOG_HASH),
+    targetSelectionRef: targetSelectionArtifactRef(),
+    catalogRef: artifactRef(P5_P2_CATALOG_PATH, "runtime-catalog.v0", P5_ACCEPTED_P2_CATALOG_HASH, { sourceEvidenceHash: P5_ACCEPTED_P2_EVIDENCE_HASH }),
     p2EvidenceRef: artifactRef(P5_P2_EVIDENCE_PATH, "design-system-ingestion-evidence.v0", P5_ACCEPTED_P2_EVIDENCE_HASH),
     p4EvidenceRef: artifactRef(P5_P4_EVIDENCE_PATH, "review-judgment-evidence.v0", P5_ACCEPTED_P4_EVIDENCE_HASH),
-    p4DecisionLedgerRef: artifactRef(P5_P4_DECISION_LEDGER_PATH, "surfaceops-decision-ledger.v0", P5_ACCEPTED_P4_DECISION_LEDGER_HASH),
-    p4ReviewReportRef: artifactRef(P5_P4_REVIEW_REPORT_PATH, "review-judgment-report.v0", P5_ACCEPTED_P4_REVIEW_REPORT_HASH),
+    p4DecisionLedgerRef: artifactRef(P5_P4_DECISION_LEDGER_PATH, "surfaceops-decision-ledger.v0", P5_ACCEPTED_P4_DECISION_LEDGER_HASH, { sourceEvidenceHash: P5_ACCEPTED_P4_EVIDENCE_HASH }),
+    p4ReviewReportRef: artifactRef(P5_P4_REVIEW_REPORT_PATH, "review-judgment-report.v0", P5_ACCEPTED_P4_REVIEW_REPORT_HASH, { sourceEvidenceHash: P5_ACCEPTED_P4_EVIDENCE_HASH }),
     components: {},
     tokens: {},
     actions: {},
@@ -1005,6 +1121,38 @@ function projectionMutation(overrides = {}) {
       ...base.protocolEnvelope,
       ...(rest.protocolEnvelope || {})
     }
+  };
+}
+
+function protocolEnvelopeMutation(overrides = {}) {
+  const { sourceRef: overrideSourceRef, ...rest } = overrides;
+  const sourceRef = overrideSourceRef ?? "fixture://p5/protocol/mutations/envelope#/tokens";
+  return {
+    schemaId: "protocol-envelope.v0",
+    version: P5_VERSION,
+    adapter: P5_TARGET_ID,
+    surfaceRef: artifactRef("fixtures/p5/protocol/valid/button-protocol-envelope.surface-ir.json", "surface-ir.v0", "0".repeat(64), {
+      sourceRef: "fixture://p5/protocol/valid/button-protocol-envelope#/root"
+    }),
+    projectionRef: artifactRef(`${P5_ARTIFACT_ROOT}/protocol-projection.json`, "protocol-projection.v0", "0".repeat(64)),
+    promotionStatus: "allowed",
+    message: {
+      kind: "static-component-envelope",
+      surfaceId: "buttonProtocolEnvelope",
+      component: "Button",
+      variant: "accent",
+      state: "default",
+      props: { size: "m", style: "fill", variant: "accent" },
+      sourceRef: "fixture://p5/protocol/valid/button-protocol-envelope#/root"
+    },
+    actions: [],
+    sideEffects: [],
+    transport: "none",
+    accessibility: { role: "button", nameFrom: "content", focusable: true, activationKeys: ["Enter", "Space"] },
+    tokens: {},
+    provenance: provenance("interfacectl-p5-protocol-materialize", [sourceRef]),
+    diagnostics: [],
+    ...rest
   };
 }
 
@@ -1028,7 +1176,7 @@ function reportMutation() {
     adapter: P5_TARGET_ID,
     runId: "p5-protocol-mutation",
     upstreamPreflight: { status: "pass", refs: defaultUpstreamRefs() },
-    targetSelectionRef: artifactRef(`${P5_ARTIFACT_ROOT}/adapter-target-selection.json`, "protocol-target-selection.v0", P5_ACCEPTED_P4_EVIDENCE_HASH),
+    targetSelectionRef: targetSelectionArtifactRef(),
     projectionRef: artifactRef(`${P5_ARTIFACT_ROOT}/protocol-projection.json`, "protocol-projection.v0", "0".repeat(64)),
     fixtureRoot: P5_FIXTURE_ROOT,
     artifactRoot: P5_ARTIFACT_ROOT,

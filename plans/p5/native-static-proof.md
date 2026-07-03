@@ -65,6 +65,8 @@ Given accepted P2 evidence/catalog, accepted P4 evidence/ledger/report, passing 
 
 Native projection and packet `tokens` must validate as normalized catalog-derived token records closed over `type`, `value`, and `sourceRef`. CSS variables, CSS property names, renderer metadata, native bridge metadata, SDK metadata, and arbitrary implementation fields are outside this proof slice and must not validate inside token records.
 
+The native mutation fixtures include projection token records with extra implementation fields (`projection-token-extra-property.surfaces-native-projection.json`), projection token records missing `sourceRef` (`projection-token-missing-source-ref.surfaces-native-projection.json`), and packet token records with runtime CSS metadata (`packet-token-extra-property.surfaces-native-packet.json`). These expected schema failures are recorded as `NATIVE_TOKEN_RECORD_INVALID` rows in the native report and evidence.
+
 ## Non-Goals
 - No A2UI export, clone, or conformance claim.
 - No production native SDK, package, bridge, API, renderer, or live runtime.

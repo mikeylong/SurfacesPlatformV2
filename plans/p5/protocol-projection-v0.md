@@ -81,7 +81,8 @@ The diagnostics registry includes projection rows for:
 | Code | Trigger | Stage | Promotion status |
 | --- | --- | --- | --- |
 | `PROTOCOL_PROJECTION_REF_MISSING` | Projection omits target, catalog, P2 evidence, or P4 evidence refs | `projection` | `blocked` |
-| `PROTOCOL_SOURCE_HASH_MISMATCH` | Projection upstream hash differs from accepted evidence | `projection` | `blocked` |
+| `PROTOCOL_SOURCE_HASH_MISMATCH` | Projection target-selection or upstream hash differs from generated target selection or accepted evidence | `projection` | `blocked` |
+| `PROTOCOL_TOKEN_RECORD_INVALID` | Protocol projection token record is missing source refs or contains implementation metadata | `projection` | `blocked` |
 | `PROTOCOL_AUTHORITY_ESCALATION` | Projection grants authority absent from governed catalog or target selection | `projection` | `blocked` |
 | `PROTOCOL_PRODUCTION_API_FORBIDDEN` | Projection claims live API, SDK, transport, callback, webhook, queue, or network behavior | `projection` | `blocked` |
 | `PROTOCOL_A2UI_CLAIM_FORBIDDEN` | Projection claims A2UI support without separate A2UI conformance proof | `projection` | `blocked` |

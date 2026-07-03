@@ -21,7 +21,24 @@ test("P5 protocol proof emits passing evidence with final self-hash", async () =
 
   assert.equal(evidence.status, "pass");
   assert.equal(evidence.promotionStatus, "review_required");
-  assert.equal(evidence.validationResults.length, 26);
+  assert.equal(evidence.validationResults.length, 30);
+  const projectionTargetSelectionHash = evidence.validationResults.find((row) =>
+    row.fixturePath === "fixtures/p5/protocol/mutations/projection-target-selection-hash-mismatch.protocol-projection.json"
+  );
+  assert.ok(projectionTargetSelectionHash, "projection targetSelectionRef hash mutation must appear in protocol validation results");
+  assert.equal(projectionTargetSelectionHash.actualResult, "invalid");
+  assert.equal(projectionTargetSelectionHash.jsonPointer, "/targetSelectionRef/hash");
+  assert.deepEqual(projectionTargetSelectionHash.diagnosticCodes, ["PROTOCOL_SOURCE_HASH_MISMATCH"]);
+  for (const fixturePath of [
+    "fixtures/p5/protocol/mutations/projection-token-extra-property.protocol-projection.json",
+    "fixtures/p5/protocol/mutations/projection-token-missing-source-ref.protocol-projection.json",
+    "fixtures/p5/protocol/mutations/envelope-token-extra-property.protocol-envelope.json"
+  ]) {
+    const result = evidence.validationResults.find((row) => row.fixturePath === fixturePath);
+    assert.ok(result, `${fixturePath} must appear in protocol validation results`);
+    assert.equal(result.actualResult, "invalid");
+    assert.deepEqual(result.diagnosticCodes, ["PROTOCOL_TOKEN_RECORD_INVALID"]);
+  }
   assert.equal(evidence.artifacts.at(-1).path, "artifacts/p5/protocol/evidence.json");
   assert.equal(evidence.artifacts.at(-1).hash, p5ProtocolInternals.computeEvidenceSelfHash(evidence));
   assert.deepEqual(evidence.artifacts.map((entry) => entry.path), [
@@ -34,6 +51,25 @@ test("P5 protocol proof emits passing evidence with final self-hash", async () =
   ]);
   assert.equal(report.status, evidence.status);
   assert.equal(report.promotionStatus, evidence.promotionStatus);
+});
+
+test("P5 protocol token-record schema fixtures reject unrelated schema errors", async () => {
+  const fixturePath = path.join(root, "fixtures/p5/protocol/mutations/projection-token-extra-property.protocol-projection.json");
+
+  await withJsonFileMutations([
+    {
+      absolutePath: fixturePath,
+      mutate(fixture) {
+        fixture.unexpectedProtocolProjectionKey = true;
+      }
+    }
+  ], async () => {
+    const result = await runP5ProofExpectFailure();
+    assert.equal(result.code, 1);
+    assert.match(result.stderr, /schema validation failed for fixtures\/p5\/protocol\/mutations\/projection-token-extra-property\.protocol-projection\.json/);
+    assert.match(result.stderr, /\/ additionalProperties/);
+    assert.match(result.stderr, /\/tokens\/component-height-75 additionalProperties/);
+  });
 });
 
 test("P5 target selection and projection stay inside accepted P2/P4 authority", async () => {
@@ -134,6 +170,27 @@ test("P5 protocol boundary rejects known members with out-of-authority values", 
     assert.equal(result.code, 1);
     assert.match(result.stderr, /P5 protocol validation expectation mismatch/);
     assert.match(result.stderr, /PROTOCOL_MEMBER_UNKNOWN/);
+  });
+});
+
+test("P5 protocol projection source-hash fixtures bind to the expected ref pointer", async () => {
+  await runP5Proof();
+  const projection = await readJson("artifacts/p5/protocol/protocol-projection.json");
+  const projectionHashFixturePath = path.join(root, "fixtures/p5/protocol/mutations/projection-hash-mismatch.protocol-projection.json");
+
+  await withJsonFileMutations([
+    {
+      absolutePath: projectionHashFixturePath,
+      mutate(fixture) {
+        fixture.catalogRef = projection.catalogRef;
+        fixture.targetSelectionRef.hash = "0".repeat(64);
+      }
+    }
+  ], async () => {
+    const result = await runP5ProofExpectFailure();
+    assert.equal(result.code, 1);
+    assert.match(result.stderr, /P5 protocol validation expectation mismatch/);
+    assert.match(result.stderr, /projection-hash-mismatch\.protocol-projection\.json/);
   });
 });
 
@@ -244,17 +301,47 @@ test("P5 evidence integrity detects schema, fixture, upstream, artifact, and sel
   schemaTamper.schemaClosure[0].hash = "0".repeat(64);
   assert.equal(await p5ProtocolInternals.firstEvidenceIntegrityFailureCode(root, schemaTamper), "PROTOCOL_EVIDENCE_HASH_MISMATCH");
 
+  const schemaTupleTamper = structuredClone(evidence);
+  schemaTupleTamper.schemaClosure[0].schemaId = "wrong-schema.v0";
+  schemaTupleTamper.artifacts[schemaTupleTamper.artifacts.length - 1].hash = p5ProtocolInternals.computeEvidenceSelfHash(schemaTupleTamper);
+  assert.equal(await p5ProtocolInternals.firstEvidenceIntegrityFailureCode(root, schemaTupleTamper), "PROTOCOL_EVIDENCE_HASH_MISMATCH");
+
   const fixtureTamper = structuredClone(evidence);
   fixtureTamper.fixtureRefs[0].hash = "0".repeat(64);
   assert.equal(await p5ProtocolInternals.firstEvidenceIntegrityFailureCode(root, fixtureTamper), "PROTOCOL_EVIDENCE_HASH_MISMATCH");
+
+  const fixtureTupleTamper = structuredClone(evidence);
+  fixtureTupleTamper.fixtureRefs[0].sourceRef = "unexpected-source";
+  fixtureTupleTamper.artifacts[fixtureTupleTamper.artifacts.length - 1].hash = p5ProtocolInternals.computeEvidenceSelfHash(fixtureTupleTamper);
+  assert.equal(await p5ProtocolInternals.firstEvidenceIntegrityFailureCode(root, fixtureTupleTamper), "PROTOCOL_EVIDENCE_HASH_MISMATCH");
 
   const upstreamTamper = structuredClone(evidence);
   upstreamTamper.boundaryRefs[0].hash = "0".repeat(64);
   assert.equal(await p5ProtocolInternals.firstEvidenceIntegrityFailureCode(root, upstreamTamper), "PROTOCOL_UPSTREAM_EVIDENCE_HASH_MISMATCH");
 
+  const boundarySchemaTamper = structuredClone(evidence);
+  boundarySchemaTamper.boundaryRefs[0].schemaId = "wrong-schema.v0";
+  boundarySchemaTamper.artifacts[boundarySchemaTamper.artifacts.length - 1].hash = p5ProtocolInternals.computeEvidenceSelfHash(boundarySchemaTamper);
+  assert.equal(await p5ProtocolInternals.firstEvidenceIntegrityFailureCode(root, boundarySchemaTamper), "PROTOCOL_UPSTREAM_EVIDENCE_STALE");
+
+  const boundarySourceEvidenceTamper = structuredClone(evidence);
+  boundarySourceEvidenceTamper.boundaryRefs[1].sourceEvidenceHash = "0".repeat(64);
+  boundarySourceEvidenceTamper.artifacts[boundarySourceEvidenceTamper.artifacts.length - 1].hash = p5ProtocolInternals.computeEvidenceSelfHash(boundarySourceEvidenceTamper);
+  assert.equal(await p5ProtocolInternals.firstEvidenceIntegrityFailureCode(root, boundarySourceEvidenceTamper), "PROTOCOL_UPSTREAM_EVIDENCE_STALE");
+
   const artifactTamper = structuredClone(evidence);
   artifactTamper.artifacts[0].hash = "0".repeat(64);
   assert.equal(await p5ProtocolInternals.firstEvidenceIntegrityFailureCode(root, artifactTamper), "PROTOCOL_EVIDENCE_HASH_MISMATCH");
+
+  const artifactSchemaTamper = structuredClone(evidence);
+  artifactSchemaTamper.artifacts[0].schemaId = "wrong-schema.v0";
+  artifactSchemaTamper.artifacts[artifactSchemaTamper.artifacts.length - 1].hash = p5ProtocolInternals.computeEvidenceSelfHash(artifactSchemaTamper);
+  assert.equal(await p5ProtocolInternals.firstEvidenceIntegrityFailureCode(root, artifactSchemaTamper), "PROTOCOL_EVIDENCE_HASH_MISMATCH");
+
+  const artifactProvenanceTamper = structuredClone(evidence);
+  artifactProvenanceTamper.artifacts[0].provenance.sourceRefs = ["unexpected-source"];
+  artifactProvenanceTamper.artifacts[artifactProvenanceTamper.artifacts.length - 1].hash = p5ProtocolInternals.computeEvidenceSelfHash(artifactProvenanceTamper);
+  assert.equal(await p5ProtocolInternals.firstEvidenceIntegrityFailureCode(root, artifactProvenanceTamper), "PROTOCOL_EVIDENCE_HASH_MISMATCH");
 
   const selfHashTamper = structuredClone(evidence);
   selfHashTamper.artifacts[selfHashTamper.artifacts.length - 1].hash = "0".repeat(64);
