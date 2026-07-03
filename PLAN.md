@@ -55,6 +55,8 @@ fixtures/p0/
     composite-extra-subvalue.source.fixture.json
     composite-incompatible-subvalue.source.fixture.json
     duplicate-component-id.source.fixture.json
+    implementation-token-child.extract.json
+    implementation-token-child.catalog.json
     missing-provenance.extract.json
     hash-mismatch.evidence.json
   valid.surface-ir.json

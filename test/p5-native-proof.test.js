@@ -22,7 +22,17 @@ test("P5 native proof emits passing evidence with final self-hash", async () => 
 
   assert.equal(evidence.status, "pass");
   assert.equal(evidence.promotionStatus, "review_required");
-  assert.equal(evidence.validationResults.length, 30);
+  assert.equal(evidence.validationResults.length, 33);
+  for (const fixturePath of [
+    "fixtures/p5/native/mutations/projection-token-extra-property.surfaces-native-projection.json",
+    "fixtures/p5/native/mutations/projection-token-missing-source-ref.surfaces-native-projection.json",
+    "fixtures/p5/native/mutations/packet-token-extra-property.surfaces-native-packet.json"
+  ]) {
+    const result = evidence.validationResults.find((row) => row.fixturePath === fixturePath);
+    assert.ok(result, `${fixturePath} must appear in native validation results`);
+    assert.equal(result.actualResult, "invalid");
+    assert.deepEqual(result.diagnosticCodes, ["NATIVE_TOKEN_RECORD_INVALID"]);
+  }
   assert.equal(evidence.artifacts.at(-1).path, "artifacts/p5/native/evidence.json");
   assert.equal(evidence.artifacts.at(-1).hash, p5NativeInternals.computeEvidenceSelfHash(evidence));
   assert.deepEqual(evidence.artifacts.map((entry) => entry.path), [
@@ -35,6 +45,25 @@ test("P5 native proof emits passing evidence with final self-hash", async () => 
   ]);
   assert.equal(report.status, evidence.status);
   assert.equal(report.promotionStatus, evidence.promotionStatus);
+});
+
+test("P5 native token-record schema fixtures reject unrelated schema errors", async () => {
+  const fixturePath = path.join(root, "fixtures/p5/native/mutations/projection-token-extra-property.surfaces-native-projection.json");
+
+  await withJsonFileMutations([
+    {
+      absolutePath: fixturePath,
+      mutate(fixture) {
+        fixture.unexpectedNativeProjectionKey = true;
+      }
+    }
+  ], async () => {
+    const result = await runP5ProofExpectFailure();
+    assert.equal(result.code, 1);
+    assert.match(result.stderr, /schema validation failed for fixtures\/p5\/native\/mutations\/projection-token-extra-property\.surfaces-native-projection\.json/);
+    assert.match(result.stderr, /\/ additionalProperties/);
+    assert.match(result.stderr, /\/tokens\/component-height-75 additionalProperties/);
+  });
 });
 
 test("P5 target selection and projection stay inside accepted P2/P4 authority", async () => {
@@ -180,6 +209,27 @@ test("P5 native boundary rejects known members with out-of-authority values", as
     assert.equal(result.code, 1);
     assert.match(result.stderr, /P5 native validation expectation mismatch/);
     assert.match(result.stderr, /NATIVE_MEMBER_UNKNOWN/);
+  });
+});
+
+test("P5 native projection source-hash fixtures bind to the expected ref pointer", async () => {
+  await runP5Proof();
+  const projection = await readJson("artifacts/p5/native/surfaces-native-projection.json");
+  const projectionHashFixturePath = path.join(root, "fixtures/p5/native/mutations/projection-hash-mismatch.surfaces-native-projection.json");
+
+  await withJsonFileMutations([
+    {
+      absolutePath: projectionHashFixturePath,
+      mutate(fixture) {
+        fixture.targetSelectionRef = projection.targetSelectionRef;
+        fixture.catalogRef.hash = "0".repeat(64);
+      }
+    }
+  ], async () => {
+    const result = await runP5ProofExpectFailure();
+    assert.equal(result.code, 1);
+    assert.match(result.stderr, /P5 native validation expectation mismatch/);
+    assert.match(result.stderr, /projection-hash-mismatch\.surfaces-native-projection\.json/);
   });
 });
 
@@ -338,6 +388,31 @@ test("P5 evidence integrity detects schema, fixture, upstream, artifact, and sel
   const selfHashTamper = structuredClone(evidence);
   selfHashTamper.artifacts[selfHashTamper.artifacts.length - 1].hash = "0".repeat(64);
   assert.equal(await p5NativeInternals.firstEvidenceIntegrityFailureCode(root, selfHashTamper), "NATIVE_EVIDENCE_HASH_MISMATCH");
+});
+
+test("P5 native token schemas reject loose token records", async () => {
+  await runP5Proof();
+  const projectionSchema = await readJson("schemas/surfaces-native-projection.v0.schema.json");
+  const packetSchema = await readJson("schemas/surfaces-native-packet.v0.schema.json");
+  const validateProjection = compileSchema(projectionSchema);
+  const validatePacket = compileSchema(packetSchema);
+  const projection = await readJson("artifacts/p5/native/surfaces-native-projection.json");
+  const packet = await readJson("artifacts/p5/native/surfaces-native-packet.button.json");
+
+  assert.equal(validateProjection(projection), true, `projection must validate: ${JSON.stringify(validateProjection.errors)}`);
+  assert.equal(validatePacket(packet), true, `packet must validate: ${JSON.stringify(validatePacket.errors)}`);
+
+  const looseProjection = structuredClone(projection);
+  looseProjection.tokens["component-height-75"].cssVariable = "--surfaces-component-height-75";
+  assert.equal(validateProjection(looseProjection), false, "native projection tokens must reject CSS implementation metadata");
+
+  const missingProjectionSource = structuredClone(projection);
+  delete missingProjectionSource.tokens["component-height-75"].sourceRef;
+  assert.equal(validateProjection(missingProjectionSource), false, "native projection tokens must require source refs");
+
+  const loosePacket = structuredClone(packet);
+  loosePacket.tokens.height.cssProperty = "height";
+  assert.equal(validatePacket(loosePacket), false, "native packet tokens must reject runtime implementation metadata");
 });
 
 test("P5 native demo writes static HTML from passing evidence", async () => {

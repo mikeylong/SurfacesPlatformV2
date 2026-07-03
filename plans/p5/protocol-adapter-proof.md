@@ -63,6 +63,8 @@ Review-required and invalid fixtures are report/evidence-only. They must not emi
 | `provenance` | object | yes | Source refs and deterministic generator metadata |
 | `diagnostics` | array | yes | Protocol diagnostics |
 
+Envelope `tokens` must be a map of normalized catalog-derived token records closed over `type`, `value`, and `sourceRef`. CSS variables, CSS property names, renderer metadata, transport metadata, callbacks, and arbitrary implementation fields must not validate inside token records.
+
 The `message` object is declarative JSON only. It must not include executable code, callback identifiers, network endpoints, secrets, credentials, live account identifiers, hidden state, mutable review decisions, or production API operation claims.
 
 ## Proof Behavior

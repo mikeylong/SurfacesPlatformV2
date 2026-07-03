@@ -52,6 +52,7 @@ P5 valid, review, invalid, and mutation fixtures are not projection inputs. They
 ## Projection Rules
 - Projection generation must not inspect P5 Surface IR fixture contents to decide supported components, props, actions, events, tokens, data bindings, accessibility, or governance.
 - Components, props, variants, states, slots, actions, events, token refs, data bindings, and accessibility fields must be copied from or narrowed from the governed catalog.
+- Protocol projection `tokens` must validate as normalized catalog-derived token records closed over `type`, `value`, and `sourceRef`; CSS variables, CSS property names, renderer metadata, transport metadata, and arbitrary implementation fields are not protocol token authority.
 - Initial component scope cannot exceed the P2 real-source subset unless later proof extends the governed catalog.
 - Projection must not convert `blocked` or `review_required` to `allowed`.
 - Review-required and destructive actions remain inert descriptors only.
@@ -80,7 +81,8 @@ The diagnostics registry includes projection rows for:
 | Code | Trigger | Stage | Promotion status |
 | --- | --- | --- | --- |
 | `PROTOCOL_PROJECTION_REF_MISSING` | Projection omits target, catalog, P2 evidence, or P4 evidence refs | `projection` | `blocked` |
-| `PROTOCOL_SOURCE_HASH_MISMATCH` | Projection upstream hash differs from accepted evidence | `projection` | `blocked` |
+| `PROTOCOL_SOURCE_HASH_MISMATCH` | Projection target-selection or upstream hash differs from generated target selection or accepted evidence | `projection` | `blocked` |
+| `PROTOCOL_TOKEN_RECORD_INVALID` | Protocol projection token record is missing source refs or contains implementation metadata | `projection` | `blocked` |
 | `PROTOCOL_AUTHORITY_ESCALATION` | Projection grants authority absent from governed catalog or target selection | `projection` | `blocked` |
 | `PROTOCOL_PRODUCTION_API_FORBIDDEN` | Projection claims live API, SDK, transport, callback, webhook, queue, or network behavior | `projection` | `blocked` |
 | `PROTOCOL_A2UI_CLAIM_FORBIDDEN` | Projection claims A2UI support without separate A2UI conformance proof | `projection` | `blocked` |

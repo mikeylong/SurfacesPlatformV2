@@ -95,7 +95,7 @@ test("P0 proof is deterministic, schema-valid, and manifest-complete", async () 
   const firstBytes = await readArtifactBytes();
 
   const second = await runProof();
-  assert.match(second.stdout, /validationResults: 40\/40 matched/);
+  assert.match(second.stdout, /validationResults: 42\/42 matched/);
   const secondBytes = await readArtifactBytes();
   assert.deepEqual(secondBytes, firstBytes, "artifact bytes must be stable across repeated runs");
 
@@ -332,7 +332,7 @@ test("P0 proof validates evidence hash mutation against actual artifact bytes", 
 
     const result = await runProof();
     assert.match(result.stdout, /surfaces proof: pass/);
-    assert.match(result.stdout, /validationResults: 40\/40 matched/);
+    assert.match(result.stdout, /validationResults: 42\/42 matched/);
   } finally {
     await fs.writeFile(mutationPath, original);
     await runProof();
@@ -564,6 +564,7 @@ async function validateSchemasFixturesAndArtifacts() {
   validateWith(ajv, "runtime-catalog.v0", await readJson("artifacts/p0/governed-catalog.json"), "governed catalog artifact");
   validateWith(ajv, "adapter-diagnostics.v0", await readJson("artifacts/p0/adapter-diagnostics.json"), "adapter diagnostics artifact");
   await assertNormalizedTokenArtifacts();
+  await assertTokenSchemasRejectLooseObjects(ajv);
   const evidence = await readJson("artifacts/p0/evidence.json");
   validateWith(ajv, "evidence.v0", evidence, "evidence artifact");
   for (const artifactPath of ["package.json", "/tmp/x", "../x"]) {
@@ -637,7 +638,7 @@ async function assertDiagnosticsContractLockstep() {
     assert.equal(expectation.promotionStatus, row.promotionStatus);
     assert.equal(expectation.requiredSourceRef, row.sourceRef);
   }
-  assert.equal(manifest.expectations.length, 40);
+  assert.equal(manifest.expectations.length, 42);
   assert.equal(manifest.expectations.filter((expectation) => expectation.expectedDiagnosticCodes.length === 0).length, 1);
   assert.equal(manifest.runExpectation.status, "pass");
   assert.equal(manifest.runExpectation.promotionStatus, "review_required");
@@ -679,6 +680,99 @@ async function assertNormalizedTokenArtifacts() {
   assert.equal(catalog.tokens.spacing.compact.md.$value, 12);
 }
 
+async function assertTokenSchemasRejectLooseObjects(ajv) {
+  const extract = await readJson("artifacts/p0/extract.json");
+  const catalog = await readJson("artifacts/p0/catalog.json");
+
+  const looseExtractToken = structuredClone(extract);
+  looseExtractToken.tokens.color.brand.primary.cssVariable = "--surfaces-color-brand-primary";
+  assert.equal(
+    validateResult(ajv, "extract.v0", looseExtractToken).valid,
+    false,
+    "extract token schema must reject CSS implementation metadata on DTCG tokens"
+  );
+
+  const missingExtractSourceRef = structuredClone(extract);
+  delete missingExtractSourceRef.tokens.color.brand.primary.sourceRef;
+  assert.equal(
+    validateResult(ajv, "extract.v0", missingExtractSourceRef).valid,
+    false,
+    "extract token schema must require source refs on DTCG tokens"
+  );
+
+  const normalizedExtractToken = structuredClone(extract);
+  normalizedExtractToken.tokens.color.brand.primary = {
+    type: "color",
+    value: "#0B5FFF",
+    sourceRef: "fixture://p0/source#/tokens/color/brand/primary"
+  };
+  assert.equal(
+    validateResult(ajv, "extract.v0", normalizedExtractToken).valid,
+    false,
+    "extract token schema must reject normalized catalog token records"
+  );
+
+  const implementationChildInExtract = structuredClone(extract);
+  implementationChildInExtract.tokens.spacing.compact.cssVariable = {
+    type: "dimension",
+    value: "12px",
+    sourceRef: "fixture://p0/source#/tokens/spacing/compact"
+  };
+  assert.equal(
+    validateResult(ajv, "extract.v0", implementationChildInExtract).valid,
+    false,
+    "extract token groups must reject implementation-looking normalized child records"
+  );
+
+  const implementationDtcgChildInExtract = structuredClone(extract);
+  implementationDtcgChildInExtract.tokens.spacing.compact.cssVariable = {
+    $value: "12px",
+    $type: "dimension",
+    sourceRef: "fixture://p0/source#/tokens/spacing/compact/cssVariable"
+  };
+  assert.equal(
+    validateResult(ajv, "extract.v0", implementationDtcgChildInExtract).valid,
+    false,
+    "extract token groups must reject implementation-looking DTCG child records"
+  );
+
+  const looseExtractGroup = structuredClone(extract);
+  looseExtractGroup.tokens.spacing.compact.$css = { property: "gap" };
+  assert.equal(
+    validateResult(ajv, "extract.v0", looseExtractGroup).valid,
+    false,
+    "extract token groups must reject unsupported DTCG metadata"
+  );
+
+  const looseCatalogToken = structuredClone(catalog);
+  looseCatalogToken.tokens.color.brand.primary.cssProperty = "background-color";
+  assert.equal(
+    validateResult(ajv, "runtime-catalog.v0", looseCatalogToken).valid,
+    false,
+    "catalog token schema must reject CSS implementation metadata"
+  );
+
+  const implementationChildInCatalog = structuredClone(catalog);
+  implementationChildInCatalog.tokens.spacing.compact.cssVariable = {
+    type: "dimension",
+    value: "12px",
+    sourceRef: "fixture://p0/source#/tokens/spacing/compact/cssVariable"
+  };
+  assert.equal(
+    validateResult(ajv, "runtime-catalog.v0", implementationChildInCatalog).valid,
+    false,
+    "catalog token groups must reject implementation-looking normalized child records"
+  );
+
+  const extractResolutionInCatalog = structuredClone(catalog);
+  extractResolutionInCatalog.tokens.color.action.primaryBg.resolvedValue = "#0B5FFF";
+  assert.equal(
+    validateResult(ajv, "runtime-catalog.v0", extractResolutionInCatalog).valid,
+    false,
+    "catalog token schema must reject extract-only resolvedValue fields"
+  );
+}
+
 async function readReadmeDiagnosticsRegistry() {
   const markdown = await fs.readFile(path.join(root, "plans/README.md"), "utf8");
   const lines = markdown.split(/\r?\n/);
@@ -704,7 +798,7 @@ async function readReadmeDiagnosticsRegistry() {
     });
   }
 
-  assert.equal(rows.length, 40, "plans/README.md diagnostics registry must define 40 rows");
+  assert.equal(rows.length, 42, "plans/README.md diagnostics registry must define 42 rows");
   return rows;
 }
 
@@ -793,6 +887,16 @@ async function assertEvidenceInvariants() {
   const disabled = evidence.validationResults.find((result) => result.fixturePath.endsWith("disabled-action-execution.json"));
   assert.equal(disabled.actualPhase, "adapter-conformance");
   assert.deepEqual(disabled.actualDiagnosticCodes, ["CATALOG_INVALID_VALUE"]);
+
+  for (const fixturePath of [
+    "fixtures/p0/mutations/implementation-token-child.extract.json",
+    "fixtures/p0/mutations/implementation-token-child.catalog.json"
+  ]) {
+    const result = evidence.validationResults.find((entry) => entry.fixturePath === fixturePath);
+    assert.ok(result, `${fixturePath} must appear in P0 validation results`);
+    assert.equal(result.actualValidationResult, "invalid");
+    assert.deepEqual(result.actualDiagnosticCodes, ["TOKEN_IMPLEMENTATION_METADATA_FORBIDDEN"]);
+  }
 }
 
 async function loadSchemas() {

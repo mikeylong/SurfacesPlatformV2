@@ -42,6 +42,10 @@ fixtures/p5/protocol/
     target-selection-hash-mismatch.protocol-target-selection.json
     missing-projection-ref.protocol-projection.json
     projection-hash-mismatch.protocol-projection.json
+    projection-target-selection-hash-mismatch.protocol-projection.json
+    projection-token-extra-property.protocol-projection.json
+    projection-token-missing-source-ref.protocol-projection.json
+    envelope-token-extra-property.protocol-envelope.json
     report-projection-hash-mismatch.protocol-adapter-report.json
     hash-mismatch.protocol-adapter-evidence.json
 ```
@@ -51,7 +55,7 @@ fixtures/p5/protocol/
 - `valid/` fixtures produce deterministic protocol envelopes for allowed surfaces only.
 - `review/` fixtures are structurally valid but preserve `review_required`; they produce report and evidence rows only.
 - `invalid/` fixtures are blocked for unknown catalog members, authority escalation, live callback or action execution attempts, production API claims, or A2UI claims without conformance proof.
-- `mutations/` fixtures model upstream preflight, generated artifact, report, projection, and evidence tampering failures.
+- `mutations/` fixtures model upstream preflight, generated artifact, report, projection, token-record schema, and evidence tampering failures.
 
 ## Expectations Manifest
 `fixtures/p5/protocol/expectations.manifest.json` declares every fixture input, expected stage, expected phase, expected validation result, expected promotion status, and expected diagnostic code.
@@ -96,7 +100,8 @@ The fixture set covers:
 - A2UI claim without a separate A2UI proof contract;
 - missing, failing, mismatched, and stale upstream evidence, decision ledger refs, or review report refs;
 - missing target selection, out-of-scope target selection, and missing projection refs as distinct negative cases;
-- target-selection, projection, report, and evidence hash tampering.
+- target-selection, projection, report, and evidence hash tampering;
+- protocol projection token records that omit `sourceRef` or include implementation metadata, plus protocol envelope token records that include implementation metadata.
 
 ## Acceptance Criteria
 - Every fixture row is declared in the expectations manifest.

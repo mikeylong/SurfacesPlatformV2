@@ -41,8 +41,27 @@ const SOURCE_MUTATIONS = [
   "composite-extra-subvalue.source.fixture.json",
   "composite-incompatible-subvalue.source.fixture.json",
   "duplicate-component-id.source.fixture.json",
+  "implementation-token-child.extract.json",
+  "implementation-token-child.catalog.json",
   "missing-provenance.extract.json",
   "hash-mismatch.evidence.json"
+];
+
+const ARTIFACT_SCHEMA_MUTATIONS = new Map([
+  ["implementation-token-child.extract.json", "extract.v0"],
+  ["implementation-token-child.catalog.json", "runtime-catalog.v0"]
+]);
+
+const IMPLEMENTATION_TOKEN_CHILD_NAMES = [
+  "cssVariable",
+  "cssProperty",
+  "cssProperties",
+  "renderer",
+  "adapter",
+  "platformAdapter",
+  "runtimeAdapter",
+  "protocolEnvelope",
+  "nativePacket"
 ];
 
 const INVALID_FIXTURES = [
@@ -274,6 +293,30 @@ const REGISTRY_ROWS = [
     pointer: "/components/3/id",
     sourceRef: "fixture://p0/source#/components/3",
     coverage: "mutations/duplicate-component-id.source.fixture.json"
+  }),
+  row({
+    code: "TOKEN_IMPLEMENTATION_METADATA_FORBIDDEN",
+    trigger: "Extract token tree contains an implementation metadata child",
+    message: "Token trees must not encode implementation metadata as token children.",
+    stage: "validate",
+    severity: "error",
+    promotionStatus: "blocked",
+    artifactPath: "fixtures/p0/mutations/implementation-token-child.extract.json",
+    pointer: "/tokens/spacing/compact/cssVariable",
+    sourceRef: null,
+    coverage: "mutations/implementation-token-child.extract.json"
+  }),
+  row({
+    code: "TOKEN_IMPLEMENTATION_METADATA_FORBIDDEN",
+    trigger: "Runtime catalog token tree contains an implementation metadata child",
+    message: "Token trees must not encode implementation metadata as token children.",
+    stage: "validate",
+    severity: "error",
+    promotionStatus: "blocked",
+    artifactPath: "fixtures/p0/mutations/implementation-token-child.catalog.json",
+    pointer: "/tokens/spacing/compact/cssVariable",
+    sourceRef: null,
+    coverage: "mutations/implementation-token-child.catalog.json"
   }),
   row({
     code: "CATALOG_UNKNOWN_COMPONENT",
@@ -1111,7 +1154,7 @@ async function evaluateManifestExpectations({ cwd, fixtureRoot, outRoot, manifes
     let actual;
 
     if (expectation.fixtureKind === "mutation") {
-      actual = await evaluateMutationFixture(fixture, expectation, artifactPath, cwd);
+      actual = await evaluateMutationFixture(fixture, expectation, artifactPath, cwd, validators);
     } else {
       actual = evaluateSurfaceFixture({
         fixture,
@@ -1146,7 +1189,7 @@ async function evaluateManifestExpectations({ cwd, fixtureRoot, outRoot, manifes
   return results;
 }
 
-async function evaluateMutationFixture(fixture, expectation, artifactPath, cwd) {
+async function evaluateMutationFixture(fixture, expectation, artifactPath, cwd, validators) {
   if (artifactPath.endsWith(".source.fixture.json")) {
     const extractResult = extractSourceFixture(fixture, artifactPath);
     if (!extractResult.ok) {
@@ -1170,7 +1213,45 @@ async function evaluateMutationFixture(fixture, expectation, artifactPath, cwd) 
     return resultFromDiagnostics(expectation, diagnostics);
   }
 
+  const artifactMutationSchemaId = ARTIFACT_SCHEMA_MUTATIONS.get(path.basename(artifactPath));
+  if (artifactMutationSchemaId) {
+    const schemaResult = validators.validate(artifactMutationSchemaId, fixture);
+    return schemaResult.valid ?
+      passResult(expectation) :
+      resultFromDiagnostics(expectation, [
+        diagnosticForCoverage(
+          artifactSchemaMutationMatchesExpectation(schemaResult.errors, expectation) ?
+            `mutations/${path.basename(artifactPath)}` :
+            "manifest-wide",
+          {
+            artifactPath,
+            diagnosticSource: "json-schema",
+            schemaOutputFormat: "basic"
+          }
+        )
+      ]);
+  }
+
   return resultFromDiagnostics(expectation, [diagnosticForRow(REGISTRY_ROWS[0], artifactPath)]);
+}
+
+function artifactSchemaMutationMatchesExpectation(errors, expectation) {
+  const expectedPath = expectation.expectedJsonPointer;
+  const parentPath = path.posix.dirname(expectedPath);
+  const propertyName = path.posix.basename(expectedPath);
+  return (errors || []).some((error) =>
+    ["not", "anyOf", "propertyNames"].includes(error.keyword) &&
+    error.instancePath === parentPath &&
+    error.params?.propertyName === propertyName
+  ) || (errors || []).some((error) =>
+    error.keyword === "additionalProperties" &&
+    error.instancePath === parentPath &&
+    error.params?.additionalProperty === propertyName
+  ) || (errors || []).some((error) =>
+    error.keyword === "unevaluatedProperties" &&
+    error.instancePath === parentPath &&
+    error.params?.unevaluatedProperty === propertyName
+  );
 }
 
 function evaluateSurfaceFixture({ fixture, expectation, artifactPath, governedCatalog, validators }) {
@@ -2073,8 +2154,8 @@ function schemaIdForPath(artifactPath) {
   if (file === "source.fixture.json" || file?.endsWith(".source.fixture.json")) return "source.fixture.v0";
   if (file === "expectations.manifest.json") return "fixture-expectations.v0";
   if (file === "valid.surface-ir.json" || artifactPath.includes("/invalid/") || artifactPath.includes("/review/")) return "surface-ir.v0";
-  if (file === "extract.json" || file === "missing-provenance.extract.json") return "extract.v0";
-  if (file === "catalog.json" || file === "governed-catalog.json") return "runtime-catalog.v0";
+  if (file === "extract.json" || file?.endsWith(".extract.json")) return "extract.v0";
+  if (file === "catalog.json" || file === "governed-catalog.json" || file?.endsWith(".catalog.json")) return "runtime-catalog.v0";
   if (file === "adapter-diagnostics.json") return "adapter-diagnostics.v0";
   if (file === "evidence.json" || file === "hash-mismatch.evidence.json") return "evidence.v0";
   return null;
@@ -2543,7 +2624,135 @@ function surfaceIrSchema() {
   };
 }
 
+function tokenTreeSchemaDefs({ allowExtractResolution = false, allowCatalogResolution = false, allowNormalizedTokens = false } = {}) {
+  const tokenTreeNodeSchemas = [
+    dtcgTokenSchema({ allowExtractResolution, allowCatalogResolution }),
+    tokenGroupSchema({ allowExtractResolution })
+  ];
+  if (allowNormalizedTokens) {
+    tokenTreeNodeSchemas.splice(1, 0, normalizedCatalogTokenSchema());
+  }
+
+  return {
+    tokenTree: {
+      type: "object",
+      propertyNames: tokenChildNameSchema(),
+      additionalProperties: { $ref: "#/$defs/tokenTreeNode" }
+    },
+    tokenTreeNode: {
+      anyOf: tokenTreeNodeSchemas
+    },
+    resolvedSubvalues: {
+      type: "object",
+      propertyNames: tokenNameSchema(),
+      additionalProperties: {
+        type: "object",
+        required: ["value", "sourceRef"],
+        properties: {
+          value: true,
+          sourceRef: { type: "string" }
+        },
+        unevaluatedProperties: false
+      }
+    }
+  };
+}
+
+function tokenNameSchema() {
+  return { type: "string", pattern: "^[A-Za-z0-9._-]+$" };
+}
+
+function tokenChildNameSchema() {
+  return {
+    allOf: [
+      tokenNameSchema(),
+      { not: { enum: IMPLEMENTATION_TOKEN_CHILD_NAMES } }
+    ]
+  };
+}
+
+function tokenGroupSchema({ allowExtractResolution = false } = {}) {
+  const metadataNames = allowExtractResolution ? ["sourceRef", "$extends"] : ["sourceRef"];
+  const properties = {
+    sourceRef: { type: "string" }
+  };
+  if (allowExtractResolution) {
+    properties.$extends = jsonPointerSchema();
+  }
+  return {
+    type: "object",
+    minProperties: 1,
+    propertyNames: {
+      anyOf: [
+        { enum: metadataNames },
+        tokenChildNameSchema()
+      ]
+    },
+    properties,
+    additionalProperties: { $ref: "#/$defs/tokenTreeNode" }
+  };
+}
+
+function dtcgTokenSchema({ allowExtractResolution = false, allowCatalogResolution = false } = {}) {
+  const properties = {
+    $value: true,
+    $type: { type: "string", minLength: 1 },
+    $description: { type: "string" },
+    $extensions: tokenExtensionsSchema(),
+    sourceRef: { type: "string" }
+  };
+  if (allowExtractResolution) {
+    properties.$ref = jsonPointerSchema();
+    properties.resolvedValue = true;
+  }
+  if (allowExtractResolution || allowCatalogResolution) {
+    properties.resolvedSubvalues = { $ref: "#/$defs/resolvedSubvalues" };
+  }
+  return {
+    type: "object",
+    required: ["$value", "$type", "sourceRef"],
+    properties,
+    unevaluatedProperties: false
+  };
+}
+
+function tokenExtensionsSchema() {
+  return {
+    type: "object",
+    required: ["surfaces"],
+    properties: {
+      surfaces: {
+        type: "object",
+        required: ["sourceRef"],
+        properties: {
+          sourceRef: { type: "string" }
+        },
+        unevaluatedProperties: false
+      }
+    },
+    unevaluatedProperties: false
+  };
+}
+
+function normalizedCatalogTokenSchema() {
+  return {
+    type: "object",
+    required: ["type", "value", "sourceRef"],
+    properties: {
+      type: { type: "string", minLength: 1 },
+      value: true,
+      sourceRef: { type: "string" }
+    },
+    unevaluatedProperties: false
+  };
+}
+
+function jsonPointerSchema() {
+  return { type: "string", pattern: "^(/([^/~]|~0|~1)*)*$" };
+}
+
 function runtimeCatalogSchema() {
+  const tokenDefs = tokenTreeSchemaDefs({ allowCatalogResolution: true, allowNormalizedTokens: true });
   const propSchema = {
     type: "object",
     required: ["id", "type", "required", "default", "allowedValues", "tokenRefs", "sourceRef", "diagnostics", "minLength", "maxLength", "allowMarkup"],
@@ -2615,6 +2824,7 @@ function runtimeCatalogSchema() {
     ...schemaBase("runtime-catalog.v0"),
     schemaId: "runtime-catalog.v0",
     version: VERSION,
+    $defs: tokenDefs,
     required: ["catalogId", "schemaId", "artifactKind", "version", "sourceRefs", "tokens", "components", "runtimeCapabilities", "governance", "provenance", "diagnostics", "compatibility"],
     properties: {
       catalogId: { type: "string" },
@@ -2622,7 +2832,7 @@ function runtimeCatalogSchema() {
       artifactKind: { enum: ["catalog", "governed-catalog"] },
       version: semverSchema(),
       sourceRefs: { type: "object", additionalProperties: { type: "string" } },
-      tokens: { type: "object", additionalProperties: true },
+      tokens: { $ref: "#/$defs/tokenTree" },
       components: { type: "object", additionalProperties: componentSchema },
       runtimeCapabilities: { type: "object", additionalProperties: { type: "string" } },
       governance: {
@@ -2736,10 +2946,12 @@ function fixtureExpectationsSchema() {
 }
 
 function extractSchema() {
+  const tokenDefs = tokenTreeSchemaDefs({ allowExtractResolution: true });
   return {
     ...schemaBase("extract.v0"),
     schemaId: "extract.v0",
     version: VERSION,
+    $defs: tokenDefs,
     required: ["schemaId", "version", "fixtureId", "generatedAt", "sourceUri", "sourceHash", "tokens", "components", "sourceRefs", "provenance", "diagnostics"],
     properties: {
       schemaId: { const: "extract.v0" },
@@ -2748,7 +2960,7 @@ function extractSchema() {
       generatedAt: { const: TIMESTAMP },
       sourceUri: { type: "string" },
       sourceHash: { type: "string" },
-      tokens: { type: "object", additionalProperties: true },
+      tokens: { $ref: "#/$defs/tokenTree" },
       components: { type: "array", items: { type: "object", additionalProperties: true } },
       sourceRefs: { type: "object", additionalProperties: { type: "string" } },
       provenance: { type: "object", additionalProperties: true },
@@ -3702,6 +3914,26 @@ function buildMutationFixtures(source) {
   }
 
   const extract = extractSourceFixture(source, `${FIXTURE_ROOT}/source.fixture.json`).extract;
+  const implementationExtract = deepClone(extract);
+  implementationExtract.tokens.spacing.compact.cssVariable = token(
+    "12px",
+    "dimension",
+    "Implementation metadata disguised as an extract token child.",
+    "/tokens/spacing/compact/cssVariable"
+  );
+  implementationExtract.sourceRefs["/tokens/spacing/compact/cssVariable"] = "fixture://p0/source#/tokens/spacing/compact/cssVariable";
+  fixtures["implementation-token-child.extract.json"] = implementationExtract;
+
+  const catalog = compileCatalog(extract, `${ARTIFACT_ROOT}/catalog.json`).catalog;
+  const implementationCatalog = deepClone(catalog);
+  implementationCatalog.tokens.spacing.compact.cssVariable = {
+    type: "dimension",
+    value: "12px",
+    sourceRef: "fixture://p0/source#/tokens/spacing/compact/cssVariable"
+  };
+  implementationCatalog.sourceRefs["/tokens/spacing/compact/cssVariable"] = "fixture://p0/source#/tokens/spacing/compact/cssVariable";
+  fixtures["implementation-token-child.catalog.json"] = implementationCatalog;
+
   const missingProvenance = deepClone(extract);
   delete missingProvenance.provenance;
   fixtures["missing-provenance.extract.json"] = missingProvenance;

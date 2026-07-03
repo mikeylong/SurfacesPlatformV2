@@ -587,20 +587,16 @@ async function loadP5FixtureRows(cwd, expectations, validators) {
   for (const expectation of expectations.expectations) {
     const fixtureAbsolutePath = path.join(cwd, expectation.fixturePath);
     const fixture = await readJson(fixtureAbsolutePath);
-    if (expectation.fixturePath.endsWith(".surfaces-native-target-selection.json")) {
-      assertSchema(validators, "surfaces-native-target-selection.v0", fixture, expectation.fixturePath);
-    } else if (expectation.fixturePath.endsWith(".surfaces-native-projection.json")) {
-      assertSchema(validators, "surfaces-native-projection.v0", fixture, expectation.fixturePath);
-    } else if (expectation.fixturePath.endsWith(".native-preflight.json")) {
-      assertSchema(validators, "surfaces-native-preflight-mutation.v0", fixture, expectation.fixturePath);
-    } else if (expectation.fixturePath.endsWith(".surfaces-native-report.json")) {
-      assertSchema(validators, "surfaces-native-report.v0", fixture, expectation.fixturePath);
-    } else if (expectation.fixturePath.endsWith(".surfaces-native-evidence.json")) {
-      assertSchema(validators, "surfaces-native-evidence.v0", fixture, expectation.fixturePath);
-    } else if (expectation.fixturePath.endsWith(".surface-ir.json")) {
-      assertSchema(validators, "surface-ir.v0", fixture, expectation.fixturePath);
+    let schemaInvalid = false;
+    const schemaId = schemaIdForP5Path(expectation.fixturePath);
+    if (schemaId) {
+      const schemaResult = validators.validate(schemaId, fixture);
+      if (!schemaResult.valid && !schemaInvalidTokenFixtureMatchesExpectation(schemaResult.errors, expectation)) {
+        throw contractError(`schema validation failed for ${expectation.fixturePath}: ${formatAjvErrors(schemaResult.errors)}`, 1);
+      }
+      schemaInvalid = !schemaResult.valid;
     }
-    rows.push({ expectation, fixture, fixtureHash: await canonicalFileHash(fixtureAbsolutePath) });
+    rows.push({ expectation, fixture, schemaInvalid, fixtureHash: await canonicalFileHash(fixtureAbsolutePath) });
   }
   return rows;
 }
@@ -691,8 +687,8 @@ function buildProjection({ upstream, targetSelectionRef }) {
 }
 
 function evaluateP5Expectations({ fixtureRows, upstream, targetSelection, projection }) {
-  return fixtureRows.map(({ expectation, fixture }) => {
-    const actual = evaluateP5Fixture({ fixture, expectation, upstream, targetSelection, projection });
+  return fixtureRows.map(({ expectation, fixture, schemaInvalid }) => {
+    const actual = evaluateP5Fixture({ fixture, expectation, schemaInvalid, upstream, targetSelection, projection });
     const matched = compareExpectation(expectation, actual);
     return {
       fixturePath: expectation.fixturePath,
@@ -715,12 +711,27 @@ function evaluateP5Expectations({ fixtureRows, upstream, targetSelection, projec
   });
 }
 
-function evaluateP5Fixture({ fixture, expectation, upstream, targetSelection, projection }) {
+function evaluateP5Fixture({ fixture, expectation, schemaInvalid = false, upstream, targetSelection, projection }) {
   if (expectation.diagnosticCodes.length === 0) {
     return validateAllowedSurfaceFixture({ fixture, expectation, projection });
   }
   const code = expectation.diagnosticCodes[0];
-  if (!fixtureMatchesDiagnostic(code, fixture, { upstream, targetSelection, projection })) {
+  if (schemaInvalid) {
+    return code === "NATIVE_TOKEN_RECORD_INVALID" ? {
+      result: "invalid",
+      promotionStatus: "blocked",
+      diagnostics: [diagnosticForExpectation(expectation)],
+      packetPath: null,
+      component: expectation.component
+    } : {
+      result: "valid",
+      promotionStatus: "allowed",
+      diagnostics: [],
+      packetPath: expectation.packetPath,
+      component: fixture.root?.component ?? null
+    };
+  }
+  if (!fixtureMatchesDiagnostic(code, fixture, { upstream, targetSelection, projection }, expectation)) {
     return {
       result: "valid",
       promotionStatus: "allowed",
@@ -745,6 +756,32 @@ function evaluateP5Fixture({ fixture, expectation, upstream, targetSelection, pr
     packetPath: null,
     component: expectation.component
   };
+}
+
+function schemaInvalidTokenFixtureMatchesExpectation(errors, expectation) {
+  if (expectation.diagnosticCodes.length !== 1 ||
+    expectation.diagnosticCodes[0] !== "NATIVE_TOKEN_RECORD_INVALID" ||
+    ![
+      "fixtures/p5/native/mutations/projection-token-extra-property.surfaces-native-projection.json",
+      "fixtures/p5/native/mutations/projection-token-missing-source-ref.surfaces-native-projection.json",
+      "fixtures/p5/native/mutations/packet-token-extra-property.surfaces-native-packet.json"
+    ].includes(expectation.fixturePath)) {
+    return false;
+  }
+  return tokenRecordSchemaErrorMatchesPointer(errors, expectation.jsonPointer);
+}
+
+function tokenRecordSchemaErrorMatchesPointer(errors, jsonPointer) {
+  if ((errors || []).length !== 1) return false;
+  const parentPath = path.posix.dirname(jsonPointer);
+  const propertyName = path.posix.basename(jsonPointer);
+  const [error] = errors || [];
+  return error.instancePath === parentPath &&
+    (
+      (error.keyword === "required" && error.params?.missingProperty === propertyName) ||
+      (error.keyword === "additionalProperties" && error.params?.additionalProperty === propertyName) ||
+      (error.keyword === "unevaluatedProperties" && error.params?.unevaluatedProperty === propertyName)
+    );
 }
 
 function validateAllowedSurfaceFixture({ fixture, expectation, projection }) {
@@ -842,7 +879,7 @@ function accessibilityWithinContract(accessibility, contract) {
   return true;
 }
 
-function fixtureMatchesDiagnostic(code, fixture, context) {
+function fixtureMatchesDiagnostic(code, fixture, context, expectation) {
   switch (code) {
     case "NATIVE_UPSTREAM_EVIDENCE_MISSING":
     case "NATIVE_DECISION_LEDGER_MISSING":
@@ -867,7 +904,9 @@ function fixtureMatchesDiagnostic(code, fixture, context) {
     case "NATIVE_TARGET_SELECTION_HASH_MISMATCH":
       return fixture.targetSelectionRef?.hash === "0".repeat(64);
     case "NATIVE_PROJECTION_REF_MISSING":
+      return firstProjectionFailureCode(fixture, context.upstream, context.targetSelection) === code;
     case "NATIVE_SOURCE_HASH_MISMATCH":
+      return projectionSourceHashFixtureMatchesExpectation(fixture, expectation, context.upstream, context.targetSelection);
     case "NATIVE_AUTHORITY_ESCALATION":
     case "NATIVE_PRODUCTION_API_FORBIDDEN":
       return firstProjectionFailureCode(fixture, context.upstream, context.targetSelection) === code;
@@ -980,6 +1019,42 @@ function artifactRefTupleEquals(actualRef, expectedRef) {
 
 function artifactRefExactlyEquals(actualRef, expectedRef) {
   return canonicalJson(actualRef ?? null) === canonicalJson(expectedRef ?? null);
+}
+
+function projectionSourceHashFixtureMatchesExpectation(projection, expectation, upstream, targetSelection) {
+  if (expectation.diagnosticCodes.length !== 1 || expectation.diagnosticCodes[0] !== "NATIVE_SOURCE_HASH_MISMATCH") return false;
+  if (firstProjectionFailureCode(projection, upstream, targetSelection) !== "NATIVE_SOURCE_HASH_MISMATCH") return false;
+  return projectionRefMismatchMatchesPointer(projection, expectation.jsonPointer, nativeProjectionExpectedRefs(upstream, targetSelection));
+}
+
+function nativeProjectionExpectedRefs(upstream, targetSelection) {
+  const expectedTargetSelectionHash = sha256Hex(canonicalJson(targetSelection));
+  return {
+    targetSelectionRef: artifactRef(`${P5_ARTIFACT_ROOT}/adapter-target-selection.json`, "surfaces-native-target-selection.v0", expectedTargetSelectionHash),
+    catalogRef: upstream.p2CatalogRef,
+    p2EvidenceRef: upstream.p2EvidenceRef,
+    p4EvidenceRef: upstream.p4EvidenceRef,
+    p4DecisionLedgerRef: upstream.p4DecisionLedgerRef,
+    p4ReviewReportRef: upstream.p4ReviewReportRef,
+    compatibilityPreflightRef: upstream.compatibilityPreflightRef
+  };
+}
+
+function projectionRefMismatchMatchesPointer(projection, jsonPointer, expectedRefs) {
+  const refKey = {
+    "/targetSelectionRef/hash": "targetSelectionRef",
+    "/catalogRef/hash": "catalogRef",
+    "/p2EvidenceRef/hash": "p2EvidenceRef",
+    "/p4EvidenceRef/hash": "p4EvidenceRef",
+    "/p4DecisionLedgerRef/hash": "p4DecisionLedgerRef",
+    "/p4ReviewReportRef/hash": "p4ReviewReportRef",
+    "/compatibilityPreflightRef/hash": "compatibilityPreflightRef"
+  }[jsonPointer];
+  if (!refKey || !projection[refKey] || !expectedRefs[refKey]) return false;
+  if (projection[refKey].hash === expectedRefs[refKey].hash) return false;
+  return Object.entries(expectedRefs).every(([key, expectedRef]) =>
+    key === refKey || artifactRefTupleEquals(projection[key], expectedRef)
+  );
 }
 
 function firstProjectionFailureCode(projection, upstream, targetSelection) {

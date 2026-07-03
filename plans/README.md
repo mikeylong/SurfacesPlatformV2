@@ -142,6 +142,8 @@ fixtures/p0/
     composite-extra-subvalue.source.fixture.json
     composite-incompatible-subvalue.source.fixture.json
     duplicate-component-id.source.fixture.json
+    implementation-token-child.extract.json
+    implementation-token-child.catalog.json
     missing-provenance.extract.json
     hash-mismatch.evidence.json
   valid.surface-ir.json
@@ -211,6 +213,8 @@ Given the P0 fixture, the proof command emits all expected artifacts, valid Surf
 | `TOKEN_COMPOSITE_INVALID` | Composite token contains an extra sub-value not allowed by its token type | Composite token contains an unsupported extra sub-value. | `extract` | `error` | `blocked` | `fixtures/p0/mutations/composite-extra-subvalue.source.fixture.json` | `/tokens/shadow/raised/$value/opacity` | `fixture://p0/source#/tokens/shadow/raised` | `mutations/composite-extra-subvalue.source.fixture.json` |
 | `TOKEN_COMPOSITE_INVALID` | Composite token contains an incompatible typed sub-value | Composite token contains an incompatible sub-value type. | `extract` | `error` | `blocked` | `fixtures/p0/mutations/composite-incompatible-subvalue.source.fixture.json` | `/tokens/shadow/raised/$value/blur` | `fixture://p0/source#/tokens/shadow/raised` | `mutations/composite-incompatible-subvalue.source.fixture.json` |
 | `CATALOG_DUPLICATE_ID` | Duplicate component id | Catalog contains a duplicate component id. | `compile` | `error` | `blocked` | `fixtures/p0/mutations/duplicate-component-id.source.fixture.json` | `/components/3/id` | `fixture://p0/source#/components/3` | `mutations/duplicate-component-id.source.fixture.json` |
+| `TOKEN_IMPLEMENTATION_METADATA_FORBIDDEN` | Extract token tree contains an implementation metadata child | Token trees must not encode implementation metadata as token children. | `validate` | `error` | `blocked` | `fixtures/p0/mutations/implementation-token-child.extract.json` | `/tokens/spacing/compact/cssVariable` | `null` | `mutations/implementation-token-child.extract.json` |
+| `TOKEN_IMPLEMENTATION_METADATA_FORBIDDEN` | Runtime catalog token tree contains an implementation metadata child | Token trees must not encode implementation metadata as token children. | `validate` | `error` | `blocked` | `fixtures/p0/mutations/implementation-token-child.catalog.json` | `/tokens/spacing/compact/cssVariable` | `null` | `mutations/implementation-token-child.catalog.json` |
 | `CATALOG_UNKNOWN_COMPONENT` | Surface IR references an unknown component | Surface IR references an unknown component. | `validate` | `error` | `blocked` | `fixtures/p0/invalid/unknown-component.json` | `/root/component` | `fixture://p0/invalid/unknown-component#/root` | `invalid/unknown-component.json` |
 | `CATALOG_UNKNOWN_PROP` | Surface IR references an unknown prop | Surface IR references an unknown prop. | `validate` | `error` | `blocked` | `fixtures/p0/invalid/unknown-prop.json` | `/root/props/eyebrow` | `fixture://p0/invalid/unknown-prop#/root/props/eyebrow` | `invalid/unknown-prop.json` |
 | `CATALOG_UNKNOWN_VARIANT` | Surface IR references an unknown variant | Surface IR references an unknown variant. | `validate` | `error` | `blocked` | `fixtures/p0/invalid/unknown-variant.json` | `/root/variant` | `fixture://p0/invalid/unknown-variant#/root/variant` | `invalid/unknown-variant.json` |

@@ -63,6 +63,10 @@ interfacectl surfaces native proof \
 ## Pass Condition
 Given accepted P2 evidence/catalog, accepted P4 evidence/ledger/report, passing protocol evidence for compatibility preflight, and the native fixture set, the command emits the exact native artifact set, validates target selection and ref tuples, derives a hash-bound native projection from catalog authority, emits deterministic inert native packets for allowed fixtures only, preserves review-required rows without packet artifacts, records native diagnostics before evidence, and writes reproducible `surfaces-native-evidence.v0` with `status: "pass"`.
 
+Native projection and packet `tokens` must validate as normalized catalog-derived token records closed over `type`, `value`, and `sourceRef`. CSS variables, CSS property names, renderer metadata, native bridge metadata, SDK metadata, and arbitrary implementation fields are outside this proof slice and must not validate inside token records.
+
+The native mutation fixtures include projection token records with extra implementation fields (`projection-token-extra-property.surfaces-native-projection.json`), projection token records missing `sourceRef` (`projection-token-missing-source-ref.surfaces-native-projection.json`), and packet token records with runtime CSS metadata (`packet-token-extra-property.surfaces-native-packet.json`). These expected schema failures are recorded as `NATIVE_TOKEN_RECORD_INVALID` rows in the native report and evidence.
+
 ## Non-Goals
 - No A2UI export, clone, or conformance claim.
 - No production native SDK, package, bridge, API, renderer, or live runtime.

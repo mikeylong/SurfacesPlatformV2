@@ -19,12 +19,12 @@ export const P5_P4_REVIEW_REPORT_PATH = "artifacts/p4/review-judgment-report.jso
 export const P5_PROTOCOL_EVIDENCE_PATH = "artifacts/p5/protocol/evidence.json";
 export const P5_TARGET_ID = "surfaces-native-static";
 
-export const P5_ACCEPTED_P2_EVIDENCE_HASH = "ec5fe3e0bf4f2ac0b8f10ba746610df94175085ee35904186a23c0f27282906f";
+export const P5_ACCEPTED_P2_EVIDENCE_HASH = "d469eb7027a724c87e237b6b0e92d7526bb9a9dfee58dd47e4830bf64352a0f4";
 export const P5_ACCEPTED_P2_CATALOG_HASH = "2ba1d418bc51051bb642a0c675efbc7e16f4f315dae62674a6b6e363461c9d29";
-export const P5_ACCEPTED_P4_EVIDENCE_HASH = "54fa03840c1e2948850f07c106f0488625deddf8723bfdc161ff1e1ea2c93a43";
-export const P5_ACCEPTED_P4_DECISION_LEDGER_HASH = "0ec17be965f80c9305d621c35df31aee05c37ce37b6fd69b3163ab4dc152f94c";
-export const P5_ACCEPTED_P4_REVIEW_REPORT_HASH = "25cf3cfdeb316b8d63e7c9e2f5573baf380c682427bda315f5b9749282bc3ec1";
-export const P5_ACCEPTED_PROTOCOL_EVIDENCE_HASH = "ed70d2b60e72063d13e8c08d40258bd94fa412fd7cc75b6825255c9d8e1afdde";
+export const P5_ACCEPTED_P4_EVIDENCE_HASH = "a9de1573bc5c4dcd9e0d509d8b60885470a4d6cb2bfcbc0eff5ed451997d71f3";
+export const P5_ACCEPTED_P4_DECISION_LEDGER_HASH = "91dd2b08dc7c99f2ff28c6dca2862379269f0f89c7feb63a073bd51fc5f1ebb8";
+export const P5_ACCEPTED_P4_REVIEW_REPORT_HASH = "ca31dcd66c7037e0b8eff4e24ad5a41ae99497d7a44bc7a558f85bd981f32add";
+export const P5_ACCEPTED_PROTOCOL_EVIDENCE_HASH = "5c374dda129f223539514f361f827072e0f5c1d73c7cab4572e7f19d74a0665a";
 
 export const P5_ENVIRONMENT = Object.freeze({
   generatedAt: P5_TIMESTAMP,
@@ -84,6 +84,9 @@ export const P5_FIXTURE_FILES = [
   "mutations/target-selection-hash-mismatch.surfaces-native-target-selection.json",
   "mutations/missing-projection-ref.surfaces-native-projection.json",
   "mutations/projection-hash-mismatch.surfaces-native-projection.json",
+  "mutations/projection-token-extra-property.surfaces-native-projection.json",
+  "mutations/projection-token-missing-source-ref.surfaces-native-projection.json",
+  "mutations/packet-token-extra-property.surfaces-native-packet.json",
   "mutations/report-projection-hash-mismatch.surfaces-native-report.json",
   "mutations/hash-mismatch.surfaces-native-evidence.json"
 ].map((file) => `${P5_FIXTURE_ROOT}/${file}`);
@@ -348,6 +351,45 @@ export const P5_DIAGNOSTIC_ROWS = [
     fixtureCoverage: "mutations/projection-hash-mismatch.surfaces-native-projection.json"
   }),
   diagnosticRow({
+    code: "NATIVE_TOKEN_RECORD_INVALID",
+    trigger: "Native projection token record is missing source refs or contains implementation metadata",
+    canonicalMessage: "Native token records must stay closed over type, value, and sourceRef.",
+    stage: "projection",
+    phase: "surfaces-native-projection",
+    artifactPath: "fixtures/p5/native/mutations/projection-token-extra-property.surfaces-native-projection.json",
+    jsonPointer: "/tokens/component-height-75/cssVariable",
+    sourceRef: null,
+    validationResult: "invalid",
+    promotionStatus: "blocked",
+    fixtureCoverage: "mutations/projection-token-extra-property.surfaces-native-projection.json"
+  }),
+  diagnosticRow({
+    code: "NATIVE_TOKEN_RECORD_INVALID",
+    trigger: "Native projection token record is missing source refs or contains implementation metadata",
+    canonicalMessage: "Native token records must stay closed over type, value, and sourceRef.",
+    stage: "projection",
+    phase: "surfaces-native-projection",
+    artifactPath: "fixtures/p5/native/mutations/projection-token-missing-source-ref.surfaces-native-projection.json",
+    jsonPointer: "/tokens/component-height-75/sourceRef",
+    sourceRef: null,
+    validationResult: "invalid",
+    promotionStatus: "blocked",
+    fixtureCoverage: "mutations/projection-token-missing-source-ref.surfaces-native-projection.json"
+  }),
+  diagnosticRow({
+    code: "NATIVE_TOKEN_RECORD_INVALID",
+    trigger: "Native packet token record contains implementation metadata",
+    canonicalMessage: "Native token records must stay closed over type, value, and sourceRef.",
+    stage: "native-boundary",
+    phase: "native-invalid",
+    artifactPath: "fixtures/p5/native/mutations/packet-token-extra-property.surfaces-native-packet.json",
+    jsonPointer: "/tokens/height/cssProperty",
+    sourceRef: null,
+    validationResult: "invalid",
+    promotionStatus: "blocked",
+    fixtureCoverage: "mutations/packet-token-extra-property.surfaces-native-packet.json"
+  }),
+  diagnosticRow({
     code: "NATIVE_AUTHORITY_ESCALATION",
     trigger: "Projection grants authority absent from governed catalog or target selection",
     canonicalMessage: "Native projection grants authority absent from the governed catalog.",
@@ -536,6 +578,9 @@ export const P5_EXPECTATION_ROWS = [
     ["mutations/target-selection-hash-mismatch.surfaces-native-target-selection.json", "target-selection", "surfaces-native-target-selection", "NATIVE_TARGET_SELECTION_HASH_MISMATCH", "/targetSelectionRef/hash"],
     ["mutations/missing-projection-ref.surfaces-native-projection.json", "projection", "surfaces-native-projection", "NATIVE_PROJECTION_REF_MISSING", "/targetSelectionRef"],
     ["mutations/projection-hash-mismatch.surfaces-native-projection.json", "projection", "surfaces-native-projection", "NATIVE_SOURCE_HASH_MISMATCH", "/targetSelectionRef/hash"],
+    ["mutations/projection-token-extra-property.surfaces-native-projection.json", "projection", "surfaces-native-projection", "NATIVE_TOKEN_RECORD_INVALID", "/tokens/component-height-75/cssVariable"],
+    ["mutations/projection-token-missing-source-ref.surfaces-native-projection.json", "projection", "surfaces-native-projection", "NATIVE_TOKEN_RECORD_INVALID", "/tokens/component-height-75/sourceRef"],
+    ["mutations/packet-token-extra-property.surfaces-native-packet.json", "native-boundary", "native-invalid", "NATIVE_TOKEN_RECORD_INVALID", "/tokens/height/cssProperty"],
     ["mutations/report-projection-hash-mismatch.surfaces-native-report.json", "report", "surfaces-native-report", "NATIVE_REPORT_HASH_MISMATCH", "/projectionRef/hash"],
     ["mutations/hash-mismatch.surfaces-native-evidence.json", "evidence", "surfaces-native-evidence", "NATIVE_EVIDENCE_HASH_MISMATCH", "/artifacts"]
   ].map(([file, stage, phase, code, jsonPointer]) => expectationRow({
@@ -751,6 +796,37 @@ export function buildP5NativeFixtures() {
       sourceRef: "fixture://p5/native/mutations/projection-hash-mismatch#/targetSelectionRef/hash",
       targetSelectionRef: targetSelectionArtifactRef("0".repeat(64))
     }),
+    "mutations/projection-token-extra-property.surfaces-native-projection.json": projectionMutation({
+      sourceRef: "fixture://p5/native/mutations/projection-token-extra-property#/tokens/component-height-75/cssVariable",
+      tokens: {
+        "component-height-75": {
+          type: "dimension",
+          value: "32px",
+          sourceRef: "fixture://p2/spectrum/button#/tokens/component-height-75",
+          cssVariable: "--spectrum-component-height-75"
+        }
+      }
+    }),
+    "mutations/projection-token-missing-source-ref.surfaces-native-projection.json": projectionMutation({
+      sourceRef: "fixture://p5/native/mutations/projection-token-missing-source-ref#/tokens/component-height-75/sourceRef",
+      tokens: {
+        "component-height-75": {
+          type: "dimension",
+          value: "32px"
+        }
+      }
+    }),
+    "mutations/packet-token-extra-property.surfaces-native-packet.json": nativePacketMutation({
+      sourceRef: "fixture://p5/native/mutations/packet-token-extra-property#/tokens/height/cssProperty",
+      tokens: {
+        height: {
+          type: "dimension",
+          value: "32px",
+          sourceRef: "fixture://p2/spectrum/button#/tokens/component-height-75",
+          cssProperty: "height"
+        }
+      }
+    }),
     "mutations/report-projection-hash-mismatch.surfaces-native-report.json": reportMutation(),
     "mutations/hash-mismatch.surfaces-native-evidence.json": evidenceMutation()
   };
@@ -788,7 +864,7 @@ function nativeProjectionSchema() {
     p4ReviewReportRef: artifactRefSchema(),
     compatibilityPreflightRef: artifactRefSchema(),
     components: { type: "object", additionalProperties: true },
-    tokens: { type: "object", additionalProperties: true },
+    tokens: tokenRecordMapSchema(),
     actions: { type: "object", additionalProperties: true },
     events: { type: "object", additionalProperties: true },
     dataBindings: { type: "object", additionalProperties: true },
@@ -822,7 +898,7 @@ function nativePacketSchema() {
     sideEffects: { type: "array", maxItems: 0 },
     transport: { const: "none" },
     accessibility: { type: "object", additionalProperties: true },
-    tokens: { type: "object", additionalProperties: true },
+    tokens: tokenRecordMapSchema(),
     provenance: provenanceSchema(),
     diagnostics: { type: "array", items: diagnosticObjectSchema() }
   }, ["schemaId", "version", "adapter", "surfaceRef", "projectionRef", "promotionStatus", "message", "actions", "sideEffects", "transport", "accessibility", "tokens", "provenance", "diagnostics"]);
@@ -1113,6 +1189,38 @@ function projectionMutation(overrides = {}) {
   };
 }
 
+function nativePacketMutation(overrides = {}) {
+  const { sourceRef: overrideSourceRef, ...rest } = overrides;
+  const sourceRef = overrideSourceRef ?? "fixture://p5/native/mutations/packet#/tokens";
+  return {
+    schemaId: "surfaces-native-packet.v0",
+    version: P5_VERSION,
+    adapter: P5_TARGET_ID,
+    surfaceRef: artifactRef("fixtures/p5/native/valid/button-surfaces-native-packet.surface-ir.json", "surface-ir.v0", "0".repeat(64), {
+      sourceRef: "fixture://p5/native/valid/button-surfaces-native-packet#/root"
+    }),
+    projectionRef: artifactRef(`${P5_ARTIFACT_ROOT}/surfaces-native-projection.json`, "surfaces-native-projection.v0", "0".repeat(64)),
+    promotionStatus: "allowed",
+    message: {
+      kind: "static-native-packet",
+      surfaceId: "buttonSurfacesNativePacket",
+      component: "Button",
+      variant: "accent",
+      state: "default",
+      props: { size: "m", style: "fill", variant: "accent" },
+      sourceRef: "fixture://p5/native/valid/button-surfaces-native-packet#/root"
+    },
+    actions: [],
+    sideEffects: [],
+    transport: "none",
+    accessibility: { role: "button", nameFrom: "content", focusable: true, activationKeys: ["Enter", "Space"] },
+    tokens: {},
+    provenance: provenance("interfacectl-p5-native-materialize", [sourceRef]),
+    diagnostics: [],
+    ...rest
+  };
+}
+
 function preflightMutation(overrides) {
   return {
     schemaId: "surfaces-native-preflight-mutation.v0",
@@ -1246,6 +1354,22 @@ function objectSchema(schemaId, properties, required) {
     schema.$id = `https://surfaces.dev/schemas/p5/${schemaId}.schema.json`;
   }
   return schema;
+}
+
+function tokenRecordMapSchema() {
+  return {
+    type: "object",
+    propertyNames: { type: "string", pattern: "^[A-Za-z0-9._-]+$" },
+    additionalProperties: tokenRecordSchema()
+  };
+}
+
+function tokenRecordSchema() {
+  return objectSchema(null, {
+    type: { type: "string", minLength: 1 },
+    value: true,
+    sourceRef: { type: "string" }
+  }, ["type", "value", "sourceRef"]);
 }
 
 function artifactRefSchema(withProvenance = false, options = {}) {

@@ -77,6 +77,10 @@ fixtures/p5/protocol/
     target-selection-hash-mismatch.protocol-target-selection.json
     missing-projection-ref.protocol-projection.json
     projection-hash-mismatch.protocol-projection.json
+    projection-target-selection-hash-mismatch.protocol-projection.json
+    projection-token-extra-property.protocol-projection.json
+    projection-token-missing-source-ref.protocol-projection.json
+    envelope-token-extra-property.protocol-envelope.json
     report-projection-hash-mismatch.protocol-adapter-report.json
     hash-mismatch.protocol-adapter-evidence.json
 

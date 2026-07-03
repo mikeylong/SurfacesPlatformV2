@@ -12,10 +12,10 @@ export const P4_ARTIFACT_ROOT = "artifacts/p4";
 export const P4_ORCHESTRATION_EVIDENCE_PATH = "artifacts/p3/evidence.json";
 export const P4_REVIEW_QUEUE_PATH = "artifacts/p3/review-queue.json";
 export const P4_ORCHESTRATION_REPORT_PATH = "artifacts/p3/agent-orchestration-report.json";
-export const P4_ACCEPTED_P3_EVIDENCE_HASH = "9a1ae85b240561ab39e427ff5495beeff03088a17f623d2ce35cb633ca9914d7";
-export const P4_ACCEPTED_P3_REVIEW_QUEUE_HASH = "57a5a357f1c0c47604f58b719f25ff0edaf919c25ac0c7a63f91f6f773b49d07";
-export const P4_ACCEPTED_P3_REPORT_HASH = "50a7dd81afceb5437d51e3e00ca85d082d38408e5b7648a31569a8bc6afb5c72";
-export const P4_ACCEPTED_P3_REVIEW_QUEUE_RUN_ID = "p3-ca0ed6b878b6ac1397c5e98897cc0846";
+export const P4_ACCEPTED_P3_EVIDENCE_HASH = "08c4c9e62c8643e7427b60f1ad8e48c86cfa5fced0ad1e0d3b6c3e0e5025589c";
+export const P4_ACCEPTED_P3_REVIEW_QUEUE_HASH = "aac26d2171acaaabbe27c6262d45575eac8bf08c6e6a5284c1340cec184694da";
+export const P4_ACCEPTED_P3_REPORT_HASH = "a15550b663925ffeedb30c29b217f778aa5cb4b78d50bc2ba9f3b3ce81700cfc";
+export const P4_ACCEPTED_P3_REVIEW_QUEUE_RUN_ID = "p3-86e10678b81c8c15bb7deb852429f033";
 
 export const P4_ENVIRONMENT = Object.freeze({
   generatedAt: P4_TIMESTAMP,

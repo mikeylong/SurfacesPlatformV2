@@ -36,6 +36,8 @@ fixtures/p0/
     composite-extra-subvalue.source.fixture.json
     composite-incompatible-subvalue.source.fixture.json
     duplicate-component-id.source.fixture.json
+    implementation-token-child.extract.json
+    implementation-token-child.catalog.json
     missing-provenance.extract.json
     hash-mismatch.evidence.json
   valid.surface-ir.json
@@ -103,6 +105,8 @@ Compile mutation coverage is intentionally limited to duplicate component ids th
 | `mutations/composite-extra-subvalue.source.fixture.json` | `extract` | `source-mutation` | `TOKEN_COMPOSITE_INVALID` |
 | `mutations/composite-incompatible-subvalue.source.fixture.json` | `extract` | `source-mutation` | `TOKEN_COMPOSITE_INVALID` |
 | `mutations/duplicate-component-id.source.fixture.json` | `compile` | `source-mutation` | `CATALOG_DUPLICATE_ID` |
+| `mutations/implementation-token-child.extract.json` | `validate` | `artifact-mutation` | `TOKEN_IMPLEMENTATION_METADATA_FORBIDDEN` |
+| `mutations/implementation-token-child.catalog.json` | `validate` | `artifact-mutation` | `TOKEN_IMPLEMENTATION_METADATA_FORBIDDEN` |
 | `mutations/missing-provenance.extract.json` | `compile` | `artifact-mutation` | `PROVENANCE_MISSING` |
 | `mutations/hash-mismatch.evidence.json` | `validate` | `artifact-mutation` | `ARTIFACT_HASH_MISMATCH` |
 
