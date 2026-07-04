@@ -116,6 +116,25 @@ expired review metadata and its exception lifecycle. It is planning-only; the
 proof authority remains the source-conformance and designer-workflow-trace
 evidence files.
 
+The guided product-designer MVP readiness synthesis is captured in
+[Synthetic Guided MVP Readiness Readout](design-partner-testing/synthetic-guided-mvp-readiness.md).
+It records the synthetic archetype decision that the current evidence-backed
+Button workflow is ready only for a revised, moderated designer walkthrough,
+not self-serve use, implementation-pilot readiness, production adoption, or
+customer validation.
+
+The first synthetic moderated group walkthrough is captured in
+[Synthetic Moderated Product-Designer Walkthrough](design-partner-testing/synthetic-moderated-product-designer-walkthrough.md).
+It uses a Nielsen Norman Group-style moderator persona and one representative
+from each company archetype. The session remained synthetic and non-proof, and
+its scorecard requires revisions before product-designer use.
+
+The revised Button retest stimulus is captured in
+[Button Workflow Workbench](design-partner-testing/button-workflow-workbench.md).
+It is a derived, docs-only inspection surface for translating repo-owned Button
+evidence into product-designer workflow language. It is not proof authority,
+product behavior, live workflow, customer validation, or production support.
+
 ## Evidence-Backed Governance Loop
 Each session should use the same loop:
 
@@ -227,6 +246,7 @@ The minimum Wave 1 session output is:
   future target request, out of scope, or no action.
 
 ## Templates
+- [Button Workflow Workbench](design-partner-testing/button-workflow-workbench.md)
 - [Wave 1 Launch Checklist](design-partner-testing/wave-1-launch-checklist.md)
 - [Session Guide](design-partner-testing/session-guide.md)
 - [Results Capture](design-partner-testing/results-capture.md)
@@ -279,6 +299,9 @@ Wave 1 decision rule:
 ## Non-Goals
 - No new proof authority, command, schema, fixture, diagnostic, generated artifact, evidence path, demo, CI gate, or implemented phase claim.
 - No edits to `schemas/`, `fixtures/`, `artifacts/`, `demo/`, `src/`, `scripts/`, or `test/` for this program documentation.
+- Docs-only verification applies only to this design-partner testing package. If
+  it is committed with schema, fixture, source, generated artifact, source code,
+  or test changes, those changes still require their relevant proof gates.
 - No raw partner source material, screenshots, recordings, transcripts, design files, component names, customer data, credentials, or proprietary workflow details in this repo.
 - No self-serve product trial, unattended partner evaluation, or partner-run source validation.
 - No live ingestion of partner design systems.

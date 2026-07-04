@@ -8,6 +8,18 @@ Subordinate to [VISION.md](VISION.md), this plan tracks the mechanical proof con
 
 Cross-cutting product and value documentation lives in [Product Portfolio Boundaries](plans/product-portfolio-boundaries.md), [SurfaceOps Product Brief](plans/surfaceops-product-brief.md), [SurfaceOps UI Decisions And Review Criteria](plans/surfaceops-ui-decisions-review-criteria.md), [Product Designer Workflow](plans/product-designer-workflow.md), [Product Designer Workflow Trace](plans/product-designer-workflow-trace.md), and [Usability And Value Evidence Plan](plans/usability-value-evidence.md). Those files are subordinate to `VISION.md` and must not redefine product authority, roadmap sequence, or implemented proof status.
 
+[Design-System Readiness Plan](plans/design-system-readiness.md) records the
+planning-only checklist for testing or supporting additional agent-friendly
+design-system candidates such as broader Spectrum slices or Astryx. It does not
+create implementation support, a proof command, schemas, fixtures, artifacts,
+evidence, CI gates, or product adoption claims.
+
+[SurfaceOps Kanban Static Proof Shape](plans/surfaceops-kanban-static.md)
+records the planned target-specific proof shape for projecting SurfaceOps
+evidence into inert `kanban.cards` board-ready records. It does not create
+implemented support, live SurfaceOps, live board sync, schemas, fixtures,
+artifacts, evidence, CI gates, or product adoption claims.
+
 Any implementation or roadmap-status claim should cite the phase proof command, evidence path, evidence `status`, promotion status, and relevant CI gate. Generated demos may help present the claim, but demos are not proof authority.
 
 ## P0 Focus

@@ -8,8 +8,8 @@ This file is not proof authority. It summarizes what each named surface may own,
 ## Canonical Names And Packaging Defaults
 - Surfaces Platform is the contract system. The repository name may be `SurfacesPlatformV2`, but prose should use "Surfaces Platform" unless referring to the repo.
 - `surfaces.systems` and `surfaces.dev` are domain-style product and documentation surfaces. They explain and guide; they do not prove behavior.
-- SurfaceOps is the review-product direction. `surfaceops.ai` may become product packaging for that direction, but current proof is limited to deterministic P4 artifacts.
-- `kanban.cards` should remain a standalone reusable board and collaboration core by default. SurfaceOps-specific governance, evidence refs, review queues, promotion semantics, and decision ownership should layer on top. White-labeling `kanban.cards` as SurfaceOps remains a fallback only if standalone `kanban.cards` is intentionally deprioritized.
+- SurfaceOps is the standalone review-product direction. `surfaceops.ai` may become product packaging for that direction, but current proof is limited to deterministic P4 artifacts.
+- `kanban.cards` should remain a standalone upstream collaboration-board substrate by default. SurfaceOps-specific governance, evidence refs, review queues, promotion semantics, and decision ownership should stay in SurfaceOps and flow to `kanban.cards` only through a SurfaceOps-owned adjacent adapter/projection layer. White-labeling `kanban.cards` as SurfaceOps remains a fallback only if standalone `kanban.cards` is intentionally deprioritized.
 - JudgmentKit is the evaluator direction. JudgmentKit MCP or connector invocation is a possible future live integration path, not something invoked by the current P4 proof.
 - A2UI is a possible downstream projection, export, or conformance target for a future A2UI-specific P5 proof. The implemented `surfaces-protocol-static` and `surfaces-native-static` P5 slices do not implement A2UI.
 - [Curated design-partner testing](design-partner-testing.md) material is a subordinate research and planning surface only. It can organize partner-facing tasks and qualitative feedback around evidence-backed demos, but it does not prove behavior or replace phase evidence.
@@ -57,20 +57,20 @@ This file is not proof authority. It summarizes what each named surface may own,
 - Future proof required before claim: a docs site or package needs explicit versioned artifact links, overclaim guards, generated or reviewed examples, and update criteria tied to passing evidence.
 
 ### SurfaceOps
-- Owns: operational review semantics for queues and human decisions after an explicit proof boundary exists; future `surfaceops.ai` product packaging may present those semantics.
+- Owns: operational review semantics for queues and human decisions after an explicit proof boundary exists; future `surfaceops.ai` product packaging may present those semantics. SurfaceOps also owns any adjacent adapter/projection layer that maps accepted evidence into board-ready records.
 - Consumes: review-required rows, P3 review queue evidence, P4 decision fixtures, accepted evidence refs, and reviewer provenance.
 - Emits: currently, deterministic `surfaceops-decision-ledger.json` rows inside the P4 proof; later, a live product may emit persistent decisions only after its own proof.
 - Current proof status: P4 implements `surfaceops-decision-ledger.v0` as deterministic evidence, not a live console or durable review database.
-- Must not do: invent catalog policy, mutate upstream artifacts, execute work orders, persist live decisions, or authorize protocol execution without a later proof.
-- Future proof required before claim: live SurfaceOps needs schemas, fixtures, diagnostics, persistence rules, command/API boundaries, audit evidence, review workflows, and proof gates.
+- Must not do: invent catalog policy, mutate upstream artifacts, execute work orders, persist live decisions, live-sync board state, or authorize protocol execution without a later proof.
+- Future proof required before claim: live SurfaceOps needs schemas, fixtures, diagnostics, persistence rules, command/API boundaries, audit evidence, review workflows, and proof gates. The first board-facing proof should be static and inert, such as `surfaceops-kanban-static`, before any live sync claim.
 
 ### kanban.cards
-- Owns: no current Surfaces Platform proof authority; the preferred architecture treats it as a reusable board and human/agent collaboration core.
-- Consumes: nothing in the current proof contract; a future card/workflow surface could consume review queues, decision ledgers, work-order refs, and evidence after a target-specific proof.
-- Emits: nothing in the current proof contract; future outputs would need to be bounded as inert card records, workflow state, or review artifacts by a separate proof.
-- Current proof status: standalone product or repo direction only. The preferred packaging keeps `kanban.cards` upstream of SurfaceOps-specific governance, with white-labeling as a fallback if standalone `kanban.cards` is intentionally deprioritized.
-- Must not do: masquerade as proof authority, execute work orders, route review, persist SurfaceOps decisions, create catalog policy, or claim proof status from unrelated artifacts.
-- Future proof required before claim: introduce product boundaries, schemas, fixtures, diagnostics, command or API contract, artifact/report/evidence paths, persistence semantics, SurfaceOps layering rules, and explicit non-goals.
+- Owns: no current Surfaces Platform proof authority; the preferred architecture treats it as a standalone upstream collaboration-board substrate.
+- Consumes: nothing in the current proof contract; a future board-facing target could consume SurfaceOps-owned board-ready records that reference review queues, decision ledgers, work-order refs, and evidence after a target-specific proof.
+- Emits: nothing in the current proof contract; future outputs would need to be bounded as inert board records or workflow state by a separate proof, and live sync would need an additional later proof.
+- Current proof status: standalone product or repo direction only. The preferred packaging keeps `kanban.cards` upstream of SurfaceOps-specific governance, with SurfaceOps owning the adjacent adapter/projection layer and white-labeling as a fallback if standalone `kanban.cards` is intentionally deprioritized.
+- Must not do: masquerade as proof authority, execute work orders, route review, persist SurfaceOps decisions, create catalog policy, live-sync review state, or claim proof status from unrelated artifacts.
+- Future proof required before claim: introduce product boundaries, schemas, fixtures, diagnostics, command or API contract, artifact/report/evidence paths, SurfaceOps-owned projection rules, persistence semantics, live-sync non-goals, and explicit non-goals. The first proofable target should be static and inert, such as `surfaceops-kanban-static`.
 
 ### JudgmentKit And JudgmentKit MCP
 - Owns: no live execution ownership in the current repo; the current proof owns only a JudgmentKit-shaped evaluation artifact. JudgmentKit is the evaluator direction, while JudgmentKit MCP is a possible future invocation transport.

@@ -5,7 +5,7 @@ For product vision, authority taxonomy, roadmap sequence, surface roles, and age
 These subplans define the Surfaces Platform proof contracts and their materialized schemas, fixtures, artifacts, demos, scripts, and tests. P0 specifies the first executable catalog proof, P1 specifies the first runtime projection proof, P2 specifies bounded real design-system ingestion, P3 specifies inert agent orchestration proof, P4 specifies review and judgment proof without turning derived consumers into new authority, and P5 specifies the bounded `surfaces-protocol-static` protocol-envelope proof plus the sibling `surfaces-native-static` native-packet proof. The source-conformance subplan specifies a target-specific declared-source conformance proof over accepted P2 evidence. Product Designer Workflow Trace specifies the implemented non-numbered trace target over accepted P2, source-conformance, P3, P4, protocol, and native evidence. Future targets remain planned until they add their own complete proof shape and passing evidence.
 
 ## Roadmap Status Snapshot
-The current implemented proof roadmap is P0-P5, where P5 means only the `surfaces-protocol-static` and `surfaces-native-static` proof-only slices. The repo also includes the declared-source conformance and designer-workflow-trace target proofs listed in [VISION.md](../VISION.md#current-roadmap-proof-snapshot). The canonical status snapshot lives in `VISION.md`, and the human-readable value map lives in [Usability And Value Evidence Plan](usability-value-evidence.md). Future P5 targets such as A2UI conformance, production APIs, SDKs, live protocol services, live native runtimes, live SurfaceOps, or live JudgmentKit remain planned until they add their own target-specific schema, fixture, diagnostics, command contract, report or artifact path, evidence path, demo boundary, CI gate, and passing evidence.
+The current implemented proof roadmap is P0-P5, where P5 means only the `surfaces-protocol-static` and `surfaces-native-static` proof-only slices. The repo also includes the declared-source conformance and designer-workflow-trace target proofs listed in [VISION.md](../VISION.md#current-roadmap-proof-snapshot). The canonical status snapshot lives in `VISION.md`, and the human-readable value map lives in [Usability And Value Evidence Plan](usability-value-evidence.md). Future P5 targets such as A2UI conformance, production APIs, SDKs, live protocol services, live native runtimes, live SurfaceOps, or live JudgmentKit remain planned until they add their own target-specific schema, fixture, diagnostics, command contract, report or artifact path, evidence path, demo boundary, CI gate, and passing evidence. The future `surfaceops-kanban-static` planning target is the reserved target-specific proof shape for a SurfaceOps/kanban upstream-substrate bridge; it remains planned until schemas, fixtures, diagnostics, command implementation, artifacts, report, evidence, demo boundary, CI gate, and passing evidence exist.
 
 ## Cross-Cutting Documentation
 These documents are subordinate to `VISION.md` and support the phase plans without redefining authority or proof status.
@@ -17,8 +17,28 @@ These documents are subordinate to `VISION.md` and support the phase plans witho
 5. [Product Designer Workflow Trace](product-designer-workflow-trace.md)
 6. [Usability And Value Evidence Plan](usability-value-evidence.md)
 7. [Curated Design-Partner Testing Program](design-partner-testing.md)
+8. [Design-System Readiness Plan](design-system-readiness.md)
+9. [Surfaces Systems Category Page Draft](surfaces-systems-category-page.md)
+10. [SurfaceOps Kanban Static Proof Shape](surfaceops-kanban-static.md)
 
 The curated design-partner testing program and templates under `plans/design-partner-testing/` are also subordinate to `VISION.md`, `PLAN.md`, and passing phase evidence. Treat them as non-proof research and planning surfaces for partner task design, synthetic dry runs, feedback capture, scorecards, and synthesis. They may point testers to evidence-backed demos for inspection, but they must not create implementation claims, proof status, catalog authority, or demo authority.
+
+The design-system readiness plan is also subordinate planning material. It can
+shape future Spectrum or Astryx proof candidates, but it does not create support
+or proof authority without target-specific schemas, fixtures, diagnostics,
+commands, artifacts or reports, evidence, CI gates, and passing evidence.
+
+The surfaces.systems category page draft is a subordinate product-surface draft
+for human positioning only. It does not create proof authority, customer
+validation, production readiness, pilot readiness, live product behavior, or
+support for unproved targets.
+
+The SurfaceOps kanban static proof shape is a future planning target for the
+SurfaceOps/`kanban.cards` upstream-substrate bridge. It does not create
+implemented support, live SurfaceOps, live board sync, proof authority, or
+handoff authority until target-specific schemas, fixtures, diagnostics, command
+implementation, artifacts or reports, evidence, CI gates, and passing evidence
+exist.
 
 ## P0 Dependency Order
 1. [Runtime Catalog v0](runtime-catalog-v0.md)
