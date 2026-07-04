@@ -54,6 +54,14 @@ resolve product authority; it preserves the actual conflicting Button source
 refs, source-precedence policy ref, review-policy ref, owner, rationale, expiry,
 and evidence path for authority-layer follow-up.
 
+Declared forked Button variant exceptions are routed to review with
+`SOURCE_FORKED_VARIANT_REVIEW_REQUIRED`. The queue item remains non-executable
+and preserves the primary Button source, forked variant source, exception-policy
+ref, review-policy ref, owner, rationale, expiry, and evidence path.
+Undocumented fork drift is blocked with `SOURCE_EXCEPTION_UNDECLARED` and does
+not create a review queue item. Forked source refs without exception metadata
+are blocked with `SOURCE_EXCEPTION_METADATA_MISSING`.
+
 Expired or non-canonical review expiry metadata is blocked with
 `SOURCE_REVIEW_EXPIRED`. The expired-review fixture is invalid coverage; it
 keeps stale exceptions from becoming unattended generated UI.
@@ -75,5 +83,8 @@ The final evidence must validate its own ref closure. Schema, source, fixture, u
 - Button source precedence is allowed only when the declared source-precedence
   policy selects the primary Button source; unresolved conflicts block, and
   ambiguous mappings route to review.
+- Declared forked Button variant exceptions route to review only when the
+  forked source, exception-policy source ref, review-policy source ref, owner,
+  rationale, and expiry metadata are present; undocumented fork drift blocks.
 - `artifacts/source-conformance/evidence.json` records `status: "pass"` and `promotionStatus: "review_required"` for the current fixture set.
 - No source-conformance artifact claims customer validation, production readiness, pilot readiness, self-serve support, live integration, API/SDK support, A2UI support, native runtime support, live SurfaceOps, live JudgmentKit, or action execution.

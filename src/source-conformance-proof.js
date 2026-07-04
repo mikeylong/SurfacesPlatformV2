@@ -19,6 +19,7 @@ import {
   SC_CONSUMED_SCHEMA_FILES,
   SC_ENVIRONMENT,
   SC_EXPECTATION_ROWS,
+  SC_EXCEPTION_POLICY_SOURCE_REF,
   SC_FORBIDDEN_CLAIM_KEYS,
   SC_FIXTURE_ROOT,
   SC_GENERATED_ARTIFACTS,
@@ -45,6 +46,7 @@ import {
 
 const SCHEMA_FILE_NAME_PATTERN = /^[a-z0-9][a-z0-9-]*\.v[0-9]+\.schema\.json$/;
 const BUTTON_PRIMARY_SOURCE_REF = "declared-source://source-conformance/components/button.json#/";
+const BUTTON_FORKED_VARIANT_SOURCE_REF = "declared-source://source-conformance/components/button-forked-variant.json#/";
 const BUTTON_SUPPORTING_SOURCE_REFS = [
   "declared-source://source-conformance/components/button-acquired-a.json#/",
   "declared-source://source-conformance/components/button-acquired-b.json#/"
@@ -478,9 +480,9 @@ function buildAuthorityMap({ upstream }) {
         componentId: "Button",
         catalogRef: "catalog://p2/components/Button",
         declaredSourceRef: BUTTON_PRIMARY_SOURCE_REF,
-        additionalDeclaredSourceRefs: BUTTON_SUPPORTING_SOURCE_REFS,
+        additionalDeclaredSourceRefs: [...BUTTON_SUPPORTING_SOURCE_REFS, BUTTON_FORKED_VARIANT_SOURCE_REF],
         precedencePolicyRef: SC_SOURCE_PRECEDENCE_POLICY_SOURCE_REF,
-        conformanceRole: "primary-source-wins-when-explicit-precedence-policy-is-declared"
+        conformanceRole: "primary-source-wins-when-explicit-precedence-policy-is-declared; forked variants require exception-policy review"
       },
       {
         componentId: "InLineAlert",
@@ -506,6 +508,11 @@ function buildAuthorityMap({ upstream }) {
         policyId: "review-policy",
         sourceRef: "declared-source://source-conformance/governance/review-policy.json#/",
         conformanceRole: "preserves review-required rows without promotion"
+      },
+      {
+        policyId: "exception-policy",
+        sourceRef: SC_EXCEPTION_POLICY_SOURCE_REF,
+        conformanceRole: "routes declared forked Button variants to non-executable review and blocks undocumented fork drift"
       }
     ],
     nonAuthorityStatement: "This proof emits conformance evidence only. It does not create live ingestion, runtime, adapter, API, SDK, A2UI, SurfaceOps, JudgmentKit, or production behavior.",
@@ -536,6 +543,7 @@ function evaluateExpectations(fixtureRows, context) {
       jsonPointer: expectation.jsonPointer,
       componentId: fixture.componentId || null,
       authorityConflict: fixture.authorityConflict || null,
+      exception: fixture.exception || null,
       reviewQueueItemId: actual.reviewQueueItemId,
       review: actual.review || null,
       requiredSourceRefs: fixture.requiredSourceRefs || [],
@@ -569,6 +577,10 @@ function evaluateFixture(expectation, fixture, context) {
   if (context.primaryComponentSourceRoots.get(fixture.componentId) !== declaredSourceRootForRef(fixture.sourceRef)) {
     return invalidResult("SOURCE_COMPONENT_SOURCE_MISMATCH");
   }
+  const exceptionResult = evaluateException(fixture, context);
+  if (exceptionResult.result !== "valid") {
+    return exceptionResult;
+  }
   const authorityConflictResult = evaluateAuthorityConflict(fixture, context);
   if (authorityConflictResult.result !== "valid") {
     return authorityConflictResult;
@@ -592,7 +604,7 @@ function evaluateFixture(expectation, fixture, context) {
         }
       });
     }
-    const diagnosticCode = authorityConflictResult.reviewDiagnosticCode || "SOURCE_REVIEW_REQUIRED";
+    const diagnosticCode = authorityConflictResult.reviewDiagnosticCode || exceptionResult.reviewDiagnosticCode || "SOURCE_REVIEW_REQUIRED";
     return {
       result: "review_required",
       promotionStatus: "review_required",
@@ -606,6 +618,39 @@ function evaluateFixture(expectation, fixture, context) {
     };
   }
   return { result: "valid", promotionStatus: "allowed", diagnostics: [], reviewQueueItemId: null };
+}
+
+function evaluateException(fixture, context) {
+  const exception = fixture.exception;
+  const referencesForkedVariant = fixture.requiredSourceRefs.includes(BUTTON_FORKED_VARIANT_SOURCE_REF);
+  if (!exception && !referencesForkedVariant) return { result: "valid" };
+  if (!exception) return invalidResult("SOURCE_EXCEPTION_METADATA_MISSING");
+  const refs = [
+    exception.variantSourceRef,
+    exception.policyRef
+  ].filter((sourceRef) => sourceRef !== null && sourceRef !== undefined);
+  if (refs.some((sourceRef) => !isDeclaredSourceRef(sourceRef))) {
+    return invalidResult("DECLARED_SOURCE_REF_INVALID");
+  }
+  if (refs.some((sourceRef) => !context.declaredSourceRoots.has(declaredSourceRootForRef(sourceRef)))) {
+    return invalidResult("DECLARED_SOURCE_REF_UNDECLARED");
+  }
+  if (
+    fixture.componentId !== "Button" ||
+    exception.exceptionType !== "forked-button-variant" ||
+    exception.variantSourceRef !== BUTTON_FORKED_VARIANT_SOURCE_REF ||
+    exception.policyRef !== SC_EXCEPTION_POLICY_SOURCE_REF ||
+    exception.governanceState !== "declared-exception" ||
+    !fixture.requiredSourceRefs.includes(BUTTON_FORKED_VARIANT_SOURCE_REF) ||
+    !fixture.requiredSourceRefs.includes(SC_EXCEPTION_POLICY_SOURCE_REF) ||
+    !isComponentSourceRefForFixture(fixture, context, exception.variantSourceRef)
+  ) {
+    return invalidResult("SOURCE_EXCEPTION_UNDECLARED");
+  }
+  if (fixture.review?.required !== true) {
+    return invalidResult("SOURCE_REVIEW_OWNER_MISSING");
+  }
+  return { result: "valid", reviewDiagnosticCode: "SOURCE_FORKED_VARIANT_REVIEW_REQUIRED" };
 }
 
 function evaluateAuthorityConflict(fixture, context) {
@@ -891,6 +936,7 @@ function stripResult(row) {
     jsonPointer: row.jsonPointer,
     componentId: row.componentId,
     authorityConflict: row.authorityConflict || null,
+    exception: row.exception || null,
     reviewQueueItemId: row.reviewQueueItemId,
     review: row.review || null,
     requiredSourceRefs: row.requiredSourceRefs,

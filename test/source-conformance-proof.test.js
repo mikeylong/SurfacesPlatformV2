@@ -8,6 +8,7 @@ import test from "node:test";
 import { canonicalJson } from "../src/p0.js";
 import {
   SC_FORBIDDEN_CLAIM_KEYS,
+  SC_EXCEPTION_POLICY_SOURCE_REF,
   SC_REVIEW_POLICY_SOURCE_REF,
   SC_SOURCE_PRECEDENCE_POLICY_SOURCE_REF
 } from "../src/source-conformance-contract.js";
@@ -24,7 +25,7 @@ test("source conformance proof emits passing evidence with final self-hash", asy
 
   assert.equal(evidence.status, "pass");
   assert.equal(evidence.promotionStatus, "review_required");
-  assert.equal(evidence.validationResults.length, 18);
+  assert.equal(evidence.validationResults.length, 21);
   assert.deepEqual(evidence.boundaryRefs.map((entry) => entry.path), [
     "artifacts/p2/evidence.json",
     "artifacts/p2/governed-catalog.json"
@@ -57,20 +58,29 @@ test("source conformance proof preserves review-required rows without execution"
   const validate = ajv.compile(schema);
 
   assert.equal(reviewQueue.promotionStatus, "review_required");
-  assert.equal(reviewQueue.queueItems.length, 2);
+  assert.equal(reviewQueue.queueItems.length, 3);
   assert.equal(reviewQueue.queueItems[0].executable, false);
   assert.equal(reviewQueue.queueItems[0].owner, "design-systems-governance");
   assert.equal(reviewQueue.queueItems[0].rationale, "Brand exception changes action emphasis and requires source-owner review.");
   assert.equal(reviewQueue.queueItems[0].expiresAt, "1970-01-31T00:00:00.000Z");
   assert.equal(reviewQueue.queueItems[0].requiredSourceRefs.includes(SC_REVIEW_POLICY_SOURCE_REF), true);
   assert.equal(reviewQueue.queueItems[1].executable, false);
-  assert.equal(reviewQueue.queueItems[1].reviewQueueItemId, "source-review-source-mapping-ambiguous");
+  assert.equal(reviewQueue.queueItems[1].reviewQueueItemId, "source-review-button-forked-exception");
   assert.equal(reviewQueue.queueItems[1].owner, "design-systems-governance");
-  assert.equal(reviewQueue.queueItems[1].rationale, "Button source mapping is ambiguous across declared sources and requires source-owner review.");
+  assert.equal(reviewQueue.queueItems[1].rationale, "Forked Button variant requires declared exception policy and source-owner review.");
   assert.equal(reviewQueue.queueItems[1].expiresAt, "1970-01-31T00:00:00.000Z");
   assert.equal(reviewQueue.queueItems[1].requiredSourceRefs.includes(SC_REVIEW_POLICY_SOURCE_REF), true);
-  assert.equal(reviewQueue.queueItems[1].requiredSourceRefs.includes(SC_SOURCE_PRECEDENCE_POLICY_SOURCE_REF), true);
+  assert.equal(reviewQueue.queueItems[1].requiredSourceRefs.includes(SC_EXCEPTION_POLICY_SOURCE_REF), true);
+  assert.equal(reviewQueue.queueItems[1].requiredSourceRefs.includes("declared-source://source-conformance/components/button-forked-variant.json#/"), true);
+  assert.equal(reviewQueue.queueItems[2].executable, false);
+  assert.equal(reviewQueue.queueItems[2].reviewQueueItemId, "source-review-source-mapping-ambiguous");
+  assert.equal(reviewQueue.queueItems[2].owner, "design-systems-governance");
+  assert.equal(reviewQueue.queueItems[2].rationale, "Button source mapping is ambiguous across declared sources and requires source-owner review.");
+  assert.equal(reviewQueue.queueItems[2].expiresAt, "1970-01-31T00:00:00.000Z");
+  assert.equal(reviewQueue.queueItems[2].requiredSourceRefs.includes(SC_REVIEW_POLICY_SOURCE_REF), true);
+  assert.equal(reviewQueue.queueItems[2].requiredSourceRefs.includes(SC_SOURCE_PRECEDENCE_POLICY_SOURCE_REF), true);
   assert.deepEqual(reviewQueue.diagnostics.map((diagnostic) => diagnostic.code), [
+    "SOURCE_FORKED_VARIANT_REVIEW_REQUIRED",
     "SOURCE_MAPPING_AMBIGUOUS",
     "SOURCE_REVIEW_REQUIRED"
   ]);
@@ -81,6 +91,20 @@ test("source conformance proof preserves review-required rows without execution"
   assert.equal(reviewRow.reviewQueueItemId, "source-review-brand-exception");
   assert.deepEqual(reviewRow.diagnosticCodes, ["SOURCE_REVIEW_REQUIRED"]);
   assert.equal(reviewRow.requiredSourceRefs.includes(SC_REVIEW_POLICY_SOURCE_REF), true);
+  const forkedRow = evidence.validationResults.find((row) =>
+    row.fixturePath === "fixtures/source-conformance/review/button-forked-exception.source-conformance.json"
+  );
+  assert.equal(forkedRow.actualResult, "review_required");
+  assert.equal(forkedRow.reviewQueueItemId, "source-review-button-forked-exception");
+  assert.deepEqual(forkedRow.diagnosticCodes, ["SOURCE_FORKED_VARIANT_REVIEW_REQUIRED"]);
+  assert.equal(forkedRow.requiredSourceRefs.includes(SC_EXCEPTION_POLICY_SOURCE_REF), true);
+  assert.equal(forkedRow.requiredSourceRefs.includes(SC_REVIEW_POLICY_SOURCE_REF), true);
+  assert.deepEqual(forkedRow.exception, {
+    exceptionType: "forked-button-variant",
+    governanceState: "declared-exception",
+    policyRef: SC_EXCEPTION_POLICY_SOURCE_REF,
+    variantSourceRef: "declared-source://source-conformance/components/button-forked-variant.json#/"
+  });
   const ambiguousRow = evidence.validationResults.find((row) =>
     row.fixturePath === "fixtures/source-conformance/review/source-mapping-ambiguous.source-conformance.json"
   );
@@ -112,6 +136,92 @@ test("source conformance proof preserves review-required rows without execution"
       requiredSourceRefs: item.requiredSourceRefs.filter((ref) => ref !== SC_REVIEW_POLICY_SOURCE_REF)
     }))
   }), false);
+});
+
+test("source conformance proof routes declared fork exceptions and blocks undocumented fork drift", async () => {
+  await runSourceConformanceProof();
+  const evidence = await readJson("artifacts/source-conformance/evidence.json");
+  const authorityMap = await readJson("artifacts/source-conformance/source-authority-map.json");
+
+  const forkedReviewRow = evidence.validationResults.find((row) =>
+    row.fixturePath === "fixtures/source-conformance/review/button-forked-exception.source-conformance.json"
+  );
+  assert.equal(forkedReviewRow.actualResult, "review_required");
+  assert.equal(forkedReviewRow.promotionStatus, "review_required");
+  assert.deepEqual(forkedReviewRow.diagnosticCodes, ["SOURCE_FORKED_VARIANT_REVIEW_REQUIRED"]);
+  assert.equal(forkedReviewRow.exception.policyRef, SC_EXCEPTION_POLICY_SOURCE_REF);
+  assert.equal(forkedReviewRow.requiredSourceRefs.includes("declared-source://source-conformance/components/button-forked-variant.json#/"), true);
+  assert.equal(forkedReviewRow.requiredSourceRefs.includes(SC_EXCEPTION_POLICY_SOURCE_REF), true);
+  assert.equal(forkedReviewRow.requiredSourceRefs.includes(SC_REVIEW_POLICY_SOURCE_REF), true);
+
+  const undocumentedDriftRow = evidence.validationResults.find((row) =>
+    row.fixturePath === "fixtures/source-conformance/invalid/button-undocumented-fork-drift.source-conformance.json"
+  );
+  assert.equal(undocumentedDriftRow.actualResult, "invalid");
+  assert.equal(undocumentedDriftRow.promotionStatus, "blocked");
+  assert.deepEqual(undocumentedDriftRow.diagnosticCodes, ["SOURCE_EXCEPTION_UNDECLARED"]);
+  assert.equal(undocumentedDriftRow.reviewQueueItemId, null);
+
+  const missingExceptionRow = evidence.validationResults.find((row) =>
+    row.fixturePath === "fixtures/source-conformance/invalid/button-forked-exception-missing.source-conformance.json"
+  );
+  assert.equal(missingExceptionRow.actualResult, "invalid");
+  assert.equal(missingExceptionRow.promotionStatus, "blocked");
+  assert.deepEqual(missingExceptionRow.diagnosticCodes, ["SOURCE_EXCEPTION_METADATA_MISSING"]);
+  assert.equal(missingExceptionRow.exception, null);
+  assert.equal(missingExceptionRow.requiredSourceRefs.includes("declared-source://source-conformance/components/button-forked-variant.json#/"), true);
+  assert.equal(missingExceptionRow.reviewQueueItemId, null);
+
+  const buttonAuthority = authorityMap.componentAuthority.find((row) => row.componentId === "Button");
+  assert.equal(buttonAuthority.additionalDeclaredSourceRefs.includes("declared-source://source-conformance/components/button-forked-variant.json#/"), true);
+  const exceptionPolicy = authorityMap.policyAuthority.find((row) => row.policyId === "exception-policy");
+  assert.equal(exceptionPolicy.sourceRef, SC_EXCEPTION_POLICY_SOURCE_REF);
+
+  const fixturePath = path.join(root, "fixtures/source-conformance/review/button-forked-exception.source-conformance.json");
+  await withJsonFileMutation(fixturePath, (fixture) => {
+    fixture.requiredSourceRefs = fixture.requiredSourceRefs.filter((sourceRef) =>
+      sourceRef !== SC_EXCEPTION_POLICY_SOURCE_REF
+    );
+  }, async () => {
+    const result = await runSourceConformanceProofExpectFailure();
+    assert.equal(result.code, 1);
+    assert.match(result.stderr, /SOURCE_EXCEPTION_UNDECLARED/);
+  });
+
+  await withJsonFileMutation(fixturePath, (fixture) => {
+    fixture.exception.policyRef = null;
+  }, async () => {
+    const result = await runSourceConformanceProofExpectFailure();
+    assert.equal(result.code, 1);
+    assert.match(result.stderr, /SOURCE_EXCEPTION_UNDECLARED/);
+  });
+
+  await withJsonFileMutation(fixturePath, (fixture) => {
+    fixture.exception.variantSourceRef = "declared-source://source-conformance/components/button-acquired-a.json#/";
+  }, async () => {
+    const result = await runSourceConformanceProofExpectFailure();
+    assert.equal(result.code, 1);
+    assert.match(result.stderr, /SOURCE_EXCEPTION_UNDECLARED/);
+  });
+
+  await withJsonFileMutation(fixturePath, (fixture) => {
+    fixture.exception = null;
+  }, async () => {
+    const result = await runSourceConformanceProofExpectFailure();
+    assert.equal(result.code, 1);
+    assert.match(result.stderr, /SOURCE_EXCEPTION_METADATA_MISSING/);
+  });
+
+  await withJsonFileMutation(fixturePath, (fixture) => {
+    fixture.review.required = false;
+    fixture.review.owner = null;
+    fixture.review.rationale = null;
+    fixture.review.expiresAt = null;
+  }, async () => {
+    const result = await runSourceConformanceProofExpectFailure();
+    assert.equal(result.code, 1);
+    assert.match(result.stderr, /SOURCE_REVIEW_OWNER_MISSING/);
+  });
 });
 
 test("source conformance proof blocks expired review metadata", async () => {
@@ -414,7 +524,8 @@ test("source conformance proof accepts explicit Button source precedence", async
   assert.equal(buttonAuthority.declaredSourceRef, "declared-source://source-conformance/components/button.json#/");
   assert.deepEqual(buttonAuthority.additionalDeclaredSourceRefs, [
     "declared-source://source-conformance/components/button-acquired-a.json#/",
-    "declared-source://source-conformance/components/button-acquired-b.json#/"
+    "declared-source://source-conformance/components/button-acquired-b.json#/",
+    "declared-source://source-conformance/components/button-forked-variant.json#/"
   ]);
   assert.equal(buttonAuthority.precedencePolicyRef, SC_SOURCE_PRECEDENCE_POLICY_SOURCE_REF);
 
