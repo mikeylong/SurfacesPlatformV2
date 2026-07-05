@@ -4,6 +4,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { promisify } from "node:util";
 import test from "node:test";
+import Ajv2020 from "ajv/dist/2020.js";
 import { canonicalJson } from "../src/p0.js";
 import { p3Internals } from "../src/p3-proof.js";
 import { surfaceopsKanbanStaticInternals } from "../src/surfaceops-kanban-static-proof.js";
@@ -62,6 +63,14 @@ test("SurfaceOps kanban projection maps P3 review work to a static designer boar
   assert.equal(projection.cards[0].decisionStatus, "approved");
   assert.equal(projection.cards[0].decisionPromotionStatus, "allowed");
   assert.equal(projection.cards[0].nonExecutable, true);
+  assert.deepEqual(projection.cards[0].source.evidenceObligations, [
+    "review-queue-row",
+    "non-executable-status",
+    "source-fixture-ref"
+  ]);
+  assert.equal(projection.cards[0].nextActionOwner.ownerRole, "surface-ops-reviewer");
+  assert.equal(projection.cards[0].nextActionOwner.reviewerId, "surfaceops-reviewer");
+  assert.deepEqual(projection.cards[0].nextActionOwner.selectedAgentIds, ["contract-architect"]);
   assert.equal(projection.authority.canOverrideAuthority, false);
   assert.equal(projection.authority.canExecuteWork, false);
   assert.equal(projection.authority.substrateAuthority, "kanban.cards constrains presentation only.");
@@ -81,11 +90,21 @@ test("SurfaceOps kanban projection maps P3 review work to a static designer boar
   assert.match(viewModel.promotionStatus.explanation, /card is allowed/);
   assert.equal(viewModel.designerSummary.decision, "allowed");
   assert.match(viewModel.designerSummary.sourceMaterial, /accepted P3 review-queue evidence/);
+  assert.ok(viewModel.designerSummary.governedBy.designSystemAuthorityRefs.some((ref) => ref.path === "artifacts/p2/governed-catalog.json"));
+  assert.ok(viewModel.designerSummary.evidenceRefs.length > 0);
   assert.match(viewModel.designerSummary.decisionRationale, /structurally valid/);
   assert.deepEqual(viewModel.designerSummary.staticBoardRecordsAllowed, ["review-required-work"]);
+  assert.equal(viewModel.designerSummary.qualityFindings[0].blocking, false);
+  assert.equal(viewModel.designerSummary.qualityFindings[0].authority, "evaluation-only");
   assert.equal(Object.hasOwn(viewModel.designerSummary, "generatedUiAllowed"), false);
   assert.deepEqual(viewModel.promotionStatus.boardCards.allowed, ["card.review.review-required-work"]);
   assert.match(viewModel.boardSummary.cards[0].whyThisLane, /Committed P4 decision/);
+  assert.deepEqual(viewModel.boardSummary.cards[0].sourceRefs, ["fixture://p3/review/review-required-work#/reviewPolicy"]);
+  assert.equal(viewModel.boardSummary.cards[0].decisionRef.decisionId, "decision.approve-reviewed-work");
+  assert.ok(viewModel.boardSummary.cards[0].evidenceRefs.length > 0);
+  assert.equal(viewModel.authorityActionQueue[0].nextActionOwner.ownerRole, "surface-ops-reviewer");
+  assert.equal(viewModel.authorityActionQueue[0].decisionRef.decisionId, "decision.approve-reviewed-work");
+  assert.ok(viewModel.authorityActionQueue[0].evidenceRefs.length > 0);
   assert.match(viewModel.authorityActionQueue[0].reviewDecision, /evidence-backed annotation/);
   assert.equal(viewModel.handoffEligibility.staticBoardPacket, true);
   assert.match(viewModel.handoffEligibility.reason, /static packets remain inert/);
@@ -201,6 +220,32 @@ test("SurfaceOps kanban artifact schemas pin schema ids", async () => {
 
   assert.equal(selectionSchema.properties.schemaId.const, "surfaceops-kanban-target-selection.v0");
   assert.equal(evidenceSchema.properties.schemaId.const, "surfaceops-kanban-evidence.v0");
+});
+
+test("SurfaceOps kanban schemas reject live execution and hidden review state", async () => {
+  await runProof();
+  const ajv = new Ajv2020({ allErrors: true, strict: false, validateFormats: false });
+  const packetSchema = await readJson("schemas/surfaceops-kanban-board-packet.v0.schema.json");
+  const projectionSchema = await readJson("schemas/surfaceops-kanban-board-projection.v0.schema.json");
+  const validatePacket = ajv.compile(packetSchema);
+  const validateProjection = ajv.compile(projectionSchema);
+  const packet = await readJson("artifacts/surfaceops-kanban-static/surfaceops-kanban-board-packet.review-work.json");
+  const projection = await readJson("artifacts/surfaceops-kanban-static/surfaceops-kanban-board-projection.json");
+
+  assert.equal(validatePacket(packet), true);
+  const executablePacket = structuredClone(packet);
+  executablePacket.execution.authorized = true;
+  executablePacket.execution.networkCalls = ["https://kanban.cards/write"];
+  assert.equal(validatePacket(executablePacket), false);
+
+  assert.equal(validateProjection(projection), true);
+  const hiddenProjection = structuredClone(projection);
+  hiddenProjection.cards[0].hiddenReviewState = { status: "approved" };
+  assert.equal(validateProjection(hiddenProjection), false);
+
+  const missingEvidenceProjection = structuredClone(projection);
+  missingEvidenceProjection.cards[0].evidenceRefs = [];
+  assert.equal(validateProjection(missingEvidenceProjection), false);
 });
 
 test("SurfaceOps kanban evidence integrity detects schema, fixture, upstream, substrate, artifact, and self-hash tampering", async () => {

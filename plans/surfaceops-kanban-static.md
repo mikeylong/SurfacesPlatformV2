@@ -78,7 +78,7 @@ The designer view model translates those refs into the SurfaceOps product
 language a reviewer or product designer needs before inspecting raw JSON:
 scenario, task scope, proof status, promotion status, allowed outcomes,
 review-required outcomes, blocked outcomes, authority refs, decision refs,
-diagnostic summaries, handoff eligibility, and audit-packet inputs. Component
+diagnostic summaries, handoff eligibility, and static evidence-packet inputs. Component
 scope is intentionally empty until accepted upstream review artifacts carry
 component scope. It remains
 an index over accepted evidence and must not become proof authority.
@@ -266,6 +266,7 @@ The implementation is accepted when these tests pass.
 - No live SurfaceOps console, operational store, review workflow, assignment workflow, or durable decision persistence.
 - No live JudgmentKit MCP, connector, hosted evaluation, or evaluator execution.
 - No work-order execution, agent execution, command execution, shell execution, callbacks, tools, connectors, network calls, or secret access.
+- No audit log, audit replay, live handoff, or operational board history.
 - No production adapters, public APIs, SDKs, hosted services, native bridges, live runtimes, or A2UI export or conformance.
 - No catalog policy changes, promotion-status changes, review-decision overrides, evidence rewrites, hidden review state, or proof-authority transfer to `kanban.cards`.
 - No claim that `kanban.cards` is implemented as SurfaceOps or that SurfaceOps is implemented as `kanban.cards`.

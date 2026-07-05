@@ -130,29 +130,29 @@ export const SK_FORBIDDEN_CLAIM_KEYS = [
 ];
 
 export const SK_DIAGNOSTIC_ROWS = [
-  diagnosticRow("SURFACEOPS_KANBAN_UPSTREAM_EVIDENCE_MISSING", "Required P3 or P4 upstream evidence or artifact input is missing.", "preflight", "mutations/missing-p3-evidence.surfaceops-kanban-preflight.json", "/upstreamRefs"),
-  diagnosticRow("SURFACEOPS_KANBAN_UPSTREAM_EVIDENCE_FAILED", "Required P3 or P4 upstream evidence is not passing.", "preflight", "mutations/failing-p3-evidence.surfaceops-kanban-preflight.json", "/upstreamRefs"),
-  diagnosticRow("SURFACEOPS_KANBAN_UPSTREAM_HASH_MISMATCH", "Upstream evidence or artifact hash does not match the accepted boundary.", "preflight", "mutations/p3-evidence-hash-mismatch.surfaceops-kanban-preflight.json", "/upstreamRefs"),
-  diagnosticRow("SURFACEOPS_KANBAN_SUBSTRATE_MISSING", "Kanban substrate manifest or contract input is missing.", "preflight", "mutations/missing-kanban-substrate.surfaceops-kanban-preflight.json", "/substrateRefs"),
-  diagnosticRow("SURFACEOPS_KANBAN_SUBSTRATE_HASH_MISMATCH", "Kanban substrate hash does not match the manifest or accepted boundary.", "preflight", "mutations/kanban-substrate-hash-mismatch.surfaceops-kanban-preflight.json", "/substrateRefs"),
-  diagnosticRow("SURFACEOPS_KANBAN_SUBSTRATE_INVALID", "Kanban substrate contract is malformed or unsupported.", "preflight", "mutations/malformed-kanban-substrate.surfaceops-kanban-preflight.json", "/substrateRefs"),
-  diagnosticRow("SURFACEOPS_KANBAN_SUBSTRATE_UNSUPPORTED", "Kanban substrate declares unsupported live or authority behavior.", "projection", "invalid/unsupported-substrate.surfaceops-kanban.json", "/claims"),
+  diagnosticRow("SURFACEOPS_KANBAN_UPSTREAM_EVIDENCE_MISSING", "Required upstream evidence is missing.", "preflight", "mutations/missing-p3-evidence.surfaceops-kanban-preflight.json", "/upstreamRefs"),
+  diagnosticRow("SURFACEOPS_KANBAN_UPSTREAM_EVIDENCE_FAILED", "Required upstream evidence is not passing.", "preflight", "mutations/failing-p3-evidence.surfaceops-kanban-preflight.json", "/status"),
+  diagnosticRow("SURFACEOPS_KANBAN_UPSTREAM_HASH_MISMATCH", "Upstream artifact hash does not match accepted evidence.", "preflight", "mutations/p3-evidence-hash-mismatch.surfaceops-kanban-preflight.json", "/artifacts"),
+  diagnosticRow("SURFACEOPS_KANBAN_SUBSTRATE_MISSING", "Kanban substrate boundary is missing.", "substrate", "mutations/missing-kanban-substrate.surfaceops-kanban-preflight.json", "/substrateRefs"),
+  diagnosticRow("SURFACEOPS_KANBAN_SUBSTRATE_HASH_MISMATCH", "Kanban substrate hash does not match the declared boundary.", "substrate", "mutations/kanban-substrate-hash-mismatch.surfaceops-kanban-preflight.json", "/substrateRefs/0/hash"),
+  diagnosticRow("SURFACEOPS_KANBAN_SUBSTRATE_INVALID", "Kanban substrate contract is invalid.", "substrate", "mutations/malformed-kanban-substrate.surfaceops-kanban-preflight.json", "/substrate"),
+  diagnosticRow("SURFACEOPS_KANBAN_SUBSTRATE_UNSUPPORTED", "Board projection requests unsupported kanban substrate behavior.", "projection", "invalid/unsupported-substrate.surfaceops-kanban.json", "/projection/boardFields"),
   diagnosticRow("SURFACEOPS_KANBAN_TARGET_UNDECLARED", "SurfaceOps kanban target is not declared.", "target-selection", "invalid/target-undeclared.surfaceops-kanban.json", "/targetId"),
-  diagnosticRow("SURFACEOPS_KANBAN_TARGET_OUT_OF_SCOPE", "SurfaceOps kanban target exceeds the accepted static board scope.", "target-selection", "invalid/target-out-of-scope.surfaceops-kanban.json", "/boardScope"),
+  diagnosticRow("SURFACEOPS_KANBAN_TARGET_OUT_OF_SCOPE", "SurfaceOps kanban target exceeds accepted static board scope.", "target-selection", "invalid/target-out-of-scope.surfaceops-kanban.json", "/boardScope"),
   diagnosticRow("SURFACEOPS_KANBAN_AUTHORITY_OVERRIDE", "Kanban projection must not override Surfaces authority.", "projection", "invalid/authority-override.surfaceops-kanban.json", "/authority"),
-  diagnosticRow("SURFACEOPS_KANBAN_EVIDENCE_REF_MISSING", "Kanban projection row is missing evidence refs.", "projection", "invalid/missing-evidence-ref.surfaceops-kanban.json", "/evidenceRefs"),
-  diagnosticRow("SURFACEOPS_KANBAN_HIDDEN_REVIEW_STATE", "Kanban projection must not hide review state outside evidence-backed fields.", "projection", "invalid/hidden-review-state.surfaceops-kanban.json", "/hiddenReviewState"),
-  diagnosticRow("SURFACEOPS_KANBAN_LIVE_WRITE_FORBIDDEN", "Live kanban writes are forbidden in the static proof.", "projection", "invalid/live-kanban-write.surfaceops-kanban.json", "/claims/liveKanbanWrite"),
-  diagnosticRow("SURFACEOPS_KANBAN_LIVE_SURFACEOPS_FORBIDDEN", "Live SurfaceOps behavior is forbidden in the static proof.", "projection", "invalid/live-surfaceops-write.surfaceops-kanban.json", "/claims/liveSurfaceOpsWrite"),
-  diagnosticRow("SURFACEOPS_KANBAN_LIVE_JUDGMENTKIT_FORBIDDEN", "Live JudgmentKit behavior is forbidden in the static proof.", "projection", "invalid/live-judgmentkit-call.surfaceops-kanban.json", "/claims/liveJudgmentKitCall"),
-  diagnosticRow("SURFACEOPS_KANBAN_EXECUTION_FORBIDDEN", "Work-order execution is forbidden in the static proof.", "projection", "invalid/executes-work-order.surfaceops-kanban.json", "/claims/execution"),
-  diagnosticRow("SURFACEOPS_KANBAN_NETWORK_FORBIDDEN", "Network behavior is forbidden in the static proof.", "projection", "invalid/network-call.surfaceops-kanban.json", "/claims/networkCall"),
-  diagnosticRow("SURFACEOPS_KANBAN_SECRET_FORBIDDEN", "Secret access is forbidden in the static proof.", "projection", "invalid/secret-ref.surfaceops-kanban.json", "/claims/secretAccess"),
-  diagnosticRow("SURFACEOPS_KANBAN_PRODUCTION_ADAPTER_FORBIDDEN", "Production adapter claims are forbidden in the static proof.", "projection", "invalid/production-adapter-claim.surfaceops-kanban.json", "/claims/productionAdapter"),
-  diagnosticRow("SURFACEOPS_KANBAN_A2UI_FORBIDDEN", "A2UI support is forbidden without a separate proof.", "projection", "invalid/a2ui-claim.surfaceops-kanban.json", "/claims/a2ui"),
-  diagnosticRow("SURFACEOPS_KANBAN_PROJECTION_HASH_MISMATCH", "Board projection hash does not match generated artifacts.", "projection", "mutations/projection-hash-mismatch.surfaceops-kanban.json", "/projectionRef/hash"),
-  diagnosticRow("SURFACEOPS_KANBAN_REPORT_HASH_MISMATCH", "Adapter report or packet hash does not match generated artifacts.", "report", "mutations/report-packet-hash-mismatch.surfaceops-kanban.json", "/packetRefs"),
-  diagnosticRow("SURFACEOPS_KANBAN_EVIDENCE_HASH_MISMATCH", "Evidence hash closure does not match generated artifacts.", "evidence", "mutations/hash-mismatch.surfaceops-kanban-evidence.json", "/artifacts"),
+  diagnosticRow("SURFACEOPS_KANBAN_EVIDENCE_REF_MISSING", "Kanban projection required evidence reference is missing.", "projection", "invalid/missing-evidence-ref.surfaceops-kanban.json", "/projection/evidenceRefs"),
+  diagnosticRow("SURFACEOPS_KANBAN_HIDDEN_REVIEW_STATE", "Kanban packet contains hidden review state.", "packet", "invalid/hidden-review-state.surfaceops-kanban.json", "/packet/hiddenState"),
+  diagnosticRow("SURFACEOPS_KANBAN_LIVE_WRITE_FORBIDDEN", "Live kanban writes are forbidden.", "packet", "invalid/live-kanban-write.surfaceops-kanban.json", "/packet/liveWrite"),
+  diagnosticRow("SURFACEOPS_KANBAN_LIVE_SURFACEOPS_FORBIDDEN", "Live SurfaceOps behavior is forbidden.", "packet", "invalid/live-surfaceops-write.surfaceops-kanban.json", "/packet/liveSurfaceOps"),
+  diagnosticRow("SURFACEOPS_KANBAN_LIVE_JUDGMENTKIT_FORBIDDEN", "Live JudgmentKit invocation is forbidden.", "packet", "invalid/live-judgmentkit-call.surfaceops-kanban.json", "/packet/liveJudgmentKit"),
+  diagnosticRow("SURFACEOPS_KANBAN_EXECUTION_FORBIDDEN", "Kanban packets must not execute work.", "packet", "invalid/executes-work-order.surfaceops-kanban.json", "/packet/execution"),
+  diagnosticRow("SURFACEOPS_KANBAN_NETWORK_FORBIDDEN", "Kanban packets must not require network transport.", "packet", "invalid/network-call.surfaceops-kanban.json", "/packet/networkCalls"),
+  diagnosticRow("SURFACEOPS_KANBAN_SECRET_FORBIDDEN", "Kanban packets must not contain secrets.", "packet", "invalid/secret-ref.surfaceops-kanban.json", "/packet/secrets"),
+  diagnosticRow("SURFACEOPS_KANBAN_PRODUCTION_ADAPTER_FORBIDDEN", "Production adapter claims are outside this proof.", "packet", "invalid/production-adapter-claim.surfaceops-kanban.json", "/packet/claims"),
+  diagnosticRow("SURFACEOPS_KANBAN_A2UI_FORBIDDEN", "A2UI claims are outside this proof.", "packet", "invalid/a2ui-claim.surfaceops-kanban.json", "/packet/claims"),
+  diagnosticRow("SURFACEOPS_KANBAN_PROJECTION_HASH_MISMATCH", "Kanban projection hash does not match generated artifact refs.", "projection", "mutations/projection-hash-mismatch.surfaceops-kanban.json", "/projectionRef/hash"),
+  diagnosticRow("SURFACEOPS_KANBAN_REPORT_HASH_MISMATCH", "Kanban report hash does not match generated artifacts.", "report", "mutations/report-packet-hash-mismatch.surfaceops-kanban.json", "/packetRefs"),
+  diagnosticRow("SURFACEOPS_KANBAN_EVIDENCE_HASH_MISMATCH", "Kanban evidence hash does not match the evidence manifest.", "evidence", "mutations/hash-mismatch.surfaceops-kanban-evidence.json", "/artifacts"),
   diagnosticRow("SURFACEOPS_KANBAN_REVIEW_REQUIRED", "Review remains required because no committed allowed decision is present.", "projection", "review/deferred-decision-remains-review-required.surfaceops-kanban.json", "/cards/0/laneId", {
     severity: "review",
     validationResult: "review_required",
@@ -397,6 +397,17 @@ export function buildSurfaceopsKanbanStaticSchemas() {
   const diagnostics = { type: "array", items: diagnosticObjectSchema() };
   const diagnosticsRegistry = { type: "array", items: diagnosticRegistrySchema() };
   const capabilityScope = capabilityScopeSchema();
+  const boardScope = boardScopeSchema();
+  const board = boardSchema();
+  const lane = laneSchema();
+  const card = cardSchema();
+  const annotation = annotationSchema();
+  const projectionAuthority = projectionAuthoritySchema();
+  const viewModel = designerViewModelSchemas();
+  const packetRecord = packetRecordSchema();
+  const packetExecution = packetExecutionSchema();
+  const preflight = preflightSchema();
+  const environment = environmentSchema();
   const commonArtifactProperties = {
     version: { const: SK_VERSION },
     provenance
@@ -410,7 +421,7 @@ export function buildSurfaceopsKanbanStaticSchemas() {
       targetKind: { type: "string" },
       claimStatus: { const: "proof_only" },
       scenarioId: { type: "string" },
-      boardScope: genericObject,
+      boardScope,
       capabilityScope,
       excludedClaims: { type: "array", items: { type: "string" } },
       upstreamRefs: { type: "array", items: artifactRef },
@@ -434,11 +445,11 @@ export function buildSurfaceopsKanbanStaticSchemas() {
       substrateName: { type: "string" },
       upstreamProject: genericObject,
       supportedBoardKinds: { type: "array", items: { type: "string" } },
-      lanes: { type: "array", items: genericObject },
+      lanes: { type: "array", items: substrateLaneSchema() },
       cardFields: { type: "array", items: { type: "string" } },
       packetKinds: { type: "array", items: { type: "string" } },
       capabilities: capabilityScope,
-      authority: genericObject
+      authority: substrateAuthoritySchema()
     }, ["schemaId", "version", "substrateId", "substrateName", "upstreamProject", "supportedBoardKinds", "lanes", "cardFields", "packetKinds", "capabilities", "authority", "provenance"]),
     "surfaceops-kanban-board-projection.v0.schema.json": objectSchema("surfaceops-kanban-board-projection.v0", {
       ...commonArtifactProperties,
@@ -446,11 +457,11 @@ export function buildSurfaceopsKanbanStaticSchemas() {
       targetSelectionRef: artifactRef,
       upstreamRefs: { type: "array", items: artifactRef },
       substrateRefs: { type: "array", items: artifactRef },
-      board: genericObject,
-      lanes: { type: "array", items: genericObject },
-      cards: { type: "array", items: genericObject },
-      annotations: { type: "array", items: genericObject },
-      authority: genericObject,
+      board,
+      lanes: { type: "array", items: lane },
+      cards: { type: "array", items: card },
+      annotations: { type: "array", items: annotation },
+      authority: projectionAuthority,
       evidenceRefs: { type: "array", items: artifactRef },
       diagnostics,
       diagnosticsRegistry
@@ -460,14 +471,14 @@ export function buildSurfaceopsKanbanStaticSchemas() {
       schemaId: { const: "surfaceops-kanban-designer-view-model.v0" },
       scenarioId: { type: "string" },
       targetId: { type: "string" },
-      proofStatus: genericObject,
-      promotionStatus: genericObject,
-      designerSummary: genericObject,
-      boardSummary: genericObject,
-      outcomes: genericObject,
-      authorityActionQueue: { type: "array", items: genericObject },
-      evidence: genericObject,
-      handoffEligibility: genericObject,
+      proofStatus: viewModel.proofStatus,
+      promotionStatus: viewModel.promotionStatus,
+      designerSummary: viewModel.designerSummary,
+      boardSummary: viewModel.boardSummary,
+      outcomes: viewModel.outcomes,
+      authorityActionQueue: { type: "array", items: viewModel.authorityAction },
+      evidence: viewModel.evidence,
+      handoffEligibility: viewModel.handoffEligibility,
       packetRefs: { type: "array", items: artifactRef },
       diagnostics,
       diagnosticsRegistry
@@ -478,8 +489,8 @@ export function buildSurfaceopsKanbanStaticSchemas() {
       packetId: { type: "string" },
       packetKind: { enum: ["review-work", "decisions"] },
       projectionRef: artifactRef,
-      records: { type: "array", items: genericObject },
-      execution: genericObject,
+      records: { type: "array", items: packetRecord },
+      execution: packetExecution,
       evidenceRefs: { type: "array", items: artifactRef },
       diagnostics,
       diagnosticsRegistry
@@ -491,8 +502,8 @@ export function buildSurfaceopsKanbanStaticSchemas() {
       targetId: { type: "string" },
       status: { enum: ["pass", "fail"] },
       promotionStatus: { enum: ["allowed", "review_required", "blocked"] },
-      upstreamPreflight: genericObject,
-      substratePreflight: genericObject,
+      upstreamPreflight: preflight.upstream,
+      substratePreflight: preflight.substrate,
       artifactRefs: { type: "array", items: artifactRef },
       validationResults: { type: "array", items: validationResultSchema() },
       diagnostics,
@@ -509,7 +520,7 @@ export function buildSurfaceopsKanbanStaticSchemas() {
       command: { const: SK_COMMAND },
       args: genericObject,
       checkedAt: { const: SK_TIMESTAMP },
-      environment: genericObject,
+      environment,
       schemaClosure: { type: "array", items: artifactRef },
       fixtureRefs: { type: "array", items: artifactRef },
       boundaryRefs: { type: "array", items: artifactRef },
@@ -578,13 +589,18 @@ export function artifactRef(pathValue, schemaId, hash, extra = {}) {
 export function diagnosticsRegistry() {
   return SK_DIAGNOSTIC_ROWS.map((row) => ({
     code: row.code,
+    trigger: row.trigger,
+    canonicalMessage: row.canonicalMessage,
     message: row.canonicalMessage,
     severity: row.severity,
     stage: row.stage,
     phase: row.phase,
+    validationResult: row.validationResult,
     promotionStatus: row.promotionStatus,
     artifactPath: row.artifactPath,
     jsonPointer: row.jsonPointer,
+    sourceRef: row.sourceRef,
+    fixtureCoverage: row.fixtureCoverage,
     suggestedAction: row.suggestedAction
   }));
 }
@@ -596,6 +612,8 @@ export function diagnosticForCode(code, overrides = {}) {
   }
   return {
     code: row.code,
+    trigger: row.trigger,
+    canonicalMessage: row.canonicalMessage,
     message: row.canonicalMessage,
     severity: row.severity,
     stage: row.stage,
@@ -603,7 +621,9 @@ export function diagnosticForCode(code, overrides = {}) {
     artifactPath: overrides.artifactPath ?? row.artifactPath,
     jsonPointer: overrides.jsonPointer ?? row.jsonPointer,
     sourceRef: overrides.sourceRef ?? row.sourceRef,
+    validationResult: row.validationResult,
     promotionStatus: row.promotionStatus,
+    fixtureCoverage: row.fixtureCoverage,
     suggestedAction: row.suggestedAction
   };
 }
@@ -658,18 +678,27 @@ export function provenance(generator, sourceRefs) {
 function diagnosticRow(code, canonicalMessage, stage, fixtureCoverage, jsonPointer, overrides = {}) {
   return {
     code,
-    trigger: canonicalMessage,
+    trigger: overrides.trigger ?? canonicalMessage,
     canonicalMessage,
     severity: overrides.severity ?? "error",
     stage,
     phase: overrides.phase ?? `surfaceops-kanban-${stage}`,
     artifactPath: `${SK_FIXTURE_ROOT}/${fixtureCoverage}`,
     jsonPointer,
-    sourceRef: overrides.sourceRef ?? null,
+    sourceRef: overrides.sourceRef ?? defaultDiagnosticSourceRef(fixtureCoverage, jsonPointer),
     validationResult: overrides.validationResult ?? "invalid",
     promotionStatus: overrides.promotionStatus ?? "blocked",
+    fixtureCoverage,
     suggestedAction: overrides.suggestedAction ?? "Inspect the evidence-backed authority layer and regenerate this static proof after the source issue is corrected."
   };
+}
+
+function defaultDiagnosticSourceRef(fixtureCoverage, jsonPointer) {
+  if (!fixtureCoverage.startsWith("invalid/") && !fixtureCoverage.startsWith("review/")) return null;
+  const fixtureId = fixtureCoverage
+    .replace(/\.surfaceops-kanban(?:-preflight|-evidence)?\.json$/, "")
+    .replace(/\.json$/, "");
+  return `fixture://surfaceops-kanban-static/${fixtureId}#${jsonPointer}`;
 }
 
 function expectation(relativePath, expectedResult, promotionStatus, expectedDiagnosticCodes) {
@@ -678,7 +707,9 @@ function expectation(relativePath, expectedResult, promotionStatus, expectedDiag
     expectedResult,
     promotionStatus,
     expectedDiagnosticCodes,
-    stage: expectationStage(relativePath)
+    stage: expectedDiagnosticCodes[0]
+      ? SK_DIAGNOSTIC_ROWS.find((row) => row.code === expectedDiagnosticCodes[0])?.stage ?? expectationStage(relativePath)
+      : expectationStage(relativePath)
   };
 }
 
@@ -728,6 +759,383 @@ function objectSchema(schemaId, properties, required) {
   return schema;
 }
 
+function stringArraySchema() {
+  return { type: "array", items: { type: "string" } };
+}
+
+function emptyStringArraySchema() {
+  return { type: "array", maxItems: 0, items: { type: "string" } };
+}
+
+function nullableStringSchema() {
+  return { type: ["string", "null"] };
+}
+
+function evidenceRefsSchema() {
+  return { type: "array", minItems: 1, items: artifactRefSchema() };
+}
+
+function boardScopeSchema() {
+  return objectSchema(null, {
+    boardId: { type: "string" },
+    scenarioId: { type: "string" },
+    componentScope: stringArraySchema(),
+    taskScope: stringArraySchema()
+  }, ["boardId", "scenarioId", "componentScope", "taskScope"]);
+}
+
+function boardSchema() {
+  return objectSchema(null, {
+    boardId: { type: "string" },
+    boardKind: { const: "review-governance" },
+    title: { type: "string" },
+    scenarioId: { type: "string" },
+    componentScope: stringArraySchema(),
+    taskScope: stringArraySchema()
+  }, ["boardId", "boardKind", "title", "scenarioId", "componentScope", "taskScope"]);
+}
+
+function substrateLaneSchema() {
+  return objectSchema(null, {
+    laneId: { enum: ["allowed", "review-required", "blocked"] },
+    title: { type: "string" },
+    result: { enum: ["allowed", "review_required", "blocked"] }
+  }, ["laneId", "title", "result"]);
+}
+
+function laneSchema() {
+  return objectSchema(null, {
+    laneId: { enum: ["allowed", "review-required", "blocked"] },
+    title: { type: "string" },
+    result: { enum: ["allowed", "review_required", "blocked"] },
+    cards: stringArraySchema()
+  }, ["laneId", "title", "result", "cards"]);
+}
+
+function cardSourceSchema() {
+  return objectSchema(null, {
+    reviewItemId: { type: "string" },
+    taskId: { type: "string" },
+    sourceFixtureRef: { type: "string" },
+    requiredReviewerRole: { type: "string" },
+    requiredCapabilities: stringArraySchema(),
+    selectedAgentIds: stringArraySchema(),
+    diagnosticCode: { type: "string" },
+    evidenceObligations: stringArraySchema()
+  }, ["reviewItemId", "taskId", "sourceFixtureRef", "requiredReviewerRole", "requiredCapabilities", "selectedAgentIds", "diagnosticCode", "evidenceObligations"]);
+}
+
+function nextActionOwnerSchema() {
+  return objectSchema(null, {
+    ownerRole: { type: "string" },
+    reviewerId: nullableStringSchema(),
+    selectedAgentIds: stringArraySchema(),
+    nextAction: { type: "string" }
+  }, ["ownerRole", "reviewerId", "selectedAgentIds", "nextAction"]);
+}
+
+function decisionRefSchema() {
+  return objectSchema(null, {
+    annotationId: { type: "string" },
+    decisionId: { type: "string" },
+    evidenceRefs: evidenceRefsSchema()
+  }, ["annotationId", "decisionId", "evidenceRefs"]);
+}
+
+function cardSchema() {
+  return objectSchema(null, {
+    cardId: { type: "string" },
+    title: { type: "string" },
+    laneId: { enum: ["allowed", "review-required", "blocked"] },
+    result: { enum: ["allowed", "review_required", "blocked"] },
+    source: cardSourceSchema(),
+    queuePromotionStatus: { enum: ["allowed", "review_required", "blocked"] },
+    decisionStatus: nullableStringSchema(),
+    decisionPromotionStatus: { type: ["string", "null"], enum: ["allowed", "review_required", "blocked", null] },
+    nonExecutable: { const: true },
+    suggestedAction: { type: "string" },
+    nextActionOwner: nextActionOwnerSchema(),
+    evidenceRefs: evidenceRefsSchema()
+  }, ["cardId", "title", "laneId", "result", "source", "queuePromotionStatus", "decisionStatus", "decisionPromotionStatus", "nonExecutable", "suggestedAction", "nextActionOwner", "evidenceRefs"]);
+}
+
+function decisionExecutionSchema() {
+  return objectSchema(null, {
+    authorized: { const: false },
+    callbacks: emptyStringArraySchema(),
+    connectorCalls: emptyStringArraySchema(),
+    fileEdits: emptyStringArraySchema(),
+    networkCalls: emptyStringArraySchema(),
+    reason: { type: "string" },
+    secrets: emptyStringArraySchema(),
+    shellCommands: emptyStringArraySchema(),
+    toolCalls: emptyStringArraySchema()
+  }, ["authorized", "callbacks", "connectorCalls", "fileEdits", "networkCalls", "reason", "secrets", "shellCommands", "toolCalls"]);
+}
+
+function judgmentAuthoritySchema() {
+  return objectSchema(null, {
+    approves: { const: false },
+    defers: { const: false },
+    executes: { const: false },
+    mutates: { const: false },
+    overridesPolicy: { const: false },
+    promotes: { const: false },
+    rejects: { const: false },
+    renders: { const: false },
+    requestsChanges: { const: false },
+    routes: { const: false }
+  }, ["approves", "defers", "executes", "mutates", "overridesPolicy", "promotes", "rejects", "renders", "requestsChanges", "routes"]);
+}
+
+function decisionAnnotationSchema() {
+  return objectSchema(null, {
+    annotationId: { type: "string" },
+    cardId: nullableStringSchema(),
+    kind: { const: "surfaceops-decision" },
+    committed: { const: true },
+    decisionId: { type: "string" },
+    reviewItemId: { type: "string" },
+    status: { type: "string" },
+    promotionStatus: { enum: ["allowed", "review_required", "blocked"] },
+    rationale: { type: "string" },
+    reviewerId: { type: "string" },
+    secondReviewRequired: { type: "boolean" },
+    requestedChanges: stringArraySchema(),
+    nonExecutable: { const: true },
+    execution: decisionExecutionSchema(),
+    evidenceRefs: evidenceRefsSchema()
+  }, ["annotationId", "cardId", "kind", "committed", "decisionId", "reviewItemId", "status", "promotionStatus", "rationale", "reviewerId", "secondReviewRequired", "requestedChanges", "nonExecutable", "execution", "evidenceRefs"]);
+}
+
+function judgmentAnnotationSchema() {
+  return objectSchema(null, {
+    annotationId: { type: "string" },
+    cardId: nullableStringSchema(),
+    kind: { const: "judgmentkit-quality-finding" },
+    committed: { const: false },
+    findingId: { type: "string" },
+    dimension: { type: "string" },
+    result: { type: "string" },
+    severity: { type: "string" },
+    rationale: { type: "string" },
+    authority: judgmentAuthoritySchema(),
+    affectedArtifactPaths: stringArraySchema(),
+    evidenceRefs: evidenceRefsSchema()
+  }, ["annotationId", "cardId", "kind", "committed", "findingId", "dimension", "result", "severity", "rationale", "authority", "affectedArtifactPaths", "evidenceRefs"]);
+}
+
+function annotationSchema() {
+  return { anyOf: [decisionAnnotationSchema(), judgmentAnnotationSchema()] };
+}
+
+function projectionAuthoritySchema() {
+  return objectSchema(null, {
+    sourceAuthority: { type: "string" },
+    contractAuthority: { type: "string" },
+    proofAuthority: { type: "string" },
+    substrateAuthority: { type: "string" },
+    canOverrideAuthority: { const: false },
+    canExecuteWork: { const: false },
+    hiddenReviewState: { const: false }
+  }, ["sourceAuthority", "contractAuthority", "proofAuthority", "substrateAuthority", "canOverrideAuthority", "canExecuteWork", "hiddenReviewState"]);
+}
+
+function substrateAuthoritySchema() {
+  return objectSchema(null, {
+    presentationOnly: { const: true },
+    canOverrideSurfacesAuthority: { const: false },
+    canApproveWork: { const: false },
+    canExecuteWork: { const: false },
+    sourceAuthority: { type: "string" },
+    contractAuthority: { type: "string" },
+    proofAuthority: { type: "string" }
+  }, ["presentationOnly", "canOverrideSurfacesAuthority", "canApproveWork", "canExecuteWork", "sourceAuthority", "contractAuthority", "proofAuthority"]);
+}
+
+function packetExecutionSchema() {
+  return objectSchema(null, {
+    authorized: { const: false },
+    reason: { type: "string" },
+    fileEdits: emptyStringArraySchema(),
+    networkCalls: emptyStringArraySchema(),
+    callbacks: emptyStringArraySchema(),
+    secrets: emptyStringArraySchema(),
+    liveWrites: emptyStringArraySchema()
+  }, ["authorized", "reason", "fileEdits", "networkCalls", "callbacks", "secrets", "liveWrites"]);
+}
+
+function reviewWorkPacketRecordSchema() {
+  return objectSchema(null, {
+    cardId: { type: "string" },
+    laneId: { enum: ["allowed", "review-required", "blocked"] },
+    reviewItemId: { type: "string" },
+    taskId: { type: "string" },
+    queuePromotionStatus: { enum: ["allowed", "review_required", "blocked"] },
+    nonExecutable: { const: true },
+    suggestedAction: { type: "string" },
+    nextActionOwner: nextActionOwnerSchema(),
+    evidenceRefs: evidenceRefsSchema()
+  }, ["cardId", "laneId", "reviewItemId", "taskId", "queuePromotionStatus", "nonExecutable", "suggestedAction", "nextActionOwner", "evidenceRefs"]);
+}
+
+function decisionPacketRecordSchema() {
+  return objectSchema(null, {
+    annotationId: { type: "string" },
+    cardId: nullableStringSchema(),
+    kind: { enum: ["surfaceops-decision", "judgmentkit-quality-finding"] },
+    committed: { type: "boolean" },
+    status: nullableStringSchema(),
+    promotionStatus: { type: ["string", "null"], enum: ["allowed", "review_required", "blocked", null] },
+    rationale: { type: "string" },
+    evidenceRefs: evidenceRefsSchema()
+  }, ["annotationId", "cardId", "kind", "committed", "status", "promotionStatus", "rationale", "evidenceRefs"]);
+}
+
+function packetRecordSchema() {
+  return { anyOf: [reviewWorkPacketRecordSchema(), decisionPacketRecordSchema()] };
+}
+
+function preflightSchema() {
+  return {
+    upstream: objectSchema(null, {
+      status: { const: "pass" },
+      p3EvidenceRef: artifactRefSchema(),
+      p4EvidenceRef: artifactRefSchema()
+    }, ["status", "p3EvidenceRef", "p4EvidenceRef"]),
+    substrate: objectSchema(null, {
+      status: { const: "pass" },
+      substrateManifestRef: artifactRefSchema(),
+      substrateRef: artifactRefSchema(),
+      presentationOnly: { const: true }
+    }, ["status", "substrateManifestRef", "substrateRef", "presentationOnly"])
+  };
+}
+
+function environmentSchema() {
+  return objectSchema(null, {
+    generatedAt: { const: SK_TIMESTAMP },
+    host: { type: "null" }
+  }, ["generatedAt", "host"]);
+}
+
+function designerViewModelSchemas() {
+  const artifactRef = artifactRefSchema();
+  const evidenceRefs = evidenceRefsSchema();
+  const sourceRefs = stringArraySchema();
+  const qualityFinding = objectSchema(null, {
+    findingId: { type: "string" },
+    dimension: { type: "string" },
+    result: { type: "string" },
+    severity: { type: "string" },
+    rationale: { type: "string" },
+    blocking: { const: false },
+    authority: { const: "evaluation-only" },
+    evidenceRefs
+  }, ["findingId", "dimension", "result", "severity", "rationale", "blocking", "authority", "evidenceRefs"]);
+  const outcome = objectSchema(null, {
+    cardId: { type: "string" },
+    title: { type: "string" },
+    result: { enum: ["allowed", "review_required", "blocked"] },
+    status: nullableStringSchema(),
+    promotionStatus: { type: ["string", "null"], enum: ["allowed", "review_required", "blocked", null] },
+    reason: { type: "string" },
+    sourceRefs,
+    decisionRef: { anyOf: [decisionRefSchema(), { type: "null" }] },
+    nextActionOwner: nextActionOwnerSchema(),
+    evidenceRefs
+  }, ["cardId", "title", "result", "status", "promotionStatus", "reason", "sourceRefs", "decisionRef", "nextActionOwner", "evidenceRefs"]);
+  const boardCard = objectSchema(null, {
+    cardId: { type: "string" },
+    title: { type: "string" },
+    laneId: { enum: ["allowed", "review-required", "blocked"] },
+    result: { enum: ["allowed", "review_required", "blocked"] },
+    status: nullableStringSchema(),
+    promotionStatus: { type: ["string", "null"], enum: ["allowed", "review_required", "blocked", null] },
+    queuePromotionStatus: { enum: ["allowed", "review_required", "blocked"] },
+    nonExecutable: { const: true },
+    whyThisLane: { type: "string" },
+    sourceRefs,
+    decisionRef: { anyOf: [decisionRefSchema(), { type: "null" }] },
+    nextActionOwner: nextActionOwnerSchema(),
+    evidenceRefs
+  }, ["cardId", "title", "laneId", "result", "status", "promotionStatus", "queuePromotionStatus", "nonExecutable", "whyThisLane", "sourceRefs", "decisionRef", "nextActionOwner", "evidenceRefs"]);
+  const action = objectSchema(null, {
+    cardId: { type: "string" },
+    question: { type: "string" },
+    source: { type: "string" },
+    mapping: { type: "string" },
+    policy: { type: "string" },
+    reviewDecision: { type: "string" },
+    targetScope: { const: "static board projection only" },
+    sourceRefs,
+    decisionRef: { anyOf: [decisionRefSchema(), { type: "null" }] },
+    nextActionOwner: nextActionOwnerSchema(),
+    evidenceRefs
+  }, ["cardId", "question", "source", "mapping", "policy", "reviewDecision", "targetScope", "sourceRefs", "decisionRef", "nextActionOwner", "evidenceRefs"]);
+  return {
+    proofStatus: objectSchema(null, {
+      p3: { type: "string" },
+      p4: { type: "string" },
+      surfaceopsKanbanStatic: { const: "pass" }
+    }, ["p3", "p4", "surfaceopsKanbanStatic"]),
+    promotionStatus: objectSchema(null, {
+      p3: { enum: ["allowed", "review_required", "blocked"] },
+      p4: { enum: ["allowed", "review_required", "blocked"] },
+      explanation: { type: "string" },
+      boardCards: objectSchema(null, {
+        allowed: stringArraySchema(),
+        reviewRequired: stringArraySchema(),
+        blocked: stringArraySchema()
+      }, ["allowed", "reviewRequired", "blocked"])
+    }, ["p3", "p4", "explanation", "boardCards"]),
+    designerSummary: objectSchema(null, {
+      decision: { type: "string" },
+      answer: { type: "string" },
+      sourceMaterial: { type: "string" },
+      governedBy: objectSchema(null, {
+        designSystemAuthorityRefs: { type: "array", items: artifactRef },
+        reviewQueueRef: artifactRef,
+        decisionLedgerRef: artifactRef,
+        evaluationReportRef: artifactRef,
+        substrateRefs: { type: "array", items: artifactRef }
+      }, ["designSystemAuthorityRefs", "reviewQueueRef", "decisionLedgerRef", "evaluationReportRef", "substrateRefs"]),
+      staticBoardRecordsAllowed: stringArraySchema(),
+      reviewRequired: stringArraySchema(),
+      blocked: stringArraySchema(),
+      qualityFindings: { type: "array", items: qualityFinding },
+      decisionRationale: nullableStringSchema(),
+      evidenceRefs
+    }, ["decision", "answer", "sourceMaterial", "governedBy", "staticBoardRecordsAllowed", "reviewRequired", "blocked", "qualityFindings", "decisionRationale", "evidenceRefs"]),
+    boardSummary: objectSchema(null, {
+      boardId: { type: "string" },
+      lanes: { type: "array", items: objectSchema(null, {
+        laneId: { enum: ["allowed", "review-required", "blocked"] },
+        title: { type: "string" },
+        cardCount: { type: "integer", minimum: 0 }
+      }, ["laneId", "title", "cardCount"]) },
+      cards: { type: "array", items: boardCard }
+    }, ["boardId", "lanes", "cards"]),
+    outcomes: objectSchema(null, {
+      allowed: { type: "array", items: outcome },
+      reviewRequired: { type: "array", items: outcome },
+      blocked: { type: "array", items: outcome }
+    }, ["allowed", "reviewRequired", "blocked"]),
+    authorityAction: action,
+    evidence: objectSchema(null, {
+      projectionRef: artifactRef,
+      upstreamRefs: { type: "array", items: artifactRef },
+      substrateRefs: { type: "array", items: artifactRef },
+      annotations: stringArraySchema()
+    }, ["projectionRef", "upstreamRefs", "substrateRefs", "annotations"]),
+    handoffEligibility: objectSchema(null, {
+      staticBoardPacket: { type: "boolean" },
+      reason: { type: "string" },
+      forbiddenClaims: stringArraySchema()
+    }, ["staticBoardPacket", "reason", "forbiddenClaims"])
+  };
+}
+
 function artifactRefSchema() {
   return objectSchema(null, {
     path: { type: "string" },
@@ -755,6 +1163,8 @@ function capabilityScopeSchema() {
 function diagnosticObjectSchema() {
   return objectSchema(null, {
     code: { type: "string" },
+    trigger: { type: "string" },
+    canonicalMessage: { type: "string" },
     message: { type: "string" },
     severity: { enum: ["error", "warning", "review"] },
     stage: { type: "string" },
@@ -762,23 +1172,30 @@ function diagnosticObjectSchema() {
     artifactPath: { type: "string" },
     jsonPointer: { type: "string" },
     sourceRef: { type: ["string", "null"] },
+    validationResult: { enum: ["valid", "invalid", "review_required"] },
     promotionStatus: { enum: ["allowed", "review_required", "blocked"] },
+    fixtureCoverage: { type: "string" },
     suggestedAction: { type: "string" }
-  }, ["code", "message", "severity", "stage", "phase", "artifactPath", "jsonPointer", "sourceRef", "promotionStatus", "suggestedAction"]);
+  }, ["code", "trigger", "canonicalMessage", "message", "severity", "stage", "phase", "artifactPath", "jsonPointer", "sourceRef", "validationResult", "promotionStatus", "fixtureCoverage", "suggestedAction"]);
 }
 
 function diagnosticRegistrySchema() {
   return objectSchema(null, {
     code: { type: "string" },
+    trigger: { type: "string" },
+    canonicalMessage: { type: "string" },
     message: { type: "string" },
     severity: { enum: ["error", "warning", "review"] },
     stage: { type: "string" },
     phase: { type: "string" },
+    validationResult: { enum: ["valid", "invalid", "review_required"] },
     promotionStatus: { enum: ["allowed", "review_required", "blocked"] },
     artifactPath: { type: "string" },
     jsonPointer: { type: "string" },
+    sourceRef: { type: ["string", "null"] },
+    fixtureCoverage: { type: "string" },
     suggestedAction: { type: "string" }
-  }, ["code", "message", "severity", "stage", "phase", "promotionStatus", "artifactPath", "jsonPointer", "suggestedAction"]);
+  }, ["code", "trigger", "canonicalMessage", "message", "severity", "stage", "phase", "validationResult", "promotionStatus", "artifactPath", "jsonPointer", "sourceRef", "fixtureCoverage", "suggestedAction"]);
 }
 
 function validationResultSchema() {

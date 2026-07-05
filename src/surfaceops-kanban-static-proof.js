@@ -494,13 +494,23 @@ function buildBoardProjection({ upstream, targetSelectionRef }) {
         sourceFixtureRef: item.sourceFixtureRef,
         requiredReviewerRole: item.requiredReviewerRole,
         requiredCapabilities: item.requiredCapabilities,
-        selectedAgentIds: item.selectedAgentIds
+        selectedAgentIds: item.selectedAgentIds,
+        diagnosticCode: item.diagnosticCode,
+        evidenceObligations: item.evidenceObligations
       },
       queuePromotionStatus: item.promotionStatus,
       decisionStatus: decision?.status ?? null,
       decisionPromotionStatus: decision?.promotionStatus ?? null,
       nonExecutable: item.nonExecutable === true && decision?.nonExecutable !== false,
       suggestedAction: item.suggestedAction,
+      nextActionOwner: {
+        ownerRole: item.requiredReviewerRole,
+        reviewerId: decision?.reviewerId ?? null,
+        selectedAgentIds: item.selectedAgentIds,
+        nextAction: decision?.status === "approved" && decision?.promotionStatus === "allowed"
+          ? "Inspect the static packet refs; no live kanban or SurfaceOps write is authorized."
+          : item.suggestedAction
+      },
       evidenceRefs: [upstream.p3EvidenceRef, upstream.p3ReviewQueueRef, upstream.p4EvidenceRef, upstream.p4DecisionLedgerRef]
     };
   });
@@ -613,6 +623,7 @@ function buildReviewWorkPacket({ projection, projectionRef }) {
       queuePromotionStatus: card.queuePromotionStatus,
       nonExecutable: card.nonExecutable,
       suggestedAction: card.suggestedAction,
+      nextActionOwner: card.nextActionOwner,
       evidenceRefs: card.evidenceRefs
     })),
     execution: inertExecution("Static board packets do not authorize work execution or live kanban writes."),
@@ -640,7 +651,7 @@ function buildDecisionsPacket({ projection, projectionRef }) {
       rationale: annotation.rationale,
       evidenceRefs: annotation.evidenceRefs
     })),
-    execution: inertExecution("Decision packets are inert audit packets and do not persist review state."),
+    execution: inertExecution("Decision packets are static evidence packets and do not persist review state."),
     evidenceRefs: projection.evidenceRefs,
     diagnostics: [],
     diagnosticsRegistry: diagnosticsRegistry(),
@@ -654,6 +665,9 @@ function buildDesignerViewModel({ upstream, projection, projectionRef, packetRef
   const blocked = projection.cards.filter((card) => card.result === "blocked");
   const primaryDecision = projection.annotations.find((annotation) => annotation.kind === "surfaceops-decision");
   const qualityFindings = projection.annotations.filter((annotation) => annotation.kind === "judgmentkit-quality-finding");
+  const designSystemAuthorityRefs = (upstream.p3Evidence.boundaryRefs || [])
+    .filter((ref) => ["artifacts/p2/evidence.json", "artifacts/p2/governed-catalog.json"].includes(ref.path))
+    .map((ref) => artifactRef(ref.path, ref.schemaId, ref.hash));
   return {
     schemaId: "surfaceops-kanban-designer-view-model.v0",
     version: SK_VERSION,
@@ -680,17 +694,28 @@ function buildDesignerViewModel({ upstream, projection, projectionRef, packetRef
         ? "The current review item can be projected into inert board packets because the committed SurfaceOps decision approves it and all packets remain non-executable."
         : "The current review item is not ready for static packet handoff.",
       sourceMaterial: "This board is governed by accepted P3 review-queue evidence, accepted P4 review/judgment evidence, and a manifest-declared local kanban.cards substrate contract.",
+      governedBy: {
+        designSystemAuthorityRefs,
+        reviewQueueRef: upstream.p3ReviewQueueRef,
+        decisionLedgerRef: upstream.p4DecisionLedgerRef,
+        evaluationReportRef: upstream.p4EvaluationReportRef,
+        substrateRefs: projection.substrateRefs
+      },
       staticBoardRecordsAllowed: allowed.map((card) => card.title),
       reviewRequired: reviewRequired.map((card) => card.title),
       blocked: blocked.map((card) => card.title),
-      needsReview: qualityFindings.map((finding) => ({
+      qualityFindings: qualityFindings.map((finding) => ({
         findingId: finding.findingId,
         dimension: finding.dimension,
         result: finding.result,
         severity: finding.severity,
-        rationale: finding.rationale
+        rationale: finding.rationale,
+        blocking: false,
+        authority: "evaluation-only",
+        evidenceRefs: finding.evidenceRefs
       })),
-      decisionRationale: primaryDecision?.rationale ?? null
+      decisionRationale: primaryDecision?.rationale ?? null,
+      evidenceRefs: projection.evidenceRefs
     },
     boardSummary: {
       boardId: projection.board.boardId,
@@ -708,13 +733,17 @@ function buildDesignerViewModel({ upstream, projection, projectionRef, packetRef
           ? "Committed P4 decision status is approved with allowed promotion status."
           : card.result === "review_required"
             ? "No committed allowed decision is present for this review item."
-            : "The accepted authority layer blocks this review item."
+            : "The accepted authority layer blocks this review item.",
+        sourceRefs: sourceRefsForCard(card),
+        decisionRef: decisionRefForCard(projection, card),
+        nextActionOwner: card.nextActionOwner,
+        evidenceRefs: card.evidenceRefs
       }))
     },
     outcomes: {
-      allowed: allowed.map((card) => outcomeSummary(card, "The committed SurfaceOps decision allows static packet handoff.")),
-      reviewRequired: reviewRequired.map((card) => outcomeSummary(card, "A review decision is still required before handoff.")),
-      blocked: blocked.map((card) => outcomeSummary(card, "The current authority layer blocks handoff."))
+      allowed: allowed.map((card) => outcomeSummary(projection, card, "The committed SurfaceOps decision allows static packet handoff.")),
+      reviewRequired: reviewRequired.map((card) => outcomeSummary(projection, card, "A review decision is still required before handoff.")),
+      blocked: blocked.map((card) => outcomeSummary(projection, card, "The current authority layer blocks handoff."))
     },
     authorityActionQueue: projection.cards.map((card) => ({
       cardId: card.cardId,
@@ -723,7 +752,11 @@ function buildDesignerViewModel({ upstream, projection, projectionRef, packetRef
       mapping: card.result === "review_required" ? "Map this queue row to a committed decision before handoff." : "No mapping change is required for this static projection.",
       policy: card.result === "blocked" ? "Inspect blocking diagnostics before changing target scope." : "No policy change is required for this static projection.",
       reviewDecision: card.result === "review_required" ? "Commit an approve, reject, request-changes, or defer decision." : "The committed decision is already represented as an evidence-backed annotation.",
-      targetScope: "static board projection only"
+      targetScope: "static board projection only",
+      sourceRefs: sourceRefsForCard(card),
+      decisionRef: decisionRefForCard(projection, card),
+      nextActionOwner: card.nextActionOwner,
+      evidenceRefs: card.evidenceRefs
     })),
     evidence: {
       projectionRef,
@@ -745,7 +778,7 @@ function buildDesignerViewModel({ upstream, projection, projectionRef, packetRef
   };
 }
 
-function outcomeSummary(card, reason) {
+function outcomeSummary(projection, card, reason) {
   return {
     cardId: card.cardId,
     title: card.title,
@@ -753,7 +786,26 @@ function outcomeSummary(card, reason) {
     status: card.decisionStatus,
     promotionStatus: card.decisionPromotionStatus,
     reason,
+    sourceRefs: sourceRefsForCard(card),
+    decisionRef: decisionRefForCard(projection, card),
+    nextActionOwner: card.nextActionOwner,
     evidenceRefs: card.evidenceRefs
+  };
+}
+
+function sourceRefsForCard(card) {
+  return [card.source.sourceFixtureRef];
+}
+
+function decisionRefForCard(projection, card) {
+  const decision = projection.annotations.find((annotation) =>
+    annotation.kind === "surfaceops-decision" && annotation.cardId === card.cardId
+  );
+  if (!decision) return null;
+  return {
+    annotationId: decision.annotationId,
+    decisionId: decision.decisionId,
+    evidenceRefs: decision.evidenceRefs
   };
 }
 
@@ -1021,6 +1073,31 @@ function assertGeneratedProjection(projection) {
     }
     if (card.nonExecutable !== true) {
       throw contractError("generated SurfaceOps kanban projection failed semantic validation: SURFACEOPS_KANBAN_EXECUTION_FORBIDDEN", 1);
+    }
+  }
+  for (const annotation of projection.annotations) {
+    if (annotation.kind === "surfaceops-decision") {
+      const execution = annotation.execution || {};
+      if (
+        annotation.nonExecutable !== true ||
+        execution.authorized !== false ||
+        ![
+          "callbacks",
+          "connectorCalls",
+          "fileEdits",
+          "networkCalls",
+          "secrets",
+          "shellCommands",
+          "toolCalls"
+        ].every((key) => Array.isArray(execution[key]) && execution[key].length === 0)
+      ) {
+        throw contractError("generated SurfaceOps kanban projection failed semantic validation: SURFACEOPS_KANBAN_EXECUTION_FORBIDDEN", 1);
+      }
+    }
+    if (annotation.kind === "judgmentkit-quality-finding") {
+      if (Object.values(annotation.authority || {}).some((value) => value !== false)) {
+        throw contractError("generated SurfaceOps kanban projection failed semantic validation: SURFACEOPS_KANBAN_AUTHORITY_OVERRIDE", 1);
+      }
     }
   }
 }
