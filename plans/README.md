@@ -13,14 +13,15 @@ These documents are subordinate to `VISION.md` and support the phase plans witho
 1. [Product Portfolio Boundaries](product-portfolio-boundaries.md)
 2. [SurfaceOps Product Brief](surfaceops-product-brief.md)
 3. [SurfaceOps UI Decisions And Review Criteria](surfaceops-ui-decisions-review-criteria.md)
-4. [Product Designer Workflow](product-designer-workflow.md)
-5. [Product Designer Workflow Trace](product-designer-workflow-trace.md)
-6. [Usability And Value Evidence Plan](usability-value-evidence.md)
-7. [Curated Design-Partner Testing Program](design-partner-testing.md)
-8. [Design-System Readiness Plan](design-system-readiness.md)
-9. [Surfaces Systems Category Page Draft](surfaces-systems-category-page.md)
-10. [SurfaceOps Kanban Static Proof Target](surfaceops-kanban-static.md)
-11. [SurfaceOps Kanban Live Proof Target](surfaceops-kanban-live.md)
+4. [SurfaceOps Button Variants Journey](surfaceops-button-variants-journey.md)
+5. [Product Designer Workflow](product-designer-workflow.md)
+6. [Product Designer Workflow Trace](product-designer-workflow-trace.md)
+7. [Usability And Value Evidence Plan](usability-value-evidence.md)
+8. [Curated Design-Partner Testing Program](design-partner-testing.md)
+9. [Design-System Readiness Plan](design-system-readiness.md)
+10. [Surfaces Systems Category Page Draft](surfaces-systems-category-page.md)
+11. [SurfaceOps Kanban Static Proof Target](surfaceops-kanban-static.md)
+12. [SurfaceOps Kanban Live Proof Target](surfaceops-kanban-live.md)
 
 The curated design-partner testing program and templates under `plans/design-partner-testing/` are also subordinate to `VISION.md`, `PLAN.md`, and passing phase evidence. Treat them as non-proof research and planning surfaces for partner task design, synthetic dry runs, feedback capture, scorecards, and synthesis. They may point testers to evidence-backed demos for inspection, but they must not create implementation claims, proof status, catalog authority, or demo authority.
 
@@ -33,6 +34,12 @@ The surfaces.systems category page draft is a subordinate product-surface draft
 for human positioning only. It does not create proof authority, customer
 validation, production readiness, pilot readiness, live product behavior, or
 support for unproved targets.
+
+The SurfaceOps Button variants journey is subordinate product and prototype
+planning for the `kanban.cards` -> SurfaceOps designer review loop. It maps the
+board, card, SurfaceOps DAG review, node inspector, decision receipt, and
+mirrored return-to-board flow. It is planning only and does not broaden
+implemented proof status.
 
 The SurfaceOps kanban static proof target is implemented for a deterministic,
 inert SurfaceOps-owned board projection over accepted P3/P4 evidence and a
