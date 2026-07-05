@@ -1,12 +1,14 @@
-# SurfaceOps Kanban Static Proof Shape
+# SurfaceOps Kanban Static Proof Target
 
 ## Status
-This is a planning-only proof-shape document for a future `surfaceops-kanban-static` target. It does not implement schemas, fixtures, commands, artifacts, evidence, CI gates, demos, live product behavior, or support claims.
+`surfaceops-kanban-static` is implemented as a deterministic, inert, target-specific proof. It has schemas, fixtures, diagnostics, a command implementation, generated artifacts, adapter report, final evidence, package scripts, tests, CI wiring, and passing evidence at `artifacts/surfaceops-kanban-static/evidence.json`.
+
+This proof does not implement live product behavior. It does not create live `kanban.cards` writes or reads, live SurfaceOps, live JudgmentKit, persistence, production adapters, APIs, SDKs, A2UI, hidden review state, execution authority, customer validation, or product adoption claims.
 
 `VISION.md` remains canonical for product vision, authority taxonomy, roadmap sequence, surface roles, and agent operating rules. This document is subordinate to `VISION.md`, `PLAN.md`, and accepted proof evidence.
 
 ## Decision
-`surfaceops-kanban-static` should be the first SurfaceOps-owned proof target for using `kanban.cards` as an upstream board substrate for SurfaceOps workflows.
+`surfaceops-kanban-static` is the first SurfaceOps-owned proof target for using `kanban.cards` as an upstream board substrate for SurfaceOps workflows.
 
 The target is a deterministic inert projection proof. It consumes accepted P3/P4 evidence plus a local, manifest-declared, hash-bound `kanban.cards` board substrate contract. It emits SurfaceOps-owned board projection, board packet, report, and evidence artifacts that can be inspected by humans or future tools without becoming live board state.
 
@@ -18,9 +20,9 @@ The target preserves the Surfaces authority chain:
 - Board projections and packets are derived consumers. They do not add catalog policy, review policy, promotion status, execution authority, persistence authority, or hidden review state.
 
 ## Product Boundary
-`surfaceops-kanban-static` is a future target proof, not a new roadmap phase and not a live SurfaceOps product.
+`surfaceops-kanban-static` is a target proof, not a new roadmap phase and not a live SurfaceOps product.
 
-It may prove that accepted review queue rows, SurfaceOps decision rows, JudgmentKit-shaped findings, and evidence refs can be projected into deterministic board-ready records under a declared `kanban.cards` substrate contract.
+It proves that accepted review queue rows, SurfaceOps decision rows, JudgmentKit-shaped findings, and evidence refs can be projected into deterministic board-ready records under a declared `kanban.cards` substrate contract.
 
 It must not:
 
@@ -33,7 +35,7 @@ It must not:
 - use cards, lanes, comments, assignments, or board status as Surfaces proof authority.
 
 ## Inputs
-The future proof should consume only local POSIX-relative paths from the workspace root.
+The proof consumes only local POSIX-relative paths from the workspace root.
 
 Required Surfaces inputs:
 
@@ -55,9 +57,9 @@ Required substrate input:
 The substrate contract must be hash-bound before projection. If `kanban.cards` later emits its own substrate evidence artifact, this proof should consume that accepted local evidence as a preflight input. Until such a proof exists, Surfaces can only claim compatibility with the declared local substrate contract shape, not with live `kanban.cards` behavior.
 
 ## Outputs
-The future target should emit a closed artifact set under `artifacts/surfaceops-kanban-static/`.
+The target emits a closed artifact set under `artifacts/surfaceops-kanban-static/`.
 
-Planned generated artifacts:
+Generated artifacts:
 
 ```text
 artifacts/surfaceops-kanban-static/
@@ -74,17 +76,19 @@ The board projection defines the allowed board, lane, card, tag, evidence-ref, a
 
 The designer view model translates those refs into the SurfaceOps product
 language a reviewer or product designer needs before inspecting raw JSON:
-scenario, component, proof status, promotion status, allowed outcomes,
+scenario, task scope, proof status, promotion status, allowed outcomes,
 review-required outcomes, blocked outcomes, authority refs, decision refs,
-diagnostic summaries, handoff eligibility, and audit-packet inputs. It remains
+diagnostic summaries, handoff eligibility, and audit-packet inputs. Component
+scope is intentionally empty until accepted upstream review artifacts carry
+component scope. It remains
 an index over accepted evidence and must not become proof authority.
 
 Board packets are inert handoff artifacts. They may contain declarative board records with refs to P3 queue items, P4 decision rows, JudgmentKit-shaped findings, diagnostics, and evidence. They must not contain write intents, callbacks, commands, live URLs requiring network access, webhook targets, transport config, credentials, hidden comments, hidden labels, or runtime execution flags.
 
 The adapter report records expected and actual fixture outcomes before final evidence. Final evidence owns the complete hash closure for upstream inputs, substrate contract input, fixtures, schemas, generated artifacts, diagnostics, and itself.
 
-## Command Sketch
-This command is a planned sketch only. It must not be documented as runnable until the schemas, fixtures, implementation, reports, evidence, tests, and package scripts exist.
+## Command
+The implemented proof command is:
 
 ```bash
 interfacectl surfaces surfaceops-kanban-static proof \
@@ -100,7 +104,7 @@ interfacectl surfaces surfaceops-kanban-static proof \
   --out artifacts/surfaceops-kanban-static
 ```
 
-Command behavior should follow existing proof gates:
+Command behavior follows existing proof gates:
 
 - run from the workspace root;
 - accept only POSIX-style relative paths;
@@ -111,8 +115,8 @@ Command behavior should follow existing proof gates:
 - use deterministic ordering, deterministic timestamps, host-derived fields set to `null`, and RFC 8785/JCS canonical JSON;
 - produce report rows before final evidence.
 
-## Planned Schemas
-A future implementation should add target-specific schemas before claiming support.
+## Schemas
+The implementation adds target-specific schemas before claiming support.
 
 ```text
 schemas/
@@ -127,6 +131,7 @@ schemas/
   surfaceops-kanban-expectations.v0.schema.json
   surfaceops-kanban-diagnostics.v0.schema.json
   surfaceops-kanban-preflight-mutation.v0.schema.json
+  surfaceops-kanban-fixture.v0.schema.json
 ```
 
 If the upstream `kanban.cards` contract is copied into a declared local source
@@ -151,21 +156,25 @@ The projection must be one-way and SurfaceOps-owned.
 Lane and card status must be derived deterministically from accepted P3/P4 artifacts. A board card may display a decision, but it must not become the decision.
 
 ## Fixtures
-The future fixture root should be `fixtures/surfaceops-kanban-static/`.
+The fixture root is `fixtures/surfaceops-kanban-static/`.
 
-Planned fixture layout:
+Fixture layout:
 
 ```text
 fixtures/surfaceops-kanban-static/
   expectations.manifest.json
+  surfaceops-kanban-target-selection.fixture.json
   valid/
     p3-review-queue-to-board.surfaceops-kanban.json
-    button-designer-view-model.surfaceops-kanban.json
     p4-decisions-to-board-packet.surfaceops-kanban.json
     judgment-findings-to-card-annotations.surfaceops-kanban.json
+    designer-view-model.surfaceops-kanban.json
   review/
     deferred-decision-remains-review-required.surfaceops-kanban.json
   invalid/
+    target-undeclared.surfaceops-kanban.json
+    target-out-of-scope.surfaceops-kanban.json
+    authority-override.surfaceops-kanban.json
     missing-evidence-ref.surfaceops-kanban.json
     hidden-review-state.surfaceops-kanban.json
     live-kanban-write.surfaceops-kanban.json
@@ -176,8 +185,7 @@ fixtures/surfaceops-kanban-static/
     secret-ref.surfaceops-kanban.json
     production-adapter-claim.surfaceops-kanban.json
     a2ui-claim.surfaceops-kanban.json
-    malformed-kanban-substrate.surfaceops-kanban.json
-    substrate-authority-override.surfaceops-kanban.json
+    unsupported-substrate.surfaceops-kanban.json
   mutations/
     missing-p3-evidence.surfaceops-kanban-preflight.json
     failing-p3-evidence.surfaceops-kanban-preflight.json
@@ -188,15 +196,16 @@ fixtures/surfaceops-kanban-static/
     missing-kanban-substrate-manifest.surfaceops-kanban-preflight.json
     missing-kanban-substrate.surfaceops-kanban-preflight.json
     kanban-substrate-hash-mismatch.surfaceops-kanban-preflight.json
-    projection-hash-mismatch.surfaceops-kanban-board-projection.json
-    report-packet-hash-mismatch.surfaceops-kanban-adapter-report.json
+    malformed-kanban-substrate.surfaceops-kanban-preflight.json
+    projection-hash-mismatch.surfaceops-kanban.json
+    report-packet-hash-mismatch.surfaceops-kanban.json
     hash-mismatch.surfaceops-kanban-evidence.json
 ```
 
 Every fixture expectation should declare stage, phase, expected diagnostic code, expected promotion status, expected artifact paths, expected evidence refs, and whether output packets are emitted.
 
 ## Diagnostics
-The future diagnostics registry should include canonical messages, severity,
+The diagnostics registry includes canonical messages, severity,
 artifact paths, JSON Pointers, source refs, and fixture coverage for every
 invalid or mutation case.
 
@@ -207,9 +216,11 @@ invalid or mutation case.
 | `SURFACEOPS_KANBAN_UPSTREAM_HASH_MISMATCH` | Upstream artifact hash differs from accepted evidence | Upstream artifact hash does not match accepted evidence. | `preflight` | `error` | `blocked` | `artifacts/p3/evidence.json`; `artifacts/p4/evidence.json` | `/artifacts` | `null` | `mutations/p3-evidence-hash-mismatch.surfaceops-kanban-preflight.json`; `mutations/p4-evidence-hash-mismatch.surfaceops-kanban-preflight.json` |
 | `SURFACEOPS_KANBAN_SUBSTRATE_MISSING` | Declared `kanban.cards` substrate manifest or contract is missing | Kanban substrate boundary is missing. | `substrate` | `error` | `blocked` | `sources/surfaceops-kanban-static/kanban-substrate-manifest.json` | `/substrateRefs` | `null` | `mutations/missing-kanban-substrate-manifest.surfaceops-kanban-preflight.json`; `mutations/missing-kanban-substrate.surfaceops-kanban-preflight.json` |
 | `SURFACEOPS_KANBAN_SUBSTRATE_HASH_MISMATCH` | Substrate hash differs from the declared manifest or evidence ref | Kanban substrate hash does not match the declared boundary. | `substrate` | `error` | `blocked` | `sources/surfaceops-kanban-static/kanban-substrate-manifest.json` | `/substrateRefs/0/hash` | `null` | `mutations/kanban-substrate-hash-mismatch.surfaceops-kanban-preflight.json` |
-| `SURFACEOPS_KANBAN_SUBSTRATE_INVALID` | Declared `kanban.cards` substrate contract is malformed or contains unsupported fields | Kanban substrate contract is invalid. | `substrate` | `error` | `blocked` | `fixtures/surfaceops-kanban-static/invalid/malformed-kanban-substrate.surfaceops-kanban.json` | `/substrate` | `fixture://surfaceops-kanban-static/invalid/malformed-kanban-substrate#/substrate` | `invalid/malformed-kanban-substrate.surfaceops-kanban.json` |
-| `SURFACEOPS_KANBAN_SUBSTRATE_UNSUPPORTED` | Projection requests board fields outside the declared substrate | Board projection requests unsupported kanban substrate behavior. | `projection` | `error` | `blocked` | `fixtures/surfaceops-kanban-static/invalid/substrate-authority-override.surfaceops-kanban.json` | `/projection/boardFields` | `fixture://surfaceops-kanban-static/invalid/substrate-authority-override#/projection` | `invalid/substrate-authority-override.surfaceops-kanban.json` |
-| `SURFACEOPS_KANBAN_AUTHORITY_OVERRIDE` | Board projection attempts to override catalog, evidence, review, or decision authority | Kanban projection must not override Surfaces authority. | `projection` | `error` | `blocked` | `fixtures/surfaceops-kanban-static/invalid/substrate-authority-override.surfaceops-kanban.json` | `/projection/authority` | `fixture://surfaceops-kanban-static/invalid/substrate-authority-override#/projection/authority` | `invalid/substrate-authority-override.surfaceops-kanban.json` |
+| `SURFACEOPS_KANBAN_SUBSTRATE_INVALID` | Declared `kanban.cards` substrate contract is malformed or contains unsupported fields | Kanban substrate contract is invalid. | `substrate` | `error` | `blocked` | `fixtures/surfaceops-kanban-static/mutations/malformed-kanban-substrate.surfaceops-kanban-preflight.json` | `/substrate` | `null` | `mutations/malformed-kanban-substrate.surfaceops-kanban-preflight.json` |
+| `SURFACEOPS_KANBAN_SUBSTRATE_UNSUPPORTED` | Projection requests board fields outside the declared substrate | Board projection requests unsupported kanban substrate behavior. | `projection` | `error` | `blocked` | `fixtures/surfaceops-kanban-static/invalid/unsupported-substrate.surfaceops-kanban.json` | `/projection/boardFields` | `fixture://surfaceops-kanban-static/invalid/unsupported-substrate#/projection` | `invalid/unsupported-substrate.surfaceops-kanban.json` |
+| `SURFACEOPS_KANBAN_TARGET_UNDECLARED` | Target fixture omits the static target id | SurfaceOps kanban target is not declared. | `target-selection` | `error` | `blocked` | `fixtures/surfaceops-kanban-static/invalid/target-undeclared.surfaceops-kanban.json` | `/targetId` | `fixture://surfaceops-kanban-static/invalid/target-undeclared#/targetId` | `invalid/target-undeclared.surfaceops-kanban.json` |
+| `SURFACEOPS_KANBAN_TARGET_OUT_OF_SCOPE` | Target fixture exceeds the static board projection scope | SurfaceOps kanban target exceeds accepted static board scope. | `target-selection` | `error` | `blocked` | `fixtures/surfaceops-kanban-static/invalid/target-out-of-scope.surfaceops-kanban.json` | `/boardScope` | `fixture://surfaceops-kanban-static/invalid/target-out-of-scope#/boardScope` | `invalid/target-out-of-scope.surfaceops-kanban.json` |
+| `SURFACEOPS_KANBAN_AUTHORITY_OVERRIDE` | Board projection attempts to override catalog, evidence, review, or decision authority | Kanban projection must not override Surfaces authority. | `projection` | `error` | `blocked` | `fixtures/surfaceops-kanban-static/invalid/authority-override.surfaceops-kanban.json` | `/projection/authority` | `fixture://surfaceops-kanban-static/invalid/authority-override#/projection/authority` | `invalid/authority-override.surfaceops-kanban.json` |
 | `SURFACEOPS_KANBAN_EVIDENCE_REF_MISSING` | Projected card, packet, view-model row, or report row omits required evidence refs | Kanban projection required evidence reference is missing. | `projection` | `error` | `blocked` | `fixtures/surfaceops-kanban-static/invalid/missing-evidence-ref.surfaceops-kanban.json` | `/projection/evidenceRefs` | `fixture://surfaceops-kanban-static/invalid/missing-evidence-ref#/projection/evidenceRefs` | `invalid/missing-evidence-ref.surfaceops-kanban.json` |
 | `SURFACEOPS_KANBAN_HIDDEN_REVIEW_STATE` | Card, lane, packet, or report contains hidden decision or review state | Kanban packet contains hidden review state. | `packet` | `error` | `blocked` | `fixtures/surfaceops-kanban-static/invalid/hidden-review-state.surfaceops-kanban.json` | `/packet/hiddenState` | `fixture://surfaceops-kanban-static/invalid/hidden-review-state#/packet/hiddenState` | `invalid/hidden-review-state.surfaceops-kanban.json` |
 | `SURFACEOPS_KANBAN_LIVE_WRITE_FORBIDDEN` | Fixture or packet attempts a live kanban write | Live kanban writes are forbidden. | `packet` | `error` | `blocked` | `fixtures/surfaceops-kanban-static/invalid/live-kanban-write.surfaceops-kanban.json` | `/packet/liveWrite` | `fixture://surfaceops-kanban-static/invalid/live-kanban-write#/packet/liveWrite` | `invalid/live-kanban-write.surfaceops-kanban.json` |
@@ -220,17 +231,18 @@ invalid or mutation case.
 | `SURFACEOPS_KANBAN_SECRET_FORBIDDEN` | Fixture or packet contains credentials, tokens, or secret refs | Kanban packets must not contain secrets. | `packet` | `error` | `blocked` | `fixtures/surfaceops-kanban-static/invalid/secret-ref.surfaceops-kanban.json` | `/packet/secrets` | `fixture://surfaceops-kanban-static/invalid/secret-ref#/packet/secrets` | `invalid/secret-ref.surfaceops-kanban.json` |
 | `SURFACEOPS_KANBAN_PRODUCTION_ADAPTER_FORBIDDEN` | Fixture or packet claims production adapter, API, SDK, or hosted service support | Production adapter claims are outside this proof. | `packet` | `error` | `blocked` | `fixtures/surfaceops-kanban-static/invalid/production-adapter-claim.surfaceops-kanban.json` | `/packet/claims` | `fixture://surfaceops-kanban-static/invalid/production-adapter-claim#/packet/claims` | `invalid/production-adapter-claim.surfaceops-kanban.json` |
 | `SURFACEOPS_KANBAN_A2UI_FORBIDDEN` | Fixture or packet claims A2UI export or conformance | A2UI claims are outside this proof. | `packet` | `error` | `blocked` | `fixtures/surfaceops-kanban-static/invalid/a2ui-claim.surfaceops-kanban.json` | `/packet/claims` | `fixture://surfaceops-kanban-static/invalid/a2ui-claim#/packet/claims` | `invalid/a2ui-claim.surfaceops-kanban.json` |
-| `SURFACEOPS_KANBAN_PROJECTION_HASH_MISMATCH` | Projection hash differs from the report or evidence manifest | Kanban projection hash does not match generated artifact refs. | `projection` | `error` | `blocked` | `fixtures/surfaceops-kanban-static/mutations/projection-hash-mismatch.surfaceops-kanban-board-projection.json` | `/projectionRef/hash` | `null` | `mutations/projection-hash-mismatch.surfaceops-kanban-board-projection.json` |
-| `SURFACEOPS_KANBAN_REPORT_HASH_MISMATCH` | Report refs do not match generated projection or packet hashes | Kanban report hash does not match generated artifacts. | `report` | `error` | `blocked` | `fixtures/surfaceops-kanban-static/mutations/report-packet-hash-mismatch.surfaceops-kanban-adapter-report.json` | `/packetRefs` | `null` | `mutations/report-packet-hash-mismatch.surfaceops-kanban-adapter-report.json` |
+| `SURFACEOPS_KANBAN_PROJECTION_HASH_MISMATCH` | Projection hash differs from the report or evidence manifest | Kanban projection hash does not match generated artifact refs. | `projection` | `error` | `blocked` | `fixtures/surfaceops-kanban-static/mutations/projection-hash-mismatch.surfaceops-kanban.json` | `/projectionRef/hash` | `null` | `mutations/projection-hash-mismatch.surfaceops-kanban.json` |
+| `SURFACEOPS_KANBAN_REPORT_HASH_MISMATCH` | Report refs do not match generated projection or packet hashes | Kanban report hash does not match generated artifacts. | `report` | `error` | `blocked` | `fixtures/surfaceops-kanban-static/mutations/report-packet-hash-mismatch.surfaceops-kanban.json` | `/packetRefs` | `null` | `mutations/report-packet-hash-mismatch.surfaceops-kanban.json` |
 | `SURFACEOPS_KANBAN_EVIDENCE_HASH_MISMATCH` | Final evidence hash differs from manifest or self-hash rule | Kanban evidence hash does not match the evidence manifest. | `evidence` | `error` | `blocked` | `fixtures/surfaceops-kanban-static/mutations/hash-mismatch.surfaceops-kanban-evidence.json` | `/artifacts` | `null` | `mutations/hash-mismatch.surfaceops-kanban-evidence.json` |
+| `SURFACEOPS_KANBAN_REVIEW_REQUIRED` | No committed allowed decision is present for a queue row | Review remains required because no committed allowed decision is present. | `projection` | `review` | `review_required` | `fixtures/surfaceops-kanban-static/review/deferred-decision-remains-review-required.surfaceops-kanban.json` | `/cards/0/laneId` | `fixture://surfaceops-kanban-static/review/deferred-decision-remains-review-required#/cards/0/laneId` | `review/deferred-decision-remains-review-required.surfaceops-kanban.json` |
 
 ## Acceptance Tests
-The future implementation should not be accepted until these tests pass.
+The implementation is accepted when these tests pass.
 
 - The command rejects missing, failing, stale, or hash-mismatched P3/P4 evidence before reading target fixtures or writing artifacts.
 - The command rejects missing, stale, or hash-mismatched `kanban.cards`
   substrate manifests and contracts before projection.
-- The command emits exactly the planned output set and fails closed on stale unexpected output.
+- The command emits exactly the implemented output set and fails closed on stale unexpected output.
 - The target selection declares exactly `surfaceops-kanban-static`.
 - The board projection is derived only from accepted P3/P4 artifacts and the declared substrate contract.
 - The designer view model keeps proof status separate from promotion status and
@@ -258,8 +270,8 @@ The future implementation should not be accepted until these tests pass.
 - No catalog policy changes, promotion-status changes, review-decision overrides, evidence rewrites, hidden review state, or proof-authority transfer to `kanban.cards`.
 - No claim that `kanban.cards` is implemented as SurfaceOps or that SurfaceOps is implemented as `kanban.cards`.
 
-## First PR Scope
-The first implementation PR for this target should be narrow and proof-shaped.
+## Implemented Scope
+The first implementation slice is narrow and proof-shaped.
 
 Include:
 
@@ -282,6 +294,6 @@ Exclude:
 - live `kanban.cards` writes or reads;
 - live SurfaceOps or JudgmentKit;
 - production adapters, APIs, SDKs, A2UI, execution, secrets, callbacks, network calls, or hidden review state;
-- broad product UI work beyond any generated proof demo explicitly backed by passing evidence.
+- broad product UI work beyond the generated proof artifacts explicitly backed by passing evidence.
 
-This planning document alone is not that implementation PR and creates no runnable command or support claim.
+This implemented proof creates no live board, product UI, persistence, or support claim beyond the evidence-backed static projection target.

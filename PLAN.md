@@ -14,11 +14,12 @@ design-system candidates such as broader Spectrum slices or Astryx. It does not
 create implementation support, a proof command, schemas, fixtures, artifacts,
 evidence, CI gates, or product adoption claims.
 
-[SurfaceOps Kanban Static Proof Shape](plans/surfaceops-kanban-static.md)
-records the planned target-specific proof shape for projecting SurfaceOps
-evidence into inert `kanban.cards` board-ready records. It does not create
-implemented support, live SurfaceOps, live board sync, schemas, fixtures,
-artifacts, evidence, CI gates, or product adoption claims.
+[SurfaceOps Kanban Static Proof Target](plans/surfaceops-kanban-static.md)
+records the implemented target-specific proof for projecting accepted P3/P4
+SurfaceOps evidence into inert `kanban.cards` board-ready records under a
+manifest-declared local substrate contract. It does not create live SurfaceOps,
+live board sync, persistence, production adapters, APIs, SDKs, A2UI, or product
+adoption claims.
 
 Any implementation or roadmap-status claim should cite the phase proof command, evidence path, evidence `status`, promotion status, and relevant CI gate. Generated demos may help present the claim, but demos are not proof authority.
 

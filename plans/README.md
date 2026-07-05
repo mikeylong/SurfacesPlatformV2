@@ -2,10 +2,10 @@
 
 For product vision, authority taxonomy, roadmap sequence, surface roles, and agent operating rules, read [Surfaces Platform Vision And Roadmap](../VISION.md) first. This index is the mechanical contract reference for phase subplans. Phase subplans add phase-local deltas and mechanics only. Developer and agent documentation obligations for `surfaces.dev` are tracked in [Surfaces.dev Documentation Tracking](surfaces-dev.md).
 
-These subplans define the Surfaces Platform proof contracts and their materialized schemas, fixtures, artifacts, demos, scripts, and tests. P0 specifies the first executable catalog proof, P1 specifies the first runtime projection proof, P2 specifies bounded real design-system ingestion, P3 specifies inert agent orchestration proof, P4 specifies review and judgment proof without turning derived consumers into new authority, and P5 specifies the bounded `surfaces-protocol-static` protocol-envelope proof plus the sibling `surfaces-native-static` native-packet proof. The source-conformance subplan specifies a target-specific declared-source conformance proof over accepted P2 evidence. Product Designer Workflow Trace specifies the implemented non-numbered trace target over accepted P2, source-conformance, P3, P4, protocol, and native evidence. Future targets remain planned until they add their own complete proof shape and passing evidence.
+These subplans define the Surfaces Platform proof contracts and their materialized schemas, fixtures, artifacts, demos, scripts, and tests. P0 specifies the first executable catalog proof, P1 specifies the first runtime projection proof, P2 specifies bounded real design-system ingestion, P3 specifies inert agent orchestration proof, P4 specifies review and judgment proof without turning derived consumers into new authority, and P5 specifies the bounded `surfaces-protocol-static` protocol-envelope proof plus the sibling `surfaces-native-static` native-packet proof. The source-conformance subplan specifies a target-specific declared-source conformance proof over accepted P2 evidence. Product Designer Workflow Trace specifies the implemented non-numbered trace target over accepted P2, source-conformance, P3, P4, protocol, and native evidence. SurfaceOps Kanban Static specifies the implemented non-numbered target over accepted P3/P4 evidence and a manifest-declared local `kanban.cards` substrate contract. Future targets remain planned until they add their own complete proof shape and passing evidence.
 
 ## Roadmap Status Snapshot
-The current implemented proof roadmap is P0-P5, where P5 means only the `surfaces-protocol-static` and `surfaces-native-static` proof-only slices. The repo also includes the declared-source conformance and designer-workflow-trace target proofs listed in [VISION.md](../VISION.md#current-roadmap-proof-snapshot). The canonical status snapshot lives in `VISION.md`, and the human-readable value map lives in [Usability And Value Evidence Plan](usability-value-evidence.md). Future P5 targets such as A2UI conformance, production APIs, SDKs, live protocol services, live native runtimes, live SurfaceOps, or live JudgmentKit remain planned until they add their own target-specific schema, fixture, diagnostics, command contract, report or artifact path, evidence path, demo boundary, CI gate, and passing evidence. The future `surfaceops-kanban-static` planning target is the reserved target-specific proof shape for a SurfaceOps/kanban upstream-substrate bridge; it remains planned until schemas, fixtures, diagnostics, command implementation, artifacts, report, evidence, demo boundary, CI gate, and passing evidence exist.
+The current implemented proof roadmap is P0-P5, where P5 means only the `surfaces-protocol-static` and `surfaces-native-static` proof-only slices. The repo also includes the declared-source conformance, designer-workflow-trace, and `surfaceops-kanban-static` target proofs listed in [VISION.md](../VISION.md#current-roadmap-proof-snapshot). The canonical status snapshot lives in `VISION.md`, and the human-readable value map lives in [Usability And Value Evidence Plan](usability-value-evidence.md). Future P5 targets such as A2UI conformance, production APIs, SDKs, live protocol services, live native runtimes, live SurfaceOps, live `kanban.cards` sync, or live JudgmentKit remain planned until they add their own target-specific schema, fixture, diagnostics, command contract, report or artifact path, evidence path, demo boundary, CI gate, and passing evidence.
 
 ## Cross-Cutting Documentation
 These documents are subordinate to `VISION.md` and support the phase plans without redefining authority or proof status.
@@ -19,7 +19,7 @@ These documents are subordinate to `VISION.md` and support the phase plans witho
 7. [Curated Design-Partner Testing Program](design-partner-testing.md)
 8. [Design-System Readiness Plan](design-system-readiness.md)
 9. [Surfaces Systems Category Page Draft](surfaces-systems-category-page.md)
-10. [SurfaceOps Kanban Static Proof Shape](surfaceops-kanban-static.md)
+10. [SurfaceOps Kanban Static Proof Target](surfaceops-kanban-static.md)
 
 The curated design-partner testing program and templates under `plans/design-partner-testing/` are also subordinate to `VISION.md`, `PLAN.md`, and passing phase evidence. Treat them as non-proof research and planning surfaces for partner task design, synthetic dry runs, feedback capture, scorecards, and synthesis. They may point testers to evidence-backed demos for inspection, but they must not create implementation claims, proof status, catalog authority, or demo authority.
 
@@ -33,12 +33,11 @@ for human positioning only. It does not create proof authority, customer
 validation, production readiness, pilot readiness, live product behavior, or
 support for unproved targets.
 
-The SurfaceOps kanban static proof shape is a future planning target for the
-SurfaceOps/`kanban.cards` upstream-substrate bridge. It does not create
-implemented support, live SurfaceOps, live board sync, proof authority, or
-handoff authority until target-specific schemas, fixtures, diagnostics, command
-implementation, artifacts or reports, evidence, CI gates, and passing evidence
-exist.
+The SurfaceOps kanban static proof target is implemented for a deterministic,
+inert SurfaceOps-owned board projection over accepted P3/P4 evidence and a
+manifest-declared local `kanban.cards` substrate contract. It does not create
+live SurfaceOps, live board sync, persistence, production adapter, API, SDK,
+A2UI, hidden review state, execution authority, or product adoption claims.
 
 ## P0 Dependency Order
 1. [Runtime Catalog v0](runtime-catalog-v0.md)
