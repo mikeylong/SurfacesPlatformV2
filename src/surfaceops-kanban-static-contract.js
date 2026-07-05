@@ -46,6 +46,8 @@ export const SK_SCHEMA_FILES = [
   "surfaceops-kanban-board-packet.v0.schema.json",
   "surfaceops-kanban-adapter-report.v0.schema.json",
   "surfaceops-kanban-evidence.v0.schema.json",
+  "surfaceops-kanban-browser-functional-report.v0.schema.json",
+  "surfaceops-kanban-browser-functional-evidence.v0.schema.json",
   "surfaceops-kanban-expectations.v0.schema.json",
   "surfaceops-kanban-diagnostics.v0.schema.json",
   "surfaceops-kanban-preflight-mutation.v0.schema.json",
@@ -408,6 +410,11 @@ export function buildSurfaceopsKanbanStaticSchemas() {
   const packetExecution = packetExecutionSchema();
   const preflight = preflightSchema();
   const environment = environmentSchema();
+  const browserFileRef = browserFunctionalFileRefSchema();
+  const browserStep = browserFunctionalStepSchema();
+  const browserAssertion = browserFunctionalAssertionSchema();
+  const browserRuntime = browserFunctionalRuntimeSchema();
+  const browserBoundary = browserFunctionalBoundarySchema();
   const commonArtifactProperties = {
     version: { const: SK_VERSION },
     provenance
@@ -529,6 +536,56 @@ export function buildSurfaceopsKanbanStaticSchemas() {
       diagnostics,
       diagnosticsRegistry
     }, ["schemaId", "version", "runId", "contractId", "targetId", "status", "promotionStatus", "command", "args", "checkedAt", "environment", "schemaClosure", "fixtureRefs", "boundaryRefs", "artifacts", "validationResults", "diagnostics", "diagnosticsRegistry", "provenance"]),
+    "surfaceops-kanban-browser-functional-report.v0.schema.json": objectSchema("surfaceops-kanban-browser-functional-report.v0", {
+      ...commonArtifactProperties,
+      schemaId: { const: "surfaceops-kanban-browser-functional-report.v0" },
+      targetId: { const: SK_TARGET_ID },
+      scenarioId: { const: SK_SCENARIO_ID },
+      status: { enum: ["pass", "fail"] },
+      promotionStatus: { enum: ["allowed", "review_required", "blocked"] },
+      command: { type: "string" },
+      demoPath: { type: "string" },
+      staticEvidenceRef: artifactRef,
+      browser: browserRuntime,
+      steps: { type: "array", minItems: 1, items: browserStep },
+      assertions: { type: "array", minItems: 1, items: browserAssertion },
+      selectedCard: objectSchema(null, {
+        cardId: { type: "string" },
+        laneId: { type: "string" },
+        decisionStatus: { type: "string" },
+        decisionPromotionStatus: { type: "string" },
+        nextActionOwner: nextActionOwnerSchema(),
+        evidenceRefs: { type: "array", minItems: 1, items: artifactRef }
+      }, ["cardId", "laneId", "decisionStatus", "decisionPromotionStatus", "nextActionOwner", "evidenceRefs"]),
+      boundary: browserBoundary,
+      recordingRef: browserFileRef,
+      screenshotRef: browserFileRef,
+      transcriptRef: browserFileRef,
+      evidenceRef: { anyOf: [browserFileRef, { type: "null" }] }
+    }, ["schemaId", "version", "targetId", "scenarioId", "status", "promotionStatus", "command", "demoPath", "staticEvidenceRef", "browser", "steps", "assertions", "selectedCard", "boundary", "recordingRef", "screenshotRef", "transcriptRef", "evidenceRef", "provenance"]),
+    "surfaceops-kanban-browser-functional-evidence.v0.schema.json": objectSchema("surfaceops-kanban-browser-functional-evidence.v0", {
+      ...commonArtifactProperties,
+      schemaId: { const: "surfaceops-kanban-browser-functional-evidence.v0" },
+      targetId: { const: SK_TARGET_ID },
+      scenarioId: { const: SK_SCENARIO_ID },
+      status: { enum: ["pass", "fail"] },
+      promotionStatus: { enum: ["allowed", "review_required", "blocked"] },
+      command: { type: "string" },
+      checkedAt: { type: "string" },
+      environment: objectSchema(null, {
+        generatedAt: { type: "string" },
+        host: { type: "null" }
+      }, ["generatedAt", "host"]),
+      staticEvidenceRef: artifactRef,
+      demoRef: browserFileRef,
+      reportRef: browserFileRef,
+      recordingRef: browserFileRef,
+      screenshotRef: browserFileRef,
+      transcriptRef: browserFileRef,
+      assertions: { type: "array", minItems: 1, items: browserAssertion },
+      boundary: browserBoundary,
+      selfHash: { type: "string", pattern: "^[0-9a-f]{64}$" }
+    }, ["schemaId", "version", "targetId", "scenarioId", "status", "promotionStatus", "command", "checkedAt", "environment", "staticEvidenceRef", "demoRef", "reportRef", "recordingRef", "screenshotRef", "transcriptRef", "assertions", "boundary", "selfHash", "provenance"]),
     "surfaceops-kanban-expectations.v0.schema.json": objectSchema("surfaceops-kanban-expectations.v0", {
       ...commonArtifactProperties,
       schemaId: { const: "surfaceops-kanban-expectations.v0" },
@@ -1134,6 +1191,65 @@ function designerViewModelSchemas() {
       forbiddenClaims: stringArraySchema()
     }, ["staticBoardPacket", "reason", "forbiddenClaims"])
   };
+}
+
+function browserFunctionalFileRefSchema() {
+  return objectSchema(null, {
+    path: { type: "string" },
+    schemaId: { type: "string" },
+    hashAlgorithm: { const: "sha256" },
+    hash: { type: "string", pattern: "^[0-9a-f]{64}$" },
+    bytes: { type: "integer", minimum: 0 },
+    mimeType: { type: "string" },
+    sourceRef: { type: ["string", "null"] }
+  }, ["path", "schemaId", "hashAlgorithm", "hash", "bytes", "mimeType", "sourceRef"]);
+}
+
+function browserFunctionalStepSchema() {
+  return objectSchema(null, {
+    stepId: { type: "string" },
+    action: { type: "string" },
+    target: { type: "string" },
+    status: { enum: ["pass", "fail"] },
+    observedText: { type: ["string", "null"] }
+  }, ["stepId", "action", "target", "status", "observedText"]);
+}
+
+function browserFunctionalAssertionSchema() {
+  return objectSchema(null, {
+    assertionId: { type: "string" },
+    description: { type: "string" },
+    selector: { type: "string" },
+    expected: { type: "string" },
+    actual: { type: "string" },
+    status: { enum: ["pass", "fail"] }
+  }, ["assertionId", "description", "selector", "expected", "actual", "status"]);
+}
+
+function browserFunctionalRuntimeSchema() {
+  return objectSchema(null, {
+    browserName: { type: "string" },
+    browserVersion: { type: "string" },
+    headless: { type: "boolean" },
+    viewport: objectSchema(null, {
+      width: { type: "integer", minimum: 320 },
+      height: { type: "integer", minimum: 320 }
+    }, ["width", "height"]),
+    userAgent: { type: "string" }
+  }, ["browserName", "browserVersion", "headless", "viewport", "userAgent"]);
+}
+
+function browserFunctionalBoundarySchema() {
+  return objectSchema(null, {
+    staticOnly: { const: true },
+    liveKanbanWrites: { const: false },
+    liveSurfaceOpsWrites: { const: false },
+    liveJudgmentKitCalls: { const: false },
+    networkViolations: { type: "array", maxItems: 0, items: { type: "string" } },
+    executionAuthorized: { const: false },
+    hiddenReviewState: { const: false },
+    proofAuthority: { const: "artifacts/surfaceops-kanban-static/evidence.json" }
+  }, ["staticOnly", "liveKanbanWrites", "liveSurfaceOpsWrites", "liveJudgmentKitCalls", "networkViolations", "executionAuthorized", "hiddenReviewState", "proofAuthority"]);
 }
 
 function artifactRefSchema() {

@@ -1,7 +1,9 @@
 # SurfaceOps Kanban Static Proof Target
 
 ## Status
-`surfaceops-kanban-static` is implemented as a deterministic, inert, target-specific proof. It has schemas, fixtures, diagnostics, a command implementation, generated artifacts, adapter report, final evidence, package scripts, tests, CI wiring, and passing evidence at `artifacts/surfaceops-kanban-static/evidence.json`.
+`surfaceops-kanban-static` is implemented as a deterministic, inert, target-specific proof. It has schemas, fixtures, diagnostics, a command implementation, generated artifacts, adapter report, final evidence, generated demo output, package scripts, tests, CI wiring, and passing evidence at `artifacts/surfaceops-kanban-static/evidence.json`.
+
+A separate browser-functional gate drives the generated local demo in Chromium, records video, captures a screenshot and transcript, and writes a hashed runtime evidence bundle under `output/playwright/surfaceops-kanban-static/`. That browser evidence proves the generated static board can be inspected through a real browser scenario. It is not Surfaces catalog authority, review authority, promotion authority, persistent state, or a live-product claim.
 
 This proof does not implement live product behavior. It does not create live `kanban.cards` writes or reads, live SurfaceOps, live JudgmentKit, persistence, production adapters, APIs, SDKs, A2UI, hidden review state, execution authority, customer validation, or product adoption claims.
 
@@ -33,6 +35,7 @@ It must not:
 - read secrets, credentials, tokens, live identities, account metadata, or hidden state;
 - expose production adapters, APIs, SDKs, A2UI, or hosted services;
 - use cards, lanes, comments, assignments, or board status as Surfaces proof authority.
+- treat browser recordings, screenshots, generated demos, or CI uploaded artifacts as a substitute for `artifacts/surfaceops-kanban-static/evidence.json`.
 
 ## Inputs
 The proof consumes only local POSIX-relative paths from the workspace root.
@@ -87,6 +90,27 @@ Board packets are inert handoff artifacts. They may contain declarative board re
 
 The adapter report records expected and actual fixture outcomes before final evidence. Final evidence owns the complete hash closure for upstream inputs, substrate contract input, fixtures, schemas, generated artifacts, diagnostics, and itself.
 
+The generated demo is presentation output under `demo/surfaceops-kanban-static/`:
+
+```text
+demo/surfaceops-kanban-static/
+  README.md
+  index.html
+```
+
+The browser-functional proof writes runtime evidence under `output/playwright/surfaceops-kanban-static/`:
+
+```text
+output/playwright/surfaceops-kanban-static/
+  surfaceops-kanban-static-browser.webm
+  surfaceops-kanban-static-final.png
+  browser-functional-transcript.json
+  browser-functional-report.json
+  browser-functional-evidence.json
+```
+
+Those runtime files are intentionally outside the deterministic proof output root because video encoding is not byte-stable across browser and platform versions. The browser-functional evidence hashes the runtime files produced by that run and records the browser assertions that passed.
+
 ## Command
 The implemented proof command is:
 
@@ -115,6 +139,26 @@ Command behavior follows existing proof gates:
 - use deterministic ordering, deterministic timestamps, host-derived fields set to `null`, and RFC 8785/JCS canonical JSON;
 - produce report rows before final evidence.
 
+The generated demo command is:
+
+```bash
+npm run build:surfaceops-kanban-static-demo
+```
+
+The browser-functional proof command is:
+
+```bash
+npm run check:surfaceops-kanban-static:browser
+```
+
+It requires Playwright Chromium to be installed locally:
+
+```bash
+npx playwright install chromium
+```
+
+The browser-functional gate must open only `demo/surfaceops-kanban-static/index.html`, block non-file and non-data network requests, record video, capture a final screenshot, write a transcript, and validate `surfaceops-kanban-browser-functional-report.v0` and `surfaceops-kanban-browser-functional-evidence.v0`.
+
 ## Schemas
 The implementation adds target-specific schemas before claiming support.
 
@@ -128,6 +172,8 @@ schemas/
   surfaceops-kanban-board-packet.v0.schema.json
   surfaceops-kanban-adapter-report.v0.schema.json
   surfaceops-kanban-evidence.v0.schema.json
+  surfaceops-kanban-browser-functional-report.v0.schema.json
+  surfaceops-kanban-browser-functional-evidence.v0.schema.json
   surfaceops-kanban-expectations.v0.schema.json
   surfaceops-kanban-diagnostics.v0.schema.json
   surfaceops-kanban-preflight-mutation.v0.schema.json
@@ -258,6 +304,9 @@ The implementation is accepted when these tests pass.
 - Invalid and mutation fixtures fail with canonical diagnostic codes and messages from `surfaceops-kanban-diagnostics.v0`.
 - `surfaceops-kanban-adapter-report.json` records every expected and actual fixture result before final evidence.
 - `evidence.json` records schema, fixture, upstream input, substrate input, generated artifact, report, diagnostic, and self hashes under the same canonicalization discipline as prior proofs.
+- `demo/surfaceops-kanban-static/index.html` rebuilds from passing evidence and lets a designer inspect governed state, allowed/review/blocked lanes, next action ownership, decision refs, evidence refs, and inert packets.
+- The browser-functional proof drives that generated demo in Chromium, records `surfaceops-kanban-static-browser.webm`, captures a screenshot and transcript, validates the browser-functional report/evidence schemas, and hashes all runtime artifacts in `browser-functional-evidence.json`.
+- The browser-functional proof observes no non-file/data network requests and no live kanban, live SurfaceOps, live JudgmentKit, execution, persistence, API/SDK, A2UI, or hidden decision state.
 - Existing P0/P1/P2/P3/P4 proof gates continue to pass unchanged.
 
 ## Non-Goals

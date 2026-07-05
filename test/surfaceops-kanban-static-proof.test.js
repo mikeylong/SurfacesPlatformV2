@@ -14,6 +14,7 @@ const root = process.cwd();
 const p3EvidencePath = path.join(root, "artifacts/p3/evidence.json");
 const substratePath = path.join(root, "sources/surfaceops-kanban-static/kanban-board-substrate.json");
 const stalePath = path.join(root, "artifacts/surfaceops-kanban-static/stale.tmp");
+const demoRoot = path.join(root, "demo/surfaceops-kanban-static");
 
 test("SurfaceOps kanban static proof emits passing self-hashed evidence", async () => {
   await runProof();
@@ -217,9 +218,141 @@ test("SurfaceOps kanban artifact schemas pin schema ids", async () => {
   await runProof();
   const selectionSchema = await readJson("schemas/surfaceops-kanban-target-selection.v0.schema.json");
   const evidenceSchema = await readJson("schemas/surfaceops-kanban-evidence.v0.schema.json");
+  const browserEvidenceSchema = await readJson("schemas/surfaceops-kanban-browser-functional-evidence.v0.schema.json");
 
   assert.equal(selectionSchema.properties.schemaId.const, "surfaceops-kanban-target-selection.v0");
   assert.equal(evidenceSchema.properties.schemaId.const, "surfaceops-kanban-evidence.v0");
+  assert.equal(browserEvidenceSchema.properties.schemaId.const, "surfaceops-kanban-browser-functional-evidence.v0");
+});
+
+test("SurfaceOps kanban demo builds a browser-inspectable static board", async () => {
+  await runProof();
+  await fs.rm(demoRoot, { recursive: true, force: true });
+  await execFileAsync("node", [
+    "scripts/build-surfaceops-kanban-static-demo.mjs",
+    "--evidence",
+    "artifacts/surfaceops-kanban-static/evidence.json",
+    "--out",
+    "demo/surfaceops-kanban-static"
+  ], { cwd: root });
+
+  const html = await fs.readFile(path.join(demoRoot, "index.html"), "utf8");
+  const readme = await fs.readFile(path.join(demoRoot, "README.md"), "utf8");
+  assert.match(readme, /Proof authority remains `artifacts\/surfaceops-kanban-static\/evidence.json`/);
+  assert.match(html, /data-testid="board-view"/);
+  assert.match(html, /data-testid="view-evidence"/);
+  assert.match(html, /data-testid="view-packets"/);
+  assert.match(html, /data-testid="detail-owner"/);
+  assert.match(html, /surfaceops-decision-ledger\.json/);
+  assert.match(html, /Execution authorized/);
+  assert.doesNotMatch(html, /https:\/\//);
+});
+
+test("SurfaceOps kanban browser functional schemas reject live boundary drift", async () => {
+  await runProof();
+  const ajv = new Ajv2020({ allErrors: true, strict: false, validateFormats: false });
+  const reportSchema = await readJson("schemas/surfaceops-kanban-browser-functional-report.v0.schema.json");
+  const evidenceSchema = await readJson("schemas/surfaceops-kanban-browser-functional-evidence.v0.schema.json");
+  const validateReport = ajv.compile(reportSchema);
+  const validateEvidence = ajv.compile(evidenceSchema);
+  const projection = await readJson("artifacts/surfaceops-kanban-static/surfaceops-kanban-board-projection.json");
+  const staticEvidence = await readJson("artifacts/surfaceops-kanban-static/evidence.json");
+  const selectedCard = projection.cards[0];
+  const staticEvidenceRef = {
+    path: "artifacts/surfaceops-kanban-static/evidence.json",
+    schemaId: "surfaceops-kanban-evidence.v0",
+    hashAlgorithm: "sha256",
+    hash: surfaceopsKanbanStaticInternals.computeEvidenceSelfHash(staticEvidence),
+    sourceRef: null
+  };
+  const videoRef = browserFileRef("output/playwright/surfaceops-kanban-static/surfaceops-kanban-static-browser.webm", "webm-video.v0", "video/webm");
+  const screenshotRef = browserFileRef("output/playwright/surfaceops-kanban-static/surfaceops-kanban-static-final.png", "png-image.v0", "image/png");
+  const transcriptRef = browserFileRef("output/playwright/surfaceops-kanban-static/browser-functional-transcript.json", "surfaceops-kanban-browser-functional-transcript.v0", "application/json");
+  const reportRef = browserFileRef("output/playwright/surfaceops-kanban-static/browser-functional-report.json", "surfaceops-kanban-browser-functional-report.v0", "application/json");
+  const demoRef = browserFileRef("demo/surfaceops-kanban-static/index.html", "html-document.v0", "text/html");
+  const assertion = {
+    assertionId: "proof-status-pass",
+    description: "Generated demo reports passing proof status",
+    selector: "[data-testid='proof-status']",
+    expected: "pass",
+    actual: "Proof pass",
+    status: "pass"
+  };
+  const boundary = {
+    staticOnly: true,
+    liveKanbanWrites: false,
+    liveSurfaceOpsWrites: false,
+    liveJudgmentKitCalls: false,
+    networkViolations: [],
+    executionAuthorized: false,
+    hiddenReviewState: false,
+    proofAuthority: "artifacts/surfaceops-kanban-static/evidence.json"
+  };
+  const report = {
+    schemaId: "surfaceops-kanban-browser-functional-report.v0",
+    version: "0.0.0",
+    targetId: "surfaceops-kanban-static",
+    scenarioId: "p3-p4-review-work-to-static-board",
+    status: "pass",
+    promotionStatus: "review_required",
+    command: "npm run proof:surfaceops-kanban-static:browser",
+    demoPath: "demo/surfaceops-kanban-static/index.html",
+    staticEvidenceRef,
+    browser: {
+      browserName: "chromium",
+      browserVersion: "test",
+      headless: true,
+      viewport: { width: 1280, height: 820 },
+      userAgent: "test"
+    },
+    steps: [{ stepId: "open-demo", action: "navigate", target: "demo/surfaceops-kanban-static/index.html", status: "pass", observedText: "Proof pass" }],
+    assertions: [assertion],
+    selectedCard: {
+      cardId: selectedCard.cardId,
+      laneId: selectedCard.laneId,
+      decisionStatus: selectedCard.decisionStatus,
+      decisionPromotionStatus: selectedCard.decisionPromotionStatus,
+      nextActionOwner: selectedCard.nextActionOwner,
+      evidenceRefs: selectedCard.evidenceRefs
+    },
+    boundary,
+    recordingRef: videoRef,
+    screenshotRef,
+    transcriptRef,
+    evidenceRef: null,
+    provenance: testProvenance()
+  };
+  assert.equal(validateReport(report), true);
+  const evidence = {
+    schemaId: "surfaceops-kanban-browser-functional-evidence.v0",
+    version: "0.0.0",
+    targetId: "surfaceops-kanban-static",
+    scenarioId: "p3-p4-review-work-to-static-board",
+    status: "pass",
+    promotionStatus: "review_required",
+    command: "npm run proof:surfaceops-kanban-static:browser",
+    checkedAt: "2026-07-05T00:00:00.000Z",
+    environment: { generatedAt: "2026-07-05T00:00:00.000Z", host: null },
+    staticEvidenceRef,
+    demoRef,
+    reportRef,
+    recordingRef: videoRef,
+    screenshotRef,
+    transcriptRef,
+    assertions: [assertion],
+    boundary,
+    selfHash: "0".repeat(64),
+    provenance: testProvenance()
+  };
+  assert.equal(validateEvidence(evidence), true);
+
+  const networkReport = structuredClone(report);
+  networkReport.boundary.networkViolations = ["https://kanban.cards/write"];
+  assert.equal(validateReport(networkReport), false);
+
+  const executableEvidence = structuredClone(evidence);
+  executableEvidence.boundary.executionAuthorized = true;
+  assert.equal(validateEvidence(executableEvidence), false);
 });
 
 test("SurfaceOps kanban schemas reject live execution and hidden review state", async () => {
@@ -341,8 +474,12 @@ test("SurfaceOps kanban package scripts and untracked guard are exposed", async 
   const pkg = await readJson("package.json");
   for (const script of [
     "materialize:surfaceops-kanban-static",
+    "build:surfaceops-kanban-static-demo",
+    "demo:surfaceops-kanban-static",
     "proof:surfaceops-kanban-static",
+    "proof:surfaceops-kanban-static:browser",
     "check:surfaceops-kanban-static",
+    "check:surfaceops-kanban-static:browser",
     "check:surfaceops-kanban-static:ci",
     "check:surfaceops-kanban-static:ci:phase",
     "check:surfaceops-kanban-static:untracked"
@@ -350,9 +487,12 @@ test("SurfaceOps kanban package scripts and untracked guard are exposed", async 
     assert.ok(pkg.scripts[script], `${script} script missing`);
   }
   assert.match(pkg.scripts["proof:surfaceops-kanban-static"], /surfaces surfaceops-kanban-static proof/);
+  assert.match(pkg.scripts["proof:surfaceops-kanban-static:browser"], /prove-surfaceops-kanban-static-browser/);
+  assert.match(pkg.scripts["check:surfaceops-kanban-static"], /build:surfaceops-kanban-static-demo/);
   assert.match(pkg.scripts["check:surfaceops-kanban-static:ci"], /check:p4:ci/);
   for (const guardedPath of [
     "artifacts/surfaceops-kanban-static",
+    "demo/surfaceops-kanban-static",
     "fixtures/surfaceops-kanban-static",
     "sources/surfaceops-kanban-static",
     "schemas/surfaceops-kanban-target-selection.v0.schema.json",
@@ -363,11 +503,15 @@ test("SurfaceOps kanban package scripts and untracked guard are exposed", async 
     "schemas/surfaceops-kanban-board-packet.v0.schema.json",
     "schemas/surfaceops-kanban-adapter-report.v0.schema.json",
     "schemas/surfaceops-kanban-evidence.v0.schema.json",
+    "schemas/surfaceops-kanban-browser-functional-report.v0.schema.json",
+    "schemas/surfaceops-kanban-browser-functional-evidence.v0.schema.json",
     "schemas/surfaceops-kanban-expectations.v0.schema.json",
     "schemas/surfaceops-kanban-diagnostics.v0.schema.json",
     "schemas/surfaceops-kanban-preflight-mutation.v0.schema.json",
     "schemas/surfaceops-kanban-fixture.v0.schema.json",
     "scripts/materialize-surfaceops-kanban-static.mjs",
+    "scripts/build-surfaceops-kanban-static-demo.mjs",
+    "scripts/prove-surfaceops-kanban-static-browser.mjs",
     "src/surfaceops-kanban-static-contract.js",
     "src/surfaceops-kanban-static-proof.js",
     "test/surfaceops-kanban-static-proof.test.js"
@@ -466,6 +610,26 @@ async function assertArtifactsUnchanged(snapshots) {
 
 async function readJson(relativePath) {
   return JSON.parse(await fs.readFile(path.join(root, relativePath), "utf8"));
+}
+
+function browserFileRef(pathValue, schemaId, mimeType) {
+  return {
+    path: pathValue,
+    schemaId,
+    hashAlgorithm: "sha256",
+    hash: "a".repeat(64),
+    bytes: 128,
+    mimeType,
+    sourceRef: null
+  };
+}
+
+function testProvenance() {
+  return {
+    generatedAt: "1970-01-01T00:00:00.000Z",
+    generator: "surfaceops-kanban-static-browser-functional-test",
+    sourceRefs: []
+  };
 }
 
 function escapeRegExp(value) {

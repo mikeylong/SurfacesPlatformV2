@@ -35,9 +35,11 @@ support for unproved targets.
 
 The SurfaceOps kanban static proof target is implemented for a deterministic,
 inert SurfaceOps-owned board projection over accepted P3/P4 evidence and a
-manifest-declared local `kanban.cards` substrate contract. It does not create
-live SurfaceOps, live board sync, persistence, production adapter, API, SDK,
-A2UI, hidden review state, execution authority, or product adoption claims.
+manifest-declared local `kanban.cards` substrate contract. It now also has a
+generated demo and a separate Chromium browser-functional recording gate for
+inspectability evidence. It does not create live SurfaceOps, live board sync,
+persistence, production adapter, API, SDK, A2UI, hidden review state, execution
+authority, or product adoption claims.
 
 ## P0 Dependency Order
 1. [Runtime Catalog v0](runtime-catalog-v0.md)

@@ -17,9 +17,10 @@ evidence, CI gates, or product adoption claims.
 [SurfaceOps Kanban Static Proof Target](plans/surfaceops-kanban-static.md)
 records the implemented target-specific proof for projecting accepted P3/P4
 SurfaceOps evidence into inert `kanban.cards` board-ready records under a
-manifest-declared local substrate contract. It does not create live SurfaceOps,
-live board sync, persistence, production adapters, APIs, SDKs, A2UI, or product
-adoption claims.
+manifest-declared local substrate contract, with generated demo output and a
+separate Chromium browser-functional recording gate for inspectability
+evidence. It does not create live SurfaceOps, live board sync, persistence,
+production adapters, APIs, SDKs, A2UI, or product adoption claims.
 
 Any implementation or roadmap-status claim should cite the phase proof command, evidence path, evidence `status`, promotion status, and relevant CI gate. Generated demos may help present the claim, but demos are not proof authority.
 
