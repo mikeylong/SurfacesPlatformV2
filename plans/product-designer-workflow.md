@@ -37,6 +37,7 @@ A designer or facilitator can inspect the current proof-only workflow with the t
 - Generation and validation boundary: valid, invalid, review, and mutation fixtures under `fixtures/p2`, plus `artifacts/p2/ingestion-report.json`.
 - Review-required routing: `artifacts/p3/review-queue.json` and `artifacts/p4/surfaceops-decision-ledger.json`.
 - Review and evaluation evidence: `artifacts/p4/review-judgment-report.json` and `artifacts/p4/evidence.json`.
+- SurfaceOps kanban workflow substrate: `artifacts/surfaceops-kanban-live/surfaceops-kanban-live-operation-plan.json`, `artifacts/surfaceops-kanban-live/surfaceops-kanban-live-handoff-record.json`, and `artifacts/surfaceops-kanban-live/evidence.json`.
 - Target handoff: `artifacts/p5/protocol/protocol-projection.json`, `artifacts/p5/protocol/protocol-adapter-report.json`, `artifacts/p5/native/surfaces-native-projection.json`, and `artifacts/p5/native/surfaces-native-report.json`.
 - Proof authority: the relevant `artifacts/**/evidence.json` file for the phase or target.
 - Presentation only: generated demos under `demo/**`, only when backed by passing evidence.
@@ -53,8 +54,8 @@ validation.
 | Compile governed contracts | Bounded source material compiles into a governed catalog with evidence, diagnostics, provenance, and promotion status. | `artifacts/p2/evidence.json`; `artifacts/p2/governed-catalog.json`; `artifacts/p2/ingestion-report.json` |
 | Generate inside the catalog boundary | Allowed, invalid, and review-required cases are handled by fixtures, diagnostics, and review routing rather than inferred UI. | `fixtures/p2/valid`; `fixtures/p2/invalid`; `fixtures/p2/review`; `artifacts/p2/ingestion-report.json` |
 | Inspect evidence, not only pixels | The consolidated trace indexes accepted evidence, governed-exception status, and presentation links; demos remain non-authoritative. | `artifacts/designer-workflow-trace/designer-workflow-trace-report.json`; `artifacts/designer-workflow-trace/evidence.json`; `demo/p2`; `demo/p5/protocol`; `demo/p5/native` |
-| Decide or revise at the authority layer | Unsupported, blocked, expired-exception, or review-required output should drive source, mapping, policy, review-owner, or future proof-shape decisions. | `artifacts/source-conformance/source-review-queue.json`; `artifacts/p3/review-queue.json`; `artifacts/p4/surfaceops-decision-ledger.json`; `artifacts/p4/review-judgment-report.json` |
-| Hand off only proven target output | Only hash-bound protocol or native static outputs backed by their own evidence are handoff candidates. | `artifacts/p5/protocol/evidence.json`; `artifacts/p5/protocol/protocol-envelope.button.json`; `artifacts/p5/native/evidence.json`; `artifacts/p5/native/surfaces-native-packet.button.json` |
+| Decide or revise at the authority layer | Unsupported, blocked, expired-exception, or review-required output should drive source, mapping, policy, review-owner, or future proof-shape decisions. A kanban card may carry collaboration signals, but it is not the decision. | `artifacts/source-conformance/source-review-queue.json`; `artifacts/p3/review-queue.json`; `artifacts/p4/surfaceops-decision-ledger.json`; `artifacts/p4/review-judgment-report.json`; `artifacts/surfaceops-kanban-live/surfaceops-kanban-live-operation-plan.json` |
+| Hand off only proven target output | Only hash-bound protocol, native static, or bounded target-specific adapter outputs backed by their own evidence are handoff candidates. | `artifacts/p5/protocol/evidence.json`; `artifacts/p5/protocol/protocol-envelope.button.json`; `artifacts/p5/native/evidence.json`; `artifacts/p5/native/surfaces-native-packet.button.json`; `artifacts/surfaceops-kanban-live/evidence.json` |
 | Govern changes over time | Any source, policy, review, or target change requires regeneration and fresh evidence before downstream trust. | `npm run check:designer-workflow-trace:ci`; current `artifacts/**/evidence.json` paths |
 
 ## Designer Workflow Trace
@@ -68,7 +69,7 @@ source-conformance review-required row and the expired blocked row together in
 owner, rationale, approved expiry, expired expiry, renewal requirement, and
 non-executable expired state.
 
-The trace report is an index over accepted evidence, not product workflow implementation, customer validation, production adoption, catalog authority, upstream proof authority, live SurfaceOps, live JudgmentKit, production adapter, API, SDK, runtime, A2UI, P6, or P7.
+The trace report is an index over accepted evidence, not product workflow implementation, customer validation, production adoption, catalog authority, upstream proof authority, production SurfaceOps, live JudgmentKit, production adapter, API, SDK, runtime, A2UI, P6, or P7.
 
 ## Prioritization Use
 Use this workflow to rank platform work. Prefer work that improves a designer's ability to complete the evidence-backed loop without weakening authority:
@@ -83,11 +84,11 @@ Use this workflow to rank platform work. Prefer work that improves a designer's 
 Deprioritize work that creates apparent designer value while bypassing the proof chain:
 
 - demos that imply product support without passing evidence;
-- live ingestion, production adapters, APIs, SDKs, live runtimes, live SurfaceOps, live JudgmentKit, or A2UI claims without target-specific proof;
+- live ingestion, production adapters, APIs, SDKs, live runtimes, production SurfaceOps, live JudgmentKit, or A2UI claims without target-specific proof;
 - generated UI that looks plausible but lacks source refs, diagnostics, promotion status, or evidence;
 - review tools that promote, reject, or persist decisions without an explicit review contract.
 
 ## Current Scope
 The repo currently demonstrates this workflow as proof infrastructure. It is suitable for evidence-backed walkthroughs and design-partner discovery, not production adoption or self-serve product use.
 
-Implemented proof slices cover bounded source ingestion, governed catalog output, deterministic diagnostics, inert review and judgment artifacts, static protocol/native handoff targets, and the first report/evidence-only designer workflow trace index. Broader trace scenarios, source families, live SurfaceOps workflow, production adapters, APIs, SDKs, live runtimes, live JudgmentKit, A2UI, and production-facing designer experiences remain future target-specific work until they add their own proof shape and passing evidence.
+Implemented proof slices cover bounded source ingestion, governed catalog output, deterministic diagnostics, inert review and judgment artifacts, static protocol/native handoff targets, the first report/evidence-only designer workflow trace index, and a bounded local-loopback SurfaceOps kanban live adapter proof. Broader trace scenarios, source families, production SurfaceOps workflow, production adapters, APIs, SDKs, live runtimes, live JudgmentKit, A2UI, and production-facing designer experiences remain future target-specific work until they add their own proof shape and passing evidence.

@@ -22,6 +22,18 @@ separate Chromium browser-functional recording gate for inspectability
 evidence. It does not create live SurfaceOps, live board sync, persistence,
 production adapters, APIs, SDKs, A2UI, or product adoption claims.
 
+[SurfaceOps Kanban Live Proof Target](plans/surfaceops-kanban-live.md)
+records the implemented target-specific proof for a local-loopback live
+`kanban.cards` integration. It consumes accepted P3/P4 evidence and a
+hash-bound `kanban.cards` API manifest, emits a SurfaceOps-owned target
+selection, API projection, operation plan, handoff record, adapter report, and
+evidence, and has a separate Chromium browser-functional gate that starts a
+real local `kanban.cards` server, drives API and browser interactions, records
+video, and writes hashed runtime evidence. It does not claim production
+SurfaceOps, production `kanban.cards`, Auth0 delegated production auth, hosted
+persistence, public APIs, SDKs, A2UI, live JudgmentKit, work execution, or
+product adoption.
+
 Any implementation or roadmap-status claim should cite the phase proof command, evidence path, evidence `status`, promotion status, and relevant CI gate. Generated demos may help present the claim, but demos are not proof authority.
 
 ## P0 Focus
@@ -661,7 +673,7 @@ The source-conformance subplans define a proof-only declared-source conformance 
 - Native P5 boundary: `surfaces-native-target-selection.v0`, `surfaces-native-projection.v0`, `surfaces-native-packet.v0`, `surfaces-native-report.v0`, and `surfaces-native-evidence.v0`, not a production native SDK, production API, native bridge, live runtime, A2UI clone, or expansion of `surfaces-protocol-static`.
 - Native proof consumes `artifacts/p5/protocol/evidence.json` as compatibility preflight only; authority remains accepted P2 catalog/evidence plus accepted P4 review/judgment evidence.
 - A2UI remains a downstream conformance or projection target only if a future P5 proof implements it with its own contract and evidence.
-- Production adapters, protocol APIs, SDKs, live protocol services, live SurfaceOps, and live JudgmentKit remain planned until target evidence passes for those specific targets.
+- Production adapters, protocol APIs, SDKs, live protocol services, production SurfaceOps, and live JudgmentKit remain planned until target evidence passes for those specific targets.
 - Future P5 targets must prove their own schemas, fixtures, diagnostics, command contract, artifacts, target report, evidence, demo, CI gate, non-goals, and acceptance criteria before they are described as implemented.
 
 ## Non-Goals For P0/P1

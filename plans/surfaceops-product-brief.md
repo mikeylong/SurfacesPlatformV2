@@ -3,7 +3,7 @@
 ## Status
 This is a subordinate product brief for the SurfaceOps product direction. [VISION.md](../VISION.md) remains canonical for the Surfaces Platform vision, authority model, roadmap sequence, surface roles, and implemented proof status.
 
-This brief does not create proof authority, product behavior, live review workflow, persistent decision storage, production adapter support, JudgmentKit invocation, or catalog policy. Current implemented SurfaceOps scope is limited to the deterministic P4 `surfaceops-decision-ledger.v0` proof artifact and the evidence that backs it.
+This brief does not create proof authority, product behavior, live review workflow, persistent decision storage, production adapter support, JudgmentKit invocation, or catalog policy. Current implemented SurfaceOps scope is limited to the deterministic P4 `surfaceops-decision-ledger.v0` proof artifact, the bounded local `surfaceops-kanban-live` adapter proof, and the evidence that backs those targets.
 
 The follow-on UI decision set and review criteria live in [SurfaceOps UI Decisions And Review Criteria](surfaceops-ui-decisions-review-criteria.md).
 
@@ -84,7 +84,7 @@ The MVP should not start by adding broad integrations. Integrations are useful o
 
 In that model, `kanban.cards` can organize work items, owners, stages, comments, and collaboration. SurfaceOps owns the Surfaces-specific review semantics: evidence refs, promotion status, decision statuses, review requirements, catalog boundaries, and handoff eligibility. Any integration should pass through a SurfaceOps-owned adjacent adapter/projection layer that maps accepted evidence into board-ready records.
 
-The first proofable target should be static and inert, such as `surfaceops-kanban-static`, before any live sync. White-labeling `kanban.cards` as SurfaceOps remains a packaging option only if the standalone product is intentionally deprioritized. Either path needs a proof that board records reference Surfaces evidence and SurfaceOps decisions without becoming proof authority or hidden review state. Live sync, bidirectional updates, permissions, persistence, or audit replay require a later proof.
+The first live proofable target is now `surfaceops-kanban-live`: a bounded local-loopback adapter proof that starts a real local `kanban.cards` server, writes and reads real board state, observes realtime events, verifies local persistence across restart, records browser video, and keeps SurfaceOps evidence and decisions as authority. White-labeling `kanban.cards` as SurfaceOps remains a packaging option only if the standalone product is intentionally deprioritized. Production sync, Auth0 delegated production auth, hosted persistence, service-account permissions, broad conflict handling, audit replay, and product adoption still require later proof.
 
 ## JudgmentKit Relationship
 JudgmentKit is the evaluation direction, not the decision owner. SurfaceOps may display JudgmentKit-shaped findings or future authorized evaluator output as supporting context, but JudgmentKit should not approve, reject, request changes, defer, promote, execute, route, mutate, render, or override catalog policy.
@@ -109,12 +109,12 @@ SurfaceOps can move from product brief to live product only after a target-speci
 - diagnostics with canonical messages and promotion statuses;
 - command or API contracts with deterministic input/output boundaries;
 - persistence rules that prevent hidden mutable authority;
-- board projection rules, if present, that keep `surfaceops-kanban-static` static, inert, and SurfaceOps-owned before any live sync;
+- board and adapter rules, if present, that keep SurfaceOps evidence and decisions authoritative while `kanban.cards` remains the collaboration substrate;
 - artifact, report, and evidence paths;
 - demo or product-surface boundaries that stay presentation-only unless separately proved;
 - CI gates that prove stale input, hash mismatches, unauthorized decisions, and unsupported handoff fail closed.
 
-Until that proof exists, SurfaceOps should be described as the planned operational review product direction, with current implementation limited to P4 deterministic artifacts.
+Until production proof exists, SurfaceOps should be described as the planned operational review product direction, with current implementation limited to P4 deterministic artifacts and the bounded local-loopback `surfaceops-kanban-live` adapter proof.
 
 ## Non-Goals
 - No catalog policy ownership.
@@ -123,13 +123,13 @@ Until that proof exists, SurfaceOps should be described as the planned operation
 - No work-order execution.
 - No live agent execution.
 - No production adapter, API, SDK, runtime, or A2UI support.
-- No live board sync, bidirectional updates, or `kanban.cards` persistence without a later proof.
+- No production board sync, production bidirectional updates, hosted persistence, production auth, or production `kanban.cards` adapter behavior without a later proof.
 - No live JudgmentKit invocation without a separate proof and explicit authorization.
 - No claim that generated demos or product UI are proof authority.
 
 ## Open Decisions
 - Whether `surfaceops.ai` is the first public packaging or a later product surface.
-- Whether `kanban.cards` stays fully standalone as the upstream collaboration-board substrate, is white-labeled, or remains connected only through a SurfaceOps-owned projection layer.
+- Whether `kanban.cards` stays fully standalone as the upstream collaboration-board substrate, is white-labeled, or remains connected only through a SurfaceOps-owned adapter/projection layer.
 - Which reviewer identity model is acceptable for the first live proof.
 - Whether long-term JudgmentKit findings live inside SurfaceOps, a separate evaluator store, or evidence-only reports.
 - Which downstream consumer should be the first to require a live SurfaceOps decision before handoff.
