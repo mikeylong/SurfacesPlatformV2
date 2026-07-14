@@ -308,3 +308,72 @@ jobs:
 
       - name: Run designer workflow trace contract gate
         run: npm run check:designer-workflow-trace:ci:phase
+
+  surfaceops-designer-review-ui-proof:
+    runs-on: ubuntu-latest
+    needs:
+      - designer-workflow-trace-proof
+      - surfaceops-kanban-live-proof
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run SurfaceOps designer review UI contract gate
+        run: npm run check:surfaceops-designer-review-ui:ci:phase
+
+  surfaceops-designer-review-ui-browser-functional:
+    runs-on: ubuntu-latest
+    needs: surfaceops-designer-review-ui-proof
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Check out kanban.cards
+        uses: actions/checkout@v5
+        with:
+          repository: Surfaces-Platform/kanban.cards
+          ref: 3b2a6f78693f0032439a1149eaed896f532aac09
+          path: kanban.cards
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install kanban.cards dependencies
+        run: npm ci
+        working-directory: kanban.cards
+
+      - name: Build kanban.cards browser bundle
+        run: npm run build
+        working-directory: kanban.cards
+
+      - name: Install Chromium for browser functional proof
+        run: npx playwright install --with-deps chromium
+
+      - name: Run SurfaceOps designer review UI browser functional proof
+        env:
+          KANBAN_CARDS_ROOT: kanban.cards
+        run: npm run check:surfaceops-designer-review-ui:browser
+
+      - name: Upload SurfaceOps designer review UI browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surfaceops-designer-review-ui-browser-functional-evidence
+          path: output/playwright/surfaceops-designer-review-ui/
