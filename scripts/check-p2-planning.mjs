@@ -1,8 +1,11 @@
 import fs from "node:fs";
 import path from "node:path";
+import crypto from "node:crypto";
 import Ajv2020 from "ajv/dist/2020.js";
+import { assertP2PackageSnapshotFileSet } from "../src/p2-contract.js";
 
 const p2SchemaFiles = [
+  "schemas/design-source-package-snapshot-lock.v0.schema.json",
   "schemas/design-source-manifest.v0.schema.json",
   "schemas/design-source-inventory.v0.schema.json",
   "schemas/design-source-mapping.v0.schema.json",
@@ -71,6 +74,8 @@ const requiredPolicyRefs = [
   "source://p2/docs/usage-policy.json#/"
 ];
 
+const packageSnapshotLockPath = "sources/p2/design-system-source/package-snapshot.lock.json";
+
 const p2Artifacts = [
   "artifacts/p2/source-inventory.json",
   "artifacts/p2/source-mapping.json",
@@ -82,7 +87,8 @@ const p2Artifacts = [
 ];
 
 const schemaClosurePaths = p2SchemaFiles.concat(sharedSchemaFiles);
-const expectedSourceRefPaths = sourceFiles.map((file) => `sources/p2/design-system-source/${file}`).concat(
+const expectedSourceRefPaths = [packageSnapshotLockPath].concat(
+  sourceFiles.map((file) => `sources/p2/design-system-source/${file}`),
   requiredMappings.map((file) => `sources/p2/design-system-source/${file}`)
 );
 
@@ -101,6 +107,7 @@ const fixtureFiles = [
   "fixtures/p2/invalid/mapping-cardinality-invalid.design-source-mapping.json",
   "fixtures/p2/mutations/missing-source-manifest.design-source.json",
   "fixtures/p2/mutations/package-integrity-mismatch.design-source.json",
+  "fixtures/p2/mutations/package-snapshot-byte-tamper.design-source.json",
   "fixtures/p2/mutations/source-path-undeclared.design-source.json",
   "fixtures/p2/mutations/invalid-source-ref.design-source.json",
   "fixtures/p2/mutations/source-hash-mismatch.design-source-inventory.json",
@@ -115,6 +122,7 @@ const requiredFiles = [
   "sources/p2/design-system-source/README.md",
   "sources/p2/design-system-source/manifest.template.json",
   "sources/p2/design-system-source/manifest.json",
+  packageSnapshotLockPath,
   "fixtures/p2/expectations.manifest.json",
   ...fixtureFiles
 ];
@@ -267,6 +275,11 @@ if (!validateMapping(mapping)) {
 
 const sourceManifestTemplate = readJson("sources/p2/design-system-source/manifest.template.json");
 const sourceManifest = readJson("sources/p2/design-system-source/manifest.json");
+const packageSnapshotLock = readJson(packageSnapshotLockPath);
+const validatePackageSnapshotLock = ajv.getSchema(schemas.get("schemas/design-source-package-snapshot-lock.v0.schema.json").$id);
+if (!validatePackageSnapshotLock(packageSnapshotLock)) {
+  fail(`invalid P2 package snapshot lock: ${JSON.stringify(validatePackageSnapshotLock.errors)}`);
+}
 const sourceDocuments = new Map(sourceManifest.sourceFiles.map((entry) => {
   const fullPath = `sources/p2/design-system-source/${entry.path}`;
   return [entry.path, fullPath.endsWith(".json") ? readJson(fullPath) : null];
@@ -281,6 +294,46 @@ assertSetEquals(new Set(sourceManifestTemplate.policyRefs), new Set(requiredPoli
 assertSetEquals(new Set(sourceManifest.sourceFiles.map((entry) => entry.path)), new Set(sourceFiles), "manifest sourceFiles");
 assertSetEquals(new Set(sourceManifest.requiredMappings.map((entry) => entry.path)), new Set(requiredMappings), "manifest requiredMappings");
 assertSetEquals(new Set(sourceManifest.policyRefs), new Set(requiredPolicyRefs), "manifest policyRefs");
+
+const packageSnapshotLockHash = crypto.createHash("sha256").update(fs.readFileSync(packageSnapshotLockPath)).digest("hex");
+const expectedPackageSnapshotLockRef = {
+  path: "package-snapshot.lock.json",
+  schemaId: "design-source-package-snapshot-lock.v0",
+  hashAlgorithm: "sha256",
+  sha256: packageSnapshotLockHash
+};
+for (const [key, value] of Object.entries(expectedPackageSnapshotLockRef)) {
+  if (sourceManifest.packageSnapshotLock?.[key] !== value) {
+    fail(`manifest packageSnapshotLock ${key} mismatch: ${JSON.stringify(sourceManifest.packageSnapshotLock?.[key])}`);
+  }
+}
+for (const key of ["path", "schemaId", "hashAlgorithm"]) {
+  if (sourceManifestTemplate.packageSnapshotLock?.[key] !== expectedPackageSnapshotLockRef[key]) {
+    fail(`manifest template packageSnapshotLock ${key} mismatch`);
+  }
+}
+
+const packageSourceFiles = sourceManifest.sourceFiles.filter((entry) => entry.packagePath !== null);
+assertArrayEquals(
+  packageSnapshotLock.packageFiles.map((entry) => entry.packagePath),
+  packageSourceFiles.map((entry) => entry.packagePath),
+  "package snapshot lock packageFiles"
+);
+await assertP2PackageSnapshotFileSet(
+  process.cwd(),
+  packageSnapshotLock.packageFiles.map((entry) => entry.packagePath)
+);
+for (const [index, lockedFile] of packageSnapshotLock.packageFiles.entries()) {
+  const sourceFile = packageSourceFiles[index];
+  if (lockedFile.hashAlgorithm !== "sha256" || sourceFile.sha256 !== lockedFile.sha256) {
+    fail(`package snapshot lock hash mismatch for ${lockedFile.packagePath}`);
+  }
+  const packageFilePath = `sources/p2/design-system-source/npm/@adobe/spectrum-design-data/0.7.0/package/${lockedFile.packagePath}`;
+  const actualHash = crypto.createHash("sha256").update(fs.readFileSync(packageFilePath)).digest("hex");
+  if (actualHash !== lockedFile.sha256) {
+    fail(`package snapshot bytes do not match lock for ${lockedFile.packagePath}`);
+  }
+}
 
 for (const sourceFile of sourceManifest.sourceFiles) {
   assertNormalizedPath(sourceFile.path, `manifest source file ${sourceFile.path}`);
@@ -416,9 +469,11 @@ for (const row of expectationsManifest.expectations) {
   }
 }
 
+const [expectedPackageSnapshotLockPath, ...expectedDeclaredSourceRefPaths] = expectedSourceRefPaths;
 const expectedArtifactOrder = schemaClosurePaths
+  .concat(expectedPackageSnapshotLockPath)
   .concat("sources/p2/design-system-source/manifest.json")
-  .concat(expectedSourceRefPaths)
+  .concat(expectedDeclaredSourceRefPaths)
   .concat("fixtures/p2/expectations.manifest.json", ...fixtureFiles)
   .concat(p2Artifacts);
 assertArrayEquals(expectationsManifest.artifactOrder, expectedArtifactOrder, "P2 expectations artifactOrder");

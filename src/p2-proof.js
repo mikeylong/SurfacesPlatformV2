@@ -1,5 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import crypto from "node:crypto";
 import Ajv2020 from "ajv/dist/2020.js";
 import { canonicalJson } from "./p0.js";
 import {
@@ -12,7 +13,14 @@ import {
   P2_MAPPING_FILES,
   P2_PACKAGE_INTEGRITY,
   P2_PACKAGE_NAME,
+  P2_PACKAGE_ROOT,
+  P2_PACKAGE_SNAPSHOT_LOCK_DIAGNOSTIC_CODE,
+  P2_PACKAGE_SNAPSHOT_LOCK_DIAGNOSTIC_MESSAGE,
+  P2_PACKAGE_SNAPSHOT_LOCK_FILE,
+  P2_PACKAGE_SNAPSHOT_LOCK_PATH,
+  P2_PACKAGE_SNAPSHOT_LOCK_SCHEMA_ID,
   P2_PACKAGE_TARBALL,
+  P2_PACKAGE_TARBALL_SHA256,
   P2_PACKAGE_VERSION,
   P2_SCHEMA_FILES,
   P2_SCHEMA_ROOT,
@@ -21,6 +29,7 @@ import {
   P2_SOURCE_ROOT,
   P2_TIMESTAMP,
   P2_VERSION,
+  assertP2PackageSnapshotFileSet,
   canonicalFileHash,
   deepClone,
   p2ArtifactOrder,
@@ -137,7 +146,7 @@ export async function runIngestProof({ cwd, sourceRoot, fixtureRoot, outRoot, co
   const manifestPath = `${sourceRoot}/manifest.json`;
   const manifest = await readJson(path.join(cwd, manifestPath));
   assertSchema(validators, "p2", "design-source-manifest.v0", manifest, manifestPath);
-  await sourcePreflight(cwd, sourceRoot, manifest);
+  const packageSnapshotLock = await sourcePreflight(cwd, sourceRoot, manifest, validators);
   await rejectStaleOutput(cwd, outRoot);
 
   const expectationsPath = `${fixtureRoot}/expectations.manifest.json`;
@@ -145,7 +154,7 @@ export async function runIngestProof({ cwd, sourceRoot, fixtureRoot, outRoot, co
   assertSchema(validators, "p2", "design-system-ingestion-expectations.v0", expectations, expectationsPath);
   await assertP2Expectations(cwd, expectations, sourceRoot, fixtureRoot, outRoot);
   const diagnosticsRows = await loadDiagnosticsRows(cwd);
-  const context = await loadSourceContext(cwd, sourceRoot, manifest);
+  const context = await loadSourceContext(cwd, sourceRoot, manifest, packageSnapshotLock);
   assertManifestRefsResolve(context);
   const runId = buildRunId({ manifest, expectations, command, args });
 
@@ -394,7 +403,7 @@ async function ensureSafeOutputDirectory(cwd, outRoot) {
   return current;
 }
 
-async function sourcePreflight(cwd, sourceRoot, manifest) {
+async function sourcePreflight(cwd, sourceRoot, manifest, validators) {
   if (
     manifest.packageName !== P2_PACKAGE_NAME ||
     manifest.packageVersion !== P2_PACKAGE_VERSION ||
@@ -406,6 +415,69 @@ async function sourcePreflight(cwd, sourceRoot, manifest) {
     canonicalJson(manifest.initialComponents) !== canonicalJson(["button", "in-line-alert"])
   ) {
     throw contractError("P2 source preflight failed: source manifest package metadata does not match the pinned Spectrum package", 1);
+  }
+
+  const packageSnapshotLockPath = path.join(cwd, P2_PACKAGE_SNAPSHOT_LOCK_PATH);
+  await assertRegularSourceRootFile(packageSnapshotLockPath, P2_PACKAGE_SNAPSHOT_LOCK_PATH, cwd, sourceRoot);
+  const packageSnapshotLock = await readJson(packageSnapshotLockPath);
+  assertSchema(
+    validators,
+    "p2",
+    P2_PACKAGE_SNAPSHOT_LOCK_SCHEMA_ID,
+    packageSnapshotLock,
+    P2_PACKAGE_SNAPSHOT_LOCK_PATH
+  );
+  const packageSnapshotLockHash = await rawFileHash(packageSnapshotLockPath);
+  const expectedPackageSnapshotLockRef = {
+    path: P2_PACKAGE_SNAPSHOT_LOCK_FILE,
+    schemaId: P2_PACKAGE_SNAPSHOT_LOCK_SCHEMA_ID,
+    hashAlgorithm: "sha256",
+    sha256: packageSnapshotLockHash
+  };
+  if (canonicalJson(manifest.packageSnapshotLock) !== canonicalJson(expectedPackageSnapshotLockRef)) {
+    throw contractError("P2 source preflight failed: package snapshot lock reference does not match the immutable lock", 1);
+  }
+  if (
+    packageSnapshotLock.packageName !== P2_PACKAGE_NAME ||
+    packageSnapshotLock.packageVersion !== P2_PACKAGE_VERSION ||
+    packageSnapshotLock.packageTarball !== P2_PACKAGE_TARBALL ||
+    packageSnapshotLock.packageIntegrity !== P2_PACKAGE_INTEGRITY ||
+    packageSnapshotLock.tarballHashAlgorithm !== "sha256" ||
+    packageSnapshotLock.tarballSha256 !== P2_PACKAGE_TARBALL_SHA256 ||
+    packageSnapshotLock.packageRoot !== P2_PACKAGE_ROOT
+  ) {
+    throw contractError("P2 source preflight failed: immutable package snapshot lock metadata does not match the pinned Spectrum package", 1);
+  }
+
+  const packageSourceFiles = P2_SOURCE_FILES.filter((entry) => entry.packagePath !== null);
+  assertOrderedPaths(
+    "P2 package snapshot lock packageFiles",
+    packageSnapshotLock.packageFiles.map((entry) => entry.packagePath),
+    packageSourceFiles.map((entry) => entry.packagePath)
+  );
+  try {
+    await assertP2PackageSnapshotFileSet(
+      cwd,
+      packageSnapshotLock.packageFiles.map((entry) => entry.packagePath)
+    );
+  } catch (error) {
+    throw contractError(error.message, 1);
+  }
+  const lockedHashByPackagePath = new Map();
+  for (const lockedFile of packageSnapshotLock.packageFiles) {
+    const sourceFile = manifest.sourceFiles.find((entry) => entry.packagePath === lockedFile.packagePath);
+    if (!sourceFile || lockedFile.hashAlgorithm !== "sha256" || sourceFile.sha256 !== lockedFile.sha256) {
+      throw contractError(`P2 source preflight failed: manifest hash does not match immutable package snapshot lock for ${lockedFile.packagePath}`, 1);
+    }
+    const packageFilePath = path.join(cwd, sourceRoot, P2_PACKAGE_ROOT, lockedFile.packagePath);
+    const actualHash = await rawFileHash(packageFilePath);
+    if (actualHash !== lockedFile.sha256) {
+      throw contractError(
+        `${P2_PACKAGE_SNAPSHOT_LOCK_DIAGNOSTIC_CODE}: ${P2_PACKAGE_SNAPSHOT_LOCK_DIAGNOSTIC_MESSAGE} Path ${lockedFile.packagePath}.`,
+        1
+      );
+    }
+    lockedHashByPackagePath.set(lockedFile.packagePath, lockedFile.sha256);
   }
 
   const expectedSourcePaths = P2_SOURCE_FILES.map((entry) => entry.path);
@@ -457,6 +529,24 @@ async function sourcePreflight(cwd, sourceRoot, manifest) {
     if (!declaredPaths.has(refPath)) {
       throw contractError(`P2 source preflight failed: policy ref points outside manifest source files ${policyRef}`, 1);
     }
+  }
+  return { ...packageSnapshotLock, lockedHashByPackagePath };
+}
+
+async function assertRegularSourceRootFile(filePath, label, cwd, sourceRoot) {
+  let stat;
+  try {
+    stat = await fs.lstat(filePath);
+  } catch {
+    throw contractError(`P2 source preflight failed: missing immutable package snapshot lock ${label}`, 1);
+  }
+  if (!stat.isFile()) {
+    throw contractError(`P2 source preflight failed: package snapshot lock is not a regular file ${label}`, 1);
+  }
+  const realSourceRoot = await fs.realpath(path.join(cwd, sourceRoot));
+  const realFile = await fs.realpath(filePath);
+  if (!realFile.startsWith(`${realSourceRoot}${path.sep}`)) {
+    throw contractError(`P2 source preflight failed: package snapshot lock escapes declared source root ${label}`, 1);
   }
 }
 
@@ -529,7 +619,7 @@ async function assertP2Expectations(cwd, manifest, sourceRoot, fixtureRoot, outR
   assertPathSet("P2 fixture directory contents", actualFixtureEntries, expectedFixtureEntries);
 }
 
-async function loadSourceContext(cwd, sourceRoot, manifest) {
+async function loadSourceContext(cwd, sourceRoot, manifest, packageSnapshotLock) {
   const sourceByPath = new Map();
   for (const sourceFile of manifest.sourceFiles) {
     const absolute = path.join(cwd, sourceRoot, sourceFile.path);
@@ -549,6 +639,7 @@ async function loadSourceContext(cwd, sourceRoot, manifest) {
   }
   return {
     manifest,
+    packageSnapshotLock,
     sourceByPath,
     mappingsByPath,
     button: sourceByPath.get("npm/@adobe/spectrum-design-data/0.7.0/package/components/button.json").json,
@@ -1207,7 +1298,13 @@ async function fixtureMatchesDiagnostic(code, fixture, { sourceManifest, context
     case "INGEST_SOURCE_MANIFEST_MISSING":
       return fixture.mutation === "missing-file" && fixture.mutatedPath === `${P2_SOURCE_ROOT}/manifest.json`;
     case "INGEST_PACKAGE_INTEGRITY_MISMATCH":
-      return typeof fixture.mutation === "string" && fixture.mutation.includes("packageIntegrity") && fixture.mutatedPath === `${P2_SOURCE_ROOT}/manifest.json`;
+      return fixture.mutatedPath === `${P2_SOURCE_ROOT}/manifest.json` &&
+        fixture.jsonPointer === "/packageIntegrity" &&
+        typeof fixture.replacementValue === "string" &&
+        fixture.replacementValue !== P2_PACKAGE_INTEGRITY &&
+        sourceManifest.packageIntegrity === P2_PACKAGE_INTEGRITY;
+    case "INGEST_PACKAGE_SNAPSHOT_LOCK_MISMATCH":
+      return await packageSnapshotByteTamperProbe(cwd, fixture, context.packageSnapshotLock);
     case "INGEST_SOURCE_PATH_UNDECLARED":
       return typeof fixture.sourcePath === "string" && !sourceManifest.sourceFiles.some((entry) => entry.path === fixture.sourcePath);
     case "INGEST_SOURCE_REF_INVALID":
@@ -1274,6 +1371,29 @@ async function sourceHashMismatchProbe(cwd, fixture, sourceManifest) {
   return tamperedHash !== actualHash;
 }
 
+async function packageSnapshotByteTamperProbe(cwd, fixture, packageSnapshotLock) {
+  const packagePrefix = `${P2_SOURCE_ROOT}/${P2_PACKAGE_ROOT}/`;
+  if (
+    typeof fixture.mutatedPath !== "string" ||
+    !fixture.mutatedPath.startsWith(packagePrefix) ||
+    typeof fixture.appendUtf8 !== "string" ||
+    fixture.appendUtf8.length === 0
+  ) {
+    return false;
+  }
+  const packagePath = fixture.mutatedPath.slice(packagePrefix.length);
+  const lockedFile = packageSnapshotLock.packageFiles.find((entry) => entry.packagePath === packagePath);
+  if (!lockedFile) return false;
+  const sourceBytes = await fs.readFile(path.join(cwd, fixture.mutatedPath));
+  const actualHash = sha256HexBytes(sourceBytes);
+  const tamperedHash = sha256HexBytes(Buffer.concat([sourceBytes, Buffer.from(fixture.appendUtf8, "utf8")]));
+  return actualHash === lockedFile.sha256 && tamperedHash !== lockedFile.sha256;
+}
+
+function sha256HexBytes(bytes) {
+  return crypto.createHash("sha256").update(bytes).digest("hex");
+}
+
 async function schemaHashMismatchProbe(cwd, fixture) {
   if (fixture.mutatedPath !== `${P2_ARTIFACT_ROOT}/evidence.json` || fixture.jsonPointer !== "/schemaClosure/0/hash") return false;
   const schemaPath = p2SchemaPaths()[0];
@@ -1307,6 +1427,19 @@ async function buildEvidence({ cwd, sourceRoot, fixtureRoot, outRoot, manifest, 
   }
 
   const sourceFileRefs = [];
+  const packageSnapshotLockHash = await rawFileHash(path.join(cwd, P2_PACKAGE_SNAPSHOT_LOCK_PATH));
+  sourceFileRefs.push({
+    path: P2_PACKAGE_SNAPSHOT_LOCK_PATH,
+    schemaId: P2_PACKAGE_SNAPSHOT_LOCK_SCHEMA_ID,
+    hashAlgorithm: "sha256",
+    hash: packageSnapshotLockHash,
+    sourceRef: null,
+    provenance: evidenceRefProvenance({
+      artifactPath: P2_PACKAGE_SNAPSHOT_LOCK_PATH,
+      hash: packageSnapshotLockHash,
+      role: "package-snapshot-lock"
+    })
+  });
   for (const sourceFile of manifest.sourceFiles) {
     const artifactPath = `${sourceRoot}/${sourceFile.path}`;
     sourceFileRefs.push({

@@ -31,6 +31,7 @@ fixtures/p2/
   mutations/
     missing-source-manifest.design-source.json
     package-integrity-mismatch.design-source.json
+    package-snapshot-byte-tamper.design-source.json
     source-path-undeclared.design-source.json
     invalid-source-ref.design-source.json
     source-hash-mismatch.design-source-inventory.json
@@ -49,7 +50,7 @@ fixtures/p2/
 - `schemaRoot`: `schemas`.
 - `version`: P2 default `0.0.0`.
 - `inputs[]`: every source file and fixture path in deterministic order.
-- `artifactOrder[]`: every P2 schema, source input, fixture, generated P2 artifact, and final evidence artifact in the order defined by `validation-evidence.md`.
+- `artifactOrder[]`: every P2 schema, the immutable package snapshot lock, source manifest, declared source input, fixture, generated P2 artifact, and final evidence artifact in the order defined by `validation-evidence.md`.
 - `validCoverage[]`: every positive coverage fixture, including required Spectrum coverage for `button`, `in-line-alert`, and the accepted mapping rows that connect them to normalized catalog ids.
 - `expectations[]`: fixture path, fixture kind, expected stage, expected phase, expected validation result, expected promotion status, expected diagnostic codes, expected artifact path, expected JSON Pointer, required source ref, and review queue requirement.
 - `runExpectation`: aggregate status and promotion status.
@@ -95,6 +96,7 @@ P2 expected phase values are:
 | `fixtures/p2/invalid/mapping-cardinality-invalid.design-source-mapping.json` | `invalid` | `mapping` | `source-mapping` | `invalid` | `blocked` | `["INGEST_MAPPING_CARDINALITY_INVALID"]` | `fixtures/p2/invalid/mapping-cardinality-invalid.design-source-mapping.json` |
 | `fixtures/p2/mutations/missing-source-manifest.design-source.json` | `mutation` | `source-inventory` | `source-manifest` | `invalid` | `blocked` | `["INGEST_SOURCE_MANIFEST_MISSING"]` | `fixtures/p2/mutations/missing-source-manifest.design-source.json` |
 | `fixtures/p2/mutations/package-integrity-mismatch.design-source.json` | `mutation` | `source-inventory` | `source-manifest` | `invalid` | `blocked` | `["INGEST_PACKAGE_INTEGRITY_MISMATCH"]` | `fixtures/p2/mutations/package-integrity-mismatch.design-source.json` |
+| `fixtures/p2/mutations/package-snapshot-byte-tamper.design-source.json` | `mutation` | `source-inventory` | `source-manifest` | `invalid` | `blocked` | `["INGEST_PACKAGE_SNAPSHOT_LOCK_MISMATCH"]` | `fixtures/p2/mutations/package-snapshot-byte-tamper.design-source.json` |
 | `fixtures/p2/mutations/source-path-undeclared.design-source.json` | `mutation` | `source-inventory` | `source-manifest` | `invalid` | `blocked` | `["INGEST_SOURCE_PATH_UNDECLARED"]` | `fixtures/p2/mutations/source-path-undeclared.design-source.json` |
 | `fixtures/p2/mutations/invalid-source-ref.design-source.json` | `mutation` | `source-inventory` | `source-manifest` | `invalid` | `blocked` | `["INGEST_SOURCE_REF_INVALID"]` | `fixtures/p2/mutations/invalid-source-ref.design-source.json` |
 | `fixtures/p2/mutations/source-hash-mismatch.design-source-inventory.json` | `mutation` | `source-inventory` | `source-inventory` | `invalid` | `blocked` | `["INGEST_SOURCE_HASH_MISMATCH"]` | `fixtures/p2/mutations/source-hash-mismatch.design-source-inventory.json` |
@@ -110,8 +112,15 @@ Valid P2 coverage must prove that the selected Spectrum subset is not only block
 - `fixtures/p2/valid/spectrum-in-line-alert.design-source.json`: `components/in-line-alert.json` can provide a source component ref, normalized id, props/options, variants, states, accessibility refs, examples, and token refs for the governed catalog subset.
 - `fixtures/p2/valid/spectrum-subset.source-mapping.json`: mapping rows for both components include source refs, mapping refs, target refs, normalized ids, rationale, cardinality, conflict rules, authority scope, review status, and duplicate normalized-id handling.
 
+## Causal Package-Byte Tamper Coverage
+`fixtures/p2/mutations/package-snapshot-byte-tamper.design-source.json` declares the package file and byte-level change used by the mutation test: append one newline byte to `sources/p2/design-system-source/npm/@adobe/spectrum-design-data/0.7.0/package/components/button.json`. The test must change that real checked-in package file, leave `package-snapshot.lock.json` unchanged, and invoke the materialization and proof preflight that read those bytes. Both failures must expose `INGEST_PACKAGE_SNAPSHOT_LOCK_MISMATCH` with canonical message `Local package snapshot does not match the immutable npm snapshot lock.` The test restores the exact original source, manifest, and lock bytes afterward.
+
+The same test suite creates `components/unlocked-extra.json` as a real additional package-tree path and requires both materialization and proof preflight to reject the non-locked file with the canonical snapshot-lock diagnostic before removing it. This closes the physical package tree over the lock's exact path set, not only its 31 expected hashes.
+
+Changing only fixture metadata, the generated manifest hash, or a copied in-memory object does not prove the lock catches causal source drift. The fixture remains proof input; the package snapshot and immutable lock remain the compared source inputs.
+
 ## P2 Proof
-The fixture set passes only when every expectation matches the manifest, every unexpected fixture is rejected, every expected diagnostic code is registry-backed, every review-required row remains non-promoted, and final evidence records the complete artifact order.
+The fixture set passes only when every expectation matches the manifest, every unexpected fixture is rejected, the causal package-byte mutation is rejected against the unchanged immutable lock, every expected diagnostic code is registry-backed, every review-required row remains non-promoted, and final evidence records the complete artifact order.
 
 ## Non-Goals
 - No synthetic source fixture as the primary source.

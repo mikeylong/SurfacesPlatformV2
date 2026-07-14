@@ -22,9 +22,9 @@ export const DRUI_P4_DECISION_LEDGER_PATH = "artifacts/p4/surfaceops-decision-le
 export const DRUI_KANBAN_LIVE_EVIDENCE_PATH = "artifacts/surfaceops-kanban-live/evidence.json";
 export const DRUI_KANBAN_LIVE_OPERATION_PLAN_PATH = "artifacts/surfaceops-kanban-live/surfaceops-kanban-live-operation-plan.json";
 
-export const DRUI_ACCEPTED_DWT_EVIDENCE_HASH = "c02c0d48ed5c60fd67fb7921783b89a058642425032f159513fc35629e3a7e52";
-export const DRUI_ACCEPTED_KANBAN_LIVE_EVIDENCE_HASH = "394d6d84835bc5bfd27eb114838f392b637638ed5d05277e7fce71a92d7a52f3";
-export const DRUI_ACCEPTED_P4_EVIDENCE_HASH = "a9de1573bc5c4dcd9e0d509d8b60885470a4d6cb2bfcbc0eff5ed451997d71f3";
+export const DRUI_ACCEPTED_DWT_EVIDENCE_HASH = "3a6e0ee2f01d25c28e50d2bf418cd0fa6e1954cc99ffb2ace3a7959edbde386e";
+export const DRUI_ACCEPTED_KANBAN_LIVE_EVIDENCE_HASH = "9b631ba1b22854bb7241eea073c1a182053713385bda4cf5057826fb73807372";
+export const DRUI_ACCEPTED_P4_EVIDENCE_HASH = "553ed16729bd0fd3ee7bb385364f1d82b756f236393a85e98f9aa05fdea3201d";
 
 export const DRUI_SCHEMA_FILES = [
   "surfaceops-designer-review-ui-target-selection.v0.schema.json",

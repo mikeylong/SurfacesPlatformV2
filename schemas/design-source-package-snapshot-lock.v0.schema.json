@@ -1,0 +1,324 @@
+{
+  "$id": "https://surfaces.dev/schemas/p2/design-source-package-snapshot-lock.v0.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": [
+    "schemaId",
+    "version",
+    "packageName",
+    "packageVersion",
+    "packageTarball",
+    "packageIntegrity",
+    "tarballHashAlgorithm",
+    "tarballSha256",
+    "packageRoot",
+    "packageFiles",
+    "provenance"
+  ],
+  "properties": {
+    "schemaId": { "const": "design-source-package-snapshot-lock.v0" },
+    "version": { "const": "0.0.0" },
+    "packageName": { "const": "@adobe/spectrum-design-data" },
+    "packageVersion": { "const": "0.7.0" },
+    "packageTarball": {
+      "const": "https://registry.npmjs.org/@adobe/spectrum-design-data/-/spectrum-design-data-0.7.0.tgz"
+    },
+    "packageIntegrity": {
+      "const": "sha512-mSdmQn6fNEzKVo6W5xS4gO1EXCpC4ojiEm3GqTlSjhh26lC9siMgQSWi33ODvWe8ssfrxXX0unzVnL5VBt4+CA=="
+    },
+    "tarballHashAlgorithm": { "const": "sha256" },
+    "tarballSha256": {
+      "const": "12db4dd64e7ad0c0c6cadec7c2f8e24a8d819d1f3badb7d871fbfbfc99ffdff0"
+    },
+    "packageRoot": {
+      "const": "npm/@adobe/spectrum-design-data/0.7.0/package"
+    },
+    "packageFiles": {
+      "type": "array",
+      "prefixItems": [
+        { "$ref": "#/$defs/packageFilePackageJson" },
+        { "$ref": "#/$defs/packageFileReadme" },
+        { "$ref": "#/$defs/packageFileLicense" },
+        { "$ref": "#/$defs/packageFileButton" },
+        { "$ref": "#/$defs/packageFileInLineAlert" },
+        { "$ref": "#/$defs/packageFileRegistryComponents" },
+        { "$ref": "#/$defs/packageFileRegistryPropertyTerms" },
+        { "$ref": "#/$defs/packageFileRegistryVariants" },
+        { "$ref": "#/$defs/packageFileRegistryStates" },
+        { "$ref": "#/$defs/packageFileRegistryAnatomyTerms" },
+        { "$ref": "#/$defs/packageFileRegistryTokenTerminology" },
+        { "$ref": "#/$defs/packageFileRegistryTokenObjects" },
+        { "$ref": "#/$defs/packageFileTokenColorComponent" },
+        { "$ref": "#/$defs/packageFileTokenColorAliases" },
+        { "$ref": "#/$defs/packageFileTokenColorPalette" },
+        { "$ref": "#/$defs/packageFileTokenLayoutComponent" },
+        { "$ref": "#/$defs/packageFileTokenLayout" },
+        { "$ref": "#/$defs/packageFileTokenTypography" },
+        { "$ref": "#/$defs/packageFileModeColorScheme" },
+        { "$ref": "#/$defs/packageFileModeContrast" },
+        { "$ref": "#/$defs/packageFileModeScale" },
+        { "$ref": "#/$defs/packageFileFieldVariant" },
+        { "$ref": "#/$defs/packageFileFieldState" },
+        { "$ref": "#/$defs/packageFileFieldSize" },
+        { "$ref": "#/$defs/packageFileFieldProperty" },
+        { "$ref": "#/$defs/packageFileFieldAnatomy" },
+        { "$ref": "#/$defs/packageFileGuidelineDeveloperOverview" },
+        { "$ref": "#/$defs/packageFileGuidelineStates" },
+        { "$ref": "#/$defs/packageFileGuidelineColors" },
+        { "$ref": "#/$defs/packageFileGuidelineSpacing" },
+        { "$ref": "#/$defs/packageFileGuidelineTypographyFundamentals" }
+      ],
+      "items": false,
+      "minItems": 31,
+      "maxItems": 31,
+      "uniqueItems": true
+    },
+    "provenance": {
+      "type": "object",
+      "required": ["generatedAt", "generator", "sourceRefs"],
+      "properties": {
+        "generatedAt": { "const": "1970-01-01T00:00:00.000Z" },
+        "generator": { "const": "surfaces-p2-package-snapshot-lock" },
+        "sourceRefs": {
+          "const": [
+            "https://registry.npmjs.org/@adobe/spectrum-design-data/-/spectrum-design-data-0.7.0.tgz"
+          ]
+        }
+      },
+      "unevaluatedProperties": false
+    }
+  },
+  "$defs": {
+    "packageFile": {
+      "type": "object",
+      "required": ["packagePath", "hashAlgorithm", "sha256"],
+      "properties": {
+        "packagePath": {
+          "type": "string",
+          "pattern": "^(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*(?:^|/)\\.(?:/|$))(?!.*//)[A-Za-z0-9._@-]+(?:/[A-Za-z0-9._@-]+)*$"
+        },
+        "hashAlgorithm": { "const": "sha256" },
+        "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+      },
+      "unevaluatedProperties": false
+    },
+    "packageFilePackageJson": { "$ref": "#/$defs/packageFileConst__package_json" },
+    "packageFileReadme": { "$ref": "#/$defs/packageFileConst__README_md" },
+    "packageFileLicense": { "$ref": "#/$defs/packageFileConst__LICENSE" },
+    "packageFileButton": { "$ref": "#/$defs/packageFileConst__components_button_json" },
+    "packageFileInLineAlert": { "$ref": "#/$defs/packageFileConst__components_in_line_alert_json" },
+    "packageFileRegistryComponents": { "$ref": "#/$defs/packageFileConst__registry_components_json" },
+    "packageFileRegistryPropertyTerms": { "$ref": "#/$defs/packageFileConst__registry_property_terms_json" },
+    "packageFileRegistryVariants": { "$ref": "#/$defs/packageFileConst__registry_variants_json" },
+    "packageFileRegistryStates": { "$ref": "#/$defs/packageFileConst__registry_states_json" },
+    "packageFileRegistryAnatomyTerms": { "$ref": "#/$defs/packageFileConst__registry_anatomy_terms_json" },
+    "packageFileRegistryTokenTerminology": { "$ref": "#/$defs/packageFileConst__registry_token_terminology_json" },
+    "packageFileRegistryTokenObjects": { "$ref": "#/$defs/packageFileConst__registry_token_objects_json" },
+    "packageFileTokenColorComponent": { "$ref": "#/$defs/packageFileConst__tokens_color_component_tokens_json" },
+    "packageFileTokenColorAliases": { "$ref": "#/$defs/packageFileConst__tokens_color_aliases_tokens_json" },
+    "packageFileTokenColorPalette": { "$ref": "#/$defs/packageFileConst__tokens_color_palette_tokens_json" },
+    "packageFileTokenLayoutComponent": { "$ref": "#/$defs/packageFileConst__tokens_layout_component_tokens_json" },
+    "packageFileTokenLayout": { "$ref": "#/$defs/packageFileConst__tokens_layout_tokens_json" },
+    "packageFileTokenTypography": { "$ref": "#/$defs/packageFileConst__tokens_typography_tokens_json" },
+    "packageFileModeColorScheme": { "$ref": "#/$defs/packageFileConst__mode_sets_color_scheme_json" },
+    "packageFileModeContrast": { "$ref": "#/$defs/packageFileConst__mode_sets_contrast_json" },
+    "packageFileModeScale": { "$ref": "#/$defs/packageFileConst__mode_sets_scale_json" },
+    "packageFileFieldVariant": { "$ref": "#/$defs/packageFileConst__fields_variant_json" },
+    "packageFileFieldState": { "$ref": "#/$defs/packageFileConst__fields_state_json" },
+    "packageFileFieldSize": { "$ref": "#/$defs/packageFileConst__fields_size_json" },
+    "packageFileFieldProperty": { "$ref": "#/$defs/packageFileConst__fields_property_json" },
+    "packageFileFieldAnatomy": { "$ref": "#/$defs/packageFileConst__fields_anatomy_json" },
+    "packageFileGuidelineDeveloperOverview": { "$ref": "#/$defs/packageFileConst__guidelines_developer_overview_json" },
+    "packageFileGuidelineStates": { "$ref": "#/$defs/packageFileConst__guidelines_states_json" },
+    "packageFileGuidelineColors": { "$ref": "#/$defs/packageFileConst__guidelines_colors_json" },
+    "packageFileGuidelineSpacing": { "$ref": "#/$defs/packageFileConst__guidelines_spacing_json" },
+    "packageFileGuidelineTypographyFundamentals": { "$ref": "#/$defs/packageFileConst__guidelines_typography_fundamentals_json" },
+    "packageFileConst__package_json": {
+      "allOf": [
+        { "$ref": "#/$defs/packageFile" },
+        { "properties": { "packagePath": { "const": "package.json" } } }
+      ]
+    },
+    "packageFileConst__README_md": {
+      "allOf": [
+        { "$ref": "#/$defs/packageFile" },
+        { "properties": { "packagePath": { "const": "README.md" } } }
+      ]
+    },
+    "packageFileConst__LICENSE": {
+      "allOf": [
+        { "$ref": "#/$defs/packageFile" },
+        { "properties": { "packagePath": { "const": "LICENSE" } } }
+      ]
+    },
+    "packageFileConst__components_button_json": {
+      "allOf": [
+        { "$ref": "#/$defs/packageFile" },
+        { "properties": { "packagePath": { "const": "components/button.json" } } }
+      ]
+    },
+    "packageFileConst__components_in_line_alert_json": {
+      "allOf": [
+        { "$ref": "#/$defs/packageFile" },
+        { "properties": { "packagePath": { "const": "components/in-line-alert.json" } } }
+      ]
+    },
+    "packageFileConst__registry_components_json": {
+      "allOf": [
+        { "$ref": "#/$defs/packageFile" },
+        { "properties": { "packagePath": { "const": "registry/components.json" } } }
+      ]
+    },
+    "packageFileConst__registry_property_terms_json": {
+      "allOf": [
+        { "$ref": "#/$defs/packageFile" },
+        { "properties": { "packagePath": { "const": "registry/property-terms.json" } } }
+      ]
+    },
+    "packageFileConst__registry_variants_json": {
+      "allOf": [
+        { "$ref": "#/$defs/packageFile" },
+        { "properties": { "packagePath": { "const": "registry/variants.json" } } }
+      ]
+    },
+    "packageFileConst__registry_states_json": {
+      "allOf": [
+        { "$ref": "#/$defs/packageFile" },
+        { "properties": { "packagePath": { "const": "registry/states.json" } } }
+      ]
+    },
+    "packageFileConst__registry_anatomy_terms_json": {
+      "allOf": [
+        { "$ref": "#/$defs/packageFile" },
+        { "properties": { "packagePath": { "const": "registry/anatomy-terms.json" } } }
+      ]
+    },
+    "packageFileConst__registry_token_terminology_json": {
+      "allOf": [
+        { "$ref": "#/$defs/packageFile" },
+        { "properties": { "packagePath": { "const": "registry/token-terminology.json" } } }
+      ]
+    },
+    "packageFileConst__registry_token_objects_json": {
+      "allOf": [
+        { "$ref": "#/$defs/packageFile" },
+        { "properties": { "packagePath": { "const": "registry/token-objects.json" } } }
+      ]
+    },
+    "packageFileConst__tokens_color_component_tokens_json": {
+      "allOf": [
+        { "$ref": "#/$defs/packageFile" },
+        { "properties": { "packagePath": { "const": "tokens/color-component.tokens.json" } } }
+      ]
+    },
+    "packageFileConst__tokens_color_aliases_tokens_json": {
+      "allOf": [
+        { "$ref": "#/$defs/packageFile" },
+        { "properties": { "packagePath": { "const": "tokens/color-aliases.tokens.json" } } }
+      ]
+    },
+    "packageFileConst__tokens_color_palette_tokens_json": {
+      "allOf": [
+        { "$ref": "#/$defs/packageFile" },
+        { "properties": { "packagePath": { "const": "tokens/color-palette.tokens.json" } } }
+      ]
+    },
+    "packageFileConst__tokens_layout_component_tokens_json": {
+      "allOf": [
+        { "$ref": "#/$defs/packageFile" },
+        { "properties": { "packagePath": { "const": "tokens/layout-component.tokens.json" } } }
+      ]
+    },
+    "packageFileConst__tokens_layout_tokens_json": {
+      "allOf": [
+        { "$ref": "#/$defs/packageFile" },
+        { "properties": { "packagePath": { "const": "tokens/layout.tokens.json" } } }
+      ]
+    },
+    "packageFileConst__tokens_typography_tokens_json": {
+      "allOf": [
+        { "$ref": "#/$defs/packageFile" },
+        { "properties": { "packagePath": { "const": "tokens/typography.tokens.json" } } }
+      ]
+    },
+    "packageFileConst__mode_sets_color_scheme_json": {
+      "allOf": [
+        { "$ref": "#/$defs/packageFile" },
+        { "properties": { "packagePath": { "const": "mode-sets/color-scheme.json" } } }
+      ]
+    },
+    "packageFileConst__mode_sets_contrast_json": {
+      "allOf": [
+        { "$ref": "#/$defs/packageFile" },
+        { "properties": { "packagePath": { "const": "mode-sets/contrast.json" } } }
+      ]
+    },
+    "packageFileConst__mode_sets_scale_json": {
+      "allOf": [
+        { "$ref": "#/$defs/packageFile" },
+        { "properties": { "packagePath": { "const": "mode-sets/scale.json" } } }
+      ]
+    },
+    "packageFileConst__fields_variant_json": {
+      "allOf": [
+        { "$ref": "#/$defs/packageFile" },
+        { "properties": { "packagePath": { "const": "fields/variant.json" } } }
+      ]
+    },
+    "packageFileConst__fields_state_json": {
+      "allOf": [
+        { "$ref": "#/$defs/packageFile" },
+        { "properties": { "packagePath": { "const": "fields/state.json" } } }
+      ]
+    },
+    "packageFileConst__fields_size_json": {
+      "allOf": [
+        { "$ref": "#/$defs/packageFile" },
+        { "properties": { "packagePath": { "const": "fields/size.json" } } }
+      ]
+    },
+    "packageFileConst__fields_property_json": {
+      "allOf": [
+        { "$ref": "#/$defs/packageFile" },
+        { "properties": { "packagePath": { "const": "fields/property.json" } } }
+      ]
+    },
+    "packageFileConst__fields_anatomy_json": {
+      "allOf": [
+        { "$ref": "#/$defs/packageFile" },
+        { "properties": { "packagePath": { "const": "fields/anatomy.json" } } }
+      ]
+    },
+    "packageFileConst__guidelines_developer_overview_json": {
+      "allOf": [
+        { "$ref": "#/$defs/packageFile" },
+        { "properties": { "packagePath": { "const": "guidelines/developer-overview.json" } } }
+      ]
+    },
+    "packageFileConst__guidelines_states_json": {
+      "allOf": [
+        { "$ref": "#/$defs/packageFile" },
+        { "properties": { "packagePath": { "const": "guidelines/states.json" } } }
+      ]
+    },
+    "packageFileConst__guidelines_colors_json": {
+      "allOf": [
+        { "$ref": "#/$defs/packageFile" },
+        { "properties": { "packagePath": { "const": "guidelines/colors.json" } } }
+      ]
+    },
+    "packageFileConst__guidelines_spacing_json": {
+      "allOf": [
+        { "$ref": "#/$defs/packageFile" },
+        { "properties": { "packagePath": { "const": "guidelines/spacing.json" } } }
+      ]
+    },
+    "packageFileConst__guidelines_typography_fundamentals_json": {
+      "allOf": [
+        { "$ref": "#/$defs/packageFile" },
+        { "properties": { "packagePath": { "const": "guidelines/typography-fundamentals.json" } } }
+      ]
+    }
+  },
+  "unevaluatedProperties": false
+}

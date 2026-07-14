@@ -9,6 +9,7 @@ Create one P2 evidence artifact that can prove source inventory, mapping, extrac
 ## Inputs
 - P2-owned schemas.
 - Shared schemas consumed by P2 extraction, catalog compilation, diagnostics, expectations, evidence, and governed catalog behavior.
+- `sources/p2/design-system-source/package-snapshot.lock.json`.
 - `sources/p2/design-system-source/manifest.json`.
 - Declared source files under `sources/p2/design-system-source/`.
 - P2 fixtures and expectations manifest.
@@ -20,6 +21,7 @@ Create one P2 evidence artifact that can prove source inventory, mapping, extrac
 - `artifacts/p2/ingestion-report.json`.
 
 ## Outputs
+- `schemas/design-source-package-snapshot-lock.v0.schema.json`.
 - `schemas/design-system-ingestion-evidence.v0.schema.json`.
 - `schemas/design-system-ingestion-diagnostics.v0.schema.json`.
 - `schemas/design-system-ingestion-valid-fixture.v0.schema.json`.
@@ -31,6 +33,7 @@ Create one P2 evidence artifact that can prove source inventory, mapping, extrac
 - run id and deterministic environment;
 - proof command and arguments;
 - source manifest ref;
+- immutable package snapshot lock as `sourceFileRefs[0]`, with its raw-file hash;
 - source file refs and hashes;
 - P2-owned schema refs;
 - consumed shared schema refs;
@@ -51,38 +54,42 @@ Before materializing `artifacts/p2/source-inventory.json`, P2 proof must run str
 
 Required preflight checks:
 
-1. `sources/p2/design-system-source/manifest.json` exists at the exact POSIX-relative path.
-2. The manifest conforms to `design-source-manifest.v0`.
-3. The manifest package metadata matches `@adobe/spectrum-design-data@0.7.0`, the declared npm tarball, and package integrity `sha512-mSdmQn6fNEzKVo6W5xS4gO1EXCpC4ojiEm3GqTlSjhh26lC9siMgQSWi33ODvWe8ssfrxXX0unzVnL5VBt4+CA==`.
-4. Every source file declared by the manifest exists, is a regular file, has bytes matching the declared SHA-256 hash, and lives under `sources/p2/design-system-source/npm/@adobe/spectrum-design-data/0.7.0/package/` or a declared local `docs/` or `mappings/` path.
-5. No source file outside the manifest is read.
-6. No absolute path, symlinked path, `..` traversal, alternate source root, or extra source input is accepted.
-7. The manifest declares `designSystemId`, `designSystemName`, `sourceFamily`, source files, required mappings, policy refs, source-ref grammar, and initial components `button` and `in-line-alert`.
-8. Every source ref in manifest, mapping, extraction, catalog, report, and evidence artifacts conforms to the P2 source-ref grammar and points at a manifest-declared source file.
+1. `sources/p2/design-system-source/package-snapshot.lock.json` exists at the exact POSIX-relative path and conforms to `design-source-package-snapshot-lock.v0`.
+2. The lock identifies the pinned npm package, tarball, and SRI, records the tarball SHA-256, and contains the exact ordered package-file paths with `hashAlgorithm: "sha256"` and raw-byte `sha256` values established during a separate review-time tarball verification. Deterministic proof does not fetch or reconstruct that tarball.
+3. Every checked-in file under `sources/p2/design-system-source/npm/@adobe/spectrum-design-data/0.7.0/package/` matches the lock's exact path set, order, and raw-byte hash. Normal materialization fails on drift and never regenerates the lock.
+4. `sources/p2/design-system-source/manifest.json` exists at the exact POSIX-relative path.
+5. The manifest conforms to `design-source-manifest.v0` and its `packageSnapshotLock` path, schema id, hash algorithm, and `sha256` match the immutable lock.
+6. The manifest package metadata matches `@adobe/spectrum-design-data@0.7.0`, the declared npm tarball, and package integrity `sha512-mSdmQn6fNEzKVo6W5xS4gO1EXCpC4ojiEm3GqTlSjhh26lC9siMgQSWi33ODvWe8ssfrxXX0unzVnL5VBt4+CA==`.
+7. Every source file declared by the manifest exists, is a regular file, has bytes matching the declared SHA-256 hash, and lives under `sources/p2/design-system-source/npm/@adobe/spectrum-design-data/0.7.0/package/` or a declared local `docs/` or `mappings/` path.
+8. No source file outside the manifest is read.
+9. No absolute path, symlinked path, `..` traversal, alternate source root, or extra source input is accepted.
+10. The manifest declares `designSystemId`, `designSystemName`, `sourceFamily`, source files, required mappings, policy refs, source-ref grammar, and initial components `button` and `in-line-alert`.
+11. Every source ref in manifest, mapping, extraction, catalog, report, and evidence artifacts conforms to the P2 source-ref grammar and points at a manifest-declared source file.
 
-P2 evidence must preserve accepted source and proof refs through `sourceManifestRef`, `sourceFileRefs`, `schemaClosure`, `fixtureRefs`, `artifactRefs`, and `validationResults`; the accepted report is represented by the `artifactRefs` entry for `artifacts/p2/ingestion-report.json`.
+P2 evidence must preserve accepted source and proof refs through `sourceManifestRef`, `sourceFileRefs`, `schemaClosure`, `fixtureRefs`, `artifactRefs`, and `validationResults`; the immutable package-lock ref is `sourceFileRefs[0]`, before every declared package, docs, and mapping source ref. The accepted report is represented by the `artifactRefs` entry for `artifacts/p2/ingestion-report.json`.
 These refs and the final evidence self-hash must be recorded without rewriting paths, hashes, run ids, schema ids, source ids, or source ref roots.
 Each evidence ref must also carry deterministic provenance for its ref path, hash or self-hash placeholder, role, generator, timestamp, and environment.
 
 ## Artifact Ordering
 P2 evidence artifact order is:
 
-1. P2-owned schemas.
+1. P2-owned schemas, with `schemas/design-source-package-snapshot-lock.v0.schema.json` first.
 2. Consumed shared schemas.
-3. P2 source manifest.
-4. Declared source files.
-5. P2 expectations manifest.
-6. P2 valid fixtures.
-7. P2 review fixtures.
-8. P2 invalid fixtures.
-9. P2 mutation fixtures.
-10. Source inventory.
-11. Source mapping.
-12. Extract.
-13. Catalog.
-14. Governed catalog.
-15. Ingestion report.
-16. Final P2 evidence.
+3. Immutable P2 package snapshot lock.
+4. P2 source manifest.
+5. Declared source files.
+6. P2 expectations manifest.
+7. P2 valid fixtures.
+8. P2 review fixtures.
+9. P2 invalid fixtures.
+10. P2 mutation fixtures in expectations-manifest order: missing manifest, package integrity mismatch, causal package-byte tamper, then the remaining mutation fixtures.
+11. Source inventory.
+12. Source mapping.
+13. Extract.
+14. Catalog.
+15. Governed catalog.
+16. Ingestion report.
+17. Final P2 evidence.
 
 The `artifactRefs` entry for `artifacts/p2/evidence.json` is required and ordered last. Its persisted `hash` is the lowercase SHA-256 hex digest of the canonical evidence object after replacing only that entry's `hash` field with JSON `null`.
 
@@ -93,7 +100,7 @@ P2 evidence is closed over every schema it consumes. The schema closure must inc
 
 | Schema group | Required files |
 | --- | --- |
-| P2-owned source contracts | `schemas/design-source-manifest.v0.schema.json`, `schemas/design-source-inventory.v0.schema.json`, `schemas/design-source-mapping.v0.schema.json` |
+| P2-owned source contracts | `schemas/design-source-package-snapshot-lock.v0.schema.json`, `schemas/design-source-manifest.v0.schema.json`, `schemas/design-source-inventory.v0.schema.json`, `schemas/design-source-mapping.v0.schema.json` |
 | P2-owned proof contracts | `schemas/design-system-ingestion-report.v0.schema.json`, `schemas/design-system-ingestion-evidence.v0.schema.json`, `schemas/design-system-ingestion-expectations.v0.schema.json`, `schemas/design-system-ingestion-diagnostics.v0.schema.json`, `schemas/design-system-ingestion-valid-fixture.v0.schema.json` |
 | Shared extraction and catalog contracts | `schemas/extract.v0.schema.json`, `schemas/runtime-catalog.v0.schema.json` |
 | Shared diagnostic, expectation, and evidence behavior | `schemas/diagnostics.v0.schema.json`, `schemas/fixture-expectations.v0.schema.json`, `schemas/evidence.v0.schema.json` |
@@ -111,6 +118,7 @@ P2 diagnostics are sorted by artifact path, stage order (`source-inventory`, `ma
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | `INGEST_SOURCE_MANIFEST_MISSING` | Source bundle manifest is absent or unreadable | Design-system source manifest is missing or unreadable. | `error` | `source-preflight-validator` | `source-inventory` | `source-manifest` | `fixtures/p2/mutations/missing-source-manifest.design-source.json` | `/manifest` | `invalid` | `blocked` | `mutations/missing-source-manifest.design-source.json` |
 | `INGEST_PACKAGE_INTEGRITY_MISMATCH` | Spectrum package metadata differs from the pinned npm target | Spectrum package integrity does not match the pinned npm package. | `error` | `source-preflight-validator` | `source-inventory` | `source-manifest` | `fixtures/p2/mutations/package-integrity-mismatch.design-source.json` | `/packageIntegrity` | `invalid` | `blocked` | `mutations/package-integrity-mismatch.design-source.json` |
+| `INGEST_PACKAGE_SNAPSHOT_LOCK_MISMATCH` | The checked-in package path set, path type, or file bytes differ from the immutable npm snapshot lock | Local package snapshot does not match the immutable npm snapshot lock. | `error` | `source-preflight-validator` | `source-inventory` | `source-manifest` | `fixtures/p2/mutations/package-snapshot-byte-tamper.design-source.json` | `/packageFiles/3/sha256` | `invalid` | `blocked` | `mutations/package-snapshot-byte-tamper.design-source.json` |
 | `INGEST_SOURCE_PATH_UNDECLARED` | Source path is outside the manifest or outside the allowed snapshot roots | Design-system source path is not declared by the manifest. | `error` | `source-preflight-validator` | `source-inventory` | `source-manifest` | `fixtures/p2/mutations/source-path-undeclared.design-source.json` | `/sourceFiles/0/path` | `invalid` | `blocked` | `mutations/source-path-undeclared.design-source.json` |
 | `INGEST_SOURCE_REF_INVALID` | Source ref grammar is malformed or points outside manifest-declared source files | Design-system source reference does not match the required source-ref grammar. | `error` | `source-preflight-validator` | `source-inventory` | `source-manifest` | `fixtures/p2/mutations/invalid-source-ref.design-source.json` | `/sourceFiles/0/sourceRefRoot` | `invalid` | `blocked` | `mutations/invalid-source-ref.design-source.json` |
 | `INGEST_SOURCE_HASH_MISMATCH` | Source file hash differs from manifest or inventory | Design-system source hash does not match the declared manifest. | `error` | `source-inventory-validator` | `source-inventory` | `source-inventory` | `fixtures/p2/mutations/source-hash-mismatch.design-source-inventory.json` | `/sourceFiles/0/hash` | `invalid` | `blocked` | `mutations/source-hash-mismatch.design-source-inventory.json` |
@@ -138,6 +146,7 @@ P2 diagnostics are sorted by artifact path, stage order (`source-inventory`, `ma
 ## Hash And Environment Policy
 - Canonical JSON follows RFC 8785/JCS with I-JSON numeric input constraints.
 - Hashes are lowercase SHA-256 hex digests.
+- Package-file hashes in the snapshot lock are over raw package bytes. The manifest and evidence lock references hash the raw lock-file bytes, keeping both authorities independent from generated manifest source hashes.
 - Paths are POSIX-style relative paths.
 - Golden `generatedAt` is `1970-01-01T00:00:00.000Z`.
 - Host-derived fields are `null`.

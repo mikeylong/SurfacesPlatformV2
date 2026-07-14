@@ -7,6 +7,8 @@ import {
   P2_MAPPING_FILES,
   P2_PACKAGE_INTEGRITY,
   P2_PACKAGE_NAME,
+  P2_PACKAGE_SNAPSHOT_LOCK_FILE,
+  P2_PACKAGE_SNAPSHOT_LOCK_SCHEMA_ID,
   P2_PACKAGE_TARBALL,
   P2_PACKAGE_VERSION,
   P2_POLICY_REFS,
@@ -16,6 +18,7 @@ import {
   P2_VERSION,
   buildP2CompanionSources,
   rawFileHash,
+  verifyP2PackageSnapshotLock,
   writeCanonicalJson
 } from "../src/p2-contract.js";
 
@@ -24,6 +27,11 @@ const cwd = process.cwd();
 await materializeP2(cwd);
 
 async function materializeP2(root) {
+  const {
+    lockSha256,
+    hashByPackagePath
+  } = await verifyP2PackageSnapshotLock(root);
+
   const companions = await buildP2CompanionSources(root);
   for (const [relativePath, data] of companions) {
     await writeCanonicalJson(path.join(root, P2_SOURCE_ROOT, relativePath), data);
@@ -41,7 +49,9 @@ async function materializeP2(root) {
   for (const sourceFile of P2_SOURCE_FILES) {
     sourceFiles.push({
       ...sourceFile,
-      sha256: await rawFileHash(path.join(root, P2_SOURCE_ROOT, sourceFile.path))
+      sha256: sourceFile.packagePath === null
+        ? await rawFileHash(path.join(root, P2_SOURCE_ROOT, sourceFile.path))
+        : hashByPackagePath.get(sourceFile.packagePath)
     });
   }
   const requiredMappings = [];
@@ -62,6 +72,12 @@ async function materializeP2(root) {
     packageVersion: P2_PACKAGE_VERSION,
     packageTarball: P2_PACKAGE_TARBALL,
     packageIntegrity: P2_PACKAGE_INTEGRITY,
+    packageSnapshotLock: {
+      path: P2_PACKAGE_SNAPSHOT_LOCK_FILE,
+      schemaId: P2_PACKAGE_SNAPSHOT_LOCK_SCHEMA_ID,
+      hashAlgorithm: "sha256",
+      sha256: lockSha256
+    },
     snapshotRoot: `${P2_SOURCE_ROOT}/npm/@adobe/spectrum-design-data/0.7.0/package`,
     sourceRefGrammar: "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/<posix-package-path>#<rfc6901-json-pointer>",
     initialComponents: ["button", "in-line-alert"],

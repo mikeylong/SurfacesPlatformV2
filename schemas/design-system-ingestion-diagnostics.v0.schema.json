@@ -16,6 +16,7 @@
       "enum": [
         "INGEST_SOURCE_MANIFEST_MISSING",
         "INGEST_PACKAGE_INTEGRITY_MISMATCH",
+        "INGEST_PACKAGE_SNAPSHOT_LOCK_MISMATCH",
         "INGEST_SOURCE_PATH_UNDECLARED",
         "INGEST_SOURCE_REF_INVALID",
         "INGEST_SOURCE_HASH_MISMATCH",
@@ -103,6 +104,22 @@
               "phase": { "const": "source-manifest" },
               "artifactPath": { "const": "fixtures/p2/mutations/package-integrity-mismatch.design-source.json" },
               "jsonPointer": { "const": "/packageIntegrity" },
+              "validationResult": { "const": "invalid" },
+              "promotionStatus": { "const": "blocked" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "code": { "const": "INGEST_PACKAGE_SNAPSHOT_LOCK_MISMATCH" } }, "required": ["code"] },
+          "then": {
+            "properties": {
+              "message": { "const": "Local package snapshot does not match the immutable npm snapshot lock." },
+              "severity": { "const": "error" },
+              "diagnosticSource": { "const": "source-preflight-validator" },
+              "stage": { "const": "source-inventory" },
+              "phase": { "const": "source-manifest" },
+              "artifactPath": { "const": "fixtures/p2/mutations/package-snapshot-byte-tamper.design-source.json" },
+              "jsonPointer": { "const": "/packageFiles/3/sha256" },
               "validationResult": { "const": "invalid" },
               "promotionStatus": { "const": "blocked" }
             }

@@ -37,20 +37,21 @@ The accepted roadmap sequence is:
 - P2: real design-system ingestion from a bounded, manifest-declared local source bundle.
 - P3: inert agent recruitment and orchestration proof after P2 ingestion evidence passes.
 - P4: SurfaceOps and JudgmentKit review and judgment proof.
-- P5: production adapters, protocol boundaries, and A2UI exports or conformance.
+- P5: protocol boundaries and target-specific adapter proofs.
 
-P0, P1, P2, P3, and P4 are currently implemented through package scripts and tracked proof artifacts.
+P0-P5 are currently implemented through package scripts and tracked proof artifacts. P5 implementation is limited to the proof-only `surfaces-protocol-static` and `surfaces-native-static` slices.
 
-P5 is a planned contract until its schemas, fixtures, commands, artifacts, reports, demos, and evidence are implemented. Do not treat planned proof commands as runnable just because they appear in docs.
+Production adapters, public APIs, SDKs, live runtimes, A2UI export or conformance, production SurfaceOps, and live JudgmentKit remain planned until each target adds its own schemas, fixtures, commands, artifacts, reports, demos, CI gate, and passing evidence. Do not treat planned proof commands as runnable just because they appear in docs.
 
 Important phase constraints:
 
 - P0 fixtures are synthetic proof inputs, not real design-system extraction.
 - P1 runtime projections, render plans, and demos are derived consumers, not new authority.
-- P2 is ingestion only. It must not call live source APIs, crawl docs, build runtime adapters, recruit agents, persist SurfaceOps decisions, or run JudgmentKit.
+- P2 is ingestion only. Its local npm package snapshot is checked against the review-controlled `sources/p2/design-system-source/package-snapshot.lock.json`, whose npm identity, SRI, tarball SHA-256, and file hashes were established during a separate review-time tarball verification. Normal materialization verifies the exact local package tree against this lock and must never regenerate it. The deterministic proof does not fetch or reconstruct the tarball, so it proves local lock conformance rather than the original download ceremony. P2 must not call live source APIs, crawl docs, build runtime adapters, recruit agents, persist SurfaceOps decisions, or run JudgmentKit.
 - P3 work orders are inert proof artifacts. They authorize no live agents, shell commands, tool calls, connector calls, network calls, file edits, secrets, callbacks, persistent review decisions, or execution.
 - P4 emits deterministic SurfaceOps and JudgmentKit-shaped proof artifacts only. Do not invoke live SurfaceOps or live JudgmentKit unless the user explicitly asks for it in this project.
-- A2UI is deferred to P5 unless P5 adds its own schema, fixtures, diagnostics, command contract, conformance proof, and evidence.
+- P5 protocol and native artifacts remain inert derived consumers. They do not implement production adapters, live runtimes, public APIs, or SDKs.
+- A2UI remains unimplemented until a target-specific P5 proof adds its own schema, fixtures, diagnostics, command contract, conformance proof, and evidence.
 
 Do not revive older P2-as-agent-orchestration wording. Current docs place real design-system ingestion in `plans/p2/` and agent orchestration in `plans/p3/`.
 
@@ -64,7 +65,7 @@ Do not revive older P2-as-agent-orchestration wording. Current docs place real d
 - `artifacts/`: generated proof artifacts and evidence.
 - `demo/`: generated static demo output.
 - `test/`: Node test suite.
-- `.github/workflows/surfaces-proof.yml`: CI for P0-P4 proof gates.
+- `.github/workflows/surfaces-proof.yml`: CI for the implemented P0-P5 and non-numbered target proof gates.
 
 The project is Node.js ESM and CI uses Node 22.
 
@@ -75,6 +76,7 @@ Prefer changing the source of truth and regenerating derived output:
 - Change implementation in `src/`, `scripts/`, or `bin/`.
 - Change contracts in `schemas/` and corresponding fixture manifests together.
 - Regenerate `artifacts/` and `demo/` with the package scripts.
+- Treat `sources/p2/design-system-source/package-snapshot.lock.json` as an immutable checked input. Ordinary materialization may compare local package bytes with it but must never regenerate or rewrite it.
 - Avoid hand-editing generated artifacts unless the task is specifically to inspect or repair generated output and the proof still passes afterward.
 
 Preserve:
@@ -110,6 +112,8 @@ npm run check:p2:ci
 npm run check:p3:ci
 npm run check:p4:ci
 npm run check:p4:ci:phase
+npm run check:p5:protocol:ci
+npm run check:p5:native:ci
 ```
 
 Minimum expectations:
@@ -121,9 +125,11 @@ Minimum expectations:
 - P3 orchestration changes or broad post-P3 changes: run `npm run check:p3:ci`.
 - P4 review/judgment changes or broad post-P4 changes: run `npm run check:p4:ci`.
 - P4 phase-only CI jobs may use `npm run check:p4:ci:phase` after the P3 proof gate has already passed.
+- P5 protocol changes: run `npm run check:p5:protocol:ci`.
+- P5 native or broad post-P5 changes: run `npm run check:p5:native:ci`.
 - Focused code changes can use `npm test` during iteration, but finish with the relevant proof gate.
 
-Before mutation-heavy gates such as `npm test`, `npm run check:p0:ci`, `npm run check:p1:ci`, `npm run check:p2:ci`, `npm run check:p3:ci`, `npm run check:p4:ci`, or `npm run check:p4:ci:phase`, run `git status --short` and confirm the worktree is quiescent: no unexpected files, no in-progress generated-output edits, and no parallel agent or process writing into the repo. If a gate must run with intentional source edits present, make that scope explicit before starting.
+Before mutation-heavy gates such as `npm test`, `npm run check:p0:ci`, `npm run check:p1:ci`, `npm run check:p2:ci`, `npm run check:p3:ci`, `npm run check:p4:ci`, `npm run check:p4:ci:phase`, `npm run check:p5:protocol:ci`, or `npm run check:p5:native:ci`, run `git status --short` and confirm the worktree is quiescent: no unexpected files, no in-progress generated-output edits, and no parallel agent or process writing into the repo. If a gate must run with intentional source edits present, make that scope explicit before starting.
 
 Do not run proof/test commands concurrently with edits. The P0 tests mutate the real workspace and restore it; keep verification sequential.
 

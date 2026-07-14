@@ -1,7 +1,7 @@
 # Source Strategy
 
 ## Decision
-P2 uses `design-system-source-bundle.v0` as the accepted P2 pilot source container. It is a local, hash-bound snapshot exported from a named real design-system source selected in `sources/p2/design-system-source/manifest.json`; it is not a synthetic replacement for the P0 fixture and not a placeholder bundle invented for the proof.
+P2 uses `design-system-source-bundle.v0` as the accepted P2 pilot source container. It is a local, hash-bound snapshot exported from a named real design-system source selected in `sources/p2/design-system-source/manifest.json`; it is not a synthetic replacement for the P0 fixture and not a placeholder bundle invented for the proof. The package portion is bound by review-controlled `package-snapshot.lock.json`, seeded during a separate SRI and tarball verification.
 
 This keeps the proof deterministic while moving beyond P0 synthetic fixture extraction. It does not settle the universal product source policy decision; [VISION](../../VISION.md#real-design-system-extraction) remains canonical for the authority model and future source-family choices.
 
@@ -20,6 +20,7 @@ Define how real design-system source material becomes eligible for P2 extraction
 - `packageVersion`: `0.7.0`;
 - `packageIntegrity`: `sha512-mSdmQn6fNEzKVo6W5xS4gO1EXCpC4ojiEm3GqTlSjhh26lC9siMgQSWi33ODvWe8ssfrxXX0unzVnL5VBt4+CA==`;
 - `packageTarball`: `https://registry.npmjs.org/@adobe/spectrum-design-data/-/spectrum-design-data-0.7.0.tgz`;
+- `packageSnapshotLock`: exact path, `design-source-package-snapshot-lock.v0` schema id, `sha256` hash algorithm, and raw lock-file `sha256`;
 - `snapshotRoot`: `sources/p2/design-system-source/npm/@adobe/spectrum-design-data/0.7.0/package`;
 - `sourceRefGrammar`;
 - `initialComponents`: `["button", "in-line-alert"]`;
@@ -32,9 +33,17 @@ The manifest is the source eligibility gate. Files absent from the manifest must
 
 The manifest identifies the real pilot target. If source files, required mappings, policy refs, or per-file hashes become placeholders, the P2 proof is invalid and no source bundle, generated artifacts, demo, CI success claim, or ingestion evidence claim should be accepted.
 
+## Immutable Package Snapshot Lock
+`schemas/design-source-package-snapshot-lock.v0.schema.json` defines `design-source-package-snapshot-lock.v0`. The checked-in `sources/p2/design-system-source/package-snapshot.lock.json` closes `schemaId`, `version`, `packageName`, `packageVersion`, `packageTarball`, `packageIntegrity`, `tarballHashAlgorithm`, `tarballSha256`, `packageRoot`, `packageFiles`, and `provenance`. It fixes the exact 31-entry P2 package-file order. Each package-file row contains `packagePath`, `hashAlgorithm: "sha256"`, and the raw-byte `sha256` from the unpacked tarball.
+
+The lock is created only from the pinned npm tarball after the downloaded tarball passes its declared SRI check during a review-time ceremony. Ordinary `materialize:p2` execution is offline with respect to this lock: it schema-validates the checked-in lock, recursively compares the exact local package-file set and raw bytes, and fails when they differ. It never fetches or reconstructs the tarball, rewrites `package-snapshot.lock.json`, or recomputes the lock from the current workspace as a way to accept drift. Passing deterministic proof establishes local lock conformance; the external download ceremony remains a reviewed provenance input rather than a retained proof artifact.
+
+The source manifest remains generated metadata, but its `packageSnapshotLock` ref must resolve to the immutable lock with the exact path, schema id, hash algorithm, and raw lock-file hash. This separates immutable package-byte identity from the per-source hashes materialized into `manifest.json`.
+
 ## Current P2 Source Inputs
 The current P2 source bundle is limited to:
 
+- the review-controlled `package-snapshot.lock.json` seeded from the pinned tarball verification;
 - the pinned local `@adobe/spectrum-design-data@0.7.0` snapshot under `sources/p2/design-system-source/npm/@adobe/spectrum-design-data/0.7.0/package/`;
 - local `mappings/component-map.json`, `mappings/token-map.json`, and `mappings/policy-map.json` reconciliation files;
 - local `docs/usage-policy.json` policy input plus declared Spectrum `guidelines/*.json` package files.
@@ -54,13 +63,19 @@ The target design system is Adobe Spectrum Design Data. The source manifest sele
 - `packageIntegrity`: `sha512-mSdmQn6fNEzKVo6W5xS4gO1EXCpC4ojiEm3GqTlSjhh26lC9siMgQSWi33ODvWe8ssfrxXX0unzVnL5VBt4+CA==`;
 - first components: `button` and `in-line-alert`.
 
-The declared package files are copied into the local snapshot root with hashes before proof execution. The manifest selects the P2 pilot target only; it is not a product-wide source policy or source-family taxonomy.
+The declared package files are copied from the SRI-verified tarball into the local snapshot root during the review-time provenance ceremony, then recorded in the snapshot lock before normal proof execution. Later materialization compares the exact file set and bytes with the lock and fails on drift instead of updating the lock. The deterministic proof does not replay the tarball download. The manifest selects the P2 pilot target only; it is not a product-wide source policy or source-family taxonomy.
 
 ## Spectrum Source Snapshot Plan
 The local snapshot root is:
 
 ```text
 sources/p2/design-system-source/npm/@adobe/spectrum-design-data/0.7.0/package/
+```
+
+The sibling immutable lock is:
+
+```text
+sources/p2/design-system-source/package-snapshot.lock.json
 ```
 
 The first source manifest must declare at least these Spectrum package paths:
@@ -107,6 +122,8 @@ source://p2/docs/usage-policy.json#<rfc6901-json-pointer>
 Local policy refs must point to manifest-declared policy files under `sources/p2/design-system-source/docs/`. They may provide usage, accessibility, and governance policy refs for mapped Spectrum source material, but they do not authorize components, tokens, variants, states, slots, actions, or catalog behavior absent from the declared Spectrum snapshot.
 
 ## P2 Eligibility Rules
+- The local package snapshot must match every ordered `packageFiles[]` row in the immutable lock before manifest materialization or proof extraction can continue.
+- A package-byte mismatch emits `INGEST_PACKAGE_SNAPSHOT_LOCK_MISMATCH`; materialization must not update the lock or manifest hashes to make the changed bytes eligible.
 - P2 source eligibility is limited to the pinned local `@adobe/spectrum-design-data@0.7.0` snapshot, local mappings, and local policy files declared by the manifest.
 - The eligible component subset is limited to Spectrum `button` and `in-line-alert`.
 - Figma exports, Storybook or code-doc metadata, Code Connect mappings, docs crawlers, production HTML, and any other source family are future connector-specific proof targets, not current eligible inputs.

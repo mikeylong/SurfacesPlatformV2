@@ -11,7 +11,7 @@ Surfaces Platform turns design-system source material into governed, versioned U
 P2 preserves this mission by replacing the synthetic P0 source fixture with a bounded source bundle exported from real design-system source material. [VISION](../../VISION.md#real-design-system-extraction) remains the canonical extraction and authority taxonomy; P2 describes only the phase-local mechanics for source eligibility, provenance, mapping, diagnostics, and evidence. The proof must show what can be extracted, what must be mapped manually, what is unsupported, and what can become governed catalog contract.
 
 ## Source Strategy
-The accepted P2 pilot source container is `design-system-source-bundle.v0`: a local, versioned, hash-bound snapshot exported from Adobe Spectrum Design Data, pinned as `@adobe/spectrum-design-data@0.7.0` with npm integrity `sha512-mSdmQn6fNEzKVo6W5xS4gO1EXCpC4ojiEm3GqTlSjhh26lC9siMgQSWi33ODvWe8ssfrxXX0unzVnL5VBt4+CA==`. This is a phase-local ingestion and fixture strategy, not a universal product source policy decision, and not a synthetic replacement for the P0 fixture. Future source-family choices still follow [VISION source-selection rules and open decisions](../../VISION.md#open-decisions).
+The accepted P2 pilot source container is `design-system-source-bundle.v0`: a local, versioned, hash-bound snapshot exported from Adobe Spectrum Design Data, pinned as `@adobe/spectrum-design-data@0.7.0` with npm integrity `sha512-mSdmQn6fNEzKVo6W5xS4gO1EXCpC4ojiEm3GqTlSjhh26lC9siMgQSWi33ODvWe8ssfrxXX0unzVnL5VBt4+CA==`. `sources/p2/design-system-source/package-snapshot.lock.json` records the exact ordered package-file paths and raw-byte hashes established during a separate review-time SRI and tarball verification. Normal materialization recursively verifies the exact checked-in package tree against this review-controlled lock and never fetches the tarball or regenerates the lock. Passing proof establishes local lock conformance, not the external provenance ceremony. This is a phase-local ingestion and fixture strategy, not a universal product source policy decision, and not a synthetic replacement for the P0 fixture. Future source-family choices still follow [VISION source-selection rules and open decisions](../../VISION.md#open-decisions).
 
 The first component subset is Spectrum `button` and `in-line-alert`. The snapshot root is `sources/p2/design-system-source/npm/@adobe/spectrum-design-data/0.7.0/package/`, preserving tarball paths such as `components/button.json`, `components/in-line-alert.json`, `tokens/color-component.tokens.json`, `tokens/layout-component.tokens.json`, `tokens/typography.tokens.json`, `registry/components.json`, `registry/variants.json`, `registry/states.json`, and selected `guidelines/*.json` policy inputs.
 
@@ -19,7 +19,7 @@ The current P2 bundle input is limited to the pinned local `@adobe/spectrum-desi
 
 P2 does not call remote APIs or broaden source families by manifest entry. Those source-family options require later connector-specific proofs before they can become eligible source inputs.
 
-The target design system is named in `sources/p2/design-system-source/manifest.json`, with source files, required mappings, policy refs, and hashes. The implemented proof remains scoped to that declared local snapshot and evidence.
+The target design system is named in `sources/p2/design-system-source/manifest.json`, with a `packageSnapshotLock` ref, source files, required mappings, policy refs, and hashes. The lock ref carries the exact lock path, `design-source-package-snapshot-lock.v0` schema id, `sha256` hash algorithm, and raw lock-file hash. The implemented proof remains scoped to that declared local snapshot and evidence.
 
 ## Source Ref Grammar
 P2 Spectrum source refs use this grammar:
@@ -62,6 +62,7 @@ Local policy refs identify manifest-declared policy files only. They can supply 
 
 ```text
 schemas/
+  design-source-package-snapshot-lock.v0.schema.json
   design-source-manifest.v0.schema.json
   design-source-inventory.v0.schema.json
   design-source-mapping.v0.schema.json
@@ -75,6 +76,7 @@ sources/p2/design-system-source/
   README.md
   manifest.template.json
   manifest.json
+  package-snapshot.lock.json
   npm/
     @adobe/spectrum-design-data/
       0.7.0/
@@ -143,6 +145,7 @@ fixtures/p2/
   mutations/
     missing-source-manifest.design-source.json
     package-integrity-mismatch.design-source.json
+    package-snapshot-byte-tamper.design-source.json
     source-path-undeclared.design-source.json
     invalid-source-ref.design-source.json
     source-hash-mismatch.design-source-inventory.json
@@ -177,7 +180,9 @@ This command runs from the workspace root. `--source`, `--fixture`, and `--out` 
 Package scripts and tests must invoke `node bin/interfacectl.js surfaces ingest proof --source sources/p2/design-system-source --fixture fixtures/p2 --out artifacts/p2`. Evidence may record the logical command string above to match the existing proof-command convention.
 
 ## Pass Condition
-Given a declared design-system source bundle and the P2 fixture set, the ingest proof command emits the exact P2 artifacts, verifies source hashes, creates deterministic source inventory and source mapping records, extracts normalized design-system material with source refs, compiles catalog and governed catalog artifacts, validates positive Spectrum coverage for `button` and `in-line-alert`, blocks invalid and mutation cases with registry-backed diagnostics, preserves review-required manual mapping cases without promotion, records ingestion diagnostics before final evidence, and writes reproducible evidence with hashes and provenance for every P2-owned schema, every consumed shared schema, source input, fixture, generated artifact, and final evidence artifact.
+Given a declared design-system source bundle and the P2 fixture set, the ingest proof command emits the exact P2 artifacts, verifies the immutable package snapshot lock before accepting generated manifest hashes, verifies the remaining source hashes, creates deterministic source inventory and source mapping records, extracts normalized design-system material with source refs, compiles catalog and governed catalog artifacts, validates positive Spectrum coverage for `button` and `in-line-alert`, blocks invalid and mutation cases with registry-backed diagnostics, preserves review-required manual mapping cases without promotion, records ingestion diagnostics before final evidence, and writes reproducible evidence with hashes and provenance for every P2-owned schema, package-lock and source input, fixture, generated artifact, and final evidence artifact.
+
+The ordered evidence closure places `design-source-package-snapshot-lock.v0` first in the P2-owned schema group, then places `package-snapshot.lock.json` before the source manifest and declared package/source files. In the evidence object, the lock is `sourceFileRefs[0]`; the causal mutation fixture is ordered with the P2 mutation fixtures before generated artifacts.
 
 ## Product Surface Rule
 P2 proves real source ingestion, not a product docs site or generated UI surface. The complete cross-phase surface-role taxonomy remains in [VISION](../../VISION.md#surface-roles).
@@ -200,6 +205,7 @@ These diagnostics enforce the canonical authority model by blocking source, mapp
 | --- | --- | --- | --- | --- |
 | `INGEST_SOURCE_MANIFEST_MISSING` | Source bundle manifest is absent or unreadable | `source-inventory` | `blocked` | `mutations/missing-source-manifest.design-source.json` |
 | `INGEST_PACKAGE_INTEGRITY_MISMATCH` | Spectrum package metadata differs from the pinned npm target | `source-inventory` | `blocked` | `mutations/package-integrity-mismatch.design-source.json` |
+| `INGEST_PACKAGE_SNAPSHOT_LOCK_MISMATCH` | The checked-in package path set, path type, or file bytes differ from the immutable npm snapshot lock | `source-inventory` | `blocked` | `mutations/package-snapshot-byte-tamper.design-source.json` |
 | `INGEST_SOURCE_PATH_UNDECLARED` | Source path is outside the manifest or outside allowed snapshot roots | `source-inventory` | `blocked` | `mutations/source-path-undeclared.design-source.json` |
 | `INGEST_SOURCE_REF_INVALID` | Source ref grammar is malformed or points outside manifest-declared source files | `source-inventory` | `blocked` | `mutations/invalid-source-ref.design-source.json` |
 | `INGEST_SOURCE_HASH_MISMATCH` | Source file hash differs from manifest or inventory | `source-inventory` | `blocked` | `mutations/source-hash-mismatch.design-source-inventory.json` |
@@ -217,8 +223,10 @@ These diagnostics enforce the canonical authority model by blocking source, mapp
 | `INGEST_SCHEMA_HASH_MISMATCH` | A P2-owned schema or consumed shared schema hash differs from the evidence manifest | `evidence` | `blocked` | `mutations/schema-hash-mismatch.design-system-ingestion-evidence.json` |
 | `INGEST_EVIDENCE_HASH_MISMATCH` | Ingestion evidence hash differs from manifest or self-hash rule | `evidence` | `blocked` | `mutations/hash-mismatch.design-system-ingestion-evidence.json` |
 
+`INGEST_PACKAGE_SNAPSHOT_LOCK_MISMATCH` uses the canonical message `Local package snapshot does not match the immutable npm snapshot lock.` Its normative row is `source-preflight-validator` / `source-inventory` / `source-manifest`, points to `/packageFiles/3/sha256`, and remains `invalid` / `blocked`.
+
 ## Allowed Claims
-With passing P2 evidence, repo text may claim deterministic local ingestion for the declared `@adobe/spectrum-design-data@0.7.0` source snapshot, scoped to `button` and `in-line-alert`. It must not claim full Spectrum support, live ingestion, runtime adapter rendering, A2UI support, SurfaceOps operation, JudgmentKit evaluation, P3 orchestration, or Adobe endorsement. `check:p2:planning:validate` remains a non-mutating planning guard; `check:p2:ci` is the proof-bearing gate.
+With passing P2 evidence, repo text may claim deterministic local ingestion for the immutable-lock-verified `@adobe/spectrum-design-data@0.7.0` source snapshot, scoped to `button` and `in-line-alert`. It must not claim full Spectrum support, live ingestion, runtime adapter rendering, A2UI support, SurfaceOps operation, JudgmentKit evaluation, P3 orchestration, or Adobe endorsement. `check:p2:planning:validate` remains a non-mutating planning guard; `check:p2:ci` is the proof-bearing gate.
 
 ## Non-Goals
 - No Figma export ingestion.

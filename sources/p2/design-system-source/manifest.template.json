@@ -9,6 +9,12 @@
   "packageVersion": "0.7.0",
   "packageTarball": "https://registry.npmjs.org/@adobe/spectrum-design-data/-/spectrum-design-data-0.7.0.tgz",
   "packageIntegrity": "sha512-mSdmQn6fNEzKVo6W5xS4gO1EXCpC4ojiEm3GqTlSjhh26lC9siMgQSWi33ODvWe8ssfrxXX0unzVnL5VBt4+CA==",
+  "packageSnapshotLock": {
+    "path": "package-snapshot.lock.json",
+    "schemaId": "design-source-package-snapshot-lock.v0",
+    "hashAlgorithm": "sha256",
+    "sha256": "c55c42717c3caec8eb40609000c0c73d0eb6da852e230ea0124a7291b8007d11"
+  },
   "snapshotRoot": "sources/p2/design-system-source/npm/@adobe/spectrum-design-data/0.7.0/package",
   "sourceRefGrammar": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/<posix-package-path>#<rfc6901-json-pointer>",
   "initialComponents": [

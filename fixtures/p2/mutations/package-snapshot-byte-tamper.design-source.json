@@ -1,0 +1,11 @@
+{
+  "schemaId": "design-system-ingestion-mutation-fixture.v0",
+  "fixtureId": "package-snapshot-byte-tamper",
+  "fixtureKind": "mutation",
+  "description": "Any byte change in the local npm package snapshot must fail the immutable snapshot lock.",
+  "mutatedPath": "sources/p2/design-system-source/npm/@adobe/spectrum-design-data/0.7.0/package/components/button.json",
+  "appendUtf8": "\n",
+  "expectedDiagnosticCode": "INGEST_PACKAGE_SNAPSHOT_LOCK_MISMATCH",
+  "expectedResult": "invalid",
+  "promotionStatus": "blocked"
+}
