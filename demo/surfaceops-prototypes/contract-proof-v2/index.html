@@ -1,0 +1,1109 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SurfaceOps V2 DAG Proof Canvas</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xyflow/react@12.11.1/dist/style.css">
+  <style>
+    :root {
+      color-scheme: light;
+      --canvas: #edf2f5;
+      --surface: #ffffff;
+      --surface-raised: #f7fafc;
+      --ink: #142033;
+      --muted: #59677a;
+      --border: #cdd8e4;
+      --border-strong: #8fa6bb;
+      --focus: #0f5f78;
+      --blue: #155eef;
+      --blue-soft: #e7efff;
+      --green: #1d6b4f;
+      --green-soft: #e5f5ee;
+      --amber: #8a5a12;
+      --amber-soft: #fff2cf;
+      --red: #9b2f2a;
+      --red-soft: #fde8e6;
+      --violet: #5e4eb8;
+      --violet-soft: #efedff;
+      --shadow: 0 18px 42px rgb(28 40 56 / 12%);
+      --shadow-soft: 0 8px 20px rgb(28 40 56 / 8%);
+      --radius: 8px;
+      --radius-small: 6px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      --body: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-family: var(--body);
+      color: var(--ink);
+      background: var(--canvas);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body,
+    #root {
+      min-width: 320px;
+      min-height: 100%;
+      margin: 0;
+      background: var(--canvas);
+    }
+
+    body {
+      color: var(--ink);
+      font-size: 14px;
+      line-height: 1.45;
+      letter-spacing: 0;
+    }
+
+    button {
+      font: inherit;
+      letter-spacing: 0;
+    }
+
+    button:focus-visible,
+    [tabindex]:focus-visible,
+    .react-flow__node:focus-visible {
+      outline: 3px solid rgb(15 95 120 / 45%);
+      outline-offset: 3px;
+    }
+
+    code {
+      font-family: var(--mono);
+      font-size: 12px;
+      overflow-wrap: anywhere;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    p {
+      margin-top: 0;
+      letter-spacing: 0;
+    }
+
+    p {
+      margin-bottom: 0;
+      color: var(--muted);
+    }
+
+    .app {
+      min-height: 100dvh;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+    }
+
+    .topbar {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 18px;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      padding: 14px 18px;
+    }
+
+    .eyebrow {
+      margin: 0 0 5px;
+      color: var(--focus);
+      font-size: 12px;
+      font-weight: 850;
+      text-transform: uppercase;
+      overflow-wrap: anywhere;
+    }
+
+    h1 {
+      margin: 0 0 5px;
+      font-size: 27px;
+      line-height: 1.1;
+    }
+
+    .topbar p:not(.eyebrow) {
+      max-width: 880px;
+      color: #44546a;
+    }
+
+    .boundary {
+      max-width: 520px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface-raised);
+      padding: 10px 12px;
+      color: #405069;
+      font-size: 13px;
+    }
+
+    .boundary strong {
+      color: var(--ink);
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(360px, 430px);
+      min-height: 0;
+      height: calc(100dvh - 91px);
+    }
+
+    .canvas-shell {
+      position: relative;
+      min-width: 0;
+      min-height: 0;
+      border-right: 1px solid var(--border);
+      background:
+        radial-gradient(circle at 22% 18%, rgb(21 94 239 / 8%), transparent 30%),
+        linear-gradient(180deg, #eef4f7 0%, #e7eef3 100%);
+    }
+
+    .canvas-head {
+      position: absolute;
+      z-index: 10;
+      top: 16px;
+      left: 16px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      max-width: min(900px, calc(100% - 32px));
+      pointer-events: none;
+    }
+
+    .badge {
+      display: inline-flex;
+      min-height: 26px;
+      align-items: center;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: rgb(255 255 255 / 88%);
+      color: #42536a;
+      box-shadow: var(--shadow-soft);
+      padding: 4px 9px;
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .badge.pass {
+      border-color: #9ed6bf;
+      background: var(--green-soft);
+      color: var(--green);
+    }
+
+    .badge.blocked {
+      border-color: #f0aba4;
+      background: var(--red-soft);
+      color: var(--red);
+    }
+
+    .badge.review {
+      border-color: #eccb75;
+      background: var(--amber-soft);
+      color: var(--amber);
+    }
+
+    .badge.runtime {
+      border-color: #bdb5f2;
+      background: var(--violet-soft);
+      color: var(--violet);
+    }
+
+    .flow-host {
+      width: 100%;
+      height: 100%;
+    }
+
+    .react-flow {
+      --xy-edge-stroke-default: #8fa6bb;
+      --xy-edge-stroke-width-default: 2;
+      --xy-controls-button-background-color-default: #fff;
+      --xy-controls-button-color-default: #142033;
+      font-family: var(--body);
+    }
+
+    .react-flow__attribution {
+      display: none;
+    }
+
+    .react-flow__node-contractNode {
+      border: 0;
+      background: transparent;
+      box-shadow: none;
+    }
+
+    .flow-node {
+      display: grid;
+      gap: 10px;
+      width: 280px;
+      min-height: 164px;
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius);
+      background: rgb(255 255 255 / 94%);
+      box-shadow: var(--shadow-soft);
+      padding: 13px;
+      color: var(--ink);
+      cursor: pointer;
+    }
+
+    .react-flow__node.selected .flow-node,
+    .flow-node.selected {
+      border-color: var(--focus);
+      box-shadow: 0 0 0 4px rgb(15 95 120 / 18%), var(--shadow);
+    }
+
+    .flow-node.blocked {
+      border-color: #e39b93;
+      background: #fffafa;
+    }
+
+    .flow-node.runtime {
+      border-color: #bdb5f2;
+      background: #fbfaff;
+    }
+
+    .flow-node.authority {
+      border-color: #91cdae;
+      background: #fbfffd;
+    }
+
+    .node-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: start;
+    }
+
+    .node-kicker {
+      margin-bottom: 5px;
+      color: var(--focus);
+      font-size: 11px;
+      font-weight: 850;
+      text-transform: uppercase;
+    }
+
+    .node-title {
+      color: var(--ink);
+      font-size: 17px;
+      font-weight: 850;
+      line-height: 1.15;
+    }
+
+    .node-index {
+      display: inline-grid;
+      width: 30px;
+      height: 30px;
+      flex: 0 0 auto;
+      place-items: center;
+      border-radius: 999px;
+      background: var(--ink);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .node-summary {
+      min-height: 40px;
+      color: #43556c;
+      font-size: 13px;
+    }
+
+    .node-ref {
+      color: #314159;
+      font-family: var(--mono);
+      font-size: 11px;
+      overflow-wrap: anywhere;
+    }
+
+    .node-status {
+      justify-self: start;
+    }
+
+    .react-flow__handle {
+      width: 9px;
+      height: 9px;
+      border: 2px solid #fff;
+      background: var(--focus);
+    }
+
+    .detail-panel {
+      min-width: 0;
+      min-height: 0;
+      overflow-y: auto;
+      background: var(--surface);
+      padding: 16px;
+    }
+
+    .detail-panel > * {
+      min-width: 0;
+    }
+
+    .panel-header {
+      display: grid;
+      gap: 10px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 14px;
+    }
+
+    .panel-title-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .panel-title-row h2 {
+      margin: 0;
+      font-size: 22px;
+      line-height: 1.16;
+    }
+
+    .panel-stack {
+      display: grid;
+      gap: 12px;
+      padding: 14px 0 4px;
+    }
+
+    .section {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface-raised);
+      padding: 12px;
+    }
+
+    .section h3 {
+      margin: 0 0 8px;
+      font-size: 14px;
+      line-height: 1.2;
+    }
+
+    .section.warning {
+      border-color: #e7bd69;
+      background: var(--amber-soft);
+    }
+
+    .section.danger {
+      border-color: #f0aba4;
+      background: var(--red-soft);
+    }
+
+    .section.success {
+      border-color: #9ed6bf;
+      background: var(--green-soft);
+    }
+
+    .specimen {
+      display: grid;
+      gap: 12px;
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius);
+      background: #fff;
+      padding: 12px;
+    }
+
+    .mock-toolbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 9px;
+    }
+
+    .mock-dots {
+      display: flex;
+      gap: 5px;
+    }
+
+    .mock-dots span {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: #b8c3d0;
+    }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .sample-button {
+      display: inline-flex;
+      min-width: 112px;
+      min-height: 40px;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #0a4bd8;
+      border-radius: 6px;
+      background: #155eef;
+      color: #fff;
+      font-weight: 850;
+      box-shadow: 0 8px 18px rgb(21 94 239 / 20%);
+    }
+
+    .sample-button.focus {
+      outline: 3px solid rgb(15 95 120 / 45%);
+      outline-offset: 2px;
+    }
+
+    .sample-button.secondary {
+      border-color: #aeb9c8;
+      background: #fff;
+      color: #172033;
+      box-shadow: none;
+    }
+
+    .sample-button.disabled {
+      border-color: #cfd8e3;
+      background: #e5eaf0;
+      color: #7a8796;
+      box-shadow: none;
+    }
+
+    .kv-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .kv {
+      display: grid;
+      gap: 3px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-small);
+      background: #fff;
+      padding: 9px;
+    }
+
+    .kv span {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 850;
+      text-transform: uppercase;
+    }
+
+    .kv strong {
+      overflow-wrap: anywhere;
+    }
+
+    .run-list,
+    .refs,
+    .check-list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .run-card,
+    .ref-card,
+    .check-row {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-small);
+      background: #fff;
+      padding: 10px;
+    }
+
+    .ref-card {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 999px;
+      background: var(--green);
+    }
+
+    .dot.warn {
+      background: var(--amber);
+    }
+
+    .dot.fail {
+      background: var(--red);
+    }
+
+    .run-meta {
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 12px;
+    }
+
+    .phone {
+      width: min(260px, 100%);
+      margin: 0 auto;
+      border: 7px solid #121826;
+      border-radius: 28px;
+      background: #121826;
+      box-shadow: var(--shadow);
+      padding: 8px;
+    }
+
+    .phone-screen {
+      overflow: hidden;
+      min-height: 430px;
+      border-radius: 20px;
+      background: #f8fafc;
+    }
+
+    .phone-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      background: #121826;
+      color: #fff;
+      padding: 12px;
+      font-size: 12px;
+      font-weight: 850;
+    }
+
+    .phone-content {
+      display: grid;
+      gap: 12px;
+      padding: 14px;
+    }
+
+    .mobile-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: #fff;
+      padding: 12px;
+    }
+
+    .mobile-button {
+      width: 100%;
+      min-height: 44px;
+      border: 0;
+      border-radius: 6px;
+      background: #155eef;
+      color: #fff;
+      font-weight: 850;
+    }
+
+    .trace-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    .trace-table th,
+    .trace-table td {
+      border-bottom: 1px solid var(--border);
+      padding: 8px 6px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .trace-table th {
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: uppercase;
+    }
+
+    .loading {
+      display: grid;
+      min-height: 100dvh;
+      place-items: center;
+      color: var(--muted);
+      font-weight: 800;
+    }
+
+    @media (max-width: 980px) {
+      .topbar {
+        grid-template-columns: 1fr;
+      }
+
+      .workspace {
+        grid-template-columns: 1fr;
+        height: auto;
+        min-height: calc(100dvh - 150px);
+      }
+
+      .canvas-shell {
+        min-height: 620px;
+        border-right: 0;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .detail-panel {
+        max-height: none;
+      }
+    }
+
+    @media (max-width: 560px) {
+      h1 {
+        font-size: 23px;
+      }
+
+      .topbar {
+        padding: 12px;
+      }
+
+      .workspace {
+        min-height: 0;
+      }
+
+      .canvas-shell {
+        min-height: 560px;
+      }
+
+      .canvas-head {
+        top: 10px;
+        left: 10px;
+        max-width: calc(100% - 20px);
+      }
+
+      .badge {
+        white-space: normal;
+      }
+
+      .flow-node {
+        width: 225px;
+        min-height: 134px;
+      }
+
+      .detail-panel {
+        padding: 12px;
+      }
+
+      .kv-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="root">
+    <div class="loading">Loading SurfaceOps DAG canvas...</div>
+  </div>
+
+  <script type="module">
+    import React, { useCallback, useMemo, useState } from "https://esm.sh/react@18.3.1";
+    import { createRoot } from "https://esm.sh/react-dom@18.3.1/client";
+    import {
+      Background,
+      Controls,
+      Handle,
+      MarkerType,
+      Position,
+      ReactFlow
+    } from "https://esm.sh/@xyflow/react@12.11.1?deps=react@18.3.1,react-dom@18.3.1";
+
+    const h = React.createElement;
+
+    const nodeDetails = {
+      authority: {
+        id: "authority",
+        index: "01",
+        phase: "Contract authority",
+        title: "Button source and governed catalog",
+        status: "accepted",
+        badge: "pass",
+        className: "authority",
+        summary: "Declared source, P2 catalog, and source-owner review state define the contract boundary.",
+        ref: "artifacts/p2/governed-catalog.json",
+        refs: [
+          "declared-source://source-conformance/components/button.json#/",
+          "artifacts/p2/governed-catalog.json",
+          "artifacts/source-conformance/source-review-queue.json"
+        ],
+        panel: "authority"
+      },
+      generation: {
+        id: "generation",
+        index: "02",
+        phase: "Generation",
+        title: "Visual specimen context",
+        status: "trace-backed",
+        badge: "pass",
+        className: "generation",
+        summary: "Designer inspects visible states before digging into refs or JSON.",
+        ref: "artifacts/designer-workflow-trace/designer-workflow-trace-report.json",
+        refs: [
+          "artifacts/designer-workflow-trace/designer-workflow-trace-report.json",
+          "artifacts/designer-workflow-trace/evidence.json"
+        ],
+        panel: "generation"
+      },
+      integration: {
+        id: "integration",
+        index: "03",
+        phase: "Integration",
+        title: "CI-style trace gate",
+        status: "blocked preserved",
+        badge: "blocked",
+        className: "blocked",
+        summary: "Checks pass where expected, but expired governance still blocks promotion.",
+        ref: "npm run check:designer-workflow-trace:ci",
+        refs: [
+          "npm run check:designer-workflow-trace:ci",
+          "artifacts/designer-workflow-trace/evidence.json",
+          "artifacts/source-conformance/evidence.json",
+          "artifacts/source-conformance/source-review-queue.json"
+        ],
+        panel: "integration"
+      },
+      runtime: {
+        id: "runtime",
+        index: "04",
+        phase: "Runtime",
+        title: "Mobile preview concept",
+        status: "static packet",
+        badge: "runtime",
+        className: "runtime",
+        summary: "The selected contract is shown in a target context without claiming live runtime.",
+        ref: "artifacts/p5/native/surfaces-native-packet.button.json",
+        refs: [
+          "artifacts/p5/protocol/protocol-envelope.button.json",
+          "artifacts/p5/native/surfaces-native-packet.button.json",
+          "artifacts/p5/native/evidence.json"
+        ],
+        panel: "runtime"
+      },
+      evidence: {
+        id: "evidence",
+        index: "05",
+        phase: "Evidence",
+        title: "Authority boundary",
+        status: "evidence refs",
+        badge: "review",
+        className: "evidence",
+        summary: "The canvas and panel stay inspection surfaces; proof authority stays in evidence artifacts.",
+        ref: "artifacts/designer-workflow-trace/evidence.json",
+        refs: [
+          "artifacts/designer-workflow-trace/evidence.json",
+          "artifacts/p5/native/evidence.json",
+          "artifacts/p4/evidence.json"
+        ],
+        panel: "evidence"
+      }
+    };
+
+    const baseNodes = [
+      { id: "authority", type: "contractNode", position: { x: 20, y: 245 }, data: nodeDetails.authority },
+      { id: "generation", type: "contractNode", position: { x: 330, y: 80 }, data: nodeDetails.generation },
+      { id: "integration", type: "contractNode", position: { x: 330, y: 410 }, data: nodeDetails.integration },
+      { id: "runtime", type: "contractNode", position: { x: 650, y: 245 }, data: nodeDetails.runtime },
+      { id: "evidence", type: "contractNode", position: { x: 970, y: 245 }, data: nodeDetails.evidence }
+    ];
+
+    const baseEdges = [
+      {
+        id: "authority-generation",
+        source: "authority",
+        target: "generation",
+        type: "smoothstep",
+        animated: true,
+        markerEnd: { type: MarkerType.ArrowClosed }
+      },
+      {
+        id: "authority-integration",
+        source: "authority",
+        target: "integration",
+        type: "smoothstep",
+        markerEnd: { type: MarkerType.ArrowClosed }
+      },
+      {
+        id: "generation-runtime",
+        source: "generation",
+        target: "runtime",
+        type: "smoothstep",
+        animated: true,
+        markerEnd: { type: MarkerType.ArrowClosed }
+      },
+      {
+        id: "integration-runtime",
+        source: "integration",
+        target: "runtime",
+        type: "smoothstep",
+        markerEnd: { type: MarkerType.ArrowClosed }
+      },
+      {
+        id: "runtime-evidence",
+        source: "runtime",
+        target: "evidence",
+        type: "smoothstep",
+        markerEnd: { type: MarkerType.ArrowClosed }
+      }
+    ];
+
+    function StatusBadge({ detail }) {
+      return h("span", { className: `badge ${detail.badge || ""}` }, detail.status);
+    }
+
+    function ContractNode({ data, selected }) {
+      const selectNode = (event) => {
+        event.stopPropagation();
+        data.onSelect?.(data.id);
+      };
+      const selectNodeWithKeyboard = (event) => {
+        if (event.key !== "Enter" && event.key !== " ") {
+          return;
+        }
+        event.preventDefault();
+        event.stopPropagation();
+        data.onSelect?.(data.id);
+      };
+
+      return h(
+        "div",
+        {
+          className: `flow-node ${data.className || ""} ${selected ? "selected" : ""}`,
+          "data-node-id": data.id,
+          role: "button",
+          tabIndex: 0,
+          "aria-pressed": selected ? "true" : "false",
+          "aria-label": `${data.phase}: ${data.title}`,
+          onClick: selectNode,
+          onKeyDown: selectNodeWithKeyboard
+        },
+        h(Handle, { type: "target", position: Position.Left }),
+        h("div", { className: "node-top" },
+          h("div", null,
+            h("div", { className: "node-kicker" }, data.phase),
+            h("div", { className: "node-title" }, data.title)
+          ),
+          h("span", { className: "node-index" }, data.index)
+        ),
+        h("p", { className: "node-summary" }, data.summary),
+        h("code", { className: "node-ref" }, data.ref),
+        h("div", { className: "node-status" }, h(StatusBadge, { detail: data })),
+        h(Handle, { type: "source", position: Position.Right })
+      );
+    }
+
+    function Specimen() {
+      return h("div", { className: "specimen", "aria-label": "Button visual specimen" },
+        h("div", { className: "mock-toolbar" },
+          h("div", { className: "mock-dots", "aria-hidden": "true" }, h("span"), h("span"), h("span")),
+          h("code", null, "Button.primary.action")
+        ),
+        h("div", { className: "button-row" },
+          h("span", { className: "sample-button" }, "Continue"),
+          h("span", { className: "sample-button focus" }, "Focused"),
+          h("span", { className: "sample-button secondary" }, "Secondary"),
+          h("span", { className: "sample-button disabled" }, "Disabled")
+        ),
+        h("p", null, "Presentation specimen shows the review shape. Exact component pixels still require a future accepted P2-derived visual proof input.")
+      );
+    }
+
+    function PhonePreview() {
+      return h("div", { className: "phone", "aria-label": "Mobile runtime preview concept" },
+        h("div", { className: "phone-screen" },
+          h("div", { className: "phone-header" }, h("span", null, "Checkout"), h("span", null, "Preview")),
+          h("div", { className: "phone-content" },
+            h("div", { className: "mobile-card" },
+              h("h3", null, "Review order"),
+              h("p", null, "Contract-backed primary action in the mobile checkout context.")
+            ),
+            h("div", { className: "mobile-card" },
+              h("p", null, "Total"),
+              h("h3", null, "$128.40"),
+              h("button", { className: "mobile-button", type: "button" }, "Continue")
+            ),
+            h("div", { className: "mobile-card" },
+              h("p", null, h("strong", null, "Runtime assertion")),
+              h("p", null, "Role, label, token set, focus state, and disabled behavior would be captured by a future preview proof.")
+            )
+          )
+        )
+      );
+    }
+
+    function Refs({ refs }) {
+      return h("div", { className: "refs" }, refs.map((ref) =>
+        h("div", { className: "ref-card", key: ref }, h("code", null, ref))
+      ));
+    }
+
+    function PanelBody({ detail }) {
+      if (detail.panel === "authority") {
+        return h("div", { className: "panel-stack" },
+          h("section", { className: "section success" },
+            h("h3", null, "Current authority"),
+            h("p", null, "The Button contract starts from declared source and accepted catalog artifacts. The DAG does not create authority.")
+          ),
+          h("section", { className: "section" },
+            h("h3", null, "Contract scope"),
+            h("div", { className: "kv-grid" },
+              h("div", { className: "kv" }, h("span", null, "Component"), h("strong", null, "Button")),
+              h("div", { className: "kv" }, h("span", null, "Owner"), h("strong", null, "design-systems-governance")),
+              h("div", { className: "kv" }, h("span", null, "Scenario"), h("strong", null, "p2-button-authority-to-static-handoff")),
+              h("div", { className: "kv" }, h("span", null, "Promotion"), h("strong", null, "blocked by source review"))
+            )
+          ),
+          h("section", { className: "section" }, h("h3", null, "Refs"), h(Refs, { refs: detail.refs }))
+        );
+      }
+
+      if (detail.panel === "generation") {
+        return h("div", { className: "panel-stack" },
+          h("section", { className: "section" },
+            h("h3", null, "Designer view"),
+            h(Specimen)
+          ),
+          h("section", { className: "section" },
+            h("h3", null, "Visible contract checks"),
+            h("div", { className: "kv-grid" },
+              h("div", { className: "kv" }, h("span", null, "Role"), h("strong", null, "button")),
+              h("div", { className: "kv" }, h("span", null, "Activation"), h("strong", null, "Enter, Space")),
+              h("div", { className: "kv" }, h("span", null, "Focus"), h("strong", null, "visible state shown")),
+              h("div", { className: "kv" }, h("span", null, "Disabled"), h("strong", null, "blocks activation"))
+            )
+          ),
+          h("section", { className: "section warning" },
+            h("h3", null, "Visual proof boundary"),
+            h("p", null, "This panel is a prototype review surface, not target-specific proof authority.")
+          ),
+          h("section", { className: "section" }, h("h3", null, "Refs"), h(Refs, { refs: detail.refs }))
+        );
+      }
+
+      if (detail.panel === "integration") {
+        return h("div", { className: "panel-stack" },
+          h("section", { className: "section" },
+            h("h3", null, "CI-style trace"),
+            h("div", { className: "run-list" },
+              h("div", { className: "run-card" }, h("span", { className: "dot" }), h("div", null, h("strong", null, "designer workflow trace gate"), h("div", { className: "run-meta" }, "existing script path")), h("span", { className: "badge pass" }, "pass")),
+              h("div", { className: "run-card" }, h("span", { className: "dot warn" }), h("div", null, h("strong", null, "browser inspection slot"), h("div", { className: "run-meta" }, "future sidecar output, not current proof authority")), h("span", { className: "badge review" }, "planned")),
+              h("div", { className: "run-card" }, h("span", { className: "dot warn" }), h("div", null, h("strong", null, "source owner exception state"), h("div", { className: "run-meta" }, "SOURCE_REVIEW_EXPIRED at /review/expiresAt")), h("span", { className: "badge blocked" }, "blocked"))
+            )
+          ),
+          h("section", { className: "section danger" },
+            h("h3", null, "Handoff gate"),
+            h("p", null, "Implementation evidence can be current while promotion remains blocked by source governance.")
+          ),
+          h("section", { className: "section" }, h("h3", null, "Refs"), h(Refs, { refs: detail.refs }))
+        );
+      }
+
+      if (detail.panel === "runtime") {
+        return h("div", { className: "panel-stack" },
+          h("section", { className: "section" },
+            h("h3", null, "Runtime context"),
+            h(PhonePreview)
+          ),
+          h("section", { className: "section" },
+            h("h3", null, "Preview assertions"),
+            h("div", { className: "kv-grid" },
+              h("div", { className: "kv" }, h("span", null, "Environment"), h("strong", null, "mobile preview concept")),
+              h("div", { className: "kv" }, h("span", null, "App screen"), h("strong", null, "Checkout primary action")),
+              h("div", { className: "kv" }, h("span", null, "Status"), h("strong", null, "static packet")),
+              h("div", { className: "kv" }, h("span", null, "Release"), h("strong", null, "blocked by source review"))
+            )
+          ),
+          h("section", { className: "section warning" },
+            h("h3", null, "Runtime boundary"),
+            h("p", null, "The panel shows where runtime visual proof belongs. It does not claim live runtime capture.")
+          ),
+          h("section", { className: "section" }, h("h3", null, "Refs"), h(Refs, { refs: detail.refs }))
+        );
+      }
+
+      return h("div", { className: "panel-stack" },
+        h("section", { className: "section danger" },
+          h("h3", null, "Authority boundary"),
+          h("p", null, "Proof authority remains in referenced evidence artifacts. The React Flow canvas, right panel, cards, screenshots, and video are inspection aids. No live SurfaceOps, live JudgmentKit, production adapters, APIs, SDKs, A2UI, persistence, live runtime, work execution, deployment approval, or hidden review state is implemented here.")
+        ),
+        h("section", { className: "section" },
+          h("h3", null, "Selected contract evidence"),
+          h("table", { className: "trace-table" },
+            h("thead", null, h("tr", null, h("th", null, "Context"), h("th", null, "Reference"), h("th", null, "Status"))),
+            h("tbody", null,
+              h("tr", null, h("td", null, "Source"), h("td", null, h("code", null, "declared-source://source-conformance/components/button.json#/")), h("td", null, "accepted")),
+              h("tr", null, h("td", null, "Generation"), h("td", null, h("code", null, "artifacts/designer-workflow-trace/designer-workflow-trace-report.json")), h("td", null, "trace-backed")),
+              h("tr", null, h("td", null, "Integration"), h("td", null, h("code", null, "npm run check:designer-workflow-trace:ci")), h("td", null, "blocked preserved")),
+              h("tr", null, h("td", null, "Runtime"), h("td", null, h("code", null, "artifacts/p5/native/surfaces-native-packet.button.json")), h("td", null, "static packet")),
+              h("tr", null, h("td", null, "Authority"), h("td", null, h("code", null, "artifacts/designer-workflow-trace/evidence.json")), h("td", null, "existing evidence"))
+            )
+          )
+        ),
+        h("section", { className: "section" }, h("h3", null, "Refs"), h(Refs, { refs: detail.refs }))
+      );
+    }
+
+    function DetailPanel({ selectedId }) {
+      const detail = nodeDetails[selectedId] || nodeDetails.generation;
+      return h("aside", { className: "detail-panel", "aria-label": "Selected node detail panel" },
+        h("div", { className: "panel-header" },
+          h("p", { className: "eyebrow" }, "Selected node"),
+          h("div", { className: "panel-title-row" },
+            h("h2", null, detail.title),
+            h(StatusBadge, { detail })
+          ),
+          h("p", null, detail.summary)
+        ),
+        h(PanelBody, { detail })
+      );
+    }
+
+    function App() {
+      const [selectedId, setSelectedId] = useState("generation");
+      const nodeTypes = useMemo(() => ({ contractNode: ContractNode }), []);
+      const nodes = useMemo(() => baseNodes.map((node) => ({
+        ...node,
+        selected: node.id === selectedId,
+        data: { ...node.data, selected: node.id === selectedId, onSelect: setSelectedId }
+      })), [selectedId]);
+      const onNodeClick = useCallback((event, node) => {
+        setSelectedId(node.id);
+      }, []);
+      const onPaneClick = useCallback(() => {}, []);
+
+      return h("div", { className: "app" },
+        h("header", { className: "topbar" },
+          h("div", null,
+            h("p", { className: "eyebrow" }, "SurfaceOps V2 DAG prototype"),
+            h("h1", null, "Contract proof DAG canvas"),
+            h("p", null, "A React Flow based canvas makes generation, integration, runtime, and evidence relationships the primary surface. The right panel changes when a node is selected.")
+          ),
+          h("div", { className: "boundary", "aria-label": "Prototype boundary" },
+            h("strong", null, "Static presentation only. "),
+            "This canvas is a review prototype over accepted refs. It is not live SurfaceOps, live JudgmentKit, production adapters, APIs, SDKs, A2UI, persistence, live runtime, work execution, deployment approval, hidden review state, or proof authority."
+          )
+        ),
+        h("main", { className: "workspace" },
+          h("section", { className: "canvas-shell", "aria-label": "DAG canvas" },
+            h("div", { className: "canvas-head", "aria-hidden": "true" },
+              h("span", { className: "badge pass" }, "trace pass"),
+              h("span", { className: "badge blocked" }, "promotion blocked"),
+              h("span", { className: "badge review" }, "source owner action"),
+              h("span", { className: "badge" }, "scenario: p2-button-authority-to-static-handoff")
+            ),
+            h("div", { className: "flow-host", "data-testid": "dag-flow-canvas" },
+              h(ReactFlow, {
+                nodes,
+                edges: baseEdges,
+                nodeTypes,
+                onNodeClick,
+                onPaneClick,
+                fitView: true,
+                fitViewOptions: { padding: 0.18 },
+                minZoom: 0.25,
+                maxZoom: 1.45,
+                nodesDraggable: false,
+                nodesConnectable: false,
+                elementsSelectable: true,
+                panOnScroll: true,
+                zoomOnDoubleClick: false,
+                preventScrolling: true,
+                proOptions: { hideAttribution: true }
+              },
+                h(Background, { gap: 20, size: 1, color: "#c8d4e0" }),
+                h(Controls, { showInteractive: false })
+              )
+            )
+          ),
+          h(DetailPanel, { selectedId })
+        )
+      );
+    }
+
+    createRoot(document.getElementById("root")).render(h(App));
+  </script>
+</body>
+</html>
