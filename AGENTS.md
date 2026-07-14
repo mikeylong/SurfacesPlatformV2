@@ -92,7 +92,7 @@ Preserve:
 
 Proof command paths must remain POSIX-style paths relative to the workspace root. Do not introduce absolute CLI inputs, `.` segments, `..` traversal, symlinked output roots, hidden outputs, or stale-output bypasses.
 
-Generated files are tracked in this repo. `.gitignore` only ignores `node_modules/`, so new files under `schemas/`, `fixtures/`, `artifacts/`, `demo/`, `src/`, `scripts/`, or `test/` must be intentionally added or removed.
+Deterministic generated artifacts and demos are tracked in this repo. `.gitignore` ignores dependencies and non-byte-stable browser runtime evidence under `output/playwright/`, so new deterministic files under `schemas/`, `fixtures/`, `artifacts/`, `demo/`, `src/`, `scripts/`, or `test/` must be intentionally added or removed.
 
 For any phase change that alters commands, schemas, fixtures, artifacts, evidence, diagnostics, demos, or operating rules, update `plans/surfaces-dev.md` or the future `surfaces.dev` docs package in the same change set. That tracking doc is an instruction surface, not proof authority.
 
