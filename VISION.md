@@ -5,6 +5,10 @@ This is the canonical AI-native source reference for Surfaces Platform product c
 
 `PLAN.md` and `plans/**` remain the mechanical proof-contract references: schemas, fixtures, commands, artifacts, diagnostics, and acceptance criteria. Phase subplans may add phase-local deltas and mechanics, but they must not redefine the product vision, authority taxonomy, roadmap sequence, surface roles, or agent operating rules in this file.
 
+`PROGRESS.md` tracks the outcome-based product milestones above the mechanical
+P0-P5 roadmap. It is subordinate to this vision, the mechanical plans, and
+passing evidence; milestone status does not create proof authority.
+
 ## Vision
 AI-generated interfaces should become governed product surfaces.
 
@@ -82,7 +86,7 @@ Surfaces becomes a usable platform per target when a team can complete an eviden
 Generated demos, review queues, protocol envelopes, workflow cards, or adapter-facing outputs can help demonstrate usability, but they are not the signal by themselves. The signal is the closed evidence loop for a declared target.
 
 ## Current Roadmap Proof Snapshot
-The current roadmap evidence is P0-P5, with P5 implemented only for the `surfaces-protocol-static` and `surfaces-native-static` proof-only slices. This repo also implements target-specific declared-source conformance, designer-workflow-trace, `surfaceops-kanban-static`, `surfaceops-kanban-live`, and `surfaceops-designer-review-ui` proofs that consume accepted evidence; none is a new numbered phase. `surfaceops-kanban-live` and `surfaceops-designer-review-ui` are bounded local-loopback live proofs, not production SurfaceOps or production `kanban.cards` claims. A row counts as implemented only when the named evidence file records `status: "pass"`. `promotionStatus` records governance outcome, not whether the proof command failed.
+The current roadmap evidence is P0-P5, with P5 implemented only for the `surfaces-protocol-static` and `surfaces-native-static` proof-only slices. This repo also implements target-specific declared-source conformance, designer-workflow-trace, `surfaceops-kanban-static`, `surfaceops-kanban-live`, `surfaceops-designer-review-ui`, and capability-index proofs; none is a new numbered phase. The capability index covers exactly the 12 proof targets that existed before it and does not index itself. Its separate planned capability groups provide roadmap visibility only. `surfaceops-kanban-live` and `surfaceops-designer-review-ui` are bounded local-loopback live proofs, not production SurfaceOps or production `kanban.cards` claims. A row counts as implemented only when the named evidence file records `status: "pass"`. `promotionStatus` records governance outcome, not whether the proof command failed.
 
 | Phase | Implemented slice | Lifecycle value | Evidence | Current status | Current promotion status | CI gate | Demo |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -98,6 +102,7 @@ The current roadmap evidence is P0-P5, with P5 implemented only for the `surface
 | P4 | Deterministic review and judgment proof | SurfaceOps-shaped decisions and JudgmentKit-shaped findings without live persistence or invocation | `artifacts/p4/evidence.json` | `pass` | `blocked` | `npm run check:p4:ci` | `demo/p4/index.html` |
 | P5 | `surfaces-protocol-static` inert protocol-envelope proof | Protocol-boundary consumption of accepted P2/P4 evidence | `artifacts/p5/protocol/evidence.json` | `pass` | `review_required` | `npm run check:p5:protocol:ci` | `demo/p5/protocol/index.html` |
 | P5 | `surfaces-native-static` inert native-packet proof | Surfaces-native static projection with protocol compatibility preflight | `artifacts/p5/native/evidence.json` | `pass` | `review_required` | `npm run check:p5:native:ci` | `demo/p5/native/index.html` |
+| Target | Capability index and read-only verifier | Discovery and integrity verification across the 12 implemented proof targets, with planned groups kept separate from implementation claims | `artifacts/capability-index/evidence.json` | `pass` | `allowed` | `npm run check:capability-index:ci` | none; report/evidence only |
 
 P4's `blocked` promotion status is expected in current tracked evidence: it proves invalid or unsafe review outcomes are blocked while the proof itself still passes. The designer review UI also passes with blocked promotion because its accepted trace records `targetHandoffAllowed: false` and `SOURCE_REVIEW_EXPIRED`. Demos remain presentation output. They help humans inspect the proof, but evidence and the proof contract remain authoritative.
 
@@ -107,6 +112,15 @@ P0 proves the catalog contract with a synthetic golden fixture. It materializes 
 P1 proves the first runtime-facing surface. It derives a `web-static` runtime projection and deterministic render plans from the governed catalog, then writes adapter report and evidence artifacts.
 
 P2 implements the first bounded real design-system ingestion proof from a manifest-declared local source bundle: the pinned `@adobe/spectrum-design-data@0.7.0` snapshot scoped to `button` and `in-line-alert`. The immutable `package-snapshot.lock.json` is derived from the pinned npm tarball after SRI verification and hash-binds the checked-in package bytes independently from the generated source manifest. Normal materialization compares the local snapshot with this lock and never regenerates it. The former agent-orchestration draft has moved to `plans/p3/` and should run only after P2 ingestion evidence passes.
+
+The capability-index proof materializes one machine-readable index and report
+over exactly the 12 pre-existing implemented proof targets. Its read-only
+verifier checks the tracked index, capability-index evidence, and target
+evidence without regenerating artifacts. Implementation status, evidence
+status, and promotion status remain separate. Seven planned capability groups
+remain roadmap records only: they have no proof command or evidence claim. The
+capability-index target does not index itself, replace target evidence, broaden
+target authority, or turn planned work into implemented behavior.
 
 The declared-source conformance proof consumes accepted P2 evidence and catalog output, then checks one manifest-declared local source bundle for source refs, source hashes, authority conflicts, review-required routing, forbidden live/production claims, report rows, and final evidence. It is proof-only and emits report/evidence artifacts, not a generated demo or live integration.
 
@@ -151,6 +165,10 @@ The current P0-P5 sequence is the implemented proof-contract roadmap, not the fu
 - `kanban.cards` can become the reusable upstream collaboration-board substrate only within proved bounds. The implemented `surfaceops-kanban-static` target proves a static, inert SurfaceOps-owned board projection over accepted evidence and a local substrate contract. The implemented `surfaceops-kanban-live` target proves local-loopback live board read/write, realtime observation, local persistence restart, permission-denial checks, and browser video evidence without modifying `kanban.cards`. Production sync, production auth, hosted persistence, service-account permissions, webhooks, and broad bidirectional conflict handling require later proof.
 - A2UI, production adapters, public APIs, SDKs, live runtimes, production SurfaceOps, and live JudgmentKit remain future work until target-specific evidence passes.
 - Product and docs surfaces should continue to describe the current proven scope plainly and keep planned targets labeled as planned.
+- The capability index may expose planned capability groups for roadmap
+  visibility, but only passing target evidence can establish implemented
+  behavior. The index remains a derived discovery surface and does not
+  self-index.
 
 ## Real Design-System Extraction
 P0 remains a synthetic fixture proof, and P1 remains a derived runtime projection proof. P2 is the first bounded real-source ingestion proof: it reads only the manifest-declared local `@adobe/spectrum-design-data@0.7.0` source snapshot, companion local mappings, and local usage policy under `sources/p2/design-system-source`, scoped to `button` and `in-line-alert`. The package snapshot must match the exact file set and hashes in `package-snapshot.lock.json`. That checked-in lock records the result of a separate review-time SRI and tarball verification; the deterministic proof treats it as a trust anchor and does not fetch or reconstruct the tarball. It does not call Figma, scrape Storybook, parse Code Connect, crawl docs, inspect production HTML, or claim full Spectrum support.
@@ -205,6 +223,9 @@ Agents working in this repo should follow these rules:
 
 - Read this file first, then `PLAN.md`, then the relevant phase subplans.
 - Treat passing `artifacts/*/evidence.json` as the proof authority for implemented behavior.
+- Use `npm run status` for a read-only summary of the tracked capability index;
+  follow its evidence refs back to the target evidence before making an
+  implementation claim.
 - Treat data under `fixtures/**` as proof input, not product data, public API, runtime state, or real design-system extraction.
 - Do not describe synthetic fixture extraction as real design-system extraction.
 - Do not treat generated demos as proof. Demos are presentation output derived from proof artifacts.

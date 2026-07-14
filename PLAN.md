@@ -14,6 +14,12 @@ design-system candidates such as broader Spectrum slices or Astryx. It does not
 create implementation support, a proof command, schemas, fixtures, artifacts,
 evidence, CI gates, or product adoption claims.
 
+[Capability Index Proof Target](plans/capability-index.md) records the
+implemented non-numbered proof for discovering and read-only verifying the 12
+proof targets that existed before the index. Its seven planned groups are
+roadmap visibility only. The index does not replace target evidence, broaden
+target authority, or index itself.
+
 [SurfaceOps Kanban Static Proof Target](plans/surfaceops-kanban-static.md)
 records the implemented target-specific proof for projecting accepted P3/P4
 SurfaceOps evidence into inert `kanban.cards` board-ready records under a
@@ -582,6 +588,66 @@ Given accepted upstream evidence and the designer-workflow-trace fixture set, th
 
 The proof currently has no generated demo. Use `designer-workflow-trace-report.json`, `trace-selection.json`, and `evidence.json` as report/evidence presentation refs. The trace report is an index over accepted evidence; passing trace evidence proves only that the index was generated under the trace contract.
 
+## Capability Index Target
+
+The capability-index proof is a non-numbered, cross-cutting target. It
+materializes a machine-readable discovery index and report over exactly the 12
+implemented proof targets that existed before it. It also records seven
+separate planned capability groups without giving them proof commands,
+evidence, or implemented status.
+
+The proof path is:
+
+```text
+fixtures/capability-index/capabilities.fixture.json
+fixtures/capability-index/expectations.manifest.json
+12 accepted target evidence files
+  -> validate fixtures/capability-index/valid/*.json,
+     review/*.json, invalid/*.json, and mutations/*.json
+  -> artifacts/capability-index/capability-index.json
+  -> artifacts/capability-index/capability-index-report.json
+  -> artifacts/capability-index/evidence.json
+```
+
+Implemented proof command:
+
+```bash
+interfacectl surfaces capabilities proof --fixture fixtures/capability-index --out artifacts/capability-index
+```
+
+Strictly read-only verification command:
+
+```bash
+interfacectl surfaces capabilities verify --index artifacts/capability-index/capability-index.json --evidence artifacts/capability-index/evidence.json
+```
+
+Human status entrypoint:
+
+```bash
+npm run status
+```
+
+Given the capability fixture set and current accepted target evidence, the
+proof command emits the exact index and report, records registry-backed
+diagnostic rows, finalizes the evidence closure, and keeps implementation,
+evidence, and promotion status separate. It rejects missing targets, missing or
+mismatched evidence, unproven implementation claims, planned-claim escalation,
+invalid dependencies, authority escalation, and evidence self-hash drift. It
+records `status: "pass"` with
+`promotionStatus: "allowed"` when every expected case matches.
+
+The verifier reads only the tracked index, report, capability-index evidence,
+package command registry, declared schemas and fixtures, indexed target
+evidence, and their referenced closure. It writes no files, performs no
+materialization or regeneration, and makes no network calls. Exit code `0`
+means the tracked index is verified, `1` means an integrity or contract
+failure, and `2` means invalid CLI usage or paths.
+
+Passing `artifacts/capability-index/evidence.json` proves the index contract
+only. Each indexed target's evidence remains the proof authority for that
+target. The capability index has no generated demo; use its report and the
+read-only status output for human inspection.
+
 ## Subplans
 - [Subplan Index](plans/README.md)
 - [Runtime Catalog v0](plans/runtime-catalog-v0.md)
@@ -637,6 +703,7 @@ The proof currently has no generated demo. Use `designer-workflow-trace-report.j
 - [Declared Source Conformance Proof](plans/source-conformance/README.md)
 - [Source Conformance Validation and Evidence](plans/source-conformance/validation-evidence.md)
 - [Product Designer Workflow Trace](plans/product-designer-workflow-trace.md)
+- [Capability Index Proof Target](plans/capability-index.md)
 - [Product Portfolio Boundaries](plans/product-portfolio-boundaries.md)
 - [SurfaceOps Product Brief](plans/surfaceops-product-brief.md)
 - [SurfaceOps UI Decisions And Review Criteria](plans/surfaceops-ui-decisions-review-criteria.md)
@@ -646,6 +713,23 @@ The proof currently has no generated demo. Use `designer-workflow-trace-report.j
 The P5 subplans linked above define the implemented `surfaces-protocol-static` and `surfaces-native-static` proof slices. They do not implement production adapters, protocol APIs, SDKs, native SDKs, live protocol services, live native runtimes, A2UI export, or A2UI conformance. Future P5 targets remain planned until they add their own proof shape and passing evidence.
 
 The source-conformance subplans define a proof-only declared-source conformance target over accepted P2 evidence. They do not implement live ingestion, production adapter behavior, API/SDK support, A2UI support, live SurfaceOps, live JudgmentKit, native runtime behavior, or action execution.
+
+The capability-index subplan defines discovery and read-only verification over
+the 12 pre-existing implemented proof targets. The index does not prove those
+targets, self-index, or turn planned capability groups into implemented work.
+
+## Capability Index Decisions
+
+- Indexed implemented target count: exactly 12 pre-existing proof targets.
+- Self-indexing: forbidden; capability-index evidence proves the index target.
+- Planned scope: seven capability groups for roadmap visibility only.
+- Status model: implementation status, evidence status, and governance
+  promotion status remain distinct.
+- Human entrypoint: `npm run status`, which aliases strict read-only
+  verification.
+- Presentation boundary: report and stdout only; no generated demo.
+- Authority boundary: passing target evidence remains authoritative for each
+  indexed target.
 
 ## P0 Decisions
 - Runtime catalog name and boundary: Surfaces Catalog / `runtime-catalog.v0`, a governed design-system catalog/compiler artifact.
