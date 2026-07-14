@@ -2,7 +2,7 @@
 
 For product vision, authority taxonomy, roadmap sequence, surface roles, and agent operating rules, read [Surfaces Platform Vision And Roadmap](../VISION.md) first. This index is the mechanical contract reference for phase subplans. Phase subplans add phase-local deltas and mechanics only. Developer and agent documentation obligations for `surfaces.dev` are tracked in [Surfaces.dev Documentation Tracking](surfaces-dev.md).
 
-These subplans define the Surfaces Platform proof contracts and their materialized schemas, fixtures, artifacts, demos, scripts, and tests. P0 specifies the first executable catalog proof, P1 specifies the first runtime projection proof, P2 specifies bounded real design-system ingestion, P3 specifies inert agent orchestration proof, P4 specifies review and judgment proof without turning derived consumers into new authority, and P5 specifies the bounded `surfaces-protocol-static` protocol-envelope proof plus the sibling `surfaces-native-static` native-packet proof. The source-conformance subplan specifies a target-specific declared-source conformance proof over accepted P2 evidence. Product Designer Workflow Trace specifies the implemented non-numbered trace target over accepted P2, source-conformance, P3, P4, protocol, and native evidence. SurfaceOps Kanban Static specifies the implemented non-numbered target over accepted P3/P4 evidence and a manifest-declared local `kanban.cards` substrate contract. SurfaceOps Kanban Live specifies the implemented non-numbered target for a local-loopback live `kanban.cards` API/browser proof over accepted P3/P4 evidence and a hash-bound API manifest. SurfaceOps Designer Review UI specifies the implemented non-numbered target for the local-live Button variants review workbench, decision receipt, and mirrored `kanban.cards` card loop over accepted designer-workflow, P4, and kanban-live evidence. Future targets remain planned until they add their own complete proof shape and passing evidence.
+These subplans define the Surfaces Platform proof contracts and their materialized schemas, fixtures, artifacts, demos, scripts, and tests. P0 specifies the first executable catalog proof, P1 specifies the first runtime projection proof, P2 specifies bounded real design-system ingestion, P3 specifies inert agent orchestration proof, P4 specifies review and judgment proof without turning derived consumers into new authority, and P5 specifies the bounded `surfaces-protocol-static` protocol-envelope proof plus the sibling `surfaces-native-static` native-packet proof. The source-conformance subplan specifies a target-specific declared-source conformance proof over accepted P2 evidence. Product Designer Workflow Trace specifies the implemented non-numbered trace target over accepted P2, source-conformance, P3, P4, protocol, and native evidence. SurfaceOps Kanban Static specifies the implemented non-numbered target over accepted P3/P4 evidence and a manifest-declared local `kanban.cards` substrate contract. SurfaceOps Kanban Live specifies the implemented non-numbered target for a local-loopback live `kanban.cards` API/browser proof over accepted P3/P4 evidence and a hash-bound API manifest. SurfaceOps Designer Review UI specifies the implemented non-numbered target for the local-live Button variants inspection workbench and rationale-required blocked receipt mirrored to `kanban.cards` over accepted designer-workflow, P4, and kanban-live evidence. Future targets remain planned until they add their own complete proof shape and passing evidence.
 
 ## Roadmap Status Snapshot
 The current implemented proof roadmap is P0-P5, where P5 means only the `surfaces-protocol-static` and `surfaces-native-static` proof-only slices. The repo also includes the declared-source conformance, designer-workflow-trace, `surfaceops-kanban-static`, `surfaceops-kanban-live`, and `surfaceops-designer-review-ui` target proofs listed in [VISION.md](../VISION.md#current-roadmap-proof-snapshot). The canonical status snapshot lives in `VISION.md`, and the human-readable value map lives in [Usability And Value Evidence Plan](usability-value-evidence.md). Future P5 targets such as A2UI conformance, production APIs, SDKs, live protocol services, live native runtimes, production SurfaceOps, production `kanban.cards` sync, Auth0 delegated production auth, hosted persistence, or live JudgmentKit remain planned until they add their own target-specific schema, fixture, diagnostics, command contract, report or artifact path, evidence path, demo boundary, CI gate, and passing evidence.
@@ -61,15 +61,22 @@ auth, hosted persistence, public APIs, SDKs, A2UI, live JudgmentKit, work
 execution, or product adoption.
 
 The SurfaceOps designer review UI proof target is implemented for a local-live
-Button variants review loop over accepted designer-workflow-trace, P4 decision,
-and `surfaceops-kanban-live` evidence. It emits deterministic workbench and
+Button variants review loop over accepted designer-workflow-trace and
+`surfaceops-kanban-live` evidence plus P4 review context that does not authorize
+this Button handoff. It emits deterministic workbench and
 decision receipt artifacts, generates a demo, and has a separate Chromium
 browser-functional gate that starts real local `kanban.cards` plus a proof-only
-SurfaceOps review server, records a decision receipt, mirrors it back to the
-live card, and writes hashed runtime evidence. It does not claim production
-SurfaceOps, production `kanban.cards`, hosted persistence, production auth,
-webhooks, broad production adapter behavior, SDKs, A2UI, live JudgmentKit, work
-execution, or product adoption.
+SurfaceOps review server. The current proof preserves the upstream
+`targetHandoffAllowed: false` and `SOURCE_REVIEW_EXPIRED` block: designers can
+inspect the work, but approve and request-refinement remain disabled, and the
+only enabled outcome records rationale before mirroring a blocked receipt to
+the live card. It produces no variant-of-record or handoff. Its core records use
+closed schemas, fixture expectations are evaluated independently from fixture
+claims, mutations change actual proof inputs, and deterministic plus browser
+evidence close and hash-bind their declared inputs and outputs. It does not
+claim production SurfaceOps, production `kanban.cards`, hosted persistence,
+production auth, webhooks, broad production adapter behavior, SDKs, A2UI, live
+JudgmentKit, work execution, or product adoption.
 
 ## P0 Dependency Order
 1. [Runtime Catalog v0](runtime-catalog-v0.md)

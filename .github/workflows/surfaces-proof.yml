@@ -334,10 +334,14 @@ jobs:
   surfaceops-designer-review-ui-browser-functional:
     runs-on: ubuntu-latest
     needs: surfaceops-designer-review-ui-proof
+    permissions:
+      contents: read
 
     steps:
       - name: Check out repository
         uses: actions/checkout@v5
+        with:
+          persist-credentials: false
 
       - name: Check out kanban.cards
         uses: actions/checkout@v5
@@ -345,6 +349,8 @@ jobs:
           repository: Surfaces-Platform/kanban.cards
           ref: 3b2a6f78693f0032439a1149eaed896f532aac09
           path: kanban.cards
+          token: ${{ secrets.KANBAN_CARDS_READ_TOKEN }}
+          persist-credentials: false
 
       - name: Set up Node.js
         uses: actions/setup-node@v5
@@ -377,3 +383,4 @@ jobs:
         with:
           name: surfaceops-designer-review-ui-browser-functional-evidence
           path: output/playwright/surfaceops-designer-review-ui/
+          if-no-files-found: error

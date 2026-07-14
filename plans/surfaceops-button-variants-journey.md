@@ -11,6 +11,15 @@ Implemented capability claims still come from the evidence-backed proof docs.
 The prototype described here may use session-local UI state to demonstrate the
 journey; that state is illustrative.
 
+The current `surfaceops-designer-review-ui` target proves one narrower,
+evidence-bound scenario. Its accepted trace passes with blocked promotion,
+records `targetHandoffAllowed: false`, and carries `SOURCE_REVIEW_EXPIRED`.
+Designers can inspect the work, but approve and request-refinement remain
+disabled. The only enabled outcome requires rationale, records a blocked
+receipt, and mirrors `blocked` to the card. It does not select a variant of
+record or create handoff eligibility. Approval, refinement, and
+variant-of-record paths below remain future journey and prototype planning.
+
 ## Product Thesis
 A designer should be able to start in the concrete `kanban.cards` work queue,
 open a `Button variants` card, and move into SurfaceOps for the authoritative
@@ -37,7 +46,8 @@ by plain-language contract deltas and evidence refs.
 
 ## Outcome States
 These are product-facing journey states. They do not change the current P4
-proof schema by themselves.
+proof schema or prove those paths in the current designer review UI target by
+themselves.
 
 | Product state | Meaning | Owner / next action |
 | --- | --- | --- |

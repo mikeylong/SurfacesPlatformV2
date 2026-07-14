@@ -8,11 +8,8 @@ import {
   DRUI_SCHEMA_FILES,
   DRUI_SCHEMA_ROOT
 } from "../src/surfaceops-designer-review-ui-contract.js";
-import { surfaceopsDesignerReviewUiInternals } from "../src/surfaceops-designer-review-ui-proof.js";
-import {
-  canonicalFileHash,
-  readJson
-} from "../src/p2-contract.js";
+import { verifySurfaceopsDesignerReviewUiEvidenceClosure } from "../src/surfaceops-designer-review-ui-evidence.js";
+import { readJson } from "../src/p2-contract.js";
 
 const ROOT = process.cwd();
 const DEFAULT_EVIDENCE_PATH = `${DRUI_ARTIFACT_ROOT}/evidence.json`;
@@ -35,14 +32,16 @@ async function main() {
   const validators = await loadValidators();
   const evidence = await readJson(evidencePath.fsPath);
   assertSchema(validators, "surfaceops-designer-review-ui-evidence.v0", evidence, "SurfaceOps designer review UI evidence");
-  await verifyEvidence(evidence, evidencePath);
-
-  const [targetSelection, workbench, decisionReceipt, report] = await Promise.all([
-    readJson(path.join(ROOT, DRUI_ARTIFACT_ROOT, "surfaceops-designer-review-ui-target-selection.json")),
-    readJson(path.join(ROOT, DRUI_ARTIFACT_ROOT, "surfaceops-designer-review-workbench.json")),
-    readJson(path.join(ROOT, DRUI_ARTIFACT_ROOT, "surfaceops-designer-review-decision-receipt.json")),
-    readJson(path.join(ROOT, DRUI_ARTIFACT_ROOT, "surfaceops-designer-review-ui-report.json"))
-  ]);
+  const closure = await verifySurfaceopsDesignerReviewUiEvidenceClosure({
+    cwd: ROOT,
+    evidence,
+    evidencePath: evidencePath.posixPath,
+    assertSchema: (schemaId, data, label) => assertSchema(validators, schemaId, data, label)
+  });
+  const targetSelection = closure.generated["surfaceops-designer-review-ui-target-selection.v0"];
+  const workbench = closure.generated["surfaceops-designer-review-workbench.v0"];
+  const decisionReceipt = closure.generated["surfaceops-designer-review-decision-receipt.v0"];
+  const report = closure.generated["surfaceops-designer-review-ui-report.v0"];
 
   await writeDemo(outDir, { evidence, targetSelection, workbench, decisionReceipt, report });
   console.log(`SurfaceOps designer review UI demo generated: ${outDir.posixPath}/index.html`);
@@ -98,26 +97,14 @@ function assertSchema(validators, schemaId, data, label) {
   if (!result.valid) throw contractError(`schema validation failed for ${label}: ${JSON.stringify(result.errors)}`);
 }
 
-async function verifyEvidence(evidence, evidencePath) {
-  if (evidence.status !== "pass") throw contractError("SurfaceOps designer review UI demo requires passing evidence");
-  const finalRef = evidence.artifacts[evidence.artifacts.length - 1];
-  if (finalRef.path !== evidencePath.posixPath || finalRef.hash !== surfaceopsDesignerReviewUiInternals.computeEvidenceSelfHash(evidence)) {
-    throw contractError("SurfaceOps designer review UI evidence self-hash is invalid");
-  }
-  for (const ref of evidence.artifacts) {
-    if (ref.path === evidencePath.posixPath) continue;
-    const actualHash = await canonicalFileHash(path.join(ROOT, ref.path));
-    if (actualHash !== ref.hash) throw contractError(`SurfaceOps designer review UI artifact hash mismatch for ${ref.path}`);
-  }
-}
-
 async function writeDemo(outDir, data) {
   await fs.mkdir(outDir.fsPath, { recursive: true });
   await fs.writeFile(path.join(outDir.fsPath, "README.md"), [
     "# SurfaceOps Designer Review UI Demo",
     "",
-    "Generated presentation output derived from passing `surfaceops-designer-review-ui` evidence.",
+    "Generated presentation output derived from pass/blocked `surfaceops-designer-review-ui` evidence.",
     "Proof authority remains `artifacts/surfaceops-designer-review-ui/evidence.json`.",
+    "The accepted source review is expired, so inspection remains available while handoff stays blocked.",
     "Local-live browser evidence is generated separately under `output/playwright/surfaceops-designer-review-ui/`."
   ].join("\n") + "\n");
   await fs.writeFile(path.join(outDir.fsPath, "index.html"), buildHtml(data));
@@ -192,7 +179,10 @@ function buildHtml({ evidence, targetSelection, workbench, decisionReceipt, repo
     label { display: grid; gap: 6px; color: var(--muted); font-size: 13px; font-weight: 700; }
     select, textarea { width: 100%; border: 1px solid var(--border); border-radius: 8px; background: #fff; padding: 9px 10px; color: var(--ink); }
     textarea { min-height: 92px; resize: vertical; }
-    .primary-action { border: 0; border-radius: 8px; background: var(--green); color: #fff; padding: 10px 14px; font-weight: 900; cursor: pointer; }
+    .governance-block { border: 1px solid #e5bd75; border-radius: 8px; padding: 10px 12px; background: #fff7e8; color: var(--amber); font-weight: 800; }
+    .disabled-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .disabled-actions button { border: 1px solid var(--border); border-radius: 8px; padding: 9px 10px; color: #788491; background: #eef1f4; font-weight: 800; }
+    .primary-action { border: 0; border-radius: 8px; background: var(--amber); color: #fff; padding: 10px 14px; font-weight: 900; cursor: pointer; }
     .primary-action:disabled { background: #94a3ad; cursor: not-allowed; }
     .receipt { display: grid; gap: 10px; }
     .receipt-row { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 10px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
@@ -222,7 +212,7 @@ function buildHtml({ evidence, targetSelection, workbench, decisionReceipt, repo
     <div class="topbar">
       <div>
         <h1>SurfaceOps Designer Review UI</h1>
-        <p>Local-live review workbench for Button variants, bound to accepted evidence and mirrored back to kanban.cards.</p>
+        <p>Local-live inspection workbench for Button variants, preserving the expired source-review block and mirroring it to kanban.cards.</p>
       </div>
       <div class="meta">
         <span class="pill">status <strong>${escapeHtml(evidence.status)}</strong></span>
@@ -242,6 +232,7 @@ function buildHtml({ evidence, targetSelection, workbench, decisionReceipt, repo
     <section>
       <div class="section-head"><h2>Inspector</h2><span class="pill">${escapeHtml(workbench.inspector.selectedVariantId)}</span></div>
       <div class="body workbench-grid">
+        <div class="governance-block"><code>SOURCE_REVIEW_EXPIRED</code> · renewal required before handoff. Approval and refinement are unavailable.</div>
         <div class="specimen">
           <h3>Button variants</h3>
           <p>Evidence-bound visual review for the selected DAG node.</p>
@@ -252,23 +243,27 @@ function buildHtml({ evidence, targetSelection, workbench, decisionReceipt, repo
           </div>
         </div>
         <ul class="delta-list">${workbench.inspector.interpretedDeltas.map((delta) => `<li>${escapeHtml(delta)}</li>`).join("")}</ul>
-        <label>Variant
-          <select id="variant" data-testid="variant-select">
-            <option value="">Select variant</option>
-            <option value="${escapeAttribute(decisionReceipt.selectedVariantId)}">${escapeHtml(decisionReceipt.selectedVariantId)}</option>
+        <label>Inspected variant (not a variant of record)
+          <select id="variant" data-testid="variant-select" disabled>
+            <option value="${escapeAttribute(workbench.inspector.selectedVariantId)}" selected>${escapeHtml(workbench.inspector.selectedVariantId)}</option>
           </select>
         </label>
+        <div class="disabled-actions">
+          <button type="button" disabled>Approve for handoff unavailable</button>
+          <button type="button" disabled>Request refinement unavailable</button>
+        </div>
         <label>Rationale
-          <textarea id="rationale" data-testid="decision-rationale" placeholder="Record the design rationale">${escapeHtml(decisionReceipt.rationale)}</textarea>
+          <textarea id="rationale" data-testid="decision-rationale" placeholder="Explain why the outcome remains blocked">${escapeHtml(decisionReceipt.rationale)}</textarea>
         </label>
-        <button id="submitDecision" class="primary-action" type="button" data-testid="submit-decision" disabled>Record decision receipt</button>
+        <button id="submitDecision" class="primary-action" type="button" data-testid="submit-decision" disabled>Record blocked outcome</button>
       </div>
     </section>
     <section>
       <div class="section-head"><h2>Receipt And Mirror</h2><span class="pill status">${escapeHtml(decisionReceipt.decisionState)}</span></div>
       <div class="body receipt" id="receipt" data-testid="decision-receipt">
         <div class="receipt-row"><strong>Decision</strong><code>${escapeHtml(decisionReceipt.decisionId)}</code></div>
-        <div class="receipt-row"><strong>Variant</strong><code>${escapeHtml(decisionReceipt.selectedVariantId)}</code></div>
+        <div class="receipt-row"><strong>Variant of record</strong><code>none</code></div>
+        <div class="receipt-row"><strong>Blocking code</strong><code>${escapeHtml(decisionReceipt.governanceOutcome.blockingDiagnosticCodes.join(", "))}</code></div>
         <div class="receipt-row"><strong>Kanban</strong><code>${escapeHtml(decisionReceipt.mirroredKanbanStatus)}</code></div>
         <div class="mirror">
           <div class="mirror-step"><strong>Before</strong>${escapeHtml(workbench.kanbanMirror.beforeStatus)}</div>
@@ -296,17 +291,15 @@ function buildHtml({ evidence, targetSelection, workbench, decisionReceipt, repo
   </main>
   <script type="application/json" id="proof-data">${escapeHtml(JSON.stringify(payload))}</script>
   <script>
-    const variant = document.querySelector("#variant");
     const rationale = document.querySelector("#rationale");
     const submit = document.querySelector("#submitDecision");
     function refreshSubmit() {
-      submit.disabled = !(variant.value && rationale.value.trim().length > 0);
+      submit.disabled = rationale.value.trim().length === 0;
     }
-    variant.addEventListener("change", refreshSubmit);
     rationale.addEventListener("input", refreshSubmit);
     submit.addEventListener("click", () => {
       document.querySelector("#receipt").dataset.receiptRecorded = "true";
-      submit.textContent = "Decision receipt recorded";
+      submit.textContent = "Blocked outcome recorded";
       submit.disabled = true;
     });
     document.querySelectorAll(".dag-node").forEach((button) => {

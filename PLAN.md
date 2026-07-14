@@ -36,14 +36,23 @@ product adoption.
 
 [SurfaceOps Designer Review UI Proof Target](plans/surfaceops-designer-review-ui.md)
 records the implemented target-specific proof for the local-live Button variants
-designer review loop. It consumes accepted designer-workflow-trace, P4 decision,
-and `surfaceops-kanban-live` evidence, emits a deterministic target selection,
+designer review loop. It consumes accepted designer-workflow-trace and
+`surfaceops-kanban-live` evidence plus P4 review context that does not authorize
+this Button handoff, emits a deterministic target selection,
 workbench, decision receipt, report, and evidence, and has a separate Chromium
 browser-functional gate that starts real local `kanban.cards` plus a proof-only
-loopback SurfaceOps review server. It does not claim production SurfaceOps,
-production `kanban.cards`, hosted persistence, production auth, webhooks, broad
-production adapters, SDKs, A2UI, live JudgmentKit, work execution, or product
-adoption.
+loopback SurfaceOps review server. The current accepted trace records
+`targetHandoffAllowed: false` and `SOURCE_REVIEW_EXPIRED`, so inspection remains
+available while approve and request-refinement stay disabled; the only enabled
+outcome is a rationale-required blocked receipt mirrored to `blocked`, with no
+variant-of-record or handoff. Core workbench, receipt, and browser records use
+closed schemas. Fixture expectations are checked against independently derived
+diagnostics, mutation cases mechanically change proof inputs, deterministic
+evidence closes over the exact proof inputs and outputs, and browser evidence
+schema-validates and hash-binds the deterministic artifacts before exercising
+the live mirror. It does not claim production SurfaceOps, production
+`kanban.cards`, hosted persistence, production auth, webhooks, broad production
+adapters, SDKs, A2UI, live JudgmentKit, work execution, or product adoption.
 
 Any implementation or roadmap-status claim should cite the phase proof command, evidence path, evidence `status`, promotion status, and relevant CI gate. Generated demos may help present the claim, but demos are not proof authority.
 

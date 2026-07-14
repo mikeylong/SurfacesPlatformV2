@@ -17,13 +17,13 @@ import {
   DRUI_ACCEPTED_DWT_EVIDENCE_HASH,
   DRUI_ACCEPTED_KANBAN_LIVE_EVIDENCE_HASH,
   DRUI_ACCEPTED_P4_EVIDENCE_HASH,
+  DRUI_ARTIFACT_PATHS,
   DRUI_ARTIFACT_ROOT,
   DRUI_COMMAND,
   DRUI_CONTRACT_ID,
   DRUI_COMPONENT_ID,
   DRUI_DWT_EVIDENCE_PATH,
   DRUI_DWT_REPORT_PATH,
-  DRUI_EXPECTATION_ROWS,
   DRUI_FIXTURE_ROOT,
   DRUI_GENERATED_ARTIFACTS,
   DRUI_KANBAN_LIVE_EVIDENCE_PATH,
@@ -46,8 +46,13 @@ import {
   provenance,
   schemaIdForDesignerReviewUiPath
 } from "./surfaceops-designer-review-ui-contract.js";
+import {
+  computeSurfaceopsDesignerReviewUiEvidenceSelfHash,
+  deriveSurfaceopsDesignerReviewGovernanceOutcome,
+  verifySurfaceopsDesignerReviewUiEvidenceClosure
+} from "./surfaceops-designer-review-ui-evidence.js";
 
-const SCHEMA_FILE_NAME_PATTERN = /^[a-z0-9][a-z0-9-]*\.v[0-9]+\.schema\.json$/;
+const SCHEMA_FILE_NAME_PATTERN = /^[a-z0-9][a-z0-9-]*(?:\.[a-z0-9][a-z0-9-]*)*\.v[0-9]+\.schema\.json$/;
 
 export async function runSurfaceopsDesignerReviewUiInterfacectl(argv, io) {
   const parsed = parseSurfaceopsDesignerReviewUiArgs(argv);
@@ -171,7 +176,7 @@ export async function runSurfaceopsDesignerReviewUiProof({
 
   const expectations = await readJson(path.join(cwd, fixtureRoot, "expectations.manifest.json"));
   assertSchema(validators, "surfaceops-designer-review-ui-expectations.v0", expectations, `${fixtureRoot}/expectations.manifest.json`);
-  assertExpectations(expectations, fixtureRoot, outRoot);
+  await assertExpectations(cwd, expectations, fixtureRoot, outRoot);
 
   const targetSelectionFixture = await readJson(path.join(cwd, fixtureRoot, "target-selection.fixture.json"));
   assertSchema(validators, "surfaceops-designer-review-ui-target-selection.v0", targetSelectionFixture, `${fixtureRoot}/target-selection.fixture.json`);
@@ -181,6 +186,7 @@ export async function runSurfaceopsDesignerReviewUiProof({
   const targetSelectionRef = artifactRef(`${outRoot}/surfaceops-designer-review-ui-target-selection.json`, "surfaceops-designer-review-ui-target-selection.v0", await canonicalFileHash(path.join(cwd, outRoot, "surfaceops-designer-review-ui-target-selection.json")));
 
   const workbench = buildWorkbench({ upstream, targetSelectionRef });
+  assertWorkbenchGraph(workbench);
   assertSchema(validators, "surfaceops-designer-review-workbench.v0", workbench, `${outRoot}/surfaceops-designer-review-workbench.json`);
   await writeCanonicalJson(path.join(cwd, outRoot, "surfaceops-designer-review-workbench.json"), workbench);
   const workbenchRef = artifactRef(`${outRoot}/surfaceops-designer-review-workbench.json`, "surfaceops-designer-review-workbench.v0", await canonicalFileHash(path.join(cwd, outRoot, "surfaceops-designer-review-workbench.json")));
@@ -191,13 +197,13 @@ export async function runSurfaceopsDesignerReviewUiProof({
   const decisionReceiptRef = artifactRef(`${outRoot}/surfaceops-designer-review-decision-receipt.json`, "surfaceops-designer-review-decision-receipt.v0", await canonicalFileHash(path.join(cwd, outRoot, "surfaceops-designer-review-decision-receipt.json")));
 
   const fixtureRows = await loadFixtureRows(cwd, expectations, validators);
-  const validationResults = evaluateExpectations(fixtureRows);
+  const validationResults = evaluateExpectations(fixtureRows, upstream);
   const diagnostics = sortDiagnostics(validationResults.flatMap((result) => result.diagnostics));
   const status = validationResults.every((result) => result.matched) ? "pass" : "fail";
   if (status === "fail") {
     throw contractError(`SurfaceOps designer review UI validation expectation mismatch: ${validationResults.filter((result) => !result.matched).map((result) => `${result.fixturePath}: expected ${result.expectedResult}/${result.expectedDiagnosticCodes.join(",") || "none"} got ${result.actualResult}/${result.diagnosticCodes.join(",") || "none"}`).join("; ")}`, 1);
   }
-  const promotionStatus = aggregatePromotionStatus(validationResults);
+  const promotionStatus = aggregatePromotionStatus(validationResults, upstream);
   const artifactRefs = [targetSelectionRef, workbenchRef, decisionReceiptRef];
   const runId = buildRunId({ upstream, targetSelectionRef, workbenchRef, decisionReceiptRef, expectations, command, args });
   const report = buildReport({ runId, upstream, artifactRefs, validationResults, diagnostics, status, promotionStatus });
@@ -222,10 +228,12 @@ export async function runSurfaceopsDesignerReviewUiProof({
   assertSchema(validators, "surfaceops-designer-review-ui-evidence.v0", evidence, `${outRoot}/evidence.json`);
   await writeCanonicalJson(path.join(cwd, outRoot, "evidence.json"), evidence);
   const persistedEvidence = await readJson(path.join(cwd, outRoot, "evidence.json"));
-  const evidenceEntry = persistedEvidence.artifacts[persistedEvidence.artifacts.length - 1];
-  if (evidenceEntry.path !== `${outRoot}/evidence.json` || evidenceEntry.hash !== computeEvidenceSelfHash(persistedEvidence)) {
-    throw contractError("SurfaceOps designer review UI evidence self-hash verification failed", 1);
-  }
+  await verifySurfaceopsDesignerReviewUiEvidenceClosure({
+    cwd,
+    evidence: persistedEvidence,
+    evidencePath: `${outRoot}/evidence.json`,
+    assertSchema: (schemaId, data, label) => assertSchema(validators, schemaId, data, label)
+  });
 
   return {
     status,
@@ -240,6 +248,7 @@ function buildTargetSelection({ upstream, fixture }) {
   return {
     ...deepClone(fixture),
     targetId: DRUI_TARGET_ID,
+    governanceOutcome: deepClone(upstream.governanceOutcome),
     upstreamRefs: upstreamRefs(upstream),
     diagnostics: [],
     diagnosticsRegistry: diagnosticsRegistry(),
@@ -266,9 +275,9 @@ function buildWorkbench({ upstream, targetSelectionRef }) {
       source: "agent-submitted-change",
       owner: "design-systems-governance",
       mirroredKanbanStatus: "needs review",
-      kanbanCardTitle: "Button primary approval review",
+      kanbanCardTitle: "Button primary blocked review",
       primaryEvidenceRef: upstream.designerEvidenceRef,
-      reviewDecisionEvidenceRef: upstream.p4EvidenceRef,
+      reviewContextEvidenceRef: upstream.p4EvidenceRef,
       kanbanAdapterEvidenceRef: upstream.kanbanLiveEvidenceRef
     },
     dag: {
@@ -291,36 +300,46 @@ function buildWorkbench({ upstream, targetSelectionRef }) {
     inspector: {
       selectedNodeId: "inspector",
       visualFirst: true,
-      selectedVariantId: "button.primary.variant-of-record",
+      selectedVariantId: "button.primary.candidate",
       canonicalMediaRefs: [
         { label: "before", role: "source-conformance-reference", path: "artifacts/designer-workflow-trace/designer-workflow-trace-report.json#/sourceConformanceGovernance" },
-        { label: "after", role: "proposed-agent-change", path: "artifacts/p4/surfaceops-decision-ledger.json#/decisions/0" }
+        { label: "P4 context only", role: "unrelated-review-context-not-button-authority", path: "artifacts/p4/surfaceops-decision-ledger.json#/decisions/0" }
       ],
       interpretedDeltas: [
         "Primary Button remains bound to accepted Button evidence.",
+        "The accepted P4 ledger row is context-only and does not authorize this Button handoff.",
         "Governed source-conformance exception is visible before handoff.",
         "Lane movement remains a collaboration signal until SurfaceOps records a receipt."
       ],
       blockingRisks: ["SOURCE_REVIEW_EXPIRED"],
-      diagnostics: [diagnosticForCode("SURFACEOPS_DESIGNER_REVIEW_LIVE_KANBAN_REQUIRED", { artifactPath: `${DRUI_ARTIFACT_ROOT}/surfaceops-designer-review-workbench.json` })]
+      diagnostics: []
     },
     decisionPanel: {
       controlsEnabled: true,
       rationaleRequired: true,
-      allowedActions: ["approve for handoff", "request refinement", "block"],
-      defaultAction: "approve for handoff",
+      actionControls: {
+        approveForHandoff: false,
+        requestRefinement: false,
+        recordBlocked: true
+      },
+      allowedActions: ["block"],
+      defaultAction: "block",
       blockedWhenEvidenceMissing: true,
-      oneReceiptPerReviewItemAndEvidenceHash: true
+      sequentialReplayClaims: {
+        identicalSequentialReplayReusesReceipt: true,
+        conflictingSequentialReplayRejected: true
+      }
     },
     kanbanMirror: {
       mirrorOnly: true,
       laneMovementCommitsDecision: false,
       beforeStatus: "needs review",
-      afterStatus: "approved for handoff",
+      afterStatus: "blocked",
       mirroredFields: ["laneId", "summary", "receiptLink"],
       forbiddenMirroredFields: ["surfacesAuthority", "proofAuthority", "variantOfRecord"],
       idempotencyKey: `surfaceops-designer-review-ui:review-item.button.primary:${upstream.designerEvidenceRef.hash}`
     },
+    governanceOutcome: deepClone(upstream.governanceOutcome),
     authority: authorityBoundary(),
     evidenceRefs,
     diagnostics: [],
@@ -337,7 +356,7 @@ function buildDecisionReceipt({ upstream, workbenchRef }) {
   const decisionId = `surfaceops-decision-${sha256Hex(canonicalJson({
     reviewItemId: "review-item.button.primary",
     evidenceHash: upstream.designerEvidenceRef.hash,
-    action: "approved for handoff"
+    action: "blocked"
   })).slice(0, 16)}`;
   return {
     schemaId: "surfaceops-designer-review-decision-receipt.v0",
@@ -345,19 +364,17 @@ function buildDecisionReceipt({ upstream, workbenchRef }) {
     scenarioId: DRUI_SCENARIO_ID,
     workbenchRef,
     decisionId,
-    decisionState: "approved for handoff",
-    selectedVariantId: "button.primary.variant-of-record",
-    rationale: "Accepted for handoff inside the local-live designer review UI proof because evidence refs, DAG selection, and mirror-only kanban update are visible.",
+    decisionState: "blocked",
+    selectedVariantId: null,
+    rationale: "Blocked because SOURCE_REVIEW_EXPIRED requires renewed source-owner review metadata before any target handoff.",
     reviewer: "surfaceops-designer-reviewer",
-    mirroredKanbanStatus: "approved for handoff",
-    variantOfRecord: {
-      componentId: DRUI_COMPONENT_ID,
-      variantId: "button.primary.variant-of-record",
-      authority: "SurfaceOps decision receipt over accepted Surfaces evidence",
-      contractRef: upstream.designerReportRef,
-      sourceEvidenceHash: upstream.designerEvidenceRef.hash
-    },
+    mirroredKanbanStatus: "blocked",
+    variantOfRecord: null,
     handoffEligibility: {
+      eligible: false,
+      targetHandoffAllowed: false,
+      renewalRequiredBeforeHandoff: true,
+      blockingDiagnosticCodes: ["SOURCE_REVIEW_EXPIRED"],
       localLiveReviewUi: true,
       kanbanCardsMirror: true,
       productionAdapter: false,
@@ -365,6 +382,7 @@ function buildDecisionReceipt({ upstream, workbenchRef }) {
       webhooks: false,
       liveJudgmentKit: false
     },
+    governanceOutcome: deepClone(upstream.governanceOutcome),
     evidenceRefs: upstreamRefs(upstream),
     mediaRefs: [
       { label: "SurfaceOps workbench", path: `${DRUI_ARTIFACT_ROOT}/surfaceops-designer-review-workbench.json`, mimeType: "application/json" },
@@ -373,7 +391,7 @@ function buildDecisionReceipt({ upstream, workbenchRef }) {
     authority: authorityBoundary(),
     provenance: provenance("interfacectl-surfaceops-designer-review-ui-decision-receipt", [
       workbenchRef.path,
-      upstream.p4DecisionLedgerRef.path,
+      upstream.designerReportRef.path,
       upstream.kanbanLiveOperationPlanRef.path
     ])
   };
@@ -387,12 +405,14 @@ function buildReport({ runId, upstream, artifactRefs, validationResults, diagnos
     targetId: DRUI_TARGET_ID,
     status,
     promotionStatus,
+    governanceOutcome: deepClone(upstream.governanceOutcome),
     upstreamPreflight: {
       status: "pass",
       designerEvidenceRef: upstream.designerEvidenceRef,
       p4EvidenceRef: upstream.p4EvidenceRef,
       kanbanLiveEvidenceRef: upstream.kanbanLiveEvidenceRef,
-      exactHashBoundary: true
+      exactHashBoundary: true,
+      governanceOutcome: deepClone(upstream.governanceOutcome)
     },
     artifactRefs,
     validationResults: publicValidationResults(validationResults),
@@ -422,6 +442,7 @@ async function buildEvidence({ cwd, runId, command, args, upstream, artifactRefs
     targetId: DRUI_TARGET_ID,
     status,
     promotionStatus,
+    governanceOutcome: deepClone(upstream.governanceOutcome),
     command,
     args,
     checkedAt: DRUI_TIMESTAMP,
@@ -439,26 +460,30 @@ async function buildEvidence({ cwd, runId, command, args, upstream, artifactRefs
       ...artifactRefs.map((ref) => ref.path)
     ])
   };
-  evidence.artifacts[evidence.artifacts.length - 1].hash = computeEvidenceSelfHash(evidence);
+  evidence.artifacts[evidence.artifacts.length - 1].hash = computeSurfaceopsDesignerReviewUiEvidenceSelfHash(evidence);
   return evidence;
 }
 
-function evaluateExpectations(fixtureRows) {
-  return fixtureRows.map((fixture) => {
-    const diagnostics = diagnosticsForFixture(fixture);
-    const actualResult = diagnostics.length === 0 ? "valid" : diagnostics[0].validationResult;
-    const promotionStatus = diagnostics.length === 0 ? "allowed" : diagnostics[0].promotionStatus;
+function evaluateExpectations(fixtureRows, upstream) {
+  return fixtureRows.map(({ fixture, expectation }) => {
+    const actual = fixture.mutationOperations.length > 0
+      ? evaluateMutationFixture(fixture, upstream)
+      : evaluateCandidateFixture(fixture.candidate);
+    const diagnostics = actual.diagnostics.map((diagnostic) => ({
+      ...diagnostic,
+      artifactPath: expectation.fixturePath
+    }));
     const diagnosticCodes = diagnostics.map((diagnostic) => diagnostic.code);
     const matched =
-      actualResult === fixture.expectedResult &&
-      promotionStatus === fixture.expectedPromotionStatus &&
-      arrayEquals(diagnosticCodes, fixture.diagnosticCodes);
+      actual.result === expectation.expectedResult &&
+      actual.promotionStatus === expectation.promotionStatus &&
+      arrayEquals(diagnosticCodes, expectation.expectedDiagnosticCodes);
     return {
-      fixturePath: fixture.fixturePath,
-      expectedResult: fixture.expectedResult,
-      actualResult,
-      promotionStatus,
-      expectedDiagnosticCodes: fixture.diagnosticCodes,
+      fixturePath: expectation.fixturePath,
+      expectedResult: expectation.expectedResult,
+      actualResult: actual.result,
+      promotionStatus: actual.promotionStatus,
+      expectedDiagnosticCodes: expectation.expectedDiagnosticCodes,
       diagnosticCodes,
       diagnostics,
       matched
@@ -466,17 +491,113 @@ function evaluateExpectations(fixtureRows) {
   });
 }
 
-function diagnosticsForFixture(fixture) {
-  const codes = [];
-  if (!fixture.targetId) codes.push("SURFACEOPS_DESIGNER_REVIEW_TARGET_UNDECLARED");
-  if (fixture.evidenceRefs.length === 0) codes.push("SURFACEOPS_DESIGNER_REVIEW_EVIDENCE_REF_MISSING");
-  if (fixture.authorityOverride) codes.push("SURFACEOPS_DESIGNER_REVIEW_AUTHORITY_OVERRIDE");
-  if (fixture.hiddenDecision) codes.push("SURFACEOPS_DESIGNER_REVIEW_HIDDEN_DECISION");
-  if (fixture.mirrorStatusOverride) codes.push("SURFACEOPS_DESIGNER_REVIEW_MIRROR_STATUS_INVALID");
-  if (fixture.productionAdapterClaim) codes.push("SURFACEOPS_DESIGNER_REVIEW_PRODUCTION_ADAPTER_FORBIDDEN");
-  if (fixture.liveKanbanRequired) codes.push("SURFACEOPS_DESIGNER_REVIEW_LIVE_KANBAN_REQUIRED");
-  if (fixture.mutation && !codes.includes(fixture.mutation)) codes.push(fixture.mutation);
-  return codes.map((code) => diagnosticForCode(code, { artifactPath: fixture.fixturePath }));
+function evaluateCandidateFixture(candidate) {
+  if (candidate.targetId !== DRUI_TARGET_ID) return invalidFixtureResult("SURFACEOPS_DESIGNER_REVIEW_TARGET_UNDECLARED");
+  if (canonicalJson(candidate.evidenceRefs) !== canonicalJson(defaultUpstreamRefs())) {
+    return invalidFixtureResult("SURFACEOPS_DESIGNER_REVIEW_EVIDENCE_REF_MISSING");
+  }
+  const acceptedAuthority = authorityBoundary();
+  if (canonicalJson(candidate.authority) !== canonicalJson(acceptedAuthority)) {
+    return invalidFixtureResult("SURFACEOPS_DESIGNER_REVIEW_AUTHORITY_OVERRIDE");
+  }
+  if (!candidate.decision.visibleInReceipt || !candidate.decision.referencedByEvidence) {
+    return invalidFixtureResult("SURFACEOPS_DESIGNER_REVIEW_HIDDEN_DECISION");
+  }
+  if (!candidate.kanbanMirror.derivedFromDecisionReceipt || candidate.kanbanMirror.mirroredStatus !== candidate.decision.state) {
+    return invalidFixtureResult("SURFACEOPS_DESIGNER_REVIEW_MIRROR_STATUS_INVALID");
+  }
+  if (candidate.governanceOutcome.targetHandoffAllowed === false && candidate.decision.state === "approved for handoff") {
+    return invalidFixtureResult("SURFACEOPS_DESIGNER_REVIEW_HANDOFF_WHILE_BLOCKED");
+  }
+  if (candidate.governanceOutcome.targetHandoffAllowed === false && candidate.decision.state === "needs refinement") {
+    return invalidFixtureResult("SURFACEOPS_DESIGNER_REVIEW_REFINEMENT_WHILE_BLOCKED");
+  }
+  if (candidate.boundaryClaims.productionAdapterImplemented) {
+    return invalidFixtureResult("SURFACEOPS_DESIGNER_REVIEW_PRODUCTION_ADAPTER_FORBIDDEN");
+  }
+  if (!candidate.liveKanbanBoundary.evidenceAvailable) {
+    return {
+      result: "review_required",
+      promotionStatus: "review_required",
+      diagnostics: [diagnosticForCode("SURFACEOPS_DESIGNER_REVIEW_LIVE_KANBAN_REQUIRED")]
+    };
+  }
+  return { result: "valid", promotionStatus: "allowed", diagnostics: [] };
+}
+
+function evaluateMutationFixture(fixture, upstream) {
+  const documents = new Map([
+    [DRUI_DWT_EVIDENCE_PATH, deepClone(upstream.designerEvidence)],
+    [DRUI_P4_EVIDENCE_PATH, deepClone(upstream.p4Evidence)],
+    [DRUI_KANBAN_LIVE_EVIDENCE_PATH, deepClone(upstream.kanbanLiveEvidence)],
+    [`${DRUI_ARTIFACT_ROOT}/evidence.json`, buildEvidenceMutationCandidate()]
+  ]);
+  for (const operation of fixture.mutationOperations) applyMutationOperation(documents, operation);
+
+  for (const requiredPath of [DRUI_DWT_EVIDENCE_PATH, DRUI_P4_EVIDENCE_PATH, DRUI_KANBAN_LIVE_EVIDENCE_PATH]) {
+    if (!documents.has(requiredPath)) return invalidFixtureResult("SURFACEOPS_DESIGNER_REVIEW_UPSTREAM_MISSING");
+  }
+  const evidenceHashRows = [
+    [DRUI_DWT_EVIDENCE_PATH, designerWorkflowTraceInternals.computeEvidenceSelfHash, DRUI_ACCEPTED_DWT_EVIDENCE_HASH],
+    [DRUI_P4_EVIDENCE_PATH, p4Internals.computeEvidenceSelfHash, DRUI_ACCEPTED_P4_EVIDENCE_HASH],
+    [DRUI_KANBAN_LIVE_EVIDENCE_PATH, surfaceopsKanbanLiveInternals.computeEvidenceSelfHash, DRUI_ACCEPTED_KANBAN_LIVE_EVIDENCE_HASH]
+  ];
+  for (const [documentPath, computeSelfHash, acceptedHash] of evidenceHashRows) {
+    const document = documents.get(documentPath);
+    const finalRef = document?.artifacts?.[document.artifacts.length - 1];
+    const actualHash = computeSelfHash(document);
+    if (finalRef?.path !== documentPath || finalRef?.hash !== actualHash || actualHash !== acceptedHash) {
+      return invalidFixtureResult("SURFACEOPS_DESIGNER_REVIEW_UPSTREAM_HASH_MISMATCH");
+    }
+  }
+  const evidenceCandidate = documents.get(`${DRUI_ARTIFACT_ROOT}/evidence.json`);
+  const evidenceRef = evidenceCandidate?.artifacts?.[evidenceCandidate.artifacts.length - 1];
+  if (evidenceRef?.hash !== computeSurfaceopsDesignerReviewUiEvidenceSelfHash(evidenceCandidate)) {
+    return invalidFixtureResult("SURFACEOPS_DESIGNER_REVIEW_EVIDENCE_HASH_MISMATCH");
+  }
+  return evaluateCandidateFixture(fixture.candidate);
+}
+
+function buildEvidenceMutationCandidate() {
+  const candidate = {
+    schemaId: "surfaceops-designer-review-ui-evidence.v0",
+    targetId: DRUI_TARGET_ID,
+    artifacts: DRUI_ARTIFACT_PATHS.map((artifactPath) => artifactRef(
+      artifactPath,
+      schemaIdForDesignerReviewUiPath(artifactPath),
+      null
+    ))
+  };
+  candidate.artifacts[candidate.artifacts.length - 1].hash = computeSurfaceopsDesignerReviewUiEvidenceSelfHash(candidate);
+  return candidate;
+}
+
+function applyMutationOperation(documents, operation) {
+  if (operation.op === "remove-document") {
+    documents.delete(operation.documentPath);
+    return;
+  }
+  const document = documents.get(operation.documentPath);
+  if (!document || operation.op !== "replace" || typeof operation.jsonPointer !== "string" || !operation.jsonPointer.startsWith("/")) {
+    throw contractError(`SurfaceOps designer review UI mutation operation is invalid for ${operation.documentPath}`, 1);
+  }
+  const segments = operation.jsonPointer.slice(1).split("/").map((segment) => segment.replace(/~1/g, "/").replace(/~0/g, "~"));
+  const finalSegment = segments.pop();
+  let parent = document;
+  for (const segment of segments) {
+    if (parent == null || !(segment in parent)) throw contractError(`SurfaceOps designer review UI mutation pointer is unresolved: ${operation.jsonPointer}`, 1);
+    parent = parent[segment];
+  }
+  if (parent == null || !(finalSegment in parent)) throw contractError(`SurfaceOps designer review UI mutation pointer is unresolved: ${operation.jsonPointer}`, 1);
+  parent[finalSegment] = operation.value;
+}
+
+function invalidFixtureResult(code) {
+  return {
+    result: "invalid",
+    promotionStatus: "blocked",
+    diagnostics: [diagnosticForCode(code)]
+  };
 }
 
 async function strictUpstreamPreflight(cwd, paths, validators) {
@@ -540,6 +661,7 @@ async function strictUpstreamPreflight(cwd, paths, validators) {
   if (kanbanLiveOperationPlan.mappingStore?.owner !== "SurfaceOps" || kanbanLiveOperationPlan.conflictPolicy?.silentOverwriteAllowed !== false) {
     throw contractError("SurfaceOps designer review UI requires SurfaceOps-owned kanban mapping and non-silent conflict policy", 1);
   }
+  const governanceOutcome = deriveSurfaceopsDesignerReviewGovernanceOutcome(designerEvidence, designerReport);
 
   return {
     designerEvidence,
@@ -548,6 +670,7 @@ async function strictUpstreamPreflight(cwd, paths, validators) {
     p4DecisionLedger,
     kanbanLiveEvidence,
     kanbanLiveOperationPlan,
+    governanceOutcome,
     designerEvidenceRef: artifactRef(paths.designerEvidencePath, "designer-workflow-trace-evidence.v0", designerEvidenceSelfHash),
     designerReportRef: artifactRef(paths.designerReportPath, "designer-workflow-trace-report.v0", currentDesignerReportHash),
     p4EvidenceRef: artifactRef(paths.reviewEvidencePath, "review-judgment-evidence.v0", p4EvidenceSelfHash),
@@ -562,20 +685,43 @@ async function loadFixtureRows(cwd, expectations, validators) {
   for (const expectation of expectations.expectedResults) {
     const fixture = await readJson(path.join(cwd, expectation.fixturePath));
     assertSchema(validators, "surfaceops-designer-review-ui-fixture.v0", fixture, expectation.fixturePath);
-    rows.push({ ...fixture, fixturePath: expectation.fixturePath });
+    rows.push({ fixture, expectation });
   }
   return rows;
 }
 
-function assertExpectations(expectations, fixtureRoot, outRoot) {
+async function assertExpectations(cwd, expectations, fixtureRoot, outRoot) {
   if (expectations.targetId !== DRUI_TARGET_ID || expectations.command !== DRUI_COMMAND || expectations.fixtureRoot !== fixtureRoot || expectations.artifactRoot !== outRoot) {
     throw contractError("SurfaceOps designer review UI expectations do not match the requested proof target", 1);
   }
-  const expectedPaths = DRUI_EXPECTATION_ROWS.map((row) => row.fixturePath);
   const actualPaths = expectations.expectedResults.map((row) => row.fixturePath);
-  if (!arrayEquals(actualPaths, expectedPaths)) {
-    throw contractError("SurfaceOps designer review UI expectations fixture list drifted", 1);
+  if (new Set(actualPaths).size !== actualPaths.length) {
+    throw contractError("SurfaceOps designer review UI expectations contain duplicate fixture paths", 1);
   }
+  const discoveredPaths = await discoverCaseFixturePaths(cwd, fixtureRoot);
+  if (!arrayEquals([...actualPaths].sort(), discoveredPaths)) {
+    throw contractError("SurfaceOps designer review UI expectations do not exactly cover the checked-in fixture corpus", 1);
+  }
+  if (
+    expectations.runExpectation.totalResults !== actualPaths.length ||
+    expectations.runExpectation.matchedResults !== actualPaths.length
+  ) {
+    throw contractError("SurfaceOps designer review UI run expectation count does not match the fixture corpus", 1);
+  }
+}
+
+async function discoverCaseFixturePaths(cwd, fixtureRoot) {
+  const paths = [];
+  async function walk(relativeDir) {
+    const entries = await fs.readdir(path.join(cwd, relativeDir), { withFileTypes: true });
+    for (const entry of entries.sort((left, right) => left.name.localeCompare(right.name))) {
+      const relativePath = `${relativeDir}/${entry.name}`;
+      if (entry.isDirectory()) await walk(relativePath);
+      else if (entry.isFile() && /\.surfaceops-designer-review-ui(?:-evidence)?\.json$/.test(entry.name)) paths.push(relativePath);
+    }
+  }
+  await walk(fixtureRoot);
+  return paths.sort();
 }
 
 function assertRunExpectation(expectations, report) {
@@ -727,9 +873,16 @@ function buildRunId({ upstream, targetSelectionRef, workbenchRef, decisionReceip
   })).slice(0, 32)}`;
 }
 
-function aggregatePromotionStatus(results) {
+function aggregatePromotionStatus(results, upstream) {
   if (results.some((result) => !result.matched)) return "blocked";
-  if (results.some((result) => result.actualResult === "review_required")) return "review_required";
+  const statuses = [
+    upstream.designerEvidence.promotionStatus,
+    upstream.p4Evidence.promotionStatus,
+    upstream.kanbanLiveEvidence.promotionStatus,
+    ...results.map((result) => result.promotionStatus)
+  ];
+  if (statuses.includes("blocked")) return "blocked";
+  if (statuses.includes("review_required")) return "review_required";
   return "allowed";
 }
 
@@ -745,12 +898,6 @@ function publicValidationResults(results) {
   }));
 }
 
-function computeEvidenceSelfHash(evidence) {
-  const clone = deepClone(evidence);
-  clone.artifacts[clone.artifacts.length - 1].hash = null;
-  return sha256Hex(canonicalJson(clone));
-}
-
 function findSingleArtifactRef(evidence, artifactPath, label) {
   const refs = (evidence.artifacts || []).filter((entry) => entry.path === artifactPath);
   if (refs.length !== 1) throw contractError(`SurfaceOps designer review UI ${label} must contain exactly one ref for ${artifactPath}`, 1);
@@ -763,6 +910,37 @@ function node(nodeId, label, role, status) {
 
 function edge(from, to, label) {
   return { from, to, label };
+}
+
+function assertWorkbenchGraph(workbench) {
+  const nodes = workbench?.dag?.nodes || [];
+  const edges = workbench?.dag?.edges || [];
+  const nodeIds = nodes.map((entry) => entry.nodeId);
+  const requiredNodeIds = ["kanban-card", "surfaceops-intake", "authority-trace", "inspector", "decision-receipt", "kanban-mirror"];
+  if (new Set(nodeIds).size !== nodeIds.length || !requiredNodeIds.every((nodeId) => nodeIds.includes(nodeId))) {
+    throw contractError("SurfaceOps designer review UI DAG requires unique canonical nodes", 1);
+  }
+  if (!nodeIds.includes(workbench.inspector?.selectedNodeId)) {
+    throw contractError("SurfaceOps designer review UI inspector selection is not present in the DAG", 1);
+  }
+  const outgoing = new Map(nodeIds.map((nodeId) => [nodeId, []]));
+  for (const edgeEntry of edges) {
+    if (!outgoing.has(edgeEntry.from) || !outgoing.has(edgeEntry.to)) {
+      throw contractError("SurfaceOps designer review UI DAG contains an unresolved edge endpoint", 1);
+    }
+    outgoing.get(edgeEntry.from).push(edgeEntry.to);
+  }
+  const visiting = new Set();
+  const visited = new Set();
+  function visit(nodeId) {
+    if (visiting.has(nodeId)) throw contractError("SurfaceOps designer review UI DAG must be acyclic", 1);
+    if (visited.has(nodeId)) return;
+    visiting.add(nodeId);
+    for (const next of outgoing.get(nodeId)) visit(next);
+    visiting.delete(nodeId);
+    visited.add(nodeId);
+  }
+  for (const nodeId of nodeIds) visit(nodeId);
 }
 
 function sortDiagnostics(diagnostics) {
@@ -802,6 +980,6 @@ function usage() {
 }
 
 export const surfaceopsDesignerReviewUiInternals = {
-  computeEvidenceSelfHash,
+  computeEvidenceSelfHash: computeSurfaceopsDesignerReviewUiEvidenceSelfHash,
   authorityBoundary
 };
