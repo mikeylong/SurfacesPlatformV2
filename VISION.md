@@ -88,7 +88,7 @@ The current roadmap evidence is P0-P5, with P5 implemented only for the `surface
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | P0 | Synthetic catalog contract proof | Generation boundary for governed Surface IR | `artifacts/p0/evidence.json` | `pass` | `review_required` | `npm run check:p0:ci` | `demo/p0/index.html` |
 | P1 | `web-static` runtime projection and render-plan proof | Runtime-safe derived projection and inert render plans | `artifacts/p1/evidence.json` | `pass` | `review_required` | `npm run check:p1:ci` | `demo/p1/index.html` |
-| P2 | Bounded local Adobe Spectrum Design Data ingestion for `button` and `in-line-alert` | Real design-system source refs, mappings, diagnostics, and governed catalog output | `artifacts/p2/evidence.json` | `pass` | `review_required` | `npm run check:p2:ci` | `demo/p2/index.html` |
+| P2 | Bounded local Adobe Spectrum Design Data ingestion for `button` and `in-line-alert` | Immutable npm snapshot lock, real design-system source refs, mappings, diagnostics, and governed catalog output | `artifacts/p2/evidence.json` | `pass` | `review_required` | `npm run check:p2:ci` | `demo/p2/index.html` |
 | Target | Declared source conformance proof | Declared-source authority, review, and evidence checks over accepted P2 catalog/evidence | `artifacts/source-conformance/evidence.json` | `pass` | `review_required` | `npm run check:source-conformance:ci` | none; report/evidence only |
 | Target | Designer workflow trace proof | Index over accepted evidence from design authority through governed catalog, review/evaluation refs, static target handoff, and evidence status | `artifacts/designer-workflow-trace/evidence.json` | `pass` | `blocked` | `npm run check:designer-workflow-trace:ci` | none; report/evidence only |
 | Target | `surfaceops-kanban-static` proof | Static SurfaceOps-owned board projection over accepted P3/P4 review evidence and a hash-bound local `kanban.cards` substrate contract | `artifacts/surfaceops-kanban-static/evidence.json` | `pass` | `review_required` | `npm run check:surfaceops-kanban-static:ci` | none; inert board artifacts only |
@@ -106,7 +106,7 @@ P0 proves the catalog contract with a synthetic golden fixture. It materializes 
 
 P1 proves the first runtime-facing surface. It derives a `web-static` runtime projection and deterministic render plans from the governed catalog, then writes adapter report and evidence artifacts.
 
-P2 implements the first bounded real design-system ingestion proof from a manifest-declared local source bundle: the pinned `@adobe/spectrum-design-data@0.7.0` snapshot scoped to `button` and `in-line-alert`. The former agent-orchestration draft has moved to `plans/p3/` and should run only after P2 ingestion evidence passes.
+P2 implements the first bounded real design-system ingestion proof from a manifest-declared local source bundle: the pinned `@adobe/spectrum-design-data@0.7.0` snapshot scoped to `button` and `in-line-alert`. The immutable `package-snapshot.lock.json` is derived from the pinned npm tarball after SRI verification and hash-binds the checked-in package bytes independently from the generated source manifest. Normal materialization compares the local snapshot with this lock and never regenerates it. The former agent-orchestration draft has moved to `plans/p3/` and should run only after P2 ingestion evidence passes.
 
 The declared-source conformance proof consumes accepted P2 evidence and catalog output, then checks one manifest-declared local source bundle for source refs, source hashes, authority conflicts, review-required routing, forbidden live/production claims, report rows, and final evidence. It is proof-only and emits report/evidence artifacts, not a generated demo or live integration.
 
@@ -133,7 +133,7 @@ P0: Contract proof. Prove that design-system-shaped source material can compile 
 
 P1: Runtime surface proof. Prove that the governed catalog can produce an adapter-facing runtime projection, deterministic render plans, generated demo output, report rows, and evidence without becoming a general renderer.
 
-P2: Real design-system ingestion proof. Prove that Surfaces can extract a governed catalog from at least one bounded, real design-system source. The proof should keep the existing contract discipline: declared inputs, normalized extraction, source refs, provenance, diagnostics, fixture coverage, pass/fail gates, and final evidence.
+P2: Real design-system ingestion proof. Prove that Surfaces can extract a governed catalog from at least one bounded, real design-system source. The proof keeps the existing contract discipline: a pinned-tarball package snapshot lock, declared inputs, normalized extraction, source refs, provenance, diagnostics, fixture coverage, pass/fail gates, and final evidence.
 
 P3: Agent recruitment and orchestration proof. Prove agent control through registered capabilities, bounded inputs, bounded outputs, scoped work orders, explicit dependencies, review routing, reports, and evidence. This proof remains inert before any live agent execution is allowed.
 
@@ -153,11 +153,12 @@ The current P0-P5 sequence is the implemented proof-contract roadmap, not the fu
 - Product and docs surfaces should continue to describe the current proven scope plainly and keep planned targets labeled as planned.
 
 ## Real Design-System Extraction
-P0 remains a synthetic fixture proof, and P1 remains a derived runtime projection proof. P2 is the first bounded real-source ingestion proof: it reads only the manifest-declared local `@adobe/spectrum-design-data@0.7.0` source snapshot, companion local mappings, and local usage policy under `sources/p2/design-system-source`, scoped to `button` and `in-line-alert`. It does not call Figma, scrape Storybook, parse Code Connect, crawl docs, inspect production HTML, or claim full Spectrum support.
+P0 remains a synthetic fixture proof, and P1 remains a derived runtime projection proof. P2 is the first bounded real-source ingestion proof: it reads only the manifest-declared local `@adobe/spectrum-design-data@0.7.0` source snapshot, companion local mappings, and local usage policy under `sources/p2/design-system-source`, scoped to `button` and `in-line-alert`. The package snapshot must match the exact file set and hashes in `package-snapshot.lock.json`. That checked-in lock records the result of a separate review-time SRI and tarball verification; the deterministic proof treats it as a trust anchor and does not fetch or reconstruct the tarball. It does not call Figma, scrape Storybook, parse Code Connect, crawl docs, inspect production HTML, or claim full Spectrum support.
 
 Surfaces can claim a real design-system ingestion capability only for source families and targets that prove all of the following:
 
 - the input source is an authoritative design-system source, not a hand-authored fixture shaped for the proof;
+- checked-in package bytes match an immutable lock derived from the pinned upstream package, and ordinary materialization cannot rewrite that lock to accept local drift;
 - extraction preserves source references for every token, component, prop, variant, state, slot, action, accessibility rule, example, and governance rule it emits;
 - unsupported or ambiguous source material becomes a diagnostic, review requirement, or explicit manual mapping, not a silent assumption;
 - the generated catalog and governed catalog validate against the same contract discipline as P0/P1;

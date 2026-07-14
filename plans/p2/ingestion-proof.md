@@ -7,12 +7,14 @@ P2 proof emits deterministic ingestion artifacts for a declared real design-syst
 Show that Surfaces can move from synthetic fixture extraction to a real design-system source without losing provenance, diagnostics, review routing, or reproducibility.
 
 ## Inputs
+- `sources/p2/design-system-source/package-snapshot.lock.json`.
 - `sources/p2/design-system-source/manifest.json`.
 - Declared source files under `sources/p2/design-system-source/`.
 - P2 fixtures and expectations manifest.
 - P2-owned schemas and consumed shared schemas.
 
 ## Outputs
+- `schemas/design-source-package-snapshot-lock.v0.schema.json`.
 - `schemas/design-source-manifest.v0.schema.json`.
 - `schemas/design-source-inventory.v0.schema.json`.
 - `schemas/design-source-mapping.v0.schema.json`.
@@ -27,6 +29,13 @@ Show that Surfaces can move from synthetic fixture extraction to a real design-s
 - `artifacts/p2/catalog.json`.
 - `artifacts/p2/governed-catalog.json`.
 - `artifacts/p2/ingestion-report.json`.
+
+## Immutable Snapshot Preflight
+P2 validates `package-snapshot.lock.json` before it accepts the generated source manifest or writes a proof artifact. The lock conforms to `design-source-package-snapshot-lock.v0`, identifies the pinned tarball and SRI, records the tarball SHA-256, and lists the exact ordered package paths with raw-byte SHA-256 hashes.
+
+Normal materialization recursively enumerates the checked-in package tree and compares its exact file set and bytes with the immutable lock. Extra, missing, symlinked, non-regular, or byte-drifted package inputs fail closed with `INGEST_PACKAGE_SNAPSHOT_LOCK_MISMATCH` and canonical message `Local package snapshot does not match the immutable npm snapshot lock.` Materialization never generates, updates, or rewrites the lock.
+
+The generated source manifest carries `packageSnapshotLock` with the exact lock path, schema id, `hashAlgorithm: "sha256"`, and raw lock-file `sha256`. Strict proof preflight validates this tuple before inventory and extraction.
 
 ## Source Inventory Shape
 `design-source-inventory.v0` must require:
@@ -77,6 +86,7 @@ Mapping row refs and cardinality are independently validated. Missing or malform
 Mapping rows are reconciliation-only. They may narrow, rename, normalize, or require review for manifest-declared Spectrum source material, but they must not create catalog behavior absent from source refs. Attempts to do so emit `INGEST_MAPPING_AUTHORITY_ESCALATION`.
 
 ## Extraction Rules
+- Extraction starts only after the local package snapshot matches the immutable lock and the manifest lock ref validates.
 - Extraction reads only files declared in the source manifest.
 - Extraction must preserve source refs for every emitted token, component, prop, variant, state, slot, action, event, data binding, accessibility contract, example, and governance rule.
 - Unsupported source material must produce diagnostics.
@@ -87,6 +97,7 @@ Mapping rows are reconciliation-only. They may narrow, rename, normalize, or req
 ## Report Behavior
 `ingestion-report.json` records:
 
+- immutable package snapshot lock validation;
 - source manifest validation;
 - source inventory results;
 - source mapping results;
@@ -101,10 +112,11 @@ Mapping rows are reconciliation-only. They may narrow, rename, normalize, or req
 The report is produced before final evidence and is included in the P2 evidence artifact order.
 
 ## P2 Proof
-The proof passes when the source bundle is hash-bound, source inventory and mapping are deterministic, extraction preserves source refs, catalog artifacts validate, all invalid and mutation fixtures fail with expected diagnostics, review-required rows remain non-promoted, the report matches the manifest, and final evidence is reproducible.
+The proof passes when the local package bytes match the immutable tarball-derived lock, the source bundle is hash-bound, source inventory and mapping are deterministic, extraction preserves source refs, catalog artifacts validate, all invalid and mutation fixtures fail with expected diagnostics, the causal byte-tamper case fails against the unchanged lock, review-required rows remain non-promoted, the report matches the manifest, and final evidence is reproducible.
 
 ## Non-Goals
 - No remote source lifecycle.
+- No normal materialization path that creates or refreshes `package-snapshot.lock.json`.
 - No visual diff.
 - No runtime projection.
 - No action execution.

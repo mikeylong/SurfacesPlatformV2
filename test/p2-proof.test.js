@@ -6,11 +6,18 @@ import { promisify } from "node:util";
 import test from "node:test";
 import Ajv2020 from "ajv/dist/2020.js";
 import { canonicalJson } from "../src/p0.js";
+import {
+  P2_PACKAGE_SNAPSHOT_LOCK_DIAGNOSTIC_CODE,
+  P2_PACKAGE_SNAPSHOT_LOCK_DIAGNOSTIC_MESSAGE
+} from "../src/p2-contract.js";
 import { p2Internals } from "../src/p2-proof.js";
 
 const execFileAsync = promisify(execFile);
 const root = process.cwd();
 const manifestPath = path.join(root, "sources/p2/design-system-source/manifest.json");
+const packageSnapshotLockPath = path.join(root, "sources/p2/design-system-source/package-snapshot.lock.json");
+const buttonSourcePath = path.join(root, "sources/p2/design-system-source/npm/@adobe/spectrum-design-data/0.7.0/package/components/button.json");
+const packageSnapshotMutationFixturePath = path.join(root, "fixtures/p2/mutations/package-snapshot-byte-tamper.design-source.json");
 const componentMapPath = path.join(root, "sources/p2/design-system-source/mappings/component-map.json");
 const tokenMapPath = path.join(root, "sources/p2/design-system-source/mappings/token-map.json");
 const componentsDir = path.join(root, "sources/p2/design-system-source/npm/@adobe/spectrum-design-data/0.7.0/package/components");
@@ -21,7 +28,9 @@ test("P2 ingest proof emits passing evidence with final self-hash", async () => 
   const evidence = await readJson("artifacts/p2/evidence.json");
   assert.equal(evidence.status, "pass");
   assert.equal(evidence.promotionStatus, "review_required");
-  assert.equal(evidence.validationResults.length, 21);
+  assert.equal(evidence.validationResults.length, 22);
+  assert.equal(evidence.sourceFileRefs[0].path, "sources/p2/design-system-source/package-snapshot.lock.json");
+  assert.equal(evidence.sourceFileRefs[0].schemaId, "design-source-package-snapshot-lock.v0");
   assert.equal(evidence.artifactRefs.at(-1).path, "artifacts/p2/evidence.json");
   assert.equal(evidence.artifactRefs.at(-1).hash, p2Internals.computeEvidenceSelfHash(evidence));
 });
@@ -110,9 +119,56 @@ test("P2 source preflight rejects manifest source hash mismatch", async () => {
   try {
     const result = await runP2ProofExpectFailure();
     assert.equal(result.code, 1);
-    assert.match(result.stderr, /hash mismatch/);
+    assert.match(result.stderr, /hash (?:mismatch|does not match)/);
   } finally {
     await fs.writeFile(manifestPath, original);
+  }
+});
+
+test("P2 materialization cannot re-bless package bytes that differ from the immutable snapshot lock", async () => {
+  const mutationFixture = JSON.parse(await fs.readFile(packageSnapshotMutationFixturePath, "utf8"));
+  const mutatedSourcePath = path.join(root, mutationFixture.mutatedPath);
+  assert.equal(mutatedSourcePath, buttonSourcePath);
+  const originalSource = await fs.readFile(buttonSourcePath);
+  const originalManifest = await fs.readFile(manifestPath, "utf8");
+  const originalLock = await fs.readFile(packageSnapshotLockPath, "utf8");
+  await fs.writeFile(buttonSourcePath, Buffer.concat([originalSource, Buffer.from(mutationFixture.appendUtf8, "utf8")]));
+  try {
+    const materializeResult = await runCommandExpectFailure(["scripts/materialize-p2.mjs"]);
+    assert.equal(materializeResult.code, 1);
+    assertSnapshotLockDiagnostic(materializeResult.stderr);
+    assert.equal(await fs.readFile(manifestPath, "utf8"), originalManifest, "materializer must not rewrite the manifest after lock failure");
+    assert.equal(await fs.readFile(packageSnapshotLockPath, "utf8"), originalLock, "materializer must never rewrite the package snapshot lock");
+
+    const proofResult = await runP2ProofExpectFailure();
+    assert.equal(proofResult.code, 1);
+    assertSnapshotLockDiagnostic(proofResult.stderr);
+  } finally {
+    await fs.writeFile(buttonSourcePath, originalSource);
+    await fs.writeFile(manifestPath, originalManifest);
+    await fs.writeFile(packageSnapshotLockPath, originalLock);
+  }
+});
+
+test("P2 package snapshot lock rejects extra files outside its exact package inventory", async () => {
+  const extraPackageFilePath = path.join(componentsDir, "unlocked-extra.json");
+  const originalManifest = await fs.readFile(manifestPath, "utf8");
+  const originalLock = await fs.readFile(packageSnapshotLockPath, "utf8");
+  await fs.writeFile(extraPackageFilePath, "{}\n", { flag: "wx" });
+  try {
+    const materializeResult = await runCommandExpectFailure(["scripts/materialize-p2.mjs"]);
+    assert.equal(materializeResult.code, 1);
+    assertSnapshotLockDiagnostic(materializeResult.stderr);
+    assert.equal(await fs.readFile(manifestPath, "utf8"), originalManifest);
+    assert.equal(await fs.readFile(packageSnapshotLockPath, "utf8"), originalLock);
+
+    const proofResult = await runP2ProofExpectFailure();
+    assert.equal(proofResult.code, 1);
+    assertSnapshotLockDiagnostic(proofResult.stderr);
+  } finally {
+    await fs.rm(extraPackageFilePath, { force: true });
+    await fs.writeFile(manifestPath, originalManifest);
+    await fs.writeFile(packageSnapshotLockPath, originalLock);
   }
 });
 
@@ -169,7 +225,7 @@ test("P2 source preflight rejects ancestor symlink escapes from declared source 
   try {
     const result = await runP2ProofExpectFailure();
     assert.equal(result.code, 1);
-    assert.match(result.stderr, /escapes declared source roots/);
+    assertSnapshotLockDiagnostic(result.stderr);
   } finally {
     await fs.rm(componentsDir, { force: true });
     await fs.rename(backupDir, componentsDir);
@@ -240,6 +296,11 @@ async function runCommandExpectFailure(args) {
   assert.fail("expected command to fail");
 }
 
+function assertSnapshotLockDiagnostic(stderr) {
+  assert.ok(stderr.includes(P2_PACKAGE_SNAPSHOT_LOCK_DIAGNOSTIC_CODE));
+  assert.ok(stderr.includes(P2_PACKAGE_SNAPSHOT_LOCK_DIAGNOSTIC_MESSAGE));
+}
+
 async function readJson(relativePath) {
   return JSON.parse(await fs.readFile(path.join(root, relativePath), "utf8"));
 }
@@ -268,6 +329,7 @@ async function loadP2Ajv() {
     "schemas/extract.v0.schema.json",
     "schemas/runtime-catalog.v0.schema.json",
     "schemas/design-source-manifest.v0.schema.json",
+    "schemas/design-source-package-snapshot-lock.v0.schema.json",
     "schemas/design-source-inventory.v0.schema.json",
     "schemas/design-source-mapping.v0.schema.json",
     "schemas/design-system-ingestion-report.v0.schema.json",

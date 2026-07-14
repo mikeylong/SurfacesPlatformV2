@@ -14,6 +14,13 @@ export const P2_PACKAGE_NAME = "@adobe/spectrum-design-data";
 export const P2_PACKAGE_VERSION = "0.7.0";
 export const P2_PACKAGE_TARBALL = "https://registry.npmjs.org/@adobe/spectrum-design-data/-/spectrum-design-data-0.7.0.tgz";
 export const P2_PACKAGE_INTEGRITY = "sha512-mSdmQn6fNEzKVo6W5xS4gO1EXCpC4ojiEm3GqTlSjhh26lC9siMgQSWi33ODvWe8ssfrxXX0unzVnL5VBt4+CA==";
+export const P2_PACKAGE_TARBALL_SHA256 = "12db4dd64e7ad0c0c6cadec7c2f8e24a8d819d1f3badb7d871fbfbfc99ffdff0";
+export const P2_PACKAGE_SNAPSHOT_LOCK_FILE = "package-snapshot.lock.json";
+export const P2_PACKAGE_SNAPSHOT_LOCK_PATH = `${P2_SOURCE_ROOT}/${P2_PACKAGE_SNAPSHOT_LOCK_FILE}`;
+export const P2_PACKAGE_SNAPSHOT_LOCK_SCHEMA_ID = "design-source-package-snapshot-lock.v0";
+export const P2_PACKAGE_SNAPSHOT_LOCK_GENERATOR = "surfaces-p2-package-snapshot-lock";
+export const P2_PACKAGE_SNAPSHOT_LOCK_DIAGNOSTIC_CODE = "INGEST_PACKAGE_SNAPSHOT_LOCK_MISMATCH";
+export const P2_PACKAGE_SNAPSHOT_LOCK_DIAGNOSTIC_MESSAGE = "Local package snapshot does not match the immutable npm snapshot lock.";
 
 export const P2_ENVIRONMENT = Object.freeze({
   generatedAt: P2_TIMESTAMP,
@@ -21,6 +28,7 @@ export const P2_ENVIRONMENT = Object.freeze({
 });
 
 export const P2_SCHEMA_FILES = [
+  "design-source-package-snapshot-lock.v0.schema.json",
   "design-source-manifest.v0.schema.json",
   "design-source-inventory.v0.schema.json",
   "design-source-mapping.v0.schema.json",
@@ -85,6 +93,8 @@ export const P2_SOURCE_FILES = [
   };
 });
 
+export const P2_PACKAGE_SOURCE_FILES = P2_SOURCE_FILES.filter((entry) => entry.packagePath !== null);
+
 export const P2_MAPPING_FILES = [
   {
     path: "mappings/component-map.json",
@@ -127,6 +137,7 @@ export const P2_FIXTURE_FILES = [
   "invalid/mapping-cardinality-invalid.design-source-mapping.json",
   "mutations/missing-source-manifest.design-source.json",
   "mutations/package-integrity-mismatch.design-source.json",
+  "mutations/package-snapshot-byte-tamper.design-source.json",
   "mutations/source-path-undeclared.design-source.json",
   "mutations/invalid-source-ref.design-source.json",
   "mutations/source-hash-mismatch.design-source-inventory.json",
@@ -154,6 +165,7 @@ export function p2SchemaPaths() {
 
 export function p2SourceRefPaths() {
   return [
+    P2_PACKAGE_SNAPSHOT_LOCK_PATH,
     ...P2_SOURCE_FILES.map((entry) => `${P2_SOURCE_ROOT}/${entry.path}`),
     ...P2_MAPPING_FILES.map((entry) => `${P2_SOURCE_ROOT}/${entry.path}`)
   ];
@@ -164,10 +176,12 @@ export function p2FixturePaths() {
 }
 
 export function p2ArtifactOrder() {
+  const [packageSnapshotLockPath, ...sourceRefPaths] = p2SourceRefPaths();
   return [
     ...p2SchemaPaths(),
+    packageSnapshotLockPath,
     `${P2_SOURCE_ROOT}/manifest.json`,
-    ...p2SourceRefPaths(),
+    ...sourceRefPaths,
     ...p2FixturePaths(),
     ...P2_ARTIFACT_PATHS
   ];
@@ -189,6 +203,7 @@ export function schemaIdForP2Path(artifactPath) {
   if (P2_SCHEMA_FILES.includes(file) || P2_SHARED_SCHEMA_FILES.includes(file)) {
     return file.replace(/\.schema\.json$/, "");
   }
+  if (artifactPath === P2_PACKAGE_SNAPSHOT_LOCK_PATH) return P2_PACKAGE_SNAPSHOT_LOCK_SCHEMA_ID;
   if (artifactPath.endsWith("/manifest.json")) return "design-source-manifest.v0";
   if (artifactPath.endsWith("expectations.manifest.json")) return "design-system-ingestion-expectations.v0";
   if (artifactPath.includes("/valid/") && artifactPath.endsWith(".source-mapping.json")) return "design-source-mapping.v0";
@@ -238,12 +253,214 @@ export async function canonicalFileHash(filePath) {
   return sha256Hex(canonicalJson(data));
 }
 
+export function assertP2PackageSnapshotLock(lock) {
+  assertPlainObject(lock, "lock");
+  assertExactKeys(lock, [
+    "schemaId",
+    "version",
+    "packageName",
+    "packageVersion",
+    "packageTarball",
+    "packageIntegrity",
+    "tarballHashAlgorithm",
+    "tarballSha256",
+    "packageRoot",
+    "packageFiles",
+    "provenance"
+  ], "lock");
+
+  assertExactValue(lock.schemaId, P2_PACKAGE_SNAPSHOT_LOCK_SCHEMA_ID, "lock.schemaId");
+  assertExactValue(lock.version, P2_VERSION, "lock.version");
+  assertExactValue(lock.packageName, P2_PACKAGE_NAME, "lock.packageName");
+  assertExactValue(lock.packageVersion, P2_PACKAGE_VERSION, "lock.packageVersion");
+  assertExactValue(lock.packageTarball, P2_PACKAGE_TARBALL, "lock.packageTarball");
+  assertExactValue(lock.packageIntegrity, P2_PACKAGE_INTEGRITY, "lock.packageIntegrity");
+  assertExactValue(lock.tarballHashAlgorithm, "sha256", "lock.tarballHashAlgorithm");
+  assertExactValue(lock.tarballSha256, P2_PACKAGE_TARBALL_SHA256, "lock.tarballSha256");
+  assertExactValue(lock.packageRoot, P2_PACKAGE_ROOT, "lock.packageRoot");
+
+  if (!Array.isArray(lock.packageFiles)) {
+    throw invalidP2PackageSnapshotLock("lock.packageFiles must be an array");
+  }
+  if (lock.packageFiles.length !== P2_PACKAGE_SOURCE_FILES.length) {
+    throw invalidP2PackageSnapshotLock(
+      `lock.packageFiles must contain exactly ${P2_PACKAGE_SOURCE_FILES.length} ordered package files`
+    );
+  }
+
+  const hashByPackagePath = new Map();
+  for (let index = 0; index < P2_PACKAGE_SOURCE_FILES.length; index += 1) {
+    const expected = P2_PACKAGE_SOURCE_FILES[index];
+    const actual = lock.packageFiles[index];
+    const label = `lock.packageFiles[${index}]`;
+    assertPlainObject(actual, label);
+    assertExactKeys(actual, ["packagePath", "hashAlgorithm", "sha256"], label);
+    assertExactValue(actual.packagePath, expected.packagePath, `${label}.packagePath`);
+    assertExactValue(actual.hashAlgorithm, "sha256", `${label}.hashAlgorithm`);
+    if (typeof actual.sha256 !== "string" || !/^[a-f0-9]{64}$/.test(actual.sha256)) {
+      throw invalidP2PackageSnapshotLock(`${label}.sha256 must be a lowercase SHA-256 hex digest`);
+    }
+    hashByPackagePath.set(actual.packagePath, actual.sha256);
+  }
+
+  assertPlainObject(lock.provenance, "lock.provenance");
+  assertExactKeys(lock.provenance, ["generatedAt", "generator", "sourceRefs"], "lock.provenance");
+  assertExactValue(lock.provenance.generatedAt, P2_TIMESTAMP, "lock.provenance.generatedAt");
+  assertExactValue(lock.provenance.generator, P2_PACKAGE_SNAPSHOT_LOCK_GENERATOR, "lock.provenance.generator");
+  if (!Array.isArray(lock.provenance.sourceRefs) || lock.provenance.sourceRefs.length !== 1) {
+    throw invalidP2PackageSnapshotLock("lock.provenance.sourceRefs must contain exactly the package tarball URL");
+  }
+  assertExactValue(lock.provenance.sourceRefs[0], P2_PACKAGE_TARBALL, "lock.provenance.sourceRefs[0]");
+
+  return hashByPackagePath;
+}
+
+export async function verifyP2PackageSnapshotLock(root) {
+  const lockFilePath = path.join(root, P2_PACKAGE_SNAPSHOT_LOCK_PATH);
+  await assertRegularP2Input(root, P2_PACKAGE_SNAPSHOT_LOCK_PATH);
+
+  let lock;
+  try {
+    lock = await readJson(lockFilePath);
+  } catch (error) {
+    throw invalidP2PackageSnapshotLock(`cannot parse ${P2_PACKAGE_SNAPSHOT_LOCK_PATH}: ${error.message}`);
+  }
+
+  const hashByPackagePath = assertP2PackageSnapshotLock(lock);
+  await assertP2PackageSnapshotFileSet(root, [...hashByPackagePath.keys()]);
+  for (const [packagePath, expectedHash] of hashByPackagePath) {
+    const relativePath = `${P2_SOURCE_ROOT}/${P2_PACKAGE_ROOT}/${packagePath}`;
+    const filePath = path.join(root, relativePath);
+    await assertRegularP2Input(root, relativePath);
+    const actualHash = await rawFileHash(filePath);
+    if (actualHash !== expectedHash) {
+      throw p2PackageSnapshotLockMismatch(
+        `Path ${relativePath} expected ${expectedHash} but received ${actualHash}.`
+      );
+    }
+  }
+
+  return {
+    lock,
+    lockSha256: await rawFileHash(lockFilePath),
+    hashByPackagePath
+  };
+}
+
+export async function assertP2PackageSnapshotFileSet(root, expectedPackagePaths) {
+  const packageRootPath = `${P2_SOURCE_ROOT}/${P2_PACKAGE_ROOT}`;
+  await assertRegularP2Directory(root, packageRootPath);
+  const actualPackagePaths = await listRegularP2Files(path.join(root, packageRootPath));
+  const expected = [...expectedPackagePaths].sort(comparePosixPaths);
+  const actual = [...actualPackagePaths].sort(comparePosixPaths);
+  if (canonicalJson(actual) !== canonicalJson(expected)) {
+    throw p2PackageSnapshotLockMismatch(
+      `Expected package files ${canonicalJson(expected)} but received ${canonicalJson(actual)}.`
+    );
+  }
+  return actual;
+}
+
 export function sha256Hex(data) {
   return crypto.createHash("sha256").update(data, "utf8").digest("hex");
 }
 
 export function deepClone(value) {
   return JSON.parse(JSON.stringify(value));
+}
+
+async function assertRegularP2Input(root, label) {
+  const filePath = await assertP2PathHasNoSymlinks(root, label);
+  let stat;
+  try {
+    stat = await fs.lstat(filePath);
+  } catch {
+    throw new Error(`missing P2 source input: ${label}`);
+  }
+  if (!stat.isFile()) {
+    throw new Error(`P2 source input is not a regular file: ${label}`);
+  }
+}
+
+async function assertRegularP2Directory(root, label) {
+  const directoryPath = await assertP2PathHasNoSymlinks(root, label);
+  const stat = await fs.lstat(directoryPath);
+  if (!stat.isDirectory()) {
+    throw p2PackageSnapshotLockMismatch(`Package root is not a regular directory: ${label}.`);
+  }
+}
+
+async function assertP2PathHasNoSymlinks(root, label) {
+  let current = root;
+  for (const segment of label.split("/")) {
+    current = path.join(current, segment);
+    let stat;
+    try {
+      stat = await fs.lstat(current);
+    } catch {
+      throw new Error(`missing P2 source input: ${label}`);
+    }
+    if (stat.isSymbolicLink()) {
+      throw p2PackageSnapshotLockMismatch(`Symlinked package input is not allowed: ${label}.`);
+    }
+  }
+  return current;
+}
+
+async function listRegularP2Files(directoryPath, relativeRoot = "") {
+  const files = [];
+  const entries = await fs.readdir(directoryPath, { withFileTypes: true });
+  entries.sort((left, right) => comparePosixPaths(left.name, right.name));
+  for (const entry of entries) {
+    const relativePath = relativeRoot ? `${relativeRoot}/${entry.name}` : entry.name;
+    const entryPath = path.join(directoryPath, entry.name);
+    if (entry.isSymbolicLink()) {
+      throw p2PackageSnapshotLockMismatch(`Symlinked package input is not allowed: ${relativePath}.`);
+    }
+    if (entry.isDirectory()) {
+      files.push(...await listRegularP2Files(entryPath, relativePath));
+      continue;
+    }
+    if (!entry.isFile()) {
+      throw p2PackageSnapshotLockMismatch(`Non-regular package input is not allowed: ${relativePath}.`);
+    }
+    files.push(relativePath);
+  }
+  return files;
+}
+
+function comparePosixPaths(left, right) {
+  return left < right ? -1 : left > right ? 1 : 0;
+}
+
+function p2PackageSnapshotLockMismatch(detail) {
+  return new Error(
+    `${P2_PACKAGE_SNAPSHOT_LOCK_DIAGNOSTIC_CODE}: ${P2_PACKAGE_SNAPSHOT_LOCK_DIAGNOSTIC_MESSAGE} ${detail}`
+  );
+}
+
+function assertPlainObject(value, label) {
+  if (value === null || typeof value !== "object" || Array.isArray(value)) {
+    throw invalidP2PackageSnapshotLock(`${label} must be an object`);
+  }
+}
+
+function assertExactKeys(value, expectedKeys, label) {
+  const actualKeys = Object.keys(value).sort();
+  const sortedExpectedKeys = [...expectedKeys].sort();
+  if (canonicalJson(actualKeys) !== canonicalJson(sortedExpectedKeys)) {
+    throw invalidP2PackageSnapshotLock(`${label} must contain exactly: ${sortedExpectedKeys.join(", ")}`);
+  }
+}
+
+function assertExactValue(actual, expected, label) {
+  if (actual !== expected) {
+    throw invalidP2PackageSnapshotLock(`${label} must equal ${JSON.stringify(expected)}`);
+  }
+}
+
+function invalidP2PackageSnapshotLock(message) {
+  return new Error(`invalid P2 package snapshot lock: ${message}`);
 }
 
 function buildUsagePolicy() {

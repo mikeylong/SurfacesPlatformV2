@@ -12,6 +12,7 @@
     "packageVersion",
     "packageTarball",
     "packageIntegrity",
+    "packageSnapshotLock",
     "snapshotRoot",
     "sourceRefGrammar",
     "initialComponents",
@@ -32,6 +33,17 @@
     "packageTarball": { "const": "https://registry.npmjs.org/@adobe/spectrum-design-data/-/spectrum-design-data-0.7.0.tgz" },
     "packageIntegrity": {
       "const": "sha512-mSdmQn6fNEzKVo6W5xS4gO1EXCpC4ojiEm3GqTlSjhh26lC9siMgQSWi33ODvWe8ssfrxXX0unzVnL5VBt4+CA=="
+    },
+    "packageSnapshotLock": {
+      "type": "object",
+      "required": ["path", "schemaId", "hashAlgorithm", "sha256"],
+      "properties": {
+        "path": { "const": "package-snapshot.lock.json" },
+        "schemaId": { "const": "design-source-package-snapshot-lock.v0" },
+        "hashAlgorithm": { "const": "sha256" },
+        "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+      },
+      "unevaluatedProperties": false
     },
     "snapshotRoot": {
       "const": "sources/p2/design-system-source/npm/@adobe/spectrum-design-data/0.7.0/package"

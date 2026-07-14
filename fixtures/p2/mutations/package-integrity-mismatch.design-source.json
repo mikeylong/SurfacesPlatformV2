@@ -4,7 +4,8 @@
   "fixtureKind": "mutation",
   "description": "Pinned Spectrum package integrity is immutable for the P2 pilot.",
   "mutatedPath": "sources/p2/design-system-source/manifest.json",
-  "mutation": "packageIntegrity changed",
+  "jsonPointer": "/packageIntegrity",
+  "replacementValue": "sha512-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
   "expectedDiagnosticCode": "INGEST_PACKAGE_INTEGRITY_MISMATCH",
   "expectedResult": "invalid",
   "promotionStatus": "blocked"

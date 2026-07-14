@@ -247,11 +247,12 @@ Given a valid P0 proof and the P1 fixture set, the adapter proof command emits t
 - Review-required P1 fixtures are report/evidence-only and must not produce render-plan artifacts.
 
 ## P2 Focus
-P2 proves deterministic local ingestion for the pinned `@adobe/spectrum-design-data@0.7.0` source snapshot, scoped to `button` and `in-line-alert`. It is a deterministic ingestion proof, not a live Figma integration, Storybook crawler, docs crawler, production sync service, runtime adapter, SurfaceOps workflow, JudgmentKit evaluator, or agent orchestration proof.
+P2 proves deterministic local ingestion for the pinned `@adobe/spectrum-design-data@0.7.0` source snapshot, scoped to `button` and `in-line-alert`. The checked-in package bytes are bound by the review-controlled `sources/p2/design-system-source/package-snapshot.lock.json`, seeded during a separate SRI and tarball verification. Normal materialization compares the exact local package tree with this lock and never regenerates it. The deterministic proof does not fetch or reconstruct the tarball, so it proves local lock conformance rather than the review-time provenance ceremony. P2 is a deterministic ingestion proof, not a live Figma integration, Storybook crawler, docs crawler, production sync service, runtime adapter, SurfaceOps workflow, JudgmentKit evaluator, or agent orchestration proof.
 
 The P2 proof path is:
 
 ```text
+sources/p2/design-system-source/package-snapshot.lock.json
 sources/p2/design-system-source/manifest.json
 manifest-declared source files, required mappings, and policy refs
 fixtures/p2/expectations.manifest.json
@@ -277,7 +278,7 @@ interfacectl surfaces ingest proof --source sources/p2/design-system-source --fi
 Package scripts and tests execute this as `node bin/interfacectl.js surfaces ingest proof --source sources/p2/design-system-source --fixture fixtures/p2 --out artifacts/p2`. P2 evidence records the logical command string above to preserve the P0/P1 evidence convention.
 
 ## P2 Pass Condition
-Given a declared design-system source bundle and the P2 fixture set, the ingest proof command emits the exact P2 artifacts, verifies source hashes, creates deterministic source inventory and mapping artifacts, extracts normalized design-system material with source refs, compiles catalog and governed catalog artifacts, validates positive Spectrum coverage for `button` and `in-line-alert`, blocks invalid and mutation cases with registry-backed diagnostics, preserves review-required manual mapping cases without promotion, records ingestion diagnostics before final evidence, and writes reproducible evidence with hashes and provenance for every P2-owned schema, consumed shared schema, source input, fixture, generated artifact, and final evidence artifact.
+Given a declared design-system source bundle and the P2 fixture set, the ingest proof command emits the exact P2 artifacts, verifies the immutable package snapshot lock before accepting manifest hashes, verifies remaining source hashes, creates deterministic source inventory and mapping artifacts, extracts normalized design-system material with source refs, compiles catalog and governed catalog artifacts, validates positive Spectrum coverage for `button` and `in-line-alert`, blocks invalid and mutation cases with registry-backed diagnostics, preserves review-required manual mapping cases without promotion, records ingestion diagnostics before final evidence, and writes reproducible evidence with hashes and provenance for every P2-owned schema, package-lock and source input, fixture, generated artifact, and final evidence artifact.
 
 ## P2 Architecture
 1. P2 Product Boundaries
@@ -290,10 +291,14 @@ Given a declared design-system source bundle and the P2 fixture set, the ingest 
 ## P2 Acceptance Criteria
 - P0 and P1 proof gates still pass unchanged before and after P2 work.
 - `sources/p2/design-system-source/manifest.json` declares the first pilot target as Adobe Spectrum Design Data, `@adobe/spectrum-design-data@0.7.0`, with npm package integrity, source snapshot paths, source-ref grammar, required mappings, policy refs, source hashes, and the initial component subset `button` and `in-line-alert`.
-- P2 preflight validates the declared source manifest and hashes before extraction.
+- `schemas/design-source-package-snapshot-lock.v0.schema.json` closes the immutable lock over the pinned tarball identity, tarball SHA-256, and the exact ordered package-file paths and raw-byte SHA-256 hashes.
+- `sources/p2/design-system-source/package-snapshot.lock.json` is created from the pinned tarball only after review-time SRI verification. Normal materialization validates the exact local package-file set and bytes but never fetches the tarball or regenerates or rewrites the lock. P2 evidence proves local lock conformance, not the external provenance ceremony.
+- The source manifest carries a `packageSnapshotLock` ref with exact path, schema id, hash algorithm, and `sha256`; P2 preflight validates that ref and the locked package bytes before extraction.
 - Source inventory and source mapping cannot read outside the declared source bundle or promote catalog behavior absent from declared source material.
 - Every extracted token, component, prop, variant, state, slot, action, accessibility rule, example, and governance rule preserves source refs.
 - Unsupported, ambiguous, unmapped, or governance-incomplete source material blocks or routes to review according to `fixtures/p2/expectations.manifest.json`.
+- `fixtures/p2/mutations/package-snapshot-byte-tamper.design-source.json` drives causal coverage by changing a real checked-in package byte and requiring `INGEST_PACKAGE_SNAPSHOT_LOCK_MISMATCH`, with canonical message `Local package snapshot does not match the immutable npm snapshot lock.` Changing only fixture metadata is insufficient coverage.
+- `test/p2-proof.test.js` also creates a real extra file under the package root and requires materialization and proof preflight to reject the non-locked path with the same diagnostic before restoring the tree.
 - `ingestion-report.json` records every expected and actual source, mapping, extraction, governance, fixture, and diagnostic result before final P2 evidence.
 - P2 evidence hashes P2-owned schemas, every shared schema it consumes for extract/catalog/diagnostics/expectations/evidence/governed-catalog behavior, source inputs, P2 fixtures, generated P2 artifacts, and itself under the same canonicalization discipline as P0/P1.
 - `demo/p2/index.html` is generated from P2 proof artifacts and does not count as proof unless the underlying P2 evidence passes.
@@ -661,8 +666,9 @@ The source-conformance subplans define a proof-only declared-source conformance 
 ## P2 Decisions
 - First real-ingestion target: Adobe Spectrum Design Data, pinned as `@adobe/spectrum-design-data@0.7.0` with npm integrity `sha512-mSdmQn6fNEzKVo6W5xS4gO1EXCpC4ojiEm3GqTlSjhh26lC9siMgQSWi33ODvWe8ssfrxXX0unzVnL5VBt4+CA==`.
 - Initial component subset: Spectrum `button` and `in-line-alert`.
-- First source boundary: `sources/p2/design-system-source/manifest.json`, source inventory, source mapping, extract, catalog, governed catalog, ingestion report, and evidence.
+- First source boundary: immutable `sources/p2/design-system-source/package-snapshot.lock.json`, `sources/p2/design-system-source/manifest.json`, source inventory, source mapping, extract, catalog, governed catalog, ingestion report, and evidence.
 - P2 chooses a declared source bundle over live source APIs so the first real-ingestion proof remains deterministic.
+- The package snapshot lock records a separate review-time pinned-tarball and SRI verification. Ordinary materialization recursively compares the exact checked-in package tree with this trust anchor and must fail on drift instead of updating the lock or manifest to accept changed package bytes. Deterministic proof does not replay the external provenance ceremony.
 - P2 may preserve review-required mapping rows, but it does not build SurfaceOps persistence.
 - JudgmentKit remains evaluation metadata only unless a later proof defines evaluator execution.
 - P2 may be described as implemented or shipped only for deterministic local npm package ingestion from the declared `@adobe/spectrum-design-data@0.7.0` source snapshot, initially scoped to `button` and `in-line-alert`, when `artifacts/p2/evidence.json` passes. It must not be described as full Spectrum support, live ingestion, runtime adapter rendering, SurfaceOps operation, JudgmentKit evaluation, P3 orchestration, or Adobe endorsement.
