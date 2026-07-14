@@ -34,6 +34,17 @@ SurfaceOps, production `kanban.cards`, Auth0 delegated production auth, hosted
 persistence, public APIs, SDKs, A2UI, live JudgmentKit, work execution, or
 product adoption.
 
+[SurfaceOps Designer Review UI Proof Target](plans/surfaceops-designer-review-ui.md)
+records the implemented target-specific proof for the local-live Button variants
+designer review loop. It consumes accepted designer-workflow-trace, P4 decision,
+and `surfaceops-kanban-live` evidence, emits a deterministic target selection,
+workbench, decision receipt, report, and evidence, and has a separate Chromium
+browser-functional gate that starts real local `kanban.cards` plus a proof-only
+loopback SurfaceOps review server. It does not claim production SurfaceOps,
+production `kanban.cards`, hosted persistence, production auth, webhooks, broad
+production adapters, SDKs, A2UI, live JudgmentKit, work execution, or product
+adoption.
+
 Any implementation or roadmap-status claim should cite the phase proof command, evidence path, evidence `status`, promotion status, and relevant CI gate. Generated demos may help present the claim, but demos are not proof authority.
 
 ## P0 Focus
