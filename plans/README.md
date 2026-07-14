@@ -2,10 +2,10 @@
 
 For product vision, authority taxonomy, roadmap sequence, surface roles, and agent operating rules, read [Surfaces Platform Vision And Roadmap](../VISION.md) first. This index is the mechanical contract reference for phase subplans. Phase subplans add phase-local deltas and mechanics only. Developer and agent documentation obligations for `surfaces.dev` are tracked in [Surfaces.dev Documentation Tracking](surfaces-dev.md).
 
-These subplans define the Surfaces Platform proof contracts and their materialized schemas, fixtures, artifacts, demos, scripts, and tests. P0 specifies the first executable catalog proof, P1 specifies the first runtime projection proof, P2 specifies bounded real design-system ingestion, P3 specifies inert agent orchestration proof, P4 specifies review and judgment proof without turning derived consumers into new authority, and P5 specifies the bounded `surfaces-protocol-static` protocol-envelope proof plus the sibling `surfaces-native-static` native-packet proof. The source-conformance subplan specifies a target-specific declared-source conformance proof over accepted P2 evidence. Product Designer Workflow Trace specifies the implemented non-numbered trace target over accepted P2, source-conformance, P3, P4, protocol, and native evidence. SurfaceOps Kanban Static specifies the implemented non-numbered target over accepted P3/P4 evidence and a manifest-declared local `kanban.cards` substrate contract. SurfaceOps Kanban Live specifies the implemented non-numbered target for a local-loopback live `kanban.cards` API/browser proof over accepted P3/P4 evidence and a hash-bound API manifest. SurfaceOps Designer Review UI specifies the implemented non-numbered target for the local-live Button variants inspection workbench and rationale-required blocked receipt mirrored to `kanban.cards` over accepted designer-workflow, P4, and kanban-live evidence. Future targets remain planned until they add their own complete proof shape and passing evidence.
+These subplans define the Surfaces Platform proof contracts and their materialized schemas, fixtures, artifacts, demos, scripts, and tests. P0 specifies the first executable catalog proof, P1 specifies the first runtime projection proof, P2 specifies bounded real design-system ingestion, P3 specifies inert agent orchestration proof, P4 specifies review and judgment proof without turning derived consumers into new authority, and P5 specifies the bounded `surfaces-protocol-static` protocol-envelope proof plus the sibling `surfaces-native-static` native-packet proof. The source-conformance subplan specifies a target-specific declared-source conformance proof over accepted P2 evidence. Product Designer Workflow Trace specifies the implemented non-numbered trace target over accepted P2, source-conformance, P3, P4, protocol, and native evidence. SurfaceOps Kanban Static specifies the implemented non-numbered target over accepted P3/P4 evidence and a manifest-declared local `kanban.cards` substrate contract. SurfaceOps Kanban Live specifies the implemented non-numbered target for a local-loopback live `kanban.cards` API/browser proof over accepted P3/P4 evidence and a hash-bound API manifest. SurfaceOps Designer Review UI specifies the implemented non-numbered target for the local-live Button variants inspection workbench and rationale-required blocked receipt mirrored to `kanban.cards` over accepted designer-workflow, P4, and kanban-live evidence. Capability Index specifies the implemented non-numbered discovery and read-only verification target over the 12 proof targets that existed before it. Future targets remain planned until they add their own complete proof shape and passing evidence.
 
 ## Roadmap Status Snapshot
-The current implemented proof roadmap is P0-P5, where P5 means only the `surfaces-protocol-static` and `surfaces-native-static` proof-only slices. The repo also includes the declared-source conformance, designer-workflow-trace, `surfaceops-kanban-static`, `surfaceops-kanban-live`, and `surfaceops-designer-review-ui` target proofs listed in [VISION.md](../VISION.md#current-roadmap-proof-snapshot). The canonical status snapshot lives in `VISION.md`, and the human-readable value map lives in [Usability And Value Evidence Plan](usability-value-evidence.md). Future P5 targets such as A2UI conformance, production APIs, SDKs, live protocol services, live native runtimes, production SurfaceOps, production `kanban.cards` sync, Auth0 delegated production auth, hosted persistence, or live JudgmentKit remain planned until they add their own target-specific schema, fixture, diagnostics, command contract, report or artifact path, evidence path, demo boundary, CI gate, and passing evidence.
+The current implemented proof roadmap is P0-P5, where P5 means only the `surfaces-protocol-static` and `surfaces-native-static` proof-only slices. The repo also includes the declared-source conformance, designer-workflow-trace, `surfaceops-kanban-static`, `surfaceops-kanban-live`, `surfaceops-designer-review-ui`, and capability-index target proofs listed in [VISION.md](../VISION.md#current-roadmap-proof-snapshot). The capability index covers the 12 targets that existed before it and intentionally stays outside its own rows. Its seven planned groups are roadmap visibility only. The canonical status snapshot lives in `VISION.md`, the outcome tracker lives in [PROGRESS.md](../PROGRESS.md), and the human-readable value map lives in [Usability And Value Evidence Plan](usability-value-evidence.md). Future P5 targets such as A2UI conformance, production APIs, SDKs, live protocol services, live native runtimes, production SurfaceOps, production `kanban.cards` sync, Auth0 delegated production auth, hosted persistence, or live JudgmentKit remain planned until they add their own target-specific schema, fixture, diagnostics, command contract, report or artifact path, evidence path, demo boundary, CI gate, and passing evidence.
 
 ## Cross-Cutting Documentation
 These documents are subordinate to `VISION.md` and support the phase plans without redefining authority or proof status.
@@ -23,6 +23,7 @@ These documents are subordinate to `VISION.md` and support the phase plans witho
 11. [SurfaceOps Kanban Static Proof Target](surfaceops-kanban-static.md)
 12. [SurfaceOps Kanban Live Proof Target](surfaceops-kanban-live.md)
 13. [SurfaceOps Designer Review UI Proof Target](surfaceops-designer-review-ui.md)
+14. [Capability Index Proof Target](capability-index.md)
 
 The curated design-partner testing program and templates under `plans/design-partner-testing/` are also subordinate to `VISION.md`, `PLAN.md`, and passing phase evidence. Treat them as non-proof research and planning surfaces for partner task design, synthetic dry runs, feedback capture, scorecards, and synthesis. They may point testers to evidence-backed demos for inspection, but they must not create implementation claims, proof status, catalog authority, or demo authority.
 
@@ -77,6 +78,14 @@ evidence close and hash-bind their declared inputs and outputs. It does not
 claim production SurfaceOps, production `kanban.cards`, hosted persistence,
 production auth, webhooks, broad production adapter behavior, SDKs, A2UI, live
 JudgmentKit, work execution, or product adoption.
+
+The capability-index proof target is implemented for deterministic discovery
+and read-only verification across P0, P1, P2, P3, P4, P5 protocol, P5 native,
+declared-source conformance, designer-workflow trace, SurfaceOps kanban static,
+SurfaceOps kanban live, and the SurfaceOps designer review UI. It does not
+self-index. Its seven planned groups have no proof command or evidence claim,
+and passing capability-index evidence proves the index contract rather than
+the indexed targets.
 
 ## P0 Dependency Order
 1. [Runtime Catalog v0](runtime-catalog-v0.md)
@@ -159,6 +168,19 @@ The source-conformance subplans define an implemented proof-only declared-source
 
 1. [Declared Source Conformance Proof](source-conformance/README.md)
 2. [Source Conformance Validation And Evidence](source-conformance/validation-evidence.md)
+
+## Capability Index Dependency Order
+
+1. [Capability Index Proof Target](capability-index.md)
+2. The 12 accepted target evidence files declared by the capability fixture
+3. `fixtures/capability-index/expectations.manifest.json`
+4. `artifacts/capability-index/capability-index.json`
+5. `artifacts/capability-index/capability-index-report.json`
+6. `artifacts/capability-index/evidence.json`
+
+The capability-index proof runs after its indexed target evidence exists. The
+`npm run status` entrypoint verifies tracked output read-only and must not
+materialize or regenerate any target.
 
 ## Designer Workflow Trace Contract Summary
 The designer-workflow-trace target consumes accepted P2 ingestion evidence/catalog/report, source-conformance evidence/report/authority/review queue refs, P3 evidence/review queue, P4 review and evaluation evidence, and the implemented P5 protocol/native evidence. It emits `trace-selection.json`, `designer-workflow-trace-report.json`, and `evidence.json` under `artifacts/designer-workflow-trace`.
