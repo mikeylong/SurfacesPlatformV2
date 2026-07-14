@@ -81,6 +81,11 @@ The diagnostic registry covers:
   source refs;
 - unresolved Button source authority conflicts;
 - ambiguous Button source mappings routed to review;
+- declared forked Button variant exceptions routed to review by
+  `SOURCE_FORKED_VARIANT_REVIEW_REQUIRED`;
+- undocumented fork drift blocked by `SOURCE_EXCEPTION_UNDECLARED`;
+- forked Button source refs without exception metadata blocked by
+  `SOURCE_EXCEPTION_METADATA_MISSING`;
 - review-required routing;
 - missing review owner, rationale, or expiry metadata;
 - missing declared review-policy source ref for review-required output;
@@ -102,6 +107,12 @@ Given accepted P2 evidence and catalog, the manifest-declared local source bundl
 - route ambiguous Button source mappings to non-executable review with
   `SOURCE_MAPPING_AMBIGUOUS`, preserving the actual conflicting Button source
   refs in `requiredSourceRefs`;
+- route declared forked Button variant exceptions to non-executable review with
+  `SOURCE_FORKED_VARIANT_REVIEW_REQUIRED`, preserving the forked source,
+  exception-policy, and review-policy refs in `requiredSourceRefs`;
+- block undocumented fork drift with `SOURCE_EXCEPTION_UNDECLARED`;
+- block forked source refs that omit exception metadata with
+  `SOURCE_EXCEPTION_METADATA_MISSING`;
 - preserve review-required rows as non-executable output with owner, rationale, and canonical future expiry metadata;
 - require review-required output to include the declared review-policy source ref;
 - block expired or non-canonical review expiry metadata with `SOURCE_REVIEW_EXPIRED`;

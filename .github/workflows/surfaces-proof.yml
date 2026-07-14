@@ -144,6 +144,129 @@ jobs:
       - name: Run P5 protocol contract gate
         run: npm run check:p5:protocol:ci:phase
 
+  surfaceops-kanban-static-proof:
+    runs-on: ubuntu-latest
+    needs: p4-proof
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run SurfaceOps kanban static contract gate
+        run: npm run check:surfaceops-kanban-static:ci:phase
+
+  surfaceops-kanban-static-browser-functional:
+    runs-on: ubuntu-latest
+    needs: surfaceops-kanban-static-proof
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Chromium for browser functional proof
+        run: npx playwright install --with-deps chromium
+
+      - name: Run SurfaceOps kanban browser functional proof
+        run: npm run check:surfaceops-kanban-static:browser
+
+      - name: Upload SurfaceOps kanban browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surfaceops-kanban-static-browser-functional-evidence
+          path: output/playwright/surfaceops-kanban-static/
+
+  surfaceops-kanban-live-proof:
+    runs-on: ubuntu-latest
+    needs: p4-proof
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run SurfaceOps kanban live contract gate
+        run: npm run check:surfaceops-kanban-live:ci:phase
+
+  surfaceops-kanban-live-browser-functional:
+    runs-on: ubuntu-latest
+    needs: surfaceops-kanban-live-proof
+    permissions:
+      contents: read
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - name: Check out kanban.cards
+        uses: actions/checkout@v5
+        with:
+          repository: Surfaces-Platform/kanban.cards
+          ref: 3b2a6f78693f0032439a1149eaed896f532aac09
+          path: kanban.cards
+          token: ${{ secrets.KANBAN_CARDS_READ_TOKEN }}
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install kanban.cards dependencies
+        run: npm ci
+        working-directory: kanban.cards
+
+      - name: Build kanban.cards browser bundle
+        run: npm run build
+        working-directory: kanban.cards
+
+      - name: Install Chromium for browser functional proof
+        run: npx playwright install --with-deps chromium
+
+      - name: Run SurfaceOps kanban live browser functional proof
+        env:
+          KANBAN_CARDS_ROOT: kanban.cards
+        run: npm run check:surfaceops-kanban-live:browser
+
+      - name: Upload SurfaceOps kanban live browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surfaceops-kanban-live-browser-functional-evidence
+          path: output/playwright/surfaceops-kanban-live/
+
   p5-native-proof:
     runs-on: ubuntu-latest
     needs: p5-protocol-proof

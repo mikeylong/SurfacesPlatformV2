@@ -21,6 +21,7 @@ export const SC_P2_CATALOG_PATH = "artifacts/p2/governed-catalog.json";
 export const SC_COMMAND = "interfacectl surfaces source-conformance proof";
 export const SC_CONTRACT_ID = "surfaces-source-conformance-proof";
 export const SC_REVIEW_POLICY_SOURCE_REF = "declared-source://source-conformance/governance/review-policy.json#/";
+export const SC_EXCEPTION_POLICY_SOURCE_REF = "declared-source://source-conformance/governance/exception-policy.json#/";
 export const SC_SOURCE_PRECEDENCE_POLICY_SOURCE_REF = "declared-source://source-conformance/policies/source-precedence.json#/";
 
 export const SC_ENVIRONMENT = Object.freeze({
@@ -117,6 +118,21 @@ export const SC_SOURCE_DOCUMENTS = {
     ],
     notes: "Acquired system B Button source is declared for source-precedence conflict coverage only."
   },
+  "components/button-forked-variant.json": {
+    schemaId: "declared-source-document.v0",
+    version: SC_VERSION,
+    documentId: "button-forked-variant",
+    sourceType: "component",
+    componentId: "Button",
+    sourceRef: "declared-source://source-conformance/components/button-forked-variant.json#/",
+    authoritativeFields: ["variants", "tokens", "actions", "exceptionRouting"],
+    policyRefs: [
+      SC_EXCEPTION_POLICY_SOURCE_REF,
+      SC_REVIEW_POLICY_SOURCE_REF,
+      "declared-source://source-conformance/policies/accessibility.json#/"
+    ],
+    notes: "Forked Button variants are supporting declared sources only when bound to exception policy and non-executable review routing."
+  },
   "components/in-line-alert.json": {
     schemaId: "declared-source-document.v0",
     version: SC_VERSION,
@@ -166,6 +182,20 @@ export const SC_SOURCE_DOCUMENTS = {
     ],
     notes: "Button source conflicts are resolved only by explicit declared precedence or non-executable review routing."
   },
+  "governance/exception-policy.json": {
+    schemaId: "declared-source-document.v0",
+    version: SC_VERSION,
+    documentId: "exception-policy",
+    sourceType: "exception-policy",
+    sourceRef: SC_EXCEPTION_POLICY_SOURCE_REF,
+    requirements: [
+      "forked-button-variant-requires-declared-exception-policy",
+      "forked-button-variant-requires-review-policy",
+      "undocumented-fork-drift-blocks"
+    ],
+    requiredReviewMetadata: ["owner", "rationale", "expiresAt"],
+    notes: "Declared forked source material cannot be promoted unattended; undocumented fork drift blocks."
+  },
   "governance/review-policy.json": {
     schemaId: "declared-source-document.v0",
     version: SC_VERSION,
@@ -176,6 +206,7 @@ export const SC_SOURCE_DOCUMENTS = {
       "source-precedence-ambiguous",
       "source-mapping-ambiguous",
       "brand-exception-requested",
+      "forked-variant-exception-requested",
       "new-action-semantics-requested",
       "accessibility-judgment-required"
     ],
@@ -307,6 +338,43 @@ export const SC_DIAGNOSTIC_ROWS = [
     severity: "review"
   }),
   diagnosticRow({
+    code: "SOURCE_FORKED_VARIANT_REVIEW_REQUIRED",
+    canonicalMessage: "Declared forked Button variant source requires exception policy and human review before unattended promotion.",
+    stage: "review",
+    phase: "source-exception-governance",
+    artifactPath: "fixtures/source-conformance/review/button-forked-exception.source-conformance.json",
+    jsonPointer: "/exception",
+    sourceRef: SC_EXCEPTION_POLICY_SOURCE_REF,
+    validationResult: "review_required",
+    promotionStatus: "review_required",
+    fixtureCoverage: "review/button-forked-exception.source-conformance.json",
+    severity: "review"
+  }),
+  diagnosticRow({
+    code: "SOURCE_EXCEPTION_UNDECLARED",
+    canonicalMessage: "Forked Button source drift must declare exception policy, forked source, and review routing before promotion.",
+    stage: "conformance",
+    phase: "source-exception-governance",
+    artifactPath: "fixtures/source-conformance/invalid/button-undocumented-fork-drift.source-conformance.json",
+    jsonPointer: "/exception/policyRef",
+    sourceRef: SC_EXCEPTION_POLICY_SOURCE_REF,
+    validationResult: "invalid",
+    promotionStatus: "blocked",
+    fixtureCoverage: "invalid/button-undocumented-fork-drift.source-conformance.json"
+  }),
+  diagnosticRow({
+    code: "SOURCE_EXCEPTION_METADATA_MISSING",
+    canonicalMessage: "Forked Button source refs must include explicit exception metadata before promotion.",
+    stage: "conformance",
+    phase: "source-exception-governance",
+    artifactPath: "fixtures/source-conformance/invalid/button-forked-exception-missing.source-conformance.json",
+    jsonPointer: "/exception",
+    sourceRef: SC_EXCEPTION_POLICY_SOURCE_REF,
+    validationResult: "invalid",
+    promotionStatus: "blocked",
+    fixtureCoverage: "invalid/button-forked-exception-missing.source-conformance.json"
+  }),
+  diagnosticRow({
     code: "SOURCE_REVIEW_OWNER_MISSING",
     canonicalMessage: "Review-required source output must include owner, rationale, and expiry metadata.",
     stage: "review",
@@ -414,6 +482,17 @@ export const SC_EXPECTATION_ROWS = [
     jsonPointer: "/review"
   }),
   expectationRow({
+    fixturePath: "fixtures/source-conformance/review/button-forked-exception.source-conformance.json",
+    kind: "review",
+    stage: "review",
+    phase: "source-exception-governance",
+    expectedResult: "review_required",
+    promotionStatus: "review_required",
+    diagnosticCodes: ["SOURCE_FORKED_VARIANT_REVIEW_REQUIRED"],
+    artifactPath: "artifacts/source-conformance/source-review-queue.json",
+    jsonPointer: "/exception"
+  }),
+  expectationRow({
     fixturePath: "fixtures/source-conformance/review/source-mapping-ambiguous.source-conformance.json",
     kind: "review",
     stage: "review",
@@ -478,6 +557,28 @@ export const SC_EXPECTATION_ROWS = [
     diagnosticCodes: ["SOURCE_AUTHORITY_CONFLICT"],
     artifactPath: "fixtures/source-conformance/invalid/source-authority-conflict.source-conformance.json",
     jsonPointer: "/authorityConflict"
+  }),
+  expectationRow({
+    fixturePath: "fixtures/source-conformance/invalid/button-undocumented-fork-drift.source-conformance.json",
+    kind: "invalid",
+    stage: "conformance",
+    phase: "source-exception-governance",
+    expectedResult: "invalid",
+    promotionStatus: "blocked",
+    diagnosticCodes: ["SOURCE_EXCEPTION_UNDECLARED"],
+    artifactPath: "fixtures/source-conformance/invalid/button-undocumented-fork-drift.source-conformance.json",
+    jsonPointer: "/exception/policyRef"
+  }),
+  expectationRow({
+    fixturePath: "fixtures/source-conformance/invalid/button-forked-exception-missing.source-conformance.json",
+    kind: "invalid",
+    stage: "conformance",
+    phase: "source-exception-governance",
+    expectedResult: "invalid",
+    promotionStatus: "blocked",
+    diagnosticCodes: ["SOURCE_EXCEPTION_METADATA_MISSING"],
+    artifactPath: "fixtures/source-conformance/invalid/button-forked-exception-missing.source-conformance.json",
+    jsonPointer: "/exception"
   }),
   expectationRow({
     fixturePath: "fixtures/source-conformance/invalid/review-owner-missing.source-conformance.json",
@@ -675,6 +776,29 @@ export function buildSourceConformanceFixtures() {
       expiresAt: "1970-01-31T00:00:00.000Z"
     }
   });
+  const forkedException = sourceConformanceFixture({
+    fixtureId: "button-forked-exception",
+    componentId: "Button",
+    sourceRef: "declared-source://source-conformance/components/button.json#/",
+    requiredSourceRefs: [
+      "declared-source://source-conformance/components/button.json#/",
+      "declared-source://source-conformance/components/button-forked-variant.json#/",
+      SC_EXCEPTION_POLICY_SOURCE_REF,
+      SC_REVIEW_POLICY_SOURCE_REF
+    ],
+    exception: {
+      exceptionType: "forked-button-variant",
+      variantSourceRef: "declared-source://source-conformance/components/button-forked-variant.json#/",
+      policyRef: SC_EXCEPTION_POLICY_SOURCE_REF,
+      governanceState: "declared-exception"
+    },
+    review: {
+      required: true,
+      owner: "design-systems-governance",
+      rationale: "Forked Button variant requires declared exception policy and source-owner review.",
+      expiresAt: "1970-01-31T00:00:00.000Z"
+    }
+  });
   const precedenceAccepted = sourceConformanceFixture({
     fixtureId: "button-source-precedence-accepted",
     componentId: "Button",
@@ -727,6 +851,7 @@ export function buildSourceConformanceFixtures() {
     "valid/in-line-alert-allowed.source-conformance.json": alert,
     "valid/button-source-precedence-accepted.source-conformance.json": precedenceAccepted,
     "review/brand-exception.source-conformance.json": review,
+    "review/button-forked-exception.source-conformance.json": forkedException,
     "review/source-mapping-ambiguous.source-conformance.json": ambiguousMapping,
     "invalid/missing-source-ref.source-conformance.json": {
       ...deepClone(button),
@@ -770,6 +895,37 @@ export function buildSourceConformanceFixtures() {
           "declared-source://source-conformance/components/button-acquired-b.json#/"
         ],
         resolutionRule: null
+      }
+    },
+    "invalid/button-undocumented-fork-drift.source-conformance.json": {
+      ...deepClone(forkedException),
+      fixtureId: "button-undocumented-fork-drift",
+      requiredSourceRefs: [
+        "declared-source://source-conformance/components/button.json#/",
+        "declared-source://source-conformance/components/button-forked-variant.json#/"
+      ],
+      exception: {
+        exceptionType: "forked-button-variant",
+        variantSourceRef: "declared-source://source-conformance/components/button-forked-variant.json#/",
+        policyRef: null,
+        governanceState: "undocumented-drift"
+      },
+      review: {
+        required: false,
+        owner: null,
+        rationale: null,
+        expiresAt: null
+      }
+    },
+    "invalid/button-forked-exception-missing.source-conformance.json": {
+      ...deepClone(forkedException),
+      fixtureId: "button-forked-exception-missing",
+      exception: null,
+      review: {
+        required: false,
+        owner: null,
+        rationale: null,
+        expiresAt: null
       }
     },
     "invalid/review-owner-missing.source-conformance.json": {
@@ -960,6 +1116,7 @@ function sourceConformanceFixture(overrides = {}) {
     },
     claims: overrides.claims || Object.fromEntries(SC_FORBIDDEN_CLAIM_KEYS.map((key) => [key, false])),
     authorityConflict: overrides.authorityConflict || null,
+    exception: overrides.exception ?? null,
     provenance: provenance("interfacectl-source-conformance-materialize", [overrides.sourceRef].filter(Boolean))
   };
 }
@@ -987,6 +1144,9 @@ function diagnosticSourceForStage(stage) {
 
 function suggestedActionForCode(code) {
   if (code === "SOURCE_REVIEW_EXPIRED") return "Renew source-owner approval and canonical expiry metadata before handoff or promotion.";
+  if (code === "SOURCE_EXCEPTION_UNDECLARED") return "Declare the forked variant source, exception policy ref, and review routing before promotion.";
+  if (code === "SOURCE_EXCEPTION_METADATA_MISSING") return "Add explicit forked Button exception metadata before promotion.";
+  if (code === "SOURCE_FORKED_VARIANT_REVIEW_REQUIRED") return "Keep the forked Button exception non-executable with exception-policy and review-policy refs, owner, rationale, and expiry metadata.";
   if (code === "SOURCE_REVIEW_POLICY_REF_MISSING") return "Bind review-required output to the declared review policy source ref.";
   if (code === "SOURCE_MAPPING_AMBIGUOUS") return "Route the ambiguous source mapping to non-executable review with source-precedence and review-policy refs, owner, rationale, and expiry metadata.";
   if (code.includes("UPSTREAM")) return "Restore accepted P2 catalog and evidence before source conformance proof continues.";
@@ -1057,6 +1217,7 @@ function resultRowSchema() {
     jsonPointer: { type: "string" },
     componentId: { type: ["string", "null"] },
     authorityConflict: authorityConflictSchema(),
+    exception: exceptionSchema(),
     reviewQueueItemId: { type: ["string", "null"] },
     review: {
       oneOf: [
@@ -1070,7 +1231,7 @@ function resultRowSchema() {
     },
     requiredSourceRefs: { type: "array", items: sourceRefSchema(false) },
     matched: { type: "boolean" }
-  }, ["fixturePath", "kind", "stage", "phase", "expectedResult", "actualResult", "promotionStatus", "diagnosticCodes", "artifactPath", "jsonPointer", "componentId", "authorityConflict", "reviewQueueItemId", "review", "requiredSourceRefs", "matched"]);
+  }, ["fixturePath", "kind", "stage", "phase", "expectedResult", "actualResult", "promotionStatus", "diagnosticCodes", "artifactPath", "jsonPointer", "componentId", "authorityConflict", "exception", "reviewQueueItemId", "review", "requiredSourceRefs", "matched"]);
 }
 
 function expectationRowSchema() {
@@ -1274,8 +1435,9 @@ function sourceConformanceFixtureSchema() {
     review: reviewMetadataSchema(),
     claims: claimsSchema(),
     authorityConflict: authorityConflictSchema(),
+    exception: exceptionSchema(),
     provenance: provenanceSchema()
-  }, ["schemaId", "version", "fixtureId", "componentId", "sourceRef", "requiredSourceRefs", "proposedUsage", "review", "claims", "authorityConflict", "provenance"]);
+  }, ["schemaId", "version", "fixtureId", "componentId", "sourceRef", "requiredSourceRefs", "proposedUsage", "review", "claims", "authorityConflict", "exception", "provenance"]);
 }
 
 function authorityConflictSchema() {
@@ -1303,6 +1465,20 @@ function authorityConflictSchema() {
         conflictingRefs,
         resolutionRule: { type: "null" }
       }, ["conflictingRefs", "resolutionRule"]),
+      { type: "null" }
+    ]
+  };
+}
+
+function exceptionSchema() {
+  return {
+    oneOf: [
+      objectSchema(null, {
+        exceptionType: { const: "forked-button-variant" },
+        variantSourceRef: sourceRefSchema(false),
+        policyRef: sourceRefSchema(true),
+        governanceState: { enum: ["declared-exception", "undocumented-drift"] }
+      }, ["exceptionType", "variantSourceRef", "policyRef", "governanceState"]),
       { type: "null" }
     ]
   };

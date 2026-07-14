@@ -6,7 +6,33 @@ Read [Surfaces Platform Vision And Roadmap](VISION.md) before selecting or imple
 ## Plan Scope
 Subordinate to [VISION.md](VISION.md), this plan tracks the mechanical proof contracts for compiling design-system source material into governed UI contracts for bounded generation, CI/CD validation, evidence review, and runtime-safe rendering.
 
-Cross-cutting product and value documentation lives in [Product Portfolio Boundaries](plans/product-portfolio-boundaries.md), [SurfaceOps Product Brief](plans/surfaceops-product-brief.md), [SurfaceOps UI Decisions And Review Criteria](plans/surfaceops-ui-decisions-review-criteria.md), [Product Designer Workflow](plans/product-designer-workflow.md), [Product Designer Workflow Trace](plans/product-designer-workflow-trace.md), and [Usability And Value Evidence Plan](plans/usability-value-evidence.md). Those files are subordinate to `VISION.md` and must not redefine product authority, roadmap sequence, or implemented proof status.
+Cross-cutting product and value documentation lives in [Product Portfolio Boundaries](plans/product-portfolio-boundaries.md), [SurfaceOps Product Brief](plans/surfaceops-product-brief.md), [SurfaceOps UI Decisions And Review Criteria](plans/surfaceops-ui-decisions-review-criteria.md), [SurfaceOps Button Variants Journey](plans/surfaceops-button-variants-journey.md), [Product Designer Workflow](plans/product-designer-workflow.md), [Product Designer Workflow Trace](plans/product-designer-workflow-trace.md), and [Usability And Value Evidence Plan](plans/usability-value-evidence.md). Those files are subordinate to `VISION.md` and must not redefine product authority, roadmap sequence, or implemented proof status.
+
+[Design-System Readiness Plan](plans/design-system-readiness.md) records the
+planning-only checklist for testing or supporting additional agent-friendly
+design-system candidates such as broader Spectrum slices or Astryx. It does not
+create implementation support, a proof command, schemas, fixtures, artifacts,
+evidence, CI gates, or product adoption claims.
+
+[SurfaceOps Kanban Static Proof Target](plans/surfaceops-kanban-static.md)
+records the implemented target-specific proof for projecting accepted P3/P4
+SurfaceOps evidence into inert `kanban.cards` board-ready records under a
+manifest-declared local substrate contract, with generated demo output and a
+separate Chromium browser-functional recording gate for inspectability
+evidence. It does not create live SurfaceOps, live board sync, persistence,
+production adapters, APIs, SDKs, A2UI, or product adoption claims.
+
+[SurfaceOps Kanban Live Proof Target](plans/surfaceops-kanban-live.md)
+records the implemented target-specific proof for a local-loopback live
+`kanban.cards` integration. It consumes accepted P3/P4 evidence and a
+hash-bound `kanban.cards` API manifest, emits a SurfaceOps-owned target
+selection, API projection, operation plan, handoff record, adapter report, and
+evidence, and has a separate Chromium browser-functional gate that starts a
+real local `kanban.cards` server, drives API and browser interactions, records
+video, and writes hashed runtime evidence. It does not claim production
+SurfaceOps, production `kanban.cards`, Auth0 delegated production auth, hosted
+persistence, public APIs, SDKs, A2UI, live JudgmentKit, work execution, or
+product adoption.
 
 Any implementation or roadmap-status claim should cite the phase proof command, evidence path, evidence `status`, promotion status, and relevant CI gate. Generated demos may help present the claim, but demos are not proof authority.
 
@@ -647,7 +673,7 @@ The source-conformance subplans define a proof-only declared-source conformance 
 - Native P5 boundary: `surfaces-native-target-selection.v0`, `surfaces-native-projection.v0`, `surfaces-native-packet.v0`, `surfaces-native-report.v0`, and `surfaces-native-evidence.v0`, not a production native SDK, production API, native bridge, live runtime, A2UI clone, or expansion of `surfaces-protocol-static`.
 - Native proof consumes `artifacts/p5/protocol/evidence.json` as compatibility preflight only; authority remains accepted P2 catalog/evidence plus accepted P4 review/judgment evidence.
 - A2UI remains a downstream conformance or projection target only if a future P5 proof implements it with its own contract and evidence.
-- Production adapters, protocol APIs, SDKs, live protocol services, live SurfaceOps, and live JudgmentKit remain planned until target evidence passes for those specific targets.
+- Production adapters, protocol APIs, SDKs, live protocol services, production SurfaceOps, and live JudgmentKit remain planned until target evidence passes for those specific targets.
 - Future P5 targets must prove their own schemas, fixtures, diagnostics, command contract, artifacts, target report, evidence, demo, CI gate, non-goals, and acceptance criteria before they are described as implemented.
 
 ## Non-Goals For P0/P1

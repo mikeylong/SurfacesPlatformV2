@@ -41,6 +41,12 @@ Complete this setup before the session.
 - For declared-source proof-candidate discovery, prepare
   `plans/design-partner-testing/declared-source-conformance-review-proof.md`
   and keep its Status and Non-Goals sections attached to any excerpt.
+- For the revised Button retest, prepare
+  `plans/design-partner-testing/button-workflow-workbench.md` as a derived
+  inspection surface only. Use it to translate repo-owned Button evidence into
+  workflow language; do not treat it as proof authority or as a replacement for
+  evidence files, reports, schemas, fixtures, diagnostics, or generated
+  artifacts.
 - Prepare the evidence path list for the current proof loop:
   - `artifacts/p0/evidence.json`
   - `artifacts/p1/evidence.json`
@@ -83,6 +89,9 @@ Before the call:
   shown;
 - open the repo-owned docs, evidence files, and generated demos needed for the
   required stimulus pack;
+- open `plans/design-partner-testing/button-workflow-workbench.md` only as a
+  facilitator inspection aid for the revised Button retest, keeping the
+  evidence paths as the source of proof authority;
 - prepare external copies of the results capture and scorecard templates;
 - restate the no-partner-data rule to the facilitator and note taker.
 
@@ -93,6 +102,9 @@ During the call:
   from `VISION.md`: declare authority, compile governed contracts, generate
   inside the catalog boundary, inspect evidence, decide or revise at the
   authority layer, hand off proven target output, and govern changes over time;
+- when running the revised Button retest, use the Button workflow workbench to
+  orient the participant, then name the backing evidence path before discussing
+  any conclusion;
 - ask the diagnostic or review-required task before asking future-target
   questions;
 - ask the partner to distinguish evidence `status`, `promotionStatus`, demos,
@@ -196,6 +208,58 @@ stimulus-pack completion fields and the product-designer workflow coverage
 fields in the external results capture and scorecard.
 If any required task is skipped, mark the session for retest before treating
 Wave 1 as ready for Wave 2.
+
+## Revised Button Workbench Retest
+Use this short retest only after the Button workflow workbench has been prepared
+as a derived inspection surface. The retest remains docs-only, synthetic or
+moderated feedback material, not proof authority or partner validation.
+
+Run one moderated group retest session with one representative for each
+archetype from the moderated walkthrough: Northstar Group, AtlasWorks,
+LumenHouse, and the regulated-services partner. Score each representative
+separately across the seven prompts. Do not role-play missing representatives,
+do not score one participant across all four lenses, and do not aggregate
+partial sessions. If the retest is repeated across cohorts, each session must
+include all four representative lenses and pass on its own.
+
+Retest prompts:
+
+1. Declare design authority: "Using the Button workflow workbench, what
+   currently owns the Button scenario, what is missing or archetype-specific,
+   and which surfaced items are not authority?"
+2. Compile governed contracts: "Which proof result and evidence path turn
+   bounded source material into governed Button catalog authority?"
+3. Generate inside the catalog boundary: "Which Button outcomes are allowed,
+   review-required, or blocked, and why should unsupported behavior become
+   diagnostics or review rows instead of unattended generated UI?"
+4. Inspect evidence, not pixels: "What is the difference between evidence
+   `status`, `promotionStatus`, demos, reports, and future requests for this
+   Button case?"
+5. Decide or revise at the authority layer: "If the Button output is
+   unsupported, blocked, or review-required, what should change at the source,
+   mapping, policy, review ownership, or future proof scope, and what should
+   not be patched downstream?"
+6. Hand off only proven target output: "Which base Button protocol or native
+   static output is safe to inspect as proof-only handoff, which blocked or
+   expired exception is not handoff-allowed, and which API, SDK, runtime,
+   adapter, native bridge, or A2UI claims remain unproved?"
+7. Govern changes over time: "Fill the Change/Audit Packet for one source
+   authority, policy, review-state, or target-requirement change: what changed,
+   which Button outcome is affected, which evidence must regenerate, who owns
+   the action, what expiry or retention metadata applies, what release or
+   handoff impact applies, and which workbench, trace, demo, protocol, or native
+   view is not authority?"
+
+The revised retest passes only if all revised pass criteria hold:
+
+- aggregate score at least `46/56`;
+- each task at least `6/8`;
+- each representative at least `10/14`;
+- the govern-changes task includes a completed Change/Audit Packet in every
+  representative session;
+- no unresolved confusion about evidence versus pixels, authority-layer fixes
+  versus generated-output patches, or proof-only static output versus production
+  API, SDK, runtime, native bridge, adapter, or A2UI.
 
 ## Segment 1: Orientation
 Show:
