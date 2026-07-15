@@ -38,11 +38,23 @@ the capability-index target:
 | P4 deterministic review and judgment | `artifacts/p4/evidence.json` | `npm run check:p4:ci` |
 | P5 `surfaces-protocol-static` | `artifacts/p5/protocol/evidence.json` | `npm run check:p5:protocol:ci` |
 | P5 `surfaces-native-static` | `artifacts/p5/native/evidence.json` | `npm run check:p5:native:ci` |
-| Declared source conformance | `artifacts/source-conformance/evidence.json` | `npm run check:source-conformance:ci` |
+| Reusable declared-source conformance | `artifacts/source-family-packaging/evidence.json` | `npm run check:source-family-packaging:ci` |
 | Designer workflow trace | `artifacts/designer-workflow-trace/evidence.json` | `npm run check:designer-workflow-trace:ci` |
 | SurfaceOps kanban static | `artifacts/surfaceops-kanban-static/evidence.json` | `npm run check:surfaceops-kanban-static:ci` |
 | SurfaceOps kanban live | `artifacts/surfaceops-kanban-live/evidence.json` | `npm run check:surfaceops-kanban-live:ci` |
 | SurfaceOps designer review UI | `artifacts/surfaceops-designer-review-ui/evidence.json` | `npm run check:surfaceops-designer-review-ui:ci` |
+
+The declared-source-conformance row lists the canonical eight-artifact compiler
+output plus the ten aggregate package artifacts, including the captured second
+run and package report. The row points to aggregate package evidence while the
+canonical `artifacts/source-conformance/evidence.json` remains the direct input
+to designer-workflow-trace. The aggregate report records two fresh accepted
+compiler passes, one separately counted failing causal probe, the checked local
+JavaScript and runtime closure, and post-workspace candidate evidence
+verification. The row keeps `canAddAuthority: false` and names
+arbitrary connectors, broader P2 coverage, live crawling, and self-serve
+connection UI as non-capabilities. Neither governed catalog can broaden
+accepted P2 capability.
 
 The capability-index target does not index itself. Adding it as a thirteenth
 row would create a circular self-evidence boundary. Its own final evidence is

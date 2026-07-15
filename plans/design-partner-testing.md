@@ -197,7 +197,7 @@ Required product-designer workflow spine:
 
 | VISION workflow step | Wave 1 task | Repo-owned refs |
 | --- | --- | --- |
-| Declare design authority | Identify the source material and policy refs that govern the Button scenario. | `sources/p2/design-system-source/manifest.json`; `artifacts/p2/source-inventory.json`; `artifacts/p2/source-mapping.json`; `artifacts/source-conformance/source-authority-map.json` |
+| Declare design authority | Identify the checked source facts, precedence, policy refs, exception, and review owner that govern the Button scenario. | `sources/source-conformance/declared-source-bundle/governance/authority-profile.json`; `artifacts/source-conformance/source-fact-coverage.json`; `artifacts/source-conformance/authority-connection-report.json` |
 | Compile governed contracts | Confirm which proof command and evidence file turn source material into governed catalog output. | `artifacts/p2/evidence.json`; `artifacts/p2/governed-catalog.json`; `artifacts/p2/ingestion-report.json` |
 | Generate inside the catalog boundary | Explain why allowed, invalid, and review-required cases do not rely on agent inference. | `fixtures/p2/valid`; `fixtures/p2/invalid`; `fixtures/p2/review`; `artifacts/p2/ingestion-report.json` |
 | Inspect evidence, not only pixels | Name evidence, diagnostics, promotion status, reports, and demos for the scenario. | `artifacts/designer-workflow-trace/designer-workflow-trace-report.json`; `artifacts/designer-workflow-trace/evidence.json`; matching `demo/**` paths as presentation only |

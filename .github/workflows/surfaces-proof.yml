@@ -104,6 +104,26 @@ jobs:
       - name: Run source conformance contract gate
         run: npm run check:source-conformance:ci:phase
 
+  source-family-packaging-proof:
+    runs-on: ubuntu-latest
+    needs: source-conformance-proof
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run source-family packaging contract gate
+        run: npm run check:source-family-packaging:ci:phase
+
   p4-proof:
     runs-on: ubuntu-latest
     needs: p3-proof
@@ -290,7 +310,7 @@ jobs:
   designer-workflow-trace-proof:
     runs-on: ubuntu-latest
     needs:
-      - source-conformance-proof
+      - source-family-packaging-proof
       - p5-native-proof
 
     steps:

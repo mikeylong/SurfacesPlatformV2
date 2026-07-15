@@ -38,7 +38,7 @@ The current tracked phase evidence files report passing status for P0 through th
 | P4 | Deterministic review and judgment proof | `artifacts/p4/evidence.json` | `pass` | `blocked` | `demo/p4/index.html` |
 | P5 | `surfaces-protocol-static` inert protocol-envelope proof | `artifacts/p5/protocol/evidence.json` | `pass` | `review_required` | `demo/p5/protocol/index.html` |
 | P5 | `surfaces-native-static` inert native-packet proof | `artifacts/p5/native/evidence.json` | `pass` | `review_required` | `demo/p5/native/index.html` |
-| Target | Declared source conformance proof | `artifacts/source-conformance/evidence.json` | `pass` | `review_required` | none; report/evidence only |
+| Target | Reusable checked authority-profile and source-fact conformance proof for two compatible bundles | `artifacts/source-family-packaging/evidence.json` | `pass` | `review_required` | none; report/evidence only |
 | Target | Designer workflow trace evidence index | `artifacts/designer-workflow-trace/evidence.json` | `pass` | `blocked` | none; report/evidence only |
 
 The promotion status is not a marketing status. It is part of the proof contract: allowed work may proceed, review-required work stays inspectable but blocked from unattended promotion, and blocked work remains rejected by deterministic diagnostics or review policy.
@@ -48,6 +48,7 @@ P4's `status: "pass"` with `promotionStatus: "blocked"` is intentional in the cu
 ## Human Value Readout
 A reviewer should be able to demonstrate platform value by walking the evidence loop for a declared target:
 
+- Authority connection time: show both checked profiles, the two fresh accepted compiler executions, the post-workspace candidate evidence check, fact coverage, discovered conflicts, applied precedence, referenced-route owner exceptions, and connection reports; source changes that exceed P2 must block instead of silently changing either catalog.
 - Generation time: show the governed catalog, valid fixtures, invalid fixtures, review-required fixtures, and diagnostics that prevent unsupported UI from becoming hidden output.
 - CI/CD integration time: show the package gate, tracked drift check, untracked-output guard, evidence file, and proof-bearing workflow result for the phase.
 - Review time: show the P3 review queue, P4 decision ledger, JudgmentKit-shaped findings, diagnostics, and promotion status without claiming live SurfaceOps or live JudgmentKit behavior.

@@ -517,7 +517,9 @@ Given valid P2 ingestion evidence, the P2 governed catalog, valid P4 review/judg
 Native target selection records accepted P2/P4 authority in `upstreamRefs[]` and protocol compatibility evidence in `compatibilityPreflightRefs[]`. Native evidence keeps `artifacts/p5/protocol/evidence.json` out of native `boundaryRefs[]`; protocol evidence is a compatibility preflight ref only, not native authority.
 
 ## Declared Source Conformance Target
-The declared-source conformance proof is a target-specific proof-only expansion that consumes accepted P2 ingestion evidence and the P2 governed catalog. It proves that one manifest-declared local source bundle can be checked for source refs, source hashes, source authority conflicts, review-required routing, forbidden live/production claims, deterministic diagnostics, reports, and final evidence.
+The declared-source conformance target is a target-specific proof-only expansion that consumes accepted P2 ingestion evidence and the P2 governed catalog. The fact-level compiler turns a manifest-declared local source bundle and team-owned authority profile into fact coverage, precedence, policy bindings, exceptions, review ownership, actionable findings, and a non-expanding governed catalog with deterministic diagnostics and final evidence.
+
+The reusable source-family packaging proof runs that completed compiler over two checked, team-owned instances of the same fixed source-family layout without changing `src/source-conformance-contract.js` or `src/source-conformance-proof.js`. It executes the canonical and candidate bundles as two separate passing compiler runs, then records the causal authority-expansion rejection as a third, separately counted failing probe. The package proof stages real source copies in isolated workspaces, preserves the compiler's logical source namespace, captures the candidate run's eight artifacts, compares its six normalized source-fact tuples and nine immutable catalog fields with the accepted run and P2, and hash-binds the seven-file local JavaScript closure, Node 22 and package inputs, physical bundle, fixtures, boundaries, reports, and final evidence. Each normalized fact tuple binds the catalog pointer and hash to the primary logical fact ref and JCS value hash, the sorted supporting logical fact refs and JCS value hashes, conflict state, resolution, and status, so an allowed source-value change cannot pass only because the governed catalog value is unchanged. Referenced review routes determine the active owner; unreferenced route ordering cannot. A deterministic logical-to-persisted artifact remap reconstructs and re-verifies the captured candidate evidence after the original workspace is removed. Both bundles cover only Button and InLineAlert.
 
 It is not a new numbered roadmap phase, production adapter, public API, SDK, A2UI target, live ingestion path, live SurfaceOps workflow, live JudgmentKit invocation, native runtime, demo authority, or action execution path.
 
@@ -528,25 +530,51 @@ artifacts/p2/evidence.json
 artifacts/p2/governed-catalog.json
 sources/source-conformance/declared-source-bundle/manifest.json
 manifest-declared source files
+sources/source-conformance/declared-source-bundle/governance/authority-profile.json
 fixtures/source-conformance/expectations.manifest.json
   -> validate fixtures/source-conformance/mutations/*.json against expected upstream, source, and evidence failures
   -> validate fixtures/source-conformance/valid/*.json, review/*.json, and invalid/*.json
   -> artifacts/source-conformance/source-inventory.json
+  -> artifacts/source-conformance/source-fact-coverage.json
   -> artifacts/source-conformance/source-authority-map.json
   -> artifacts/source-conformance/source-review-queue.json
+  -> artifacts/source-conformance/governed-catalog.json
+  -> artifacts/source-conformance/authority-connection-report.json
   -> artifacts/source-conformance/source-conformance-report.json
   -> artifacts/source-conformance/evidence.json
+
+fixtures/source-family-packaging/package.fixture.json
+sources/source-family-packaging/team-owned-authority-bundle/manifest.json
+manifest-declared second-bundle source files
+artifacts/source-conformance/evidence.json
+artifacts/source-conformance/governed-catalog.json
+  -> run the canonical and candidate bundles through the unchanged compiler in separate fixed isolated logical layouts
+  -> record two accepted passes and one separately counted failing causal probe
+  -> artifacts/source-family-packaging/candidate-source-inventory.json
+  -> artifacts/source-family-packaging/candidate-source-fact-coverage.json
+  -> artifacts/source-family-packaging/candidate-source-authority-map.json
+  -> artifacts/source-family-packaging/candidate-source-review-queue.json
+  -> artifacts/source-family-packaging/candidate-governed-catalog.json
+  -> artifacts/source-family-packaging/candidate-authority-connection-report.json
+  -> artifacts/source-family-packaging/candidate-source-conformance-report.json
+  -> artifacts/source-family-packaging/candidate-source-conformance-evidence.json
+  -> artifacts/source-family-packaging/source-family-packaging-report.json
+  -> artifacts/source-family-packaging/evidence.json
 ```
 
 Implemented command:
 
 ```bash
 interfacectl surfaces source-conformance proof --source sources/source-conformance/declared-source-bundle --ingestion-evidence artifacts/p2/evidence.json --catalog artifacts/p2/governed-catalog.json --fixture fixtures/source-conformance --out artifacts/source-conformance
+
+interfacectl surfaces source-family-packaging proof --package fixtures/source-family-packaging/package.fixture.json --ingestion-evidence artifacts/p2/evidence.json --catalog artifacts/p2/governed-catalog.json --source-conformance-evidence artifacts/source-conformance/evidence.json --source-conformance-catalog artifacts/source-conformance/governed-catalog.json --fixture fixtures/source-family-packaging --out artifacts/source-family-packaging
 ```
 
-Given accepted P2 evidence and catalog output, the declared source bundle, and the source-conformance fixture set, the command emits the exact source-conformance artifact set, validates upstream hashes and source manifest hashes, validates every fixture against the expectations manifest, preserves review-required rows as non-executable evidence, records diagnostics before final evidence, and writes reproducible evidence with hashes and provenance for every source-conformance schema, consumed P2 schema, source file, fixture, upstream boundary ref, generated artifact, and final evidence artifact.
+Given accepted P2 evidence and catalog output, the declared source bundle, and the source-conformance fixture set, the base command emits the exact source-conformance artifact set, validates upstream and manifest hashes, validates every declared source document and profile, compares authoritative fact pointers with accepted P2 values, derives conflicts and precedence from source data, keeps declared exceptions non-executable and review-required, blocks source facts or catalog mutations that exceed P2 authority, and writes reproducible evidence with hashes and provenance for every schema, source file, fixture, boundary ref, generated artifact, and final evidence artifact.
 
-The proof currently has no generated demo. Use `source-conformance-report.json`, `source-review-queue.json`, `source-authority-map.json`, and `evidence.json` as report/evidence presentation refs, not as independent proof authority.
+Given the passing base evidence, the second package descriptor, and the source-family packaging fixture set, the package command must freshly execute both accepted bundles with the same checked implementation, preserve both source trees, match the fresh canonical output to the tracked primary artifacts, reject compiler, runtime, or source hash drift, reject an added `expressive` Button variant with `SOURCE_FACT_AUTHORITY_ESCALATION`, preserve the accepted P2 component and capability boundary, capture the candidate run, re-verify its persisted closure after the original workspace is removed, and emit passing aggregate evidence with `promotionStatus: "review_required"`.
+
+The target has no generated demo. `artifacts/source-family-packaging/evidence.json` is the indexed aggregate proof authority for reusable packaging. `artifacts/source-conformance/evidence.json` remains the authority for the original compiler run and the direct input to designer-workflow-trace. Reports, fact coverage, queues, maps, and captured candidate artifacts remain consumers of those evidence boundaries.
 
 ## Designer Workflow Trace Target
 The designer-workflow-trace proof is a non-numbered, cross-cutting proof-only target that consumes accepted P2, source-conformance, P3, P4, protocol, and native evidence. It emits one deterministic Button scenario index from design authority through governed catalog, diagnostics/review-required status, review/evaluation refs, static target handoff artifacts, and evidence status.

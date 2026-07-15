@@ -14,6 +14,8 @@ import {
 import {
   SC_ARTIFACT_PATHS,
   SC_ARTIFACT_ROOT,
+  SC_AUTHORITY_PROFILE_PATH,
+  SC_AUTHORITY_PROFILE_SOURCE_REF,
   SC_COMMAND,
   SC_CONTRACT_ID,
   SC_CONSUMED_SCHEMA_FILES,
@@ -167,12 +169,28 @@ export async function runSourceConformanceProof({
 
   const manifestRef = await sourceManifestRef(cwd);
   const declaredSourceRefs = await sourceFileRefs(cwd, manifest);
+  const sourceBundle = await loadDeclaredSourceBundle(cwd, manifest, validators);
+  const authorityProfile = sourceBundle.authorityProfile;
+  const authorityProfileRef = declaredSourceRefs.find((ref) => ref.path === SC_AUTHORITY_PROFILE_PATH);
+  if (!authorityProfileRef) {
+    throw contractError(`source conformance authority profile is missing: ${SC_AUTHORITY_PROFILE_PATH}`, 1);
+  }
   const inventory = buildSourceInventory({ manifestRef, declaredSourceRefs });
   assertSchema(validators, "declared-source-inventory.v0", inventory, `${outRoot}/source-inventory.json`);
   await writeCanonicalJson(path.join(cwd, outRoot, "source-inventory.json"), inventory);
   const inventoryRef = artifactRef(`${outRoot}/source-inventory.json`, "declared-source-inventory.v0", await canonicalFileHash(path.join(cwd, outRoot, "source-inventory.json")));
 
-  const authorityMap = buildAuthorityMap({ upstream });
+  const factCoverage = buildSourceFactCoverage({
+    authorityProfile,
+    authorityProfileRef,
+    sourceDocuments: sourceBundle.documentsBySourceRoot,
+    upstream
+  });
+  assertSchema(validators, "source-fact-coverage.v0", factCoverage, `${outRoot}/source-fact-coverage.json`);
+  await writeCanonicalJson(path.join(cwd, outRoot, "source-fact-coverage.json"), factCoverage);
+  const factCoverageRef = artifactRef(`${outRoot}/source-fact-coverage.json`, "source-fact-coverage.v0", await canonicalFileHash(path.join(cwd, outRoot, "source-fact-coverage.json")));
+
+  const authorityMap = buildAuthorityMap({ authorityProfile, authorityProfileRef, factCoverageRef, upstream });
   assertSchema(validators, "source-authority-map.v0", authorityMap, `${outRoot}/source-authority-map.json`);
   await writeCanonicalJson(path.join(cwd, outRoot, "source-authority-map.json"), authorityMap);
   const authorityMapRef = artifactRef(`${outRoot}/source-authority-map.json`, "source-authority-map.v0", await canonicalFileHash(path.join(cwd, outRoot, "source-authority-map.json")));
@@ -182,31 +200,77 @@ export async function runSourceConformanceProof({
   const validationResults = evaluateExpectations(fixtureRows, {
     declaredSourceRoots: new Set(manifest.sourceFiles.map((entry) => entry.sourceRefRoot)),
     catalogComponentIds: new Set(Object.keys(upstream.p2Catalog.components || {})),
+    p2Catalog: upstream.p2Catalog,
     componentSourceRoots,
-    primaryComponentSourceRoots: primaryComponentSourceRoots()
+    primaryComponentSourceRoots: primaryComponentSourceRoots(authorityProfile)
   });
-  const diagnostics = sortDiagnostics(validationResults.flatMap((row) => row.diagnostics));
-  const status = validationResults.every((row) => row.matched) ? "pass" : "fail";
-  if (status === "fail") {
+  const fixtureDiagnostics = validationResults.flatMap((row) => row.diagnostics);
+  const connectionDiagnostics = factCoverage.promotionStatus === "blocked"
+    ? [diagnosticForCode("SOURCE_FACT_AUTHORITY_ESCALATION")]
+    : [];
+  const diagnostics = sortDiagnostics(uniqueDiagnostics([...fixtureDiagnostics, ...connectionDiagnostics]));
+  const fixtureStatus = validationResults.every((row) => row.matched) ? "pass" : "fail";
+  if (fixtureStatus === "fail") {
     const mismatches = validationResults
       .filter((row) => !row.matched)
       .map((row) => `${row.fixturePath}: expected ${row.expectedResult}/${row.promotionStatus}/${row.expectedDiagnosticCodes.join(",") || "none"} got ${row.actualResult}/${row.promotionStatus}/${row.diagnosticCodes.join(",") || "none"}`);
     throw contractError(`source conformance validation expectation mismatch: ${mismatches.join("; ")}`, 1);
   }
-  const promotionStatus = aggregatePromotionStatus(validationResults);
+  const status = factCoverage.promotionStatus === "blocked" ? "fail" : "pass";
+  const promotionStatus = strictestPromotionStatus(
+    aggregatePromotionStatus(validationResults),
+    factCoverage.promotionStatus,
+    upstream.p2Catalog.governance?.promotionStatus || "allowed"
+  );
 
-  const reviewQueue = buildReviewQueue({ validationResults, diagnostics });
+  const reviewQueue = buildReviewQueue({ authorityProfile, validationResults, diagnostics });
   assertSchema(validators, "source-review-queue.v0", reviewQueue, `${outRoot}/source-review-queue.json`);
   await writeCanonicalJson(path.join(cwd, outRoot, "source-review-queue.json"), reviewQueue);
   const reviewQueueRef = artifactRef(`${outRoot}/source-review-queue.json`, "source-review-queue.v0", await canonicalFileHash(path.join(cwd, outRoot, "source-review-queue.json")));
 
   const runId = buildRunId({ manifest, expectations, command, args, upstream });
+  const governedCatalog = buildConnectedGovernedCatalog({
+    authorityProfile,
+    authorityProfileRef,
+    factCoverage,
+    factCoverageRef,
+    upstream
+  });
+  assertNonExpandingCatalog(upstream.p2Catalog, governedCatalog);
+  assertSchema(validators, "runtime-catalog.v0", governedCatalog, `${outRoot}/governed-catalog.json`);
+  await writeCanonicalJson(path.join(cwd, outRoot, "governed-catalog.json"), governedCatalog);
+  const governedCatalogRef = artifactRef(
+    `${outRoot}/governed-catalog.json`,
+    "runtime-catalog.v0",
+    await canonicalFileHash(path.join(cwd, outRoot, "governed-catalog.json")),
+    { sourceEvidenceHash: upstream.p2EvidenceRef.hash }
+  );
+
+  const connectionReport = buildAuthorityConnectionReport({
+    runId,
+    authorityProfile,
+    authorityProfileRef,
+    factCoverage,
+    factCoverageRef,
+    authorityMapRef,
+    reviewQueueRef,
+    governedCatalogRef,
+    status,
+    promotionStatus
+  });
+  assertSchema(validators, "authority-connection-report.v0", connectionReport, `${outRoot}/authority-connection-report.json`);
+  await writeCanonicalJson(path.join(cwd, outRoot, "authority-connection-report.json"), connectionReport);
+  const connectionReportRef = artifactRef(`${outRoot}/authority-connection-report.json`, "authority-connection-report.v0", await canonicalFileHash(path.join(cwd, outRoot, "authority-connection-report.json")));
+
   const report = buildReport({
     runId,
     upstream,
     inventoryRef,
+    factCoverageRef,
     authorityMapRef,
     reviewQueueRef,
+    governedCatalogRef,
+    connectionReportRef,
     validationResults,
     diagnostics,
     status,
@@ -223,11 +287,15 @@ export async function runSourceConformanceProof({
     command,
     args,
     manifestRef,
+    authorityProfileRef,
     declaredSourceRefs,
     upstream,
     inventoryRef,
+    factCoverageRef,
     authorityMapRef,
     reviewQueueRef,
+    governedCatalogRef,
+    connectionReportRef,
     reportRef,
     validationResults,
     diagnostics,
@@ -407,8 +475,16 @@ async function ensureSafeOutputDirectory(cwd, outRoot) {
 async function assertSourceManifest(cwd, manifest) {
   const expectedPaths = scSourcePaths().slice(1).map((entry) => entry.slice(`${SC_SOURCE_ROOT}/`.length)).sort();
   const manifestPaths = manifest.sourceFiles.map((entry) => entry.path).sort();
+  if (new Set(manifestPaths).size !== manifestPaths.length ||
+    new Set(manifest.sourceFiles.map((entry) => entry.sourceRefRoot)).size !== manifest.sourceFiles.length) {
+    throw contractError("source conformance manifest contains duplicate source paths or roots", 1);
+  }
   assertPathSet("source conformance manifest source files", manifestPaths, expectedPaths);
   for (const sourceFile of manifest.sourceFiles) {
+    const expectedRoot = `declared-source://source-conformance/${sourceFile.path}#/`;
+    if (sourceFile.sourceRefRoot !== expectedRoot) {
+      throw contractError(`declared source root does not match path: ${sourceFile.path}`, 1);
+    }
     const actualHash = await rawFileHash(path.join(cwd, SC_SOURCE_ROOT, sourceFile.path));
     if (sourceFile.sha256 !== actualHash) {
       throw contractError("Declared source file hash does not match the manifest.", 1);
@@ -469,56 +545,448 @@ function buildSourceInventory({ manifestRef, declaredSourceRefs }) {
   };
 }
 
-function buildAuthorityMap({ upstream }) {
+async function loadDeclaredSourceBundle(cwd, manifest, validators) {
+  const documentsBySourceRoot = new Map();
+  let authorityProfile = null;
+  for (const sourceFile of manifest.sourceFiles) {
+    const sourcePath = path.join(cwd, SC_SOURCE_ROOT, sourceFile.path);
+    const document = await readJson(sourcePath);
+    const expectedSourceRefRoot = `declared-source://source-conformance/${sourceFile.path}#/`;
+    if (sourceFile.sourceRefRoot !== expectedSourceRefRoot) {
+      throw contractError(`declared source root does not match path: ${sourceFile.path}`, 1);
+    }
+    if (sourceFile.path === "governance/authority-profile.json") {
+      assertSchema(validators, "source-authority-profile.v0", document, `${SC_SOURCE_ROOT}/${sourceFile.path}`);
+      if (sourceFile.sourceType !== "authority-profile" || document.sourceRef !== sourceFile.sourceRefRoot) {
+        throw contractError(`source authority profile identity mismatch: ${sourceFile.path}`, 1);
+      }
+      authorityProfile = document;
+      continue;
+    }
+    assertSchema(validators, "declared-source-document.v0", document, `${SC_SOURCE_ROOT}/${sourceFile.path}`);
+    if (document.sourceRef !== sourceFile.sourceRefRoot || document.sourceType !== sourceFile.sourceType) {
+      throw contractError(`declared source document identity mismatch: ${sourceFile.path}`, 1);
+    }
+    validateDeclaredSourceFacts(document, sourceFile.path);
+    documentsBySourceRoot.set(sourceFile.sourceRefRoot, { document, sourceFile });
+  }
+  if (!authorityProfile) {
+    throw contractError(`source conformance authority profile is missing: ${SC_AUTHORITY_PROFILE_PATH}`, 1);
+  }
+  validateAuthorityProfileRefs(authorityProfile, documentsBySourceRoot);
+  return { authorityProfile, documentsBySourceRoot };
+}
+
+function validateDeclaredSourceFacts(document, sourcePath) {
+  const factIds = new Set();
+  const pointers = new Set();
+  for (const [index, fact] of (document.facts || []).entries()) {
+    if (factIds.has(fact.factId) || pointers.has(fact.catalogPointer)) {
+      throw contractError(`declared source fact identity drift: ${sourcePath}`, 1);
+    }
+    const expectedFactRef = `${document.sourceRef}facts/${index}/value`;
+    if (fact.sourceRef !== expectedFactRef) {
+      throw contractError(`declared source fact ref does not belong to its document: ${fact.sourceRef}`, 1);
+    }
+    if (document.componentId && !fact.catalogPointer.startsWith(`/components/${document.componentId}/`)) {
+      throw contractError(`declared source fact pointer does not match component: ${fact.catalogPointer}`, 1);
+    }
+    factIds.add(fact.factId);
+    pointers.add(fact.catalogPointer);
+  }
+}
+
+function validateAuthorityProfileRefs(profile, documentsBySourceRoot) {
+  const declaredRoots = new Set(documentsBySourceRoot.keys());
+  declaredRoots.add(SC_AUTHORITY_PROFILE_SOURCE_REF);
+  const familyKindByRoot = new Map();
+  const assertDeclared = (sourceRef, label) => {
+    if (!declaredRoots.has(declaredSourceRootForRef(sourceRef))) {
+      throw contractError(`authority profile references undeclared source for ${label}: ${sourceRef}`, 1);
+    }
+  };
+  const uniqueIds = (rows, key, label) => {
+    const ids = rows.map((row) => row[key]);
+    if (new Set(ids).size !== ids.length) throw contractError(`authority profile has duplicate ${label}`, 1);
+  };
+  uniqueIds(profile.sourceFamilies, "sourceFamilyId", "source family ids");
+  uniqueIds(profile.componentBindings, "bindingId", "component binding ids");
+  uniqueIds(profile.componentBindings, "componentId", "component bindings");
+  uniqueIds(profile.policyBindings, "policyId", "policy binding ids");
+  uniqueIds(profile.reviewRoutes, "routeId", "review route ids");
+  uniqueIds(profile.exceptions, "exceptionId", "exception ids");
+  for (const family of profile.sourceFamilies) {
+    for (const ref of family.sourceRefs) {
+      assertDeclared(ref, `source family ${family.sourceFamilyId}`);
+      const root = declaredSourceRootForRef(ref);
+      if (root === SC_AUTHORITY_PROFILE_SOURCE_REF || familyKindByRoot.has(root)) {
+        throw contractError(`authority profile source family assignment is duplicated or invalid: ${ref}`, 1);
+      }
+      familyKindByRoot.set(root, family.kind);
+    }
+  }
+  for (const root of documentsBySourceRoot.keys()) {
+    if (!familyKindByRoot.has(root)) {
+      throw contractError(`authority profile source family coverage is missing: ${root}`, 1);
+    }
+  }
+  for (const binding of profile.componentBindings) {
+    assertDeclared(binding.primarySourceRef, `component binding ${binding.bindingId}`);
+    if (familyKindByRoot.get(declaredSourceRootForRef(binding.primarySourceRef)) !== "primary") {
+      throw contractError(`authority profile primary binding is outside the primary source family: ${binding.bindingId}`, 1);
+    }
+    for (const ref of binding.supportingSourceRefs) {
+      assertDeclared(ref, `component binding ${binding.bindingId}`);
+      if (familyKindByRoot.get(declaredSourceRootForRef(ref)) !== "supporting") {
+        throw contractError(`authority profile supporting binding is outside the supporting source family: ${binding.bindingId}`, 1);
+      }
+    }
+    assertDeclared(binding.precedence.policyRef, `component precedence ${binding.bindingId}`);
+    for (const ref of binding.precedence.orderedSourceRefs) assertDeclared(ref, `component precedence ${binding.bindingId}`);
+    for (const ref of binding.policyRefs) assertDeclared(ref, `component policy ${binding.bindingId}`);
+  }
+  for (const policy of profile.policyBindings) {
+    assertDeclared(policy.sourceRef, `policy binding ${policy.policyId}`);
+    if (familyKindByRoot.get(declaredSourceRootForRef(policy.sourceRef)) !== "policy") {
+      throw contractError(`authority profile policy binding is outside the policy source family: ${policy.policyId}`, 1);
+    }
+  }
+  for (const route of profile.reviewRoutes) {
+    assertDeclared(route.policyRef, `review route ${route.routeId}`);
+    if (familyKindByRoot.get(declaredSourceRootForRef(route.policyRef)) !== "policy") {
+      throw contractError(`authority profile review route is outside the policy source family: ${route.routeId}`, 1);
+    }
+  }
+  for (const exception of profile.exceptions) {
+    assertDeclared(exception.sourceRef, `exception ${exception.exceptionId}`);
+    assertDeclared(exception.policyRef, `exception ${exception.exceptionId}`);
+    if (familyKindByRoot.get(declaredSourceRootForRef(exception.sourceRef)) !== "exception") {
+      throw contractError(`authority profile exception is outside the exception source family: ${exception.exceptionId}`, 1);
+    }
+  }
+}
+
+function buildSourceFactCoverage({ authorityProfile, authorityProfileRef, sourceDocuments, upstream }) {
+  const policyByRef = new Map(authorityProfile.policyBindings.map((policy) => [declaredSourceRootForRef(policy.sourceRef), policy]));
+  const routeById = new Map(authorityProfile.reviewRoutes.map((route) => [route.routeId, route]));
+  const findings = [];
+  const componentCoverage = [...authorityProfile.componentBindings]
+    .sort((a, b) => a.bindingId.localeCompare(b.bindingId))
+    .map((binding) => {
+      const expectedCatalogRef = `catalog://p2/components/${binding.componentId}`;
+      if (binding.catalogRef !== expectedCatalogRef || !upstream.p2Catalog.components?.[binding.componentId]) {
+        throw contractError(`authority profile component is absent from accepted P2 catalog: ${binding.componentId}`, 1);
+      }
+      const primaryEntry = requireComponentSource(sourceDocuments, binding.primarySourceRef, binding.componentId, binding.bindingId);
+      const supportingEntries = binding.supportingSourceRefs.map((sourceRef) =>
+        requireComponentSource(sourceDocuments, sourceRef, binding.componentId, binding.bindingId)
+      );
+      const expectedPrecedenceOrder = [binding.primarySourceRef, ...binding.supportingSourceRefs];
+      if (canonicalJson(binding.precedence.orderedSourceRefs) !== canonicalJson(expectedPrecedenceOrder)) {
+        throw contractError(`authority profile precedence order drift: ${binding.bindingId}`, 1);
+      }
+      if (policyByRef.get(declaredSourceRootForRef(binding.precedence.policyRef))?.policyKind !== "source-precedence") {
+        throw contractError(`authority profile precedence policy is not bound: ${binding.bindingId}`, 1);
+      }
+      for (const policyRef of binding.policyRefs) {
+        if (!policyByRef.has(declaredSourceRootForRef(policyRef))) {
+          throw contractError(`authority profile component policy is not bound: ${binding.bindingId}`, 1);
+        }
+      }
+      const route = binding.reviewRouteId === null ? null : routeById.get(binding.reviewRouteId);
+      if (binding.reviewRouteId !== null && !route) {
+        throw contractError(`authority profile review route is not declared: ${binding.reviewRouteId}`, 1);
+      }
+      if (route && !isFutureCanonicalUtcTimestamp(route.expiresAt, authorityProfile.evaluationTime)) {
+        throw contractError(`authority profile review route is expired: ${binding.reviewRouteId}`, 1);
+      }
+      const primaryFacts = factsByPointer(primaryEntry.document);
+      const supportingFactMaps = supportingEntries.map((entry) => ({
+        entry,
+        facts: factsByPointer(entry.document)
+      }));
+      const authoritativePointers = new Set(binding.authoritativePointers);
+      for (const pointer of primaryFacts.keys()) {
+        if (!authoritativePointers.has(pointer)) {
+          throw contractError(`authority profile omits primary source fact: ${binding.bindingId}/${pointer}`, 1);
+        }
+      }
+      for (const { facts } of supportingFactMaps) {
+        for (const pointer of facts.keys()) {
+          if (!authoritativePointers.has(pointer)) {
+            throw contractError(`authority profile omits supporting source fact: ${binding.bindingId}/${pointer}`, 1);
+          }
+        }
+      }
+      const facts = [...binding.authoritativePointers]
+        .sort()
+        .map((catalogPointer) => {
+          if (!catalogPointer.startsWith(`/components/${binding.componentId}/`)) {
+            throw contractError(`authority profile pointer does not match component: ${catalogPointer}`, 1);
+          }
+          const catalogLookup = valueAtJsonPointer(upstream.p2Catalog, catalogPointer);
+          if (!catalogLookup.found) {
+            throw contractError(`authority profile pointer is absent from accepted P2 catalog: ${catalogPointer}`, 1);
+          }
+          const primaryFact = primaryFacts.get(catalogPointer) || null;
+          const supportingFacts = supportingFactMaps
+            .map(({ facts: map }) => map.get(catalogPointer))
+            .filter(Boolean);
+          const candidateRefs = supportingFacts.map((fact) => fact.sourceRef).sort();
+          const primaryRelation = primaryFact ? catalogFactRelation(primaryFact.value, catalogLookup.value) : "missing";
+          const supportingRelations = supportingFacts.map((fact) => catalogFactRelation(fact.value, catalogLookup.value));
+          const conflict = primaryFact !== null && supportingFacts.some((fact) => canonicalJson(fact.value) !== canonicalJson(primaryFact.value));
+          let resolution = primaryRelation === "exact" ? "exact-match" : "narrower-than-catalog";
+          let factStatus = "allowed";
+          let offendingRef = primaryFact?.sourceRef || binding.primarySourceRef;
+          if (!primaryFact) {
+            resolution = "missing-primary-fact";
+            factStatus = "blocked";
+          } else if (primaryRelation === "outside" || supportingRelations.includes("outside")) {
+            resolution = "outside-catalog";
+            factStatus = "blocked";
+            const index = supportingRelations.indexOf("outside");
+            if (primaryRelation !== "outside" && index >= 0) offendingRef = supportingFacts[index].sourceRef;
+          } else if (conflict) {
+            resolution = binding.precedence.mode === "primary-wins" ? "primary-precedence" : "review-required";
+            factStatus = binding.precedence.mode === "primary-wins" ? "allowed" : "review_required";
+            if (factStatus === "review_required" && !route) factStatus = "blocked";
+          }
+          if (factStatus === "blocked") {
+            findings.push({
+              findingId: `source-fact-blocked-${binding.bindingId}-${sha256Hex(catalogPointer).slice(0, 10)}`,
+              diagnosticCode: "SOURCE_FACT_AUTHORITY_ESCALATION",
+              componentId: binding.componentId,
+              status: "blocked",
+              message: primaryFact
+                ? `A declared ${binding.componentId} fact exceeds the accepted P2 catalog at ${catalogPointer}.`
+                : `The primary ${binding.componentId} source is missing the authoritative fact at ${catalogPointer}.`,
+              actionType: "edit-source-fact",
+              editPath: sourcePathForRef(offendingRef),
+              jsonPointer: catalogPointer,
+              sourceRefs: [offendingRef],
+              candidateSourceRefs: candidateRefs,
+              owner: route?.owner || null
+            });
+          } else if (conflict) {
+            findings.push({
+              findingId: `source-fact-conflict-${binding.bindingId}-${sha256Hex(catalogPointer).slice(0, 10)}`,
+              diagnosticCode: factStatus === "review_required" ? "SOURCE_MAPPING_AMBIGUOUS" : null,
+              componentId: binding.componentId,
+              status: factStatus,
+              message: factStatus === "allowed"
+                ? `Declared ${binding.componentId} source facts disagree at ${catalogPointer}; the profile applies primary-source precedence.`
+                : `Declared ${binding.componentId} source facts disagree at ${catalogPointer} and require owner review.`,
+              actionType: factStatus === "allowed" ? "edit-authority-profile" : "review-authority-exception",
+              editPath: SC_AUTHORITY_PROFILE_PATH,
+              jsonPointer: catalogPointer,
+              sourceRefs: [primaryFact.sourceRef, binding.precedence.policyRef],
+              candidateSourceRefs: candidateRefs,
+              owner: route?.owner || null
+            });
+          }
+          return {
+            catalogPointer,
+            catalogValueHash: sha256Hex(canonicalJson(catalogLookup.value)),
+            primaryFactRef: primaryFact?.sourceRef || null,
+            supportingFactRefs: candidateRefs,
+            conflict,
+            resolution,
+            status: factStatus
+          };
+        });
+      return {
+        bindingId: binding.bindingId,
+        componentId: binding.componentId,
+        catalogRef: binding.catalogRef,
+        primarySourceRef: binding.primarySourceRef,
+        supportingSourceRefs: [...binding.supportingSourceRefs].sort(),
+        facts,
+        status: strictestPromotionStatus(...facts.map((fact) => fact.status))
+      };
+    });
+
+  const policyCoverage = [...authorityProfile.policyBindings]
+    .sort((a, b) => a.policyId.localeCompare(b.policyId))
+    .map((policy) => {
+      for (const target of policy.catalogTargets) {
+        if (!valueAtJsonPointer(upstream.p2Catalog, target).found) {
+          throw contractError(`authority profile policy target is absent from accepted P2 catalog: ${policy.policyId}/${target}`, 1);
+        }
+      }
+      return {
+        policyId: policy.policyId,
+        policyKind: policy.policyKind,
+        sourceRef: policy.sourceRef,
+        effect: policy.effect,
+        catalogTargets: [...policy.catalogTargets].sort(),
+        status: "allowed"
+      };
+    });
+
+  const exceptionCoverage = [...authorityProfile.exceptions]
+    .sort((a, b) => a.exceptionId.localeCompare(b.exceptionId))
+    .map((exception) => {
+      requireComponentSource(sourceDocuments, exception.sourceRef, exception.componentId, exception.exceptionId);
+      if (policyByRef.get(declaredSourceRootForRef(exception.policyRef))?.policyKind !== "exception") {
+        throw contractError(`authority profile exception policy is not bound: ${exception.exceptionId}`, 1);
+      }
+      const route = routeById.get(exception.reviewRouteId);
+      if (!route ||
+        policyByRef.get(declaredSourceRootForRef(route.policyRef))?.policyKind !== "review" ||
+        !isFutureCanonicalUtcTimestamp(route.expiresAt, authorityProfile.evaluationTime)) {
+        throw contractError(`authority profile exception review route is missing or expired: ${exception.exceptionId}`, 1);
+      }
+      findings.push({
+        findingId: `source-exception-${exception.exceptionId}`,
+        diagnosticCode: "SOURCE_FORKED_VARIANT_REVIEW_REQUIRED",
+        componentId: exception.componentId,
+        status: "review_required",
+        message: `Declared ${exception.componentId} exception ${exception.exceptionId} remains outside the governed catalog until owner review.`,
+        actionType: "review-authority-exception",
+        editPath: SC_AUTHORITY_PROFILE_PATH,
+        jsonPointer: null,
+        sourceRefs: [exception.sourceRef, exception.policyRef, route.policyRef],
+        candidateSourceRefs: [exception.sourceRef],
+        owner: route.owner
+      });
+      return {
+        exceptionId: exception.exceptionId,
+        componentId: exception.componentId,
+        sourceRef: exception.sourceRef,
+        policyRef: exception.policyRef,
+        reviewRouteId: exception.reviewRouteId,
+        owner: route.owner,
+        expiresAt: route.expiresAt,
+        status: "review_required"
+      };
+    });
+
+  findings.sort((a, b) => a.findingId.localeCompare(b.findingId));
+  const factStatuses = componentCoverage.flatMap((component) => component.facts.map((fact) => fact.status));
+  const governedStatuses = [...factStatuses, ...exceptionCoverage.map((exception) => exception.status)];
+  const summary = {
+    componentCount: componentCoverage.length,
+    factCount: factStatuses.length,
+    exceptionCount: exceptionCoverage.length,
+    allowedCount: governedStatuses.filter((status) => status === "allowed").length,
+    reviewRequiredCount: governedStatuses.filter((status) => status === "review_required").length,
+    blockedCount: governedStatuses.filter((status) => status === "blocked").length
+  };
+  return {
+    schemaId: "source-fact-coverage.v0",
+    version: SC_VERSION,
+    authorityProfileRef,
+    catalogRef: upstream.p2CatalogRef,
+    componentCoverage,
+    policyCoverage,
+    exceptionCoverage,
+    findings,
+    summary,
+    promotionStatus: strictestPromotionStatus(...governedStatuses),
+    provenance: provenance("interfacectl-source-conformance-fact-coverage", [
+      authorityProfile.sourceRef,
+      upstream.p2CatalogRef.path,
+      ...componentCoverage.flatMap((component) => [component.primarySourceRef, ...component.supportingSourceRefs]),
+      ...policyCoverage.map((policy) => policy.sourceRef),
+      ...exceptionCoverage.map((exception) => exception.sourceRef)
+    ])
+  };
+}
+
+function requireComponentSource(sourceDocuments, sourceRef, componentId, bindingId) {
+  const entry = sourceDocuments.get(declaredSourceRootForRef(sourceRef));
+  if (!entry || entry.document.sourceType !== "component" || entry.document.componentId !== componentId) {
+    throw contractError(`authority profile component source mismatch: ${bindingId}/${sourceRef}`, 1);
+  }
+  return entry;
+}
+
+function factsByPointer(document) {
+  return new Map((document.facts || []).map((fact) => [fact.catalogPointer, fact]));
+}
+
+function catalogFactRelation(factValue, catalogValue) {
+  if (canonicalJson(factValue) === canonicalJson(catalogValue)) return "exact";
+  if (Array.isArray(factValue) && Array.isArray(catalogValue)) {
+    const catalogItems = new Set(catalogValue.map((item) => canonicalJson(item)));
+    if (factValue.every((item) => catalogItems.has(canonicalJson(item)))) return "narrower";
+  }
+  return "outside";
+}
+
+function valueAtJsonPointer(document, pointer) {
+  if (pointer === "") return { found: true, value: document };
+  if (typeof pointer !== "string" || !pointer.startsWith("/")) return { found: false, value: undefined };
+  let value = document;
+  for (const rawSegment of pointer.slice(1).split("/")) {
+    const segment = rawSegment.replace(/~1/g, "/").replace(/~0/g, "~");
+    if (value === null || typeof value !== "object" || !Object.prototype.hasOwnProperty.call(value, segment)) {
+      return { found: false, value: undefined };
+    }
+    value = value[segment];
+  }
+  return { found: true, value };
+}
+
+function sourcePathForRef(sourceRef) {
+  const match = /^declared-source:\/\/source-conformance\/(.+?)#\//.exec(sourceRef || "");
+  return match ? `${SC_SOURCE_ROOT}/${match[1]}` : SC_AUTHORITY_PROFILE_PATH;
+}
+
+function buildAuthorityMap({ authorityProfile, authorityProfileRef, factCoverageRef, upstream }) {
+  const exceptionsByComponent = new Map();
+  for (const exception of authorityProfile.exceptions) {
+    const refs = exceptionsByComponent.get(exception.componentId) || [];
+    refs.push(exception.sourceRef);
+    exceptionsByComponent.set(exception.componentId, refs);
+  }
   return {
     schemaId: "source-authority-map.v0",
     version: SC_VERSION,
     catalogRef: upstream.p2CatalogRef,
     ingestionEvidenceRef: upstream.p2EvidenceRef,
-    componentAuthority: [
-      {
-        componentId: "Button",
-        catalogRef: "catalog://p2/components/Button",
-        declaredSourceRef: BUTTON_PRIMARY_SOURCE_REF,
-        additionalDeclaredSourceRefs: [...BUTTON_SUPPORTING_SOURCE_REFS, BUTTON_FORKED_VARIANT_SOURCE_REF],
-        precedencePolicyRef: SC_SOURCE_PRECEDENCE_POLICY_SOURCE_REF,
-        conformanceRole: "primary-source-wins-when-explicit-precedence-policy-is-declared; forked variants require exception-policy review"
-      },
-      {
-        componentId: "InLineAlert",
-        catalogRef: "catalog://p2/components/InLineAlert",
-        declaredSourceRef: "declared-source://source-conformance/components/in-line-alert.json#/",
-        additionalDeclaredSourceRefs: [],
-        precedencePolicyRef: null,
-        conformanceRole: "must-match-declared-source-and-accepted-p2-catalog"
-      }
-    ],
-    policyAuthority: [
-      {
-        policyId: "accessibility-policy",
-        sourceRef: "declared-source://source-conformance/policies/accessibility.json#/",
-        conformanceRole: "blocks missing accessibility semantics"
-      },
-      {
-        policyId: "source-precedence-policy",
-        sourceRef: SC_SOURCE_PRECEDENCE_POLICY_SOURCE_REF,
-        conformanceRole: "resolves declared Button source conflicts or routes ambiguity to review"
-      },
-      {
-        policyId: "review-policy",
-        sourceRef: "declared-source://source-conformance/governance/review-policy.json#/",
-        conformanceRole: "preserves review-required rows without promotion"
-      },
-      {
-        policyId: "exception-policy",
-        sourceRef: SC_EXCEPTION_POLICY_SOURCE_REF,
-        conformanceRole: "routes declared forked Button variants to non-executable review and blocks undocumented fork drift"
-      }
-    ],
+    authorityProfileRef,
+    sourceFactCoverageRef: factCoverageRef,
+    componentAuthority: [...authorityProfile.componentBindings]
+      .sort((a, b) => a.bindingId.localeCompare(b.bindingId))
+      .map((binding) => ({
+        bindingId: binding.bindingId,
+        componentId: binding.componentId,
+        catalogRef: binding.catalogRef,
+        declaredSourceRef: binding.primarySourceRef,
+        additionalDeclaredSourceRefs: [...new Set([
+          ...binding.supportingSourceRefs,
+          ...(exceptionsByComponent.get(binding.componentId) || [])
+        ])].sort(),
+        precedencePolicyRef: binding.precedence.policyRef,
+        precedenceMode: binding.precedence.mode,
+        authoritativePointers: [...binding.authoritativePointers].sort(),
+        policyRefs: [...binding.policyRefs].sort(),
+        reviewRouteId: binding.reviewRouteId,
+        conformanceRole: binding.precedence.mode === "primary-wins"
+          ? "checked source facts are compared with the accepted P2 catalog; explicit primary precedence resolves supporting-source conflicts without expanding authority"
+          : "checked source fact conflicts require declared owner review without expanding accepted P2 authority"
+      })),
+    policyAuthority: [...authorityProfile.policyBindings]
+      .sort((a, b) => a.policyId.localeCompare(b.policyId))
+      .map((policy) => ({
+        policyId: policy.policyId,
+        policyKind: policy.policyKind,
+        sourceRef: policy.sourceRef,
+        effect: policy.effect,
+        catalogTargets: [...policy.catalogTargets].sort(),
+        conformanceRole: `${policy.policyKind} policy is connected with ${policy.effect} effect and cannot add catalog capability`
+      })),
     nonAuthorityStatement: "This proof emits conformance evidence only. It does not create live ingestion, runtime, adapter, API, SDK, A2UI, SurfaceOps, JudgmentKit, or production behavior.",
     diagnostics: [],
     diagnosticsRegistry: diagnosticsRegistry(),
-    provenance: provenance("interfacectl-source-conformance-authority-map", [upstream.p2CatalogRef.path, upstream.p2EvidenceRef.path])
+    provenance: provenance("interfacectl-source-conformance-authority-map", [
+      authorityProfile.sourceRef,
+      factCoverageRef.path,
+      upstream.p2CatalogRef.path,
+      upstream.p2EvidenceRef.path
+    ])
   };
 }
 
@@ -554,7 +1022,7 @@ function evaluateExpectations(fixtureRows, context) {
 
 function evaluateFixture(expectation, fixture, context) {
   if (expectation.kind === "mutation") {
-    return evaluateMutationFixture(expectation, fixture);
+    return evaluateMutationFixture(expectation, fixture, context);
   }
   if (!isDeclaredSourceRef(fixture.sourceRef)) {
     return invalidResult("DECLARED_SOURCE_REF_INVALID");
@@ -576,6 +1044,16 @@ function evaluateFixture(expectation, fixture, context) {
   }
   if (context.primaryComponentSourceRoots.get(fixture.componentId) !== declaredSourceRootForRef(fixture.sourceRef)) {
     return invalidResult("SOURCE_COMPONENT_SOURCE_MISMATCH");
+  }
+  if (fixture.authorityFact !== null) {
+    if (!isDeclaredSourceRef(fixture.authorityFact.sourceRef) ||
+      !context.declaredSourceRoots.has(declaredSourceRootForRef(fixture.authorityFact.sourceRef))) {
+      return invalidResult("DECLARED_SOURCE_REF_UNDECLARED");
+    }
+    const catalogLookup = valueAtJsonPointer(context.p2Catalog, fixture.authorityFact.catalogPointer);
+    if (!catalogLookup.found || catalogFactRelation(fixture.authorityFact.value, catalogLookup.value) === "outside") {
+      return invalidResult("SOURCE_FACT_AUTHORITY_ESCALATION");
+    }
   }
   const exceptionResult = evaluateException(fixture, context);
   if (exceptionResult.result !== "valid") {
@@ -731,7 +1209,7 @@ function allRefsRequired(fixture, refs) {
   return refs.every((sourceRef) => fixture.requiredSourceRefs.includes(sourceRef));
 }
 
-function evaluateMutationFixture(expectation, fixture) {
+function evaluateMutationFixture(expectation, fixture, context) {
   const code = expectation.diagnosticCodes[0];
   if (code === "SOURCE_UPSTREAM_EVIDENCE_MISSING" && Array.isArray(fixture.upstreamRefs) && fixture.upstreamRefs.length === 0) {
     return invalidResult(code);
@@ -745,7 +1223,20 @@ function evaluateMutationFixture(expectation, fixture) {
   if (code === "SOURCE_CONFORMANCE_EVIDENCE_HASH_MISMATCH") {
     return invalidResult(code);
   }
+  if (code === "SOURCE_GOVERNED_CATALOG_DRIFT" && fixture.catalogMutation &&
+    catalogMutationChangesCapability(context.p2Catalog, fixture.catalogMutation)) {
+    return invalidResult(code);
+  }
   return { result: "valid", promotionStatus: "allowed", diagnostics: [], reviewQueueItemId: null };
+}
+
+function catalogMutationChangesCapability(catalog, mutation) {
+  const capabilityRoots = ["/components", "/tokens", "/runtimeCapabilities", "/compatibility"];
+  if (!capabilityRoots.some((root) => mutation.jsonPointer === root || mutation.jsonPointer.startsWith(`${root}/`))) {
+    return false;
+  }
+  const parentPointer = mutation.jsonPointer.replace(/\/[^/]+$/, "");
+  return valueAtJsonPointer(catalog, parentPointer).found;
 }
 
 function invalidResult(code, options = {}) {
@@ -793,11 +1284,13 @@ async function componentSourceRootsForManifest(cwd, manifest) {
   return componentSourceRoots;
 }
 
-function buildReviewQueue({ validationResults, diagnostics }) {
-  const queueItems = validationResults
+function buildReviewQueue({ authorityProfile, validationResults, diagnostics }) {
+  const fixtureItems = validationResults
     .filter((row) => row.actualResult === "review_required")
     .map((row) => ({
       reviewQueueItemId: row.reviewQueueItemId,
+      origin: "fixture-proof",
+      subjectRef: row.requiredSourceRefs[0] || null,
       fixturePath: row.fixturePath,
       componentId: row.componentId,
       owner: row.review.owner,
@@ -808,6 +1301,28 @@ function buildReviewQueue({ validationResults, diagnostics }) {
       executable: false,
       promotionStatus: "review_required"
     }));
+  const routeById = new Map(authorityProfile.reviewRoutes.map((route) => [route.routeId, route]));
+  const profileItems = [...authorityProfile.exceptions]
+    .sort((a, b) => a.exceptionId.localeCompare(b.exceptionId))
+    .map((exception) => {
+      const route = routeById.get(exception.reviewRouteId);
+      if (!route) throw contractError(`authority profile review route is not declared: ${exception.reviewRouteId}`, 1);
+      return {
+        reviewQueueItemId: `source-review-authority-exception-${exception.exceptionId}`,
+        origin: "authority-profile",
+        subjectRef: exception.sourceRef,
+        fixturePath: SC_AUTHORITY_PROFILE_PATH,
+        componentId: exception.componentId,
+        owner: route.owner,
+        rationale: route.rationale,
+        expiresAt: route.expiresAt,
+        requiredSourceRefs: [...new Set([exception.sourceRef, exception.policyRef, route.policyRef])],
+        evidencePath: `${SC_ARTIFACT_ROOT}/evidence.json`,
+        executable: false,
+        promotionStatus: "review_required"
+      };
+    });
+  const queueItems = [...fixtureItems, ...profileItems].sort((a, b) => a.reviewQueueItemId.localeCompare(b.reviewQueueItemId));
   const reviewCodes = new Set(validationResults
     .filter((row) => row.actualResult === "review_required")
     .flatMap((row) => row.diagnosticCodes));
@@ -822,14 +1337,135 @@ function buildReviewQueue({ validationResults, diagnostics }) {
   };
 }
 
-function primaryComponentSourceRoots() {
-  return new Map([
-    ["Button", BUTTON_PRIMARY_SOURCE_REF],
-    ["InLineAlert", "declared-source://source-conformance/components/in-line-alert.json#/"]
-  ]);
+function primaryComponentSourceRoots(authorityProfile) {
+  return new Map(authorityProfile.componentBindings.map((binding) => [binding.componentId, binding.primarySourceRef]));
 }
 
-function buildReport({ runId, upstream, inventoryRef, authorityMapRef, reviewQueueRef, validationResults, diagnostics, status, promotionStatus }) {
+function buildConnectedGovernedCatalog({ authorityProfile, authorityProfileRef, factCoverage, factCoverageRef, upstream }) {
+  const catalog = deepClone(upstream.p2Catalog);
+  catalog.sourceRefs = {
+    ...catalog.sourceRefs,
+    authorityProfile: authorityProfile.sourceRef,
+    sourceFactCoverage: `artifact://source-conformance/source-fact-coverage.json#/`
+  };
+  catalog.governance = {
+    ...catalog.governance,
+    promotionStatus: strictestPromotionStatus(
+      catalog.governance?.promotionStatus || "allowed",
+      factCoverage.promotionStatus
+    ),
+    rules: {
+      ...(catalog.governance?.rules || {}),
+      authorityConnection: {
+        mode: "non-expanding",
+        authorityProfileRef: authorityProfile.sourceRef,
+        acceptedCatalogHash: upstream.p2CatalogRef.hash,
+        canAddAuthority: false
+      }
+    },
+    results: {
+      ...(catalog.governance?.results || {}),
+      authorityConnection: {
+        componentCount: factCoverage.summary.componentCount,
+        factCount: factCoverage.summary.factCount,
+        exceptionCount: factCoverage.summary.exceptionCount,
+        reviewRequiredCount: factCoverage.summary.reviewRequiredCount,
+        blockedCount: factCoverage.summary.blockedCount,
+        sourceFactCoveragePath: factCoverageRef.path
+      }
+    }
+  };
+  catalog.provenance = {
+    ...catalog.provenance,
+    generatedAt: SC_TIMESTAMP,
+    generator: "interfacectl-source-conformance-governed-catalog",
+    authorityProfileHash: authorityProfileRef.hash,
+    sourceFactCoverageHash: factCoverageRef.hash,
+    acceptedP2CatalogHash: upstream.p2CatalogRef.hash
+  };
+  return catalog;
+}
+
+function assertNonExpandingCatalog(acceptedCatalog, connectedCatalog) {
+  const immutableCapabilityFields = [
+    "catalogId",
+    "artifactKind",
+    "schemaId",
+    "version",
+    "tokens",
+    "components",
+    "runtimeCapabilities",
+    "diagnostics",
+    "compatibility"
+  ];
+  for (const field of immutableCapabilityFields) {
+    if (canonicalJson(acceptedCatalog[field]) !== canonicalJson(connectedCatalog[field])) {
+      throw contractError(`SOURCE_GOVERNED_CATALOG_DRIFT: accepted P2 field changed: ${field}`, 1);
+    }
+  }
+}
+
+function buildAuthorityConnectionReport({
+  runId,
+  authorityProfile,
+  authorityProfileRef,
+  factCoverage,
+  factCoverageRef,
+  authorityMapRef,
+  reviewQueueRef,
+  governedCatalogRef,
+  status,
+  promotionStatus
+}) {
+  const exceptionsByComponent = new Map();
+  for (const exception of factCoverage.exceptionCoverage) {
+    const rows = exceptionsByComponent.get(exception.componentId) || [];
+    rows.push(exception);
+    exceptionsByComponent.set(exception.componentId, rows);
+  }
+  const bindingById = new Map(authorityProfile.componentBindings.map((binding) => [binding.bindingId, binding]));
+  const components = factCoverage.componentCoverage.map((coverage) => {
+    const binding = bindingById.get(coverage.bindingId);
+    const componentStatuses = [
+      ...coverage.facts.map((fact) => fact.status),
+      ...(exceptionsByComponent.get(coverage.componentId) || []).map((exception) => exception.status)
+    ];
+    const conflictCount = coverage.facts.filter((fact) => fact.conflict).length;
+    return {
+      componentId: coverage.componentId,
+      status: strictestPromotionStatus(...componentStatuses),
+      understoodFactCount: coverage.facts.filter((fact) => fact.resolution !== "missing-primary-fact").length,
+      conflictCount,
+      appliedPrecedence: conflictCount > 0 ? `${binding.precedence.mode}:${binding.precedence.policyRef}` : null,
+      policyRefs: [...binding.policyRefs].sort()
+    };
+  });
+  return {
+    schemaId: "authority-connection-report.v0",
+    version: SC_VERSION,
+    runId,
+    authorityProfileRef,
+    sourceFactCoverageRef: factCoverageRef,
+    sourceAuthorityMapRef: authorityMapRef,
+    sourceReviewQueueRef: reviewQueueRef,
+    governedCatalogRef,
+    components,
+    findings: factCoverage.findings,
+    summary: factCoverage.summary,
+    status,
+    promotionStatus,
+    nonAuthorityStatement: "This bounded compiler explains checked source facts and policy routing under the accepted P2 ceiling. It cannot add catalog capability, connect live sources, execute review, or claim production readiness.",
+    provenance: provenance("interfacectl-source-conformance-authority-connection-report", [
+      authorityProfile.sourceRef,
+      factCoverageRef.path,
+      authorityMapRef.path,
+      reviewQueueRef.path,
+      governedCatalogRef.path
+    ])
+  };
+}
+
+function buildReport({ runId, upstream, inventoryRef, factCoverageRef, authorityMapRef, reviewQueueRef, governedCatalogRef, connectionReportRef, validationResults, diagnostics, status, promotionStatus }) {
   return {
     schemaId: "source-conformance-report.v0",
     version: SC_VERSION,
@@ -842,8 +1478,11 @@ function buildReport({ runId, upstream, inventoryRef, authorityMapRef, reviewQue
       refs: [upstream.p2EvidenceRef, upstream.p2CatalogRef]
     },
     sourceInventoryRef: inventoryRef,
+    sourceFactCoverageRef: factCoverageRef,
     sourceAuthorityMapRef: authorityMapRef,
     sourceReviewQueueRef: reviewQueueRef,
+    governedCatalogRef,
+    authorityConnectionReportRef: connectionReportRef,
     results: validationResults.map(stripResult),
     diagnostics: sortDiagnostics(diagnostics),
     diagnosticsRegistry: diagnosticsRegistry(),
@@ -853,7 +1492,7 @@ function buildReport({ runId, upstream, inventoryRef, authorityMapRef, reviewQue
   };
 }
 
-async function buildEvidence({ cwd, runId, command, args, manifestRef, declaredSourceRefs, upstream, inventoryRef, authorityMapRef, reviewQueueRef, reportRef, validationResults, diagnostics, status, promotionStatus }) {
+async function buildEvidence({ cwd, runId, command, args, manifestRef, authorityProfileRef, declaredSourceRefs, upstream, inventoryRef, factCoverageRef, authorityMapRef, reviewQueueRef, governedCatalogRef, connectionReportRef, reportRef, validationResults, diagnostics, status, promotionStatus }) {
   const schemaClosure = [];
   for (const artifactPath of scSchemaPaths()) {
     schemaClosure.push(artifactRef(artifactPath, schemaIdForSourceConformancePath(artifactPath), await canonicalFileHash(path.join(cwd, artifactPath))));
@@ -892,6 +1531,7 @@ async function buildEvidence({ cwd, runId, command, args, manifestRef, declaredS
     environment: { ...SC_ENVIRONMENT },
     schemaClosure,
     sourceManifestRef: manifestRef,
+    authorityProfileRef,
     sourceFileRefs: declaredSourceRefs,
     fixtureRefs,
     boundaryRefs,
@@ -956,6 +1596,20 @@ function sortDiagnostics(diagnostics) {
   );
 }
 
+function uniqueDiagnostics(diagnostics) {
+  const byCode = new Map();
+  for (const diagnostic of diagnostics) byCode.set(diagnostic.code, diagnostic);
+  return [...byCode.values()];
+}
+
+function strictestPromotionStatus(...statuses) {
+  const rank = { allowed: 0, review_required: 1, blocked: 2 };
+  return statuses.reduce((strictest, status) => {
+    if (!(status in rank)) return strictest;
+    return rank[status] > rank[strictest] ? status : strictest;
+  }, "allowed");
+}
+
 function aggregatePromotionStatus(validationResults) {
   if (validationResults.some((row) => row.promotionStatus === "review_required")) return "review_required";
   return "allowed";
@@ -963,7 +1617,8 @@ function aggregatePromotionStatus(validationResults) {
 
 function assertRunExpectation(expectations, data) {
   if (data.status !== expectations.runExpectation.status || data.promotionStatus !== expectations.runExpectation.promotionStatus) {
-    throw contractError(`source conformance run expectation mismatch: expected ${expectations.runExpectation.status}/${expectations.runExpectation.promotionStatus} got ${data.status}/${data.promotionStatus}`, 1);
+    const diagnosticCodes = (data.diagnostics || []).map((diagnostic) => diagnostic.code);
+    throw contractError(`source conformance run expectation mismatch: expected ${expectations.runExpectation.status}/${expectations.runExpectation.promotionStatus} got ${data.status}/${data.promotionStatus}; diagnostics ${diagnosticCodes.join(",") || "none"}`, 1);
   }
 }
 
@@ -1029,6 +1684,15 @@ async function firstEvidenceIntegrityFailureCode(cwd, evidence) {
     if (ref.hash !== await canonicalFileHash(path.join(cwd, ref.path))) return "SOURCE_CONFORMANCE_EVIDENCE_HASH_MISMATCH";
   }
   if (evidence.sourceManifestRef?.hash !== await canonicalFileHash(path.join(cwd, evidence.sourceManifestRef.path))) {
+    return "SOURCE_CONFORMANCE_EVIDENCE_HASH_MISMATCH";
+  }
+  const expectedAuthorityProfileRef = artifactRef(
+    SC_AUTHORITY_PROFILE_PATH,
+    "source-authority-profile.v0",
+    await rawFileHash(path.join(cwd, SC_AUTHORITY_PROFILE_PATH)),
+    { sourceRef: SC_AUTHORITY_PROFILE_SOURCE_REF }
+  );
+  if (canonicalJson(evidence.authorityProfileRef) !== canonicalJson(expectedAuthorityProfileRef)) {
     return "SOURCE_CONFORMANCE_EVIDENCE_HASH_MISMATCH";
   }
   for (const ref of evidence.sourceFileRefs || []) {
