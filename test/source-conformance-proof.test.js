@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { execFile } from "node:child_process";
+import { createHash } from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { promisify } from "node:util";
@@ -25,7 +26,7 @@ test("source conformance proof emits passing evidence with final self-hash", asy
 
   assert.equal(evidence.status, "pass");
   assert.equal(evidence.promotionStatus, "review_required");
-  assert.equal(evidence.validationResults.length, 21);
+  assert.equal(evidence.validationResults.length, 23);
   assert.deepEqual(evidence.boundaryRefs.map((entry) => entry.path), [
     "artifacts/p2/evidence.json",
     "artifacts/p2/governed-catalog.json"
@@ -38,15 +39,92 @@ test("source conformance proof emits passing evidence with final self-hash", asy
   );
   assert.equal(evidence.artifacts.at(-1).path, "artifacts/source-conformance/evidence.json");
   assert.equal(evidence.artifacts.at(-1).hash, sourceConformanceInternals.computeEvidenceSelfHash(evidence));
+  assert.equal(evidence.authorityProfileRef.path, "sources/source-conformance/declared-source-bundle/governance/authority-profile.json");
+  assert.equal(evidence.authorityProfileRef.schemaId, "source-authority-profile.v0");
+  assert.deepEqual(
+    evidence.authorityProfileRef,
+    evidence.sourceFileRefs.find((entry) => entry.path === evidence.authorityProfileRef.path)
+  );
   assert.deepEqual(evidence.artifacts.map((entry) => entry.path), [
     "artifacts/source-conformance/source-inventory.json",
+    "artifacts/source-conformance/source-fact-coverage.json",
     "artifacts/source-conformance/source-authority-map.json",
     "artifacts/source-conformance/source-review-queue.json",
+    "artifacts/source-conformance/governed-catalog.json",
+    "artifacts/source-conformance/authority-connection-report.json",
     "artifacts/source-conformance/source-conformance-report.json",
     "artifacts/source-conformance/evidence.json"
   ]);
   assert.equal(report.status, evidence.status);
   assert.equal(report.promotionStatus, evidence.promotionStatus);
+  assert.equal(report.sourceFactCoverageRef.path, "artifacts/source-conformance/source-fact-coverage.json");
+  assert.equal(report.governedCatalogRef.path, "artifacts/source-conformance/governed-catalog.json");
+  assert.equal(report.authorityConnectionReportRef.path, "artifacts/source-conformance/authority-connection-report.json");
+});
+
+test("source conformance compiles checked facts into an actionable non-expanding authority result", async () => {
+  await runSourceConformanceProof();
+  const p2Catalog = await readJson("artifacts/p2/governed-catalog.json");
+  const governedCatalog = await readJson("artifacts/source-conformance/governed-catalog.json");
+  const coverage = await readJson("artifacts/source-conformance/source-fact-coverage.json");
+  const connection = await readJson("artifacts/source-conformance/authority-connection-report.json");
+  const authorityMap = await readJson("artifacts/source-conformance/source-authority-map.json");
+  const evidence = await readJson("artifacts/source-conformance/evidence.json");
+
+  assert.deepEqual(coverage.summary, {
+    allowedCount: 6,
+    blockedCount: 0,
+    componentCount: 2,
+    exceptionCount: 1,
+    factCount: 6,
+    reviewRequiredCount: 1
+  });
+  assert.equal(coverage.promotionStatus, "review_required");
+  assert.deepEqual(coverage.componentCoverage.map((row) => row.componentId), ["Button", "InLineAlert"]);
+  const button = coverage.componentCoverage.find((row) => row.componentId === "Button");
+  const variant = button.facts.find((fact) => fact.catalogPointer === "/components/Button/props/variant/allowedValues");
+  assert.equal(variant.conflict, true);
+  assert.equal(variant.resolution, "primary-precedence");
+  assert.equal(variant.status, "allowed");
+  assert.equal(variant.supportingFactRefs.length, 2);
+  const alert = coverage.componentCoverage.find((row) => row.componentId === "InLineAlert");
+  assert.equal(alert.facts.length, 3);
+  assert.equal(alert.facts.every((fact) => fact.conflict === false && fact.resolution === "exact-match"), true);
+  assert.equal(coverage.policyCoverage.length, 5);
+  assert.equal(coverage.exceptionCoverage.length, 1);
+
+  assert.equal(connection.status, "pass");
+  assert.equal(connection.promotionStatus, "review_required");
+  assert.equal(connection.components.find((row) => row.componentId === "Button").conflictCount, 1);
+  assert.equal(connection.components.reduce((count, row) => count + row.understoodFactCount, 0), 6);
+  assert.equal(connection.findings.filter((finding) => finding.status !== "allowed").every((finding) =>
+    finding.actionType !== "none" &&
+    (finding.editPath !== null || finding.jsonPointer !== null) &&
+    finding.sourceRefs.length > 0 &&
+    finding.owner !== null
+  ), true);
+  assert.match(connection.nonAuthorityStatement, /cannot add catalog capability/);
+  assert.match(connection.nonAuthorityStatement, /connect live sources/);
+
+  for (const field of ["components", "tokens", "runtimeCapabilities", "compatibility"]) {
+    assert.equal(canonicalJson(governedCatalog[field]), canonicalJson(p2Catalog[field]));
+  }
+  assert.equal(canonicalJson(governedCatalog).includes("expressive"), false);
+  assert.equal(governedCatalog.governance.rules.authorityConnection.canAddAuthority, false);
+  assert.equal(governedCatalog.governance.promotionStatus, "review_required");
+  assert.deepEqual(authorityMap.authorityProfileRef, evidence.authorityProfileRef);
+  assert.equal(authorityMap.sourceFactCoverageRef.path, "artifacts/source-conformance/source-fact-coverage.json");
+  assert.equal(authorityMap.componentAuthority.every((row) => row.bindingId && row.authoritativePointers.length > 0), true);
+  assert.equal(authorityMap.policyAuthority.some((row) => row.policyId === "content-policy"), true);
+
+  const escalation = evidence.validationResults.find((row) =>
+    row.fixturePath.endsWith("source-fact-authority-escalation.source-conformance.json")
+  );
+  assert.deepEqual(escalation.diagnosticCodes, ["SOURCE_FACT_AUTHORITY_ESCALATION"]);
+  const drift = evidence.validationResults.find((row) =>
+    row.fixturePath.endsWith("governed-catalog-drift.source-conformance.json")
+  );
+  assert.deepEqual(drift.diagnosticCodes, ["SOURCE_GOVERNED_CATALOG_DRIFT"]);
 });
 
 test("source conformance proof preserves review-required rows without execution", async () => {
@@ -58,27 +136,22 @@ test("source conformance proof preserves review-required rows without execution"
   const validate = ajv.compile(schema);
 
   assert.equal(reviewQueue.promotionStatus, "review_required");
-  assert.equal(reviewQueue.queueItems.length, 3);
-  assert.equal(reviewQueue.queueItems[0].executable, false);
-  assert.equal(reviewQueue.queueItems[0].owner, "design-systems-governance");
-  assert.equal(reviewQueue.queueItems[0].rationale, "Brand exception changes action emphasis and requires source-owner review.");
-  assert.equal(reviewQueue.queueItems[0].expiresAt, "1970-01-31T00:00:00.000Z");
-  assert.equal(reviewQueue.queueItems[0].requiredSourceRefs.includes(SC_REVIEW_POLICY_SOURCE_REF), true);
-  assert.equal(reviewQueue.queueItems[1].executable, false);
-  assert.equal(reviewQueue.queueItems[1].reviewQueueItemId, "source-review-button-forked-exception");
-  assert.equal(reviewQueue.queueItems[1].owner, "design-systems-governance");
-  assert.equal(reviewQueue.queueItems[1].rationale, "Forked Button variant requires declared exception policy and source-owner review.");
-  assert.equal(reviewQueue.queueItems[1].expiresAt, "1970-01-31T00:00:00.000Z");
-  assert.equal(reviewQueue.queueItems[1].requiredSourceRefs.includes(SC_REVIEW_POLICY_SOURCE_REF), true);
-  assert.equal(reviewQueue.queueItems[1].requiredSourceRefs.includes(SC_EXCEPTION_POLICY_SOURCE_REF), true);
-  assert.equal(reviewQueue.queueItems[1].requiredSourceRefs.includes("declared-source://source-conformance/components/button-forked-variant.json#/"), true);
-  assert.equal(reviewQueue.queueItems[2].executable, false);
-  assert.equal(reviewQueue.queueItems[2].reviewQueueItemId, "source-review-source-mapping-ambiguous");
-  assert.equal(reviewQueue.queueItems[2].owner, "design-systems-governance");
-  assert.equal(reviewQueue.queueItems[2].rationale, "Button source mapping is ambiguous across declared sources and requires source-owner review.");
-  assert.equal(reviewQueue.queueItems[2].expiresAt, "1970-01-31T00:00:00.000Z");
-  assert.equal(reviewQueue.queueItems[2].requiredSourceRefs.includes(SC_REVIEW_POLICY_SOURCE_REF), true);
-  assert.equal(reviewQueue.queueItems[2].requiredSourceRefs.includes(SC_SOURCE_PRECEDENCE_POLICY_SOURCE_REF), true);
+  assert.equal(reviewQueue.queueItems.length, 4);
+  assert.equal(reviewQueue.queueItems.every((item) => item.executable === false), true);
+  const profileItem = reviewQueue.queueItems.find((item) => item.origin === "authority-profile");
+  assert.equal(profileItem.reviewQueueItemId, "source-review-authority-exception-button-forked-variant");
+  assert.equal(profileItem.subjectRef, "declared-source://source-conformance/components/button-forked-variant.json#/");
+  assert.equal(profileItem.owner, "design-systems-governance");
+  assert.equal(profileItem.rationale, "Declared source exceptions require design-system owner review before catalog promotion.");
+  assert.equal(profileItem.requiredSourceRefs.includes(SC_REVIEW_POLICY_SOURCE_REF), true);
+  assert.equal(profileItem.requiredSourceRefs.includes(SC_EXCEPTION_POLICY_SOURCE_REF), true);
+  const brandItem = reviewQueue.queueItems.find((item) => item.reviewQueueItemId === "source-review-brand-exception");
+  assert.equal(brandItem.origin, "fixture-proof");
+  assert.equal(brandItem.rationale, "Brand exception changes action emphasis and requires source-owner review.");
+  const forkedItem = reviewQueue.queueItems.find((item) => item.reviewQueueItemId === "source-review-button-forked-exception");
+  assert.equal(forkedItem.requiredSourceRefs.includes(SC_EXCEPTION_POLICY_SOURCE_REF), true);
+  const ambiguousItem = reviewQueue.queueItems.find((item) => item.reviewQueueItemId === "source-review-source-mapping-ambiguous");
+  assert.equal(ambiguousItem.requiredSourceRefs.includes(SC_SOURCE_PRECEDENCE_POLICY_SOURCE_REF), true);
   assert.deepEqual(reviewQueue.diagnostics.map((diagnostic) => diagnostic.code), [
     "SOURCE_FORKED_VARIANT_REVIEW_REQUIRED",
     "SOURCE_MAPPING_AMBIGUOUS",
@@ -127,14 +200,7 @@ test("source conformance proof preserves review-required rows without execution"
   assert.equal(validate(reviewQueue), true);
   assert.equal(validate({
     ...reviewQueue,
-    queueItems: reviewQueue.queueItems.map((item) => ({ ...item, expiresAt: "1969-12-31T00:00:00.000Z" }))
-  }), false);
-  assert.equal(validate({
-    ...reviewQueue,
-    queueItems: reviewQueue.queueItems.map((item) => ({
-      ...item,
-      requiredSourceRefs: item.requiredSourceRefs.filter((ref) => ref !== SC_REVIEW_POLICY_SOURCE_REF)
-    }))
+    queueItems: reviewQueue.queueItems.map((item) => ({ ...item, expiresAt: "1970-01-31T00:00:00Z" }))
   }), false);
 });
 
@@ -578,6 +644,77 @@ test("source conformance proof accepts explicit Button source precedence", async
   });
 });
 
+test("source conformance materialization preserves checked source authority bytes", async () => {
+  const sourceRoot = path.join(root, "sources/source-conformance/declared-source-bundle");
+  const before = await snapshotTree(sourceRoot);
+  await execFileAsync(process.execPath, ["scripts/materialize-source-conformance.mjs"], { cwd: root });
+  const after = await snapshotTree(sourceRoot);
+  assert.deepEqual(after, before);
+});
+
+test("source conformance output follows profile ownership changes without implementation edits", async () => {
+  await withAuthorityInputMutation(
+    "governance/authority-profile.json",
+    (profile) => {
+      profile.reviewRoutes[0].owner = "spectrum-source-owners";
+    },
+    async () => {
+      await runSourceConformanceProof();
+      const queue = await readJson("artifacts/source-conformance/source-review-queue.json");
+      const connection = await readJson("artifacts/source-conformance/authority-connection-report.json");
+      const profileItem = queue.queueItems.find((item) => item.origin === "authority-profile");
+      assert.equal(profileItem.owner, "spectrum-source-owners");
+      assert.equal(connection.findings.find((finding) => finding.findingId.startsWith("source-exception-")).owner, "spectrum-source-owners");
+    }
+  );
+});
+
+test("source conformance blocks authoritative source facts that exceed accepted P2", async () => {
+  await withAuthorityInputMutation(
+    "components/button.json",
+    (button) => {
+      button.facts.find((fact) => fact.factId === "button-variant-values").value.push("expressive");
+    },
+    async () => {
+      const result = await runSourceConformanceProofExpectFailure();
+      assert.equal(result.code, 1);
+      assert.match(result.stderr, /SOURCE_FACT_AUTHORITY_ESCALATION/);
+    }
+  );
+});
+
+test("source conformance rejects profile bindings that contradict declared source families", async () => {
+  await withAuthorityInputMutation(
+    "governance/authority-profile.json",
+    (profile) => {
+      profile.componentBindings[0].primarySourceRef = "declared-source://source-conformance/components/button-acquired-a.json#/";
+    },
+    async () => {
+      const result = await runSourceConformanceProofExpectFailure();
+      assert.equal(result.code, 1);
+      assert.match(result.stderr, /outside the primary source family/);
+    }
+  );
+});
+
+test("source conformance artifacts are byte deterministic across repeated proof runs", async () => {
+  await runSourceConformanceProof();
+  const artifactPaths = [
+    "source-inventory.json",
+    "source-fact-coverage.json",
+    "source-authority-map.json",
+    "source-review-queue.json",
+    "governed-catalog.json",
+    "authority-connection-report.json",
+    "source-conformance-report.json",
+    "evidence.json"
+  ].map((file) => path.join(root, "artifacts/source-conformance", file));
+  const first = await Promise.all(artifactPaths.map((file) => fs.readFile(file, "utf8")));
+  await runSourceConformanceProof();
+  const second = await Promise.all(artifactPaths.map((file) => fs.readFile(file, "utf8")));
+  assert.deepEqual(second, first);
+});
+
 test("source conformance evidence integrity check detects artifact tampering", async () => {
   await runSourceConformanceProof();
   const evidence = await readJson("artifacts/source-conformance/evidence.json");
@@ -600,6 +737,22 @@ test("source conformance evidence integrity check detects artifact tampering", a
     )
   });
   assert.equal(boundaryCode, "SOURCE_CONFORMANCE_EVIDENCE_HASH_MISMATCH");
+
+  const connectionCode = await sourceConformanceInternals.firstEvidenceIntegrityFailureCode(root, {
+    ...evidence,
+    artifacts: evidence.artifacts.map((entry) =>
+      entry.path === "artifacts/source-conformance/authority-connection-report.json"
+        ? { ...entry, hash: "0".repeat(64) }
+        : entry
+    )
+  });
+  assert.equal(connectionCode, "SOURCE_CONFORMANCE_EVIDENCE_HASH_MISMATCH");
+
+  const profileCode = await sourceConformanceInternals.firstEvidenceIntegrityFailureCode(root, {
+    ...evidence,
+    authorityProfileRef: { ...evidence.authorityProfileRef, hash: "0".repeat(64) }
+  });
+  assert.equal(profileCode, "SOURCE_CONFORMANCE_EVIDENCE_HASH_MISMATCH");
 });
 
 async function runSourceConformanceProof() {
@@ -663,6 +816,46 @@ async function withJsonFileMutation(absolutePath, mutate, fn) {
   } finally {
     await fs.writeFile(absolutePath, original);
   }
+}
+
+async function withAuthorityInputMutation(sourceRelativePath, mutate, fn) {
+  const sourcePath = path.join(root, "sources/source-conformance/declared-source-bundle", sourceRelativePath);
+  const manifestPath = path.join(root, "sources/source-conformance/declared-source-bundle/manifest.json");
+  const originalSource = await fs.readFile(sourcePath, "utf8");
+  const originalManifest = await fs.readFile(manifestPath, "utf8");
+  try {
+    const source = JSON.parse(originalSource);
+    mutate(source);
+    const nextSource = canonicalJson(source);
+    await fs.writeFile(sourcePath, nextSource);
+    const manifest = JSON.parse(originalManifest);
+    const manifestEntry = manifest.sourceFiles.find((entry) => entry.path === sourceRelativePath);
+    assert.ok(manifestEntry, `missing manifest entry for ${sourceRelativePath}`);
+    manifestEntry.sha256 = createHash("sha256").update(nextSource).digest("hex");
+    await fs.writeFile(manifestPath, canonicalJson(manifest));
+    await fn();
+  } finally {
+    await fs.writeFile(sourcePath, originalSource);
+    await fs.writeFile(manifestPath, originalManifest);
+    await runSourceConformanceProof();
+  }
+}
+
+async function snapshotTree(directory) {
+  const entries = await fs.readdir(directory, { withFileTypes: true });
+  const snapshot = {};
+  for (const entry of entries.sort((a, b) => a.name.localeCompare(b.name))) {
+    const absolutePath = path.join(directory, entry.name);
+    if (entry.isDirectory()) {
+      const nested = await snapshotTree(absolutePath);
+      for (const [relativePath, contents] of Object.entries(nested)) {
+        snapshot[`${entry.name}/${relativePath}`] = contents;
+      }
+    } else if (entry.isFile()) {
+      snapshot[entry.name] = await fs.readFile(absolutePath, "utf8");
+    }
+  }
+  return snapshot;
 }
 
 async function readJson(relativePath) {

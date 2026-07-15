@@ -4,11 +4,10 @@ import {
   P2_SHARED_SCHEMA_FILES,
   canonicalFileHash,
   deepClone,
+  readJson,
   rawFileHash,
-  sha256Hex,
   writeCanonicalJson
 } from "./p2-contract.js";
-import { canonicalJson } from "./p0.js";
 
 export const SC_TIMESTAMP = "1970-01-01T00:00:00.000Z";
 export const SC_VERSION = "0.0.0";
@@ -23,6 +22,8 @@ export const SC_CONTRACT_ID = "surfaces-source-conformance-proof";
 export const SC_REVIEW_POLICY_SOURCE_REF = "declared-source://source-conformance/governance/review-policy.json#/";
 export const SC_EXCEPTION_POLICY_SOURCE_REF = "declared-source://source-conformance/governance/exception-policy.json#/";
 export const SC_SOURCE_PRECEDENCE_POLICY_SOURCE_REF = "declared-source://source-conformance/policies/source-precedence.json#/";
+export const SC_AUTHORITY_PROFILE_PATH = `${SC_SOURCE_ROOT}/governance/authority-profile.json`;
+export const SC_AUTHORITY_PROFILE_SOURCE_REF = "declared-source://source-conformance/governance/authority-profile.json#/";
 
 export const SC_ENVIRONMENT = Object.freeze({
   generatedAt: SC_TIMESTAMP,
@@ -33,8 +34,11 @@ export const SC_SCHEMA_FILES = [
   "declared-source-manifest.v0.schema.json",
   "declared-source-document.v0.schema.json",
   "declared-source-inventory.v0.schema.json",
+  "source-authority-profile.v0.schema.json",
+  "source-fact-coverage.v0.schema.json",
   "source-authority-map.v0.schema.json",
   "source-review-queue.v0.schema.json",
+  "authority-connection-report.v0.schema.json",
   "source-conformance-report.v0.schema.json",
   "source-conformance-evidence.v0.schema.json",
   "source-conformance-expectations.v0.schema.json",
@@ -47,8 +51,11 @@ export const SC_CONSUMED_SCHEMA_FILES = [...P2_SCHEMA_FILES, ...P2_SHARED_SCHEMA
 
 export const SC_GENERATED_ARTIFACTS = [
   "source-inventory.json",
+  "source-fact-coverage.json",
   "source-authority-map.json",
   "source-review-queue.json",
+  "governed-catalog.json",
+  "authority-connection-report.json",
   "source-conformance-report.json",
   "evidence.json"
 ];
@@ -213,6 +220,14 @@ export const SC_SOURCE_DOCUMENTS = {
     requiredReviewMetadata: ["owner", "rationale", "expiresAt"]
   }
 };
+
+// Source documents and the authority profile are checked product-authority
+// inputs. Materialization may read them to build deterministic fixtures, but it
+// must not rewrite or silently replace them.
+export const SC_SOURCE_FILES = [
+  ...Object.keys(SC_SOURCE_DOCUMENTS),
+  "governance/authority-profile.json"
+];
 
 export const SC_DIAGNOSTIC_ROWS = [
   diagnosticRow({
@@ -423,6 +438,30 @@ export const SC_DIAGNOSTIC_ROWS = [
     fixtureCoverage: "invalid/production-claim.source-conformance.json"
   }),
   diagnosticRow({
+    code: "SOURCE_FACT_AUTHORITY_ESCALATION",
+    canonicalMessage: "Declared source fact exceeds the accepted P2 catalog authority.",
+    stage: "conformance",
+    phase: "source-fact-coverage",
+    artifactPath: "fixtures/source-conformance/invalid/source-fact-authority-escalation.source-conformance.json",
+    jsonPointer: "/authorityFact/value",
+    sourceRef: SC_AUTHORITY_PROFILE_SOURCE_REF,
+    validationResult: "invalid",
+    promotionStatus: "blocked",
+    fixtureCoverage: "invalid/source-fact-authority-escalation.source-conformance.json"
+  }),
+  diagnosticRow({
+    code: "SOURCE_GOVERNED_CATALOG_DRIFT",
+    canonicalMessage: "Authority connection attempted to change accepted P2 catalog capability.",
+    stage: "conformance",
+    phase: "source-governed-catalog",
+    artifactPath: "fixtures/source-conformance/mutations/governed-catalog-drift.source-conformance.json",
+    jsonPointer: "/catalogMutation",
+    sourceRef: SC_AUTHORITY_PROFILE_SOURCE_REF,
+    validationResult: "invalid",
+    promotionStatus: "blocked",
+    fixtureCoverage: "mutations/governed-catalog-drift.source-conformance.json"
+  }),
+  diagnosticRow({
     code: "SOURCE_CONFORMANCE_EVIDENCE_HASH_MISMATCH",
     canonicalMessage: "Source conformance evidence hash does not match generated artifacts.",
     stage: "evidence",
@@ -625,6 +664,17 @@ export const SC_EXPECTATION_ROWS = [
     jsonPointer: "/claims"
   }),
   expectationRow({
+    fixturePath: "fixtures/source-conformance/invalid/source-fact-authority-escalation.source-conformance.json",
+    kind: "invalid",
+    stage: "conformance",
+    phase: "source-fact-coverage",
+    expectedResult: "invalid",
+    promotionStatus: "blocked",
+    diagnosticCodes: ["SOURCE_FACT_AUTHORITY_ESCALATION"],
+    artifactPath: "fixtures/source-conformance/invalid/source-fact-authority-escalation.source-conformance.json",
+    jsonPointer: "/authorityFact/value"
+  }),
+  expectationRow({
     fixturePath: "fixtures/source-conformance/mutations/missing-upstream-evidence.source-conformance-preflight.json",
     kind: "mutation",
     stage: "preflight",
@@ -658,6 +708,17 @@ export const SC_EXPECTATION_ROWS = [
     jsonPointer: "/sourceFiles/0/sha256"
   }),
   expectationRow({
+    fixturePath: "fixtures/source-conformance/mutations/governed-catalog-drift.source-conformance.json",
+    kind: "mutation",
+    stage: "conformance",
+    phase: "source-governed-catalog",
+    expectedResult: "invalid",
+    promotionStatus: "blocked",
+    diagnosticCodes: ["SOURCE_GOVERNED_CATALOG_DRIFT"],
+    artifactPath: "fixtures/source-conformance/mutations/governed-catalog-drift.source-conformance.json",
+    jsonPointer: "/catalogMutation"
+  }),
+  expectationRow({
     fixturePath: "fixtures/source-conformance/mutations/hash-mismatch.source-conformance-evidence.json",
     kind: "mutation",
     stage: "evidence",
@@ -677,7 +738,7 @@ export function scSchemaPaths() {
 export function scSourcePaths() {
   return [
     `${SC_SOURCE_ROOT}/manifest.json`,
-    ...Object.keys(SC_SOURCE_DOCUMENTS).map((file) => `${SC_SOURCE_ROOT}/${file}`)
+    ...SC_SOURCE_FILES.map((file) => `${SC_SOURCE_ROOT}/${file}`)
   ];
 }
 
@@ -698,13 +759,17 @@ export function schemaIdForSourceConformancePath(artifactPath) {
   const file = artifactPath.split("/").pop();
   if (SC_SCHEMA_FILES.includes(file) || SC_CONSUMED_SCHEMA_FILES.includes(file)) return file.replace(/\.schema\.json$/, "");
   if (artifactPath.endsWith("/manifest.json")) return "declared-source-manifest.v0";
+  if (artifactPath.endsWith("governance/authority-profile.json")) return "source-authority-profile.v0";
   if (artifactPath.endsWith("expectations.manifest.json")) return "source-conformance-expectations.v0";
   if (artifactPath.endsWith(".declared-source-manifest.json")) return "declared-source-manifest.v0";
   if (artifactPath.endsWith(".source-conformance.json")) return "source-conformance-fixture.v0";
   if (artifactPath.endsWith(".source-conformance-preflight.json")) return "source-conformance-preflight-mutation.v0";
   if (artifactPath.endsWith("source-inventory.json")) return "declared-source-inventory.v0";
+  if (artifactPath.endsWith("source-fact-coverage.json")) return "source-fact-coverage.v0";
   if (artifactPath.endsWith("source-authority-map.json")) return "source-authority-map.v0";
   if (artifactPath.endsWith("source-review-queue.json")) return "source-review-queue.v0";
+  if (artifactPath.endsWith("governed-catalog.json")) return "runtime-catalog.v0";
+  if (artifactPath.endsWith("authority-connection-report.json")) return "authority-connection-report.v0";
   if (artifactPath.endsWith("source-conformance-report.json")) return "source-conformance-report.v0";
   if (artifactPath.endsWith("evidence.json")) return "source-conformance-evidence.v0";
   return "declared-source-document.v0";
@@ -715,11 +780,8 @@ export async function materializeSourceConformanceContract(cwd) {
   for (const [file, schema] of Object.entries(schemas)) {
     await writeCanonicalJson(path.join(cwd, SC_SCHEMA_ROOT, file), schema);
   }
-  for (const [file, data] of Object.entries(SC_SOURCE_DOCUMENTS)) {
-    await writeCanonicalJson(path.join(cwd, SC_SOURCE_ROOT, file), data);
-  }
-  await writeCanonicalJson(path.join(cwd, SC_SOURCE_ROOT, "manifest.json"), sourceManifest());
-  const fixtures = buildSourceConformanceFixtures();
+  const manifest = await readJson(path.join(cwd, SC_SOURCE_ROOT, "manifest.json"));
+  const fixtures = buildSourceConformanceFixtures(manifest);
   await writeCanonicalJson(path.join(cwd, SC_FIXTURE_ROOT, "expectations.manifest.json"), expectationsManifest());
   for (const [file, fixture] of Object.entries(fixtures)) {
     await writeCanonicalJson(path.join(cwd, SC_FIXTURE_ROOT, file), fixture);
@@ -731,8 +793,11 @@ export function buildSourceConformanceSchemas() {
     "declared-source-manifest.v0.schema.json": declaredSourceManifestSchema(),
     "declared-source-document.v0.schema.json": declaredSourceDocumentSchema(),
     "declared-source-inventory.v0.schema.json": declaredSourceInventorySchema(),
+    "source-authority-profile.v0.schema.json": sourceAuthorityProfileSchema(),
+    "source-fact-coverage.v0.schema.json": sourceFactCoverageSchema(),
     "source-authority-map.v0.schema.json": sourceAuthorityMapSchema(),
     "source-review-queue.v0.schema.json": sourceReviewQueueSchema(),
+    "authority-connection-report.v0.schema.json": authorityConnectionReportSchema(),
     "source-conformance-report.v0.schema.json": sourceConformanceReportSchema(),
     "source-conformance-evidence.v0.schema.json": sourceConformanceEvidenceSchema(),
     "source-conformance-expectations.v0.schema.json": sourceConformanceExpectationsSchema(),
@@ -742,7 +807,8 @@ export function buildSourceConformanceSchemas() {
   };
 }
 
-export function buildSourceConformanceFixtures() {
+export function buildSourceConformanceFixtures(manifest) {
+  if (!manifest) throw new Error("buildSourceConformanceFixtures requires the checked source manifest");
   const button = sourceConformanceFixture({
     fixtureId: "button-allowed",
     componentId: "Button",
@@ -960,6 +1026,16 @@ export function buildSourceConformanceFixtures() {
       fixtureId: "production-claim",
       claims: Object.fromEntries(SC_FORBIDDEN_CLAIM_KEYS.map((key) => [key, true]))
     },
+    "invalid/source-fact-authority-escalation.source-conformance.json": {
+      ...deepClone(button),
+      fixtureId: "source-fact-authority-escalation",
+      authorityFact: {
+        catalogPointer: "/components/Button/props/variant/allowedValues",
+        factKind: "catalog-value",
+        sourceRef: "declared-source://source-conformance/components/button.json#/facts/0/value",
+        value: ["accent", "expressive"]
+      }
+    },
     "mutations/missing-upstream-evidence.source-conformance-preflight.json": {
       schemaId: "source-conformance-preflight-mutation.v0",
       version: SC_VERSION,
@@ -969,9 +1045,9 @@ export function buildSourceConformanceFixtures() {
       provenance: provenance("interfacectl-source-conformance-materialize", ["plans/source-conformance/README.md"])
     },
     "mutations/source-path-undeclared.declared-source-manifest.json": {
-      ...sourceManifest(),
+      ...manifest,
       sourceFiles: [
-        ...sourceManifest().sourceFiles,
+        ...manifest.sourceFiles,
         {
           path: "components/private-card.json",
           sourceType: "component",
@@ -982,8 +1058,17 @@ export function buildSourceConformanceFixtures() {
       ]
     },
     "mutations/source-hash-mismatch.declared-source-manifest.json": {
-      ...sourceManifest(),
-      sourceFiles: sourceManifest().sourceFiles.map((entry, index) => index === 0 ? { ...entry, sha256: "0".repeat(64) } : entry)
+      ...manifest,
+      sourceFiles: manifest.sourceFiles.map((entry, index) => index === 0 ? { ...entry, sha256: "0".repeat(64) } : entry)
+    },
+    "mutations/governed-catalog-drift.source-conformance.json": {
+      ...deepClone(button),
+      fixtureId: "governed-catalog-drift",
+      catalogMutation: {
+        jsonPointer: "/components/Button/props/variant/allowedValues/-",
+        operation: "add",
+        value: "expressive"
+      }
     },
     "mutations/hash-mismatch.source-conformance-evidence.json": {
       contractId: SC_CONTRACT_ID,
@@ -1002,6 +1087,9 @@ export function buildSourceConformanceFixtures() {
       environment: { ...SC_ENVIRONMENT },
       schemaClosure: [],
       sourceManifestRef: artifactRef(`${SC_SOURCE_ROOT}/manifest.json`, "declared-source-manifest.v0", "0".repeat(64)),
+      authorityProfileRef: artifactRef(SC_AUTHORITY_PROFILE_PATH, "source-authority-profile.v0", "0".repeat(64), {
+        sourceRef: SC_AUTHORITY_PROFILE_SOURCE_REF
+      }),
       sourceFileRefs: [],
       fixtureRefs: [],
       boundaryRefs: [],
@@ -1043,29 +1131,11 @@ export function provenance(generator, sourceRefs) {
   };
 }
 
-export function sourceManifest() {
-  return {
-    schemaId: "declared-source-manifest.v0",
-    version: SC_VERSION,
-    sourceBundleId: "source-conformance-demo",
-    sourceFamily: "declared-local-source-bundle.v0",
-    sourceRefGrammar: "declared-source://source-conformance/<posix-path>#<rfc6901-json-pointer>",
-    generatedAt: SC_TIMESTAMP,
-    environment: { ...SC_ENVIRONMENT },
-    sourceFiles: Object.entries(SC_SOURCE_DOCUMENTS).map(([file, data]) => ({
-      path: file,
-      sourceType: data.sourceType,
-      sourceRefRoot: `declared-source://source-conformance/${file}#/`,
-      hashAlgorithm: "sha256",
-      sha256: sha256Hex(canonicalJson(data))
-    }))
-  };
-}
-
 export async function sourceFileRefs(cwd, manifest) {
   const refs = [];
   for (const sourceFile of manifest.sourceFiles) {
-    refs.push(artifactRef(`${SC_SOURCE_ROOT}/${sourceFile.path}`, "declared-source-document.v0", await rawFileHash(path.join(cwd, SC_SOURCE_ROOT, sourceFile.path)), {
+    const schemaId = sourceFile.path === "governance/authority-profile.json" ? "source-authority-profile.v0" : "declared-source-document.v0";
+    refs.push(artifactRef(`${SC_SOURCE_ROOT}/${sourceFile.path}`, schemaId, await rawFileHash(path.join(cwd, SC_SOURCE_ROOT, sourceFile.path)), {
       sourceRef: sourceFile.sourceRefRoot
     }));
   }
@@ -1117,6 +1187,8 @@ function sourceConformanceFixture(overrides = {}) {
     claims: overrides.claims || Object.fromEntries(SC_FORBIDDEN_CLAIM_KEYS.map((key) => [key, false])),
     authorityConflict: overrides.authorityConflict || null,
     exception: overrides.exception ?? null,
+    authorityFact: overrides.authorityFact ?? null,
+    catalogMutation: overrides.catalogMutation ?? null,
     provenance: provenance("interfacectl-source-conformance-materialize", [overrides.sourceRef].filter(Boolean))
   };
 }
@@ -1143,6 +1215,8 @@ function diagnosticSourceForStage(stage) {
 }
 
 function suggestedActionForCode(code) {
+  if (code === "SOURCE_FACT_AUTHORITY_ESCALATION") return "Narrow the declared fact to values already authorized by the accepted P2 catalog or add a future ingestion proof.";
+  if (code === "SOURCE_GOVERNED_CATALOG_DRIFT") return "Restore the accepted P2 component, token, runtime, accessibility, and compatibility fields before compiling authority metadata.";
   if (code === "SOURCE_REVIEW_EXPIRED") return "Renew source-owner approval and canonical expiry metadata before handoff or promotion.";
   if (code === "SOURCE_EXCEPTION_UNDECLARED") return "Declare the forked variant source, exception policy ref, and review routing before promotion.";
   if (code === "SOURCE_EXCEPTION_METADATA_MISSING") return "Add explicit forked Button exception metadata before promotion.";
@@ -1252,14 +1326,14 @@ function declaredSourceManifestSchema() {
   return objectSchema("declared-source-manifest.v0", {
     schemaId: { const: "declared-source-manifest.v0" },
     version: { type: "string" },
-    sourceBundleId: { const: "source-conformance-demo" },
+    sourceBundleId: { type: "string", pattern: "^[a-z0-9][a-z0-9-]*$" },
     sourceFamily: { const: "declared-local-source-bundle.v0" },
     sourceRefGrammar: { type: "string" },
     generatedAt: { const: SC_TIMESTAMP },
     environment: { type: "object", additionalProperties: true },
     sourceFiles: {
       type: "array",
-      minItems: Object.keys(SC_SOURCE_DOCUMENTS).length,
+      minItems: SC_SOURCE_FILES.length,
       items: objectSchema(null, {
         path: { type: "string", pattern: "^(components|policies|governance)/[a-z0-9-]+\\.json$" },
         sourceType: { type: "string" },
@@ -1279,6 +1353,16 @@ function declaredSourceDocumentSchema() {
     sourceType: { type: "string" },
     sourceRef: { type: "string", pattern: "^declared-source://source-conformance/.+#/$" },
     componentId: { type: "string" },
+    facts: {
+      type: "array",
+      items: objectSchema(null, {
+        factId: { type: "string" },
+        factKind: { const: "catalog-value" },
+        catalogPointer: { type: "string", pattern: "^/components/[A-Za-z][A-Za-z0-9]*(?:/[A-Za-z0-9._~-]+)+$" },
+        value: {},
+        sourceRef: sourceRefSchema(false)
+      }, ["factId", "factKind", "catalogPointer", "value", "sourceRef"])
+    },
     authoritativeFields: { type: "array", items: { type: "string" } },
     policyRefs: { type: "array", items: { type: "string" } },
     requirements: { type: "array", items: { type: "string" } },
@@ -1286,6 +1370,80 @@ function declaredSourceDocumentSchema() {
     requiredReviewMetadata: { type: "array", items: { type: "string" } },
     notes: { type: "string" }
   }, ["schemaId", "version", "documentId", "sourceType", "sourceRef"]);
+}
+
+function sourceAuthorityProfileSchema() {
+  return objectSchema("source-authority-profile.v0", {
+    schemaId: { const: "source-authority-profile.v0" },
+    version: { type: "string" },
+    profileId: { type: "string" },
+    designSystemId: { type: "string" },
+    sourceRef: { const: SC_AUTHORITY_PROFILE_SOURCE_REF },
+    evaluationTime: { const: SC_TIMESTAMP },
+    sourceFamilies: {
+      type: "array",
+      minItems: 1,
+      items: objectSchema(null, {
+        sourceFamilyId: { type: "string" },
+        kind: { enum: ["primary", "supporting", "policy", "exception"] },
+        sourceRefs: { type: "array", minItems: 1, uniqueItems: true, items: sourceRefSchema(false) },
+        authorityScopes: { type: "array", minItems: 1, uniqueItems: true, items: { enum: ["components", "props", "variants", "states", "accessibility", "tokens", "policy", "review"] } }
+      }, ["sourceFamilyId", "kind", "sourceRefs", "authorityScopes"])
+    },
+    componentBindings: {
+      type: "array",
+      minItems: 1,
+      items: objectSchema(null, {
+        bindingId: { type: "string" },
+        componentId: { type: "string" },
+        catalogRef: { type: "string", pattern: "^catalog://p2/components/[A-Za-z][A-Za-z0-9]*$" },
+        primarySourceRef: sourceRefSchema(false),
+        supportingSourceRefs: { type: "array", uniqueItems: true, items: sourceRefSchema(false) },
+        authoritativePointers: { type: "array", minItems: 1, uniqueItems: true, items: { type: "string", pattern: "^/components/[A-Za-z][A-Za-z0-9]*(?:/[A-Za-z0-9._~-]+)+$" } },
+        precedence: objectSchema(null, {
+          mode: { enum: ["primary-wins", "review-required"] },
+          policyRef: sourceRefSchema(false),
+          orderedSourceRefs: { type: "array", minItems: 1, uniqueItems: true, items: sourceRefSchema(false) }
+        }, ["mode", "policyRef", "orderedSourceRefs"]),
+        policyRefs: { type: "array", minItems: 1, uniqueItems: true, items: sourceRefSchema(false) },
+        reviewRouteId: { type: ["string", "null"] }
+      }, ["bindingId", "componentId", "catalogRef", "primarySourceRef", "supportingSourceRefs", "authoritativePointers", "precedence", "policyRefs", "reviewRouteId"])
+    },
+    policyBindings: {
+      type: "array",
+      minItems: 1,
+      items: objectSchema(null, {
+        policyId: { type: "string" },
+        policyKind: { enum: ["accessibility", "content", "source-precedence", "exception", "review"] },
+        sourceRef: sourceRefSchema(false),
+        effect: { enum: ["narrow", "review_required", "block"] },
+        catalogTargets: { type: "array", items: { type: "string" } }
+      }, ["policyId", "policyKind", "sourceRef", "effect", "catalogTargets"])
+    },
+    reviewRoutes: {
+      type: "array",
+      minItems: 1,
+      items: objectSchema(null, {
+        routeId: { type: "string" },
+        owner: { type: "string", minLength: 1 },
+        policyRef: sourceRefSchema(false),
+        rationale: { type: "string", minLength: 1 },
+        expiresAt: { type: "string" },
+        executable: { const: false }
+      }, ["routeId", "owner", "policyRef", "rationale", "expiresAt", "executable"])
+    },
+    exceptions: {
+      type: "array",
+      items: objectSchema(null, {
+        exceptionId: { type: "string" },
+        componentId: { type: "string" },
+        sourceRef: sourceRefSchema(false),
+        policyRef: sourceRefSchema(false),
+        reviewRouteId: { type: "string" }
+      }, ["exceptionId", "componentId", "sourceRef", "policyRef", "reviewRouteId"])
+    },
+    provenance: provenanceSchema()
+  }, ["schemaId", "version", "profileId", "designSystemId", "sourceRef", "evaluationTime", "sourceFamilies", "componentBindings", "policyBindings", "reviewRoutes", "exceptions", "provenance"]);
 }
 
 function declaredSourceInventorySchema() {
@@ -1301,19 +1459,138 @@ function declaredSourceInventorySchema() {
   }, ["schemaId", "version", "sourceRoot", "sourceManifestRef", "sourceFileRefs", "diagnostics", "diagnosticsRegistry", "provenance"]);
 }
 
+function sourceFactCoverageSchema() {
+  return objectSchema("source-fact-coverage.v0", {
+    schemaId: { const: "source-fact-coverage.v0" },
+    version: { type: "string" },
+    authorityProfileRef: artifactRefSchema(),
+    catalogRef: artifactRefSchema(),
+    componentCoverage: {
+      type: "array",
+      items: objectSchema(null, {
+        bindingId: { type: "string" },
+        componentId: { type: "string" },
+        catalogRef: { type: "string" },
+        primarySourceRef: sourceRefSchema(false),
+        supportingSourceRefs: { type: "array", uniqueItems: true, items: sourceRefSchema(false) },
+        facts: {
+          type: "array",
+          items: objectSchema(null, {
+            catalogPointer: { type: "string" },
+            catalogValueHash: { type: "string", pattern: "^[0-9a-f]{64}$" },
+            primaryFactRef: sourceRefSchema(true),
+            supportingFactRefs: { type: "array", uniqueItems: true, items: sourceRefSchema(false) },
+            conflict: { type: "boolean" },
+            resolution: { enum: ["exact-match", "narrower-than-catalog", "primary-precedence", "review-required", "missing-primary-fact", "outside-catalog"] },
+            status: { enum: ["allowed", "review_required", "blocked"] }
+          }, ["catalogPointer", "catalogValueHash", "primaryFactRef", "supportingFactRefs", "conflict", "resolution", "status"])
+        },
+        status: { enum: ["allowed", "review_required", "blocked"] }
+      }, ["bindingId", "componentId", "catalogRef", "primarySourceRef", "supportingSourceRefs", "facts", "status"])
+    },
+    policyCoverage: {
+      type: "array",
+      items: objectSchema(null, {
+        policyId: { type: "string" },
+        policyKind: { type: "string" },
+        sourceRef: sourceRefSchema(false),
+        effect: { enum: ["narrow", "review_required", "block"] },
+        catalogTargets: { type: "array", items: { type: "string" } },
+        status: { enum: ["allowed", "review_required", "blocked"] }
+      }, ["policyId", "policyKind", "sourceRef", "effect", "catalogTargets", "status"])
+    },
+    exceptionCoverage: {
+      type: "array",
+      items: objectSchema(null, {
+        exceptionId: { type: "string" },
+        componentId: { type: "string" },
+        sourceRef: sourceRefSchema(false),
+        policyRef: sourceRefSchema(false),
+        reviewRouteId: { type: "string" },
+        owner: { type: "string" },
+        expiresAt: { type: "string" },
+        status: { const: "review_required" }
+      }, ["exceptionId", "componentId", "sourceRef", "policyRef", "reviewRouteId", "owner", "expiresAt", "status"])
+    },
+    findings: { type: "array", items: connectionFindingSchema() },
+    summary: connectionSummarySchema(),
+    promotionStatus: { enum: ["allowed", "review_required", "blocked"] },
+    provenance: provenanceSchema()
+  }, ["schemaId", "version", "authorityProfileRef", "catalogRef", "componentCoverage", "policyCoverage", "exceptionCoverage", "findings", "summary", "promotionStatus", "provenance"]);
+}
+
+function authorityConnectionReportSchema() {
+  return objectSchema("authority-connection-report.v0", {
+    schemaId: { const: "authority-connection-report.v0" },
+    version: { type: "string" },
+    runId: { type: "string" },
+    authorityProfileRef: artifactRefSchema(),
+    sourceFactCoverageRef: artifactRefSchema(),
+    sourceAuthorityMapRef: artifactRefSchema(),
+    sourceReviewQueueRef: artifactRefSchema(),
+    governedCatalogRef: artifactRefSchema(),
+    components: {
+      type: "array",
+      items: objectSchema(null, {
+        componentId: { type: "string" },
+        status: { enum: ["allowed", "review_required", "blocked"] },
+        understoodFactCount: { type: "integer", minimum: 0 },
+        conflictCount: { type: "integer", minimum: 0 },
+        appliedPrecedence: { type: ["string", "null"] },
+        policyRefs: { type: "array", items: sourceRefSchema(false) }
+      }, ["componentId", "status", "understoodFactCount", "conflictCount", "appliedPrecedence", "policyRefs"])
+    },
+    findings: { type: "array", items: connectionFindingSchema() },
+    summary: connectionSummarySchema(),
+    status: { enum: ["pass", "fail"] },
+    promotionStatus: { enum: ["allowed", "review_required", "blocked"] },
+    nonAuthorityStatement: { type: "string" },
+    provenance: provenanceSchema()
+  }, ["schemaId", "version", "runId", "authorityProfileRef", "sourceFactCoverageRef", "sourceAuthorityMapRef", "sourceReviewQueueRef", "governedCatalogRef", "components", "findings", "summary", "status", "promotionStatus", "nonAuthorityStatement", "provenance"]);
+}
+
+function connectionFindingSchema() {
+  return objectSchema(null, {
+    findingId: { type: "string" },
+    diagnosticCode: { anyOf: [{ enum: SC_DIAGNOSTIC_ROWS.map((row) => row.code) }, { type: "null" }] },
+    componentId: { type: ["string", "null"] },
+    status: { enum: ["allowed", "review_required", "blocked"] },
+    message: { type: "string" },
+    actionType: { enum: ["none", "edit-authority-profile", "edit-source-fact", "review-authority-exception"] },
+    editPath: { type: ["string", "null"] },
+    jsonPointer: { type: ["string", "null"] },
+    sourceRefs: { type: "array", items: sourceRefSchema(false) },
+    candidateSourceRefs: { type: "array", items: sourceRefSchema(false) },
+    owner: { type: ["string", "null"] }
+  }, ["findingId", "diagnosticCode", "componentId", "status", "message", "actionType", "editPath", "jsonPointer", "sourceRefs", "candidateSourceRefs", "owner"]);
+}
+
+function connectionSummarySchema() {
+  return objectSchema(null, {
+    componentCount: { type: "integer", minimum: 0 },
+    factCount: { type: "integer", minimum: 0 },
+    exceptionCount: { type: "integer", minimum: 0 },
+    allowedCount: { type: "integer", minimum: 0 },
+    reviewRequiredCount: { type: "integer", minimum: 0 },
+    blockedCount: { type: "integer", minimum: 0 }
+  }, ["componentCount", "factCount", "exceptionCount", "allowedCount", "reviewRequiredCount", "blockedCount"]);
+}
+
 function sourceAuthorityMapSchema() {
   return objectSchema("source-authority-map.v0", {
     schemaId: { const: "source-authority-map.v0" },
     version: { type: "string" },
     catalogRef: artifactRefSchema(),
     ingestionEvidenceRef: artifactRefSchema(),
+    authorityProfileRef: artifactRefSchema(),
+    sourceFactCoverageRef: artifactRefSchema(),
     componentAuthority: { type: "array", items: componentAuthorityRowSchema() },
     policyAuthority: { type: "array", items: policyAuthorityRowSchema() },
     nonAuthorityStatement: { type: "string" },
     diagnostics: { type: "array", items: diagnosticObjectSchema() },
     diagnosticsRegistry: { const: diagnosticsRegistry() },
     provenance: provenanceSchema()
-  }, ["schemaId", "version", "catalogRef", "ingestionEvidenceRef", "componentAuthority", "policyAuthority", "nonAuthorityStatement", "diagnostics", "diagnosticsRegistry", "provenance"]);
+  }, ["schemaId", "version", "catalogRef", "ingestionEvidenceRef", "authorityProfileRef", "sourceFactCoverageRef", "componentAuthority", "policyAuthority", "nonAuthorityStatement", "diagnostics", "diagnosticsRegistry", "provenance"]);
 }
 
 function sourceReviewQueueSchema() {
@@ -1331,23 +1608,23 @@ function sourceReviewQueueSchema() {
 function reviewQueueItemSchema() {
   return objectSchema(null, {
     reviewQueueItemId: { type: "string" },
+    origin: { enum: ["fixture-proof", "authority-profile"] },
+    subjectRef: sourceRefSchema(true),
     fixturePath: { type: "string" },
     componentId: { type: "string" },
     owner: { type: "string" },
     rationale: { type: "string" },
-    expiresAt: { const: "1970-01-31T00:00:00.000Z" },
+    expiresAt: { type: "string", pattern: "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.000Z$" },
     requiredSourceRefs: {
       type: "array",
       minItems: 1,
       uniqueItems: true,
-      items: sourceRefSchema(false),
-      contains: { const: SC_REVIEW_POLICY_SOURCE_REF },
-      minContains: 1
+      items: sourceRefSchema(false)
     },
     evidencePath: { const: `${SC_ARTIFACT_ROOT}/evidence.json` },
     executable: { const: false },
     promotionStatus: { const: "review_required" }
-  }, ["reviewQueueItemId", "fixturePath", "componentId", "owner", "rationale", "expiresAt", "requiredSourceRefs", "evidencePath", "executable", "promotionStatus"]);
+  }, ["reviewQueueItemId", "origin", "subjectRef", "fixturePath", "componentId", "owner", "rationale", "expiresAt", "requiredSourceRefs", "evidencePath", "executable", "promotionStatus"]);
 }
 
 function sourceConformanceReportSchema() {
@@ -1360,15 +1637,18 @@ function sourceConformanceReportSchema() {
     artifactRoot: { const: SC_ARTIFACT_ROOT },
     upstreamPreflight: { type: "object", additionalProperties: true },
     sourceInventoryRef: artifactRefSchema(),
+    sourceFactCoverageRef: artifactRefSchema(),
     sourceAuthorityMapRef: artifactRefSchema(),
     sourceReviewQueueRef: artifactRefSchema(),
+    governedCatalogRef: artifactRefSchema(),
+    authorityConnectionReportRef: artifactRefSchema(),
     results: { type: "array", items: resultRowSchema() },
     diagnostics: { type: "array", items: diagnosticObjectSchema() },
     diagnosticsRegistry: { const: diagnosticsRegistry() },
     status: { enum: ["pass", "fail"] },
     promotionStatus: { enum: ["allowed", "review_required", "blocked"] },
     provenance: provenanceSchema()
-  }, ["schemaId", "version", "runId", "sourceRoot", "fixtureRoot", "artifactRoot", "upstreamPreflight", "sourceInventoryRef", "sourceAuthorityMapRef", "sourceReviewQueueRef", "results", "diagnostics", "diagnosticsRegistry", "status", "promotionStatus", "provenance"]);
+  }, ["schemaId", "version", "runId", "sourceRoot", "fixtureRoot", "artifactRoot", "upstreamPreflight", "sourceInventoryRef", "sourceFactCoverageRef", "sourceAuthorityMapRef", "sourceReviewQueueRef", "governedCatalogRef", "authorityConnectionReportRef", "results", "diagnostics", "diagnosticsRegistry", "status", "promotionStatus", "provenance"]);
 }
 
 function sourceConformanceEvidenceSchema() {
@@ -1383,6 +1663,7 @@ function sourceConformanceEvidenceSchema() {
     environment: { type: "object", additionalProperties: true },
     schemaClosure: { type: "array", items: artifactRefSchema() },
     sourceManifestRef: artifactRefSchema(),
+    authorityProfileRef: artifactRefSchema(),
     sourceFileRefs: { type: "array", items: artifactRefSchema() },
     fixtureRefs: { type: "array", items: artifactRefSchema() },
     boundaryRefs: { type: "array", items: artifactRefSchema(true) },
@@ -1393,7 +1674,7 @@ function sourceConformanceEvidenceSchema() {
     status: { enum: ["pass", "fail"] },
     promotionStatus: { enum: ["allowed", "review_required", "blocked"] },
     provenance: provenanceSchema()
-  }, ["contractId", "schemaId", "version", "runId", "checkedAt", "command", "args", "environment", "schemaClosure", "sourceManifestRef", "sourceFileRefs", "fixtureRefs", "boundaryRefs", "artifacts", "diagnostics", "diagnosticsRegistry", "validationResults", "status", "promotionStatus", "provenance"]);
+  }, ["contractId", "schemaId", "version", "runId", "checkedAt", "command", "args", "environment", "schemaClosure", "sourceManifestRef", "authorityProfileRef", "sourceFileRefs", "fixtureRefs", "boundaryRefs", "artifacts", "diagnostics", "diagnosticsRegistry", "validationResults", "status", "promotionStatus", "provenance"]);
 }
 
 function sourceConformanceExpectationsSchema() {
@@ -1436,8 +1717,37 @@ function sourceConformanceFixtureSchema() {
     claims: claimsSchema(),
     authorityConflict: authorityConflictSchema(),
     exception: exceptionSchema(),
+    authorityFact: authorityFactSchema(),
+    catalogMutation: catalogMutationSchema(),
     provenance: provenanceSchema()
-  }, ["schemaId", "version", "fixtureId", "componentId", "sourceRef", "requiredSourceRefs", "proposedUsage", "review", "claims", "authorityConflict", "exception", "provenance"]);
+  }, ["schemaId", "version", "fixtureId", "componentId", "sourceRef", "requiredSourceRefs", "proposedUsage", "review", "claims", "authorityConflict", "exception", "authorityFact", "catalogMutation", "provenance"]);
+}
+
+function authorityFactSchema() {
+  return {
+    oneOf: [
+      objectSchema(null, {
+        catalogPointer: { type: "string" },
+        factKind: { const: "catalog-value" },
+        sourceRef: sourceRefSchema(false),
+        value: {}
+      }, ["catalogPointer", "factKind", "sourceRef", "value"]),
+      { type: "null" }
+    ]
+  };
+}
+
+function catalogMutationSchema() {
+  return {
+    oneOf: [
+      objectSchema(null, {
+        jsonPointer: { type: "string" },
+        operation: { enum: ["add", "remove", "replace"] },
+        value: {}
+      }, ["jsonPointer", "operation", "value"]),
+      { type: "null" }
+    ]
+  };
 }
 
 function authorityConflictSchema() {
@@ -1486,6 +1796,7 @@ function exceptionSchema() {
 
 function componentAuthorityRowSchema() {
   return objectSchema(null, {
+    bindingId: { type: "string" },
     componentId: { type: "string" },
     catalogRef: { type: "string" },
     declaredSourceRef: sourceRefSchema(false),
@@ -1495,16 +1806,23 @@ function componentAuthorityRowSchema() {
       items: sourceRefSchema(false)
     },
     precedencePolicyRef: sourceRefSchema(true),
+    precedenceMode: { enum: ["primary-wins", "review-required"] },
+    authoritativePointers: { type: "array", minItems: 1, uniqueItems: true, items: { type: "string" } },
+    policyRefs: { type: "array", minItems: 1, uniqueItems: true, items: sourceRefSchema(false) },
+    reviewRouteId: { type: ["string", "null"] },
     conformanceRole: { type: "string" }
-  }, ["componentId", "catalogRef", "declaredSourceRef", "additionalDeclaredSourceRefs", "precedencePolicyRef", "conformanceRole"]);
+  }, ["bindingId", "componentId", "catalogRef", "declaredSourceRef", "additionalDeclaredSourceRefs", "precedencePolicyRef", "precedenceMode", "authoritativePointers", "policyRefs", "reviewRouteId", "conformanceRole"]);
 }
 
 function policyAuthorityRowSchema() {
   return objectSchema(null, {
     policyId: { type: "string" },
+    policyKind: { type: "string" },
     sourceRef: sourceRefSchema(false),
+    effect: { enum: ["narrow", "review_required", "block"] },
+    catalogTargets: { type: "array", items: { type: "string" } },
     conformanceRole: { type: "string" }
-  }, ["policyId", "sourceRef", "conformanceRole"]);
+  }, ["policyId", "policyKind", "sourceRef", "effect", "catalogTargets", "conformanceRole"]);
 }
 
 function reviewMetadataSchema() {

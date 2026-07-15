@@ -33,12 +33,15 @@ P2 Spectrum slice: Adobe Spectrum Design Data, pinned to
 `@adobe/spectrum-design-data@0.7.0`, scoped to `button` and `in-line-alert`.
 That is not full Spectrum support.
 
-The current source-conformance proof demonstrates declared local source
-authority, source-precedence conflict handling, review-required routing, and
-evidence checks over accepted P2 catalog and evidence. It also proves the first
-readiness step: declared forked Button variant exceptions route to
-non-executable review, while undocumented fork drift blocks. It is proof-only
-and does not broaden P2 ingestion support.
+The current source-conformance proof now implements a bounded readiness slice.
+Checked Button and InLineAlert facts plus team-owned authority profiles compile
+into fact coverage, policy and precedence mappings, owner-routed exceptions,
+actionable connection reports, and governed catalogs that cannot expand
+accepted P2 capability. The aggregate package proof runs the unchanged compiler
+as two fresh passing executions over distinct checked instances of the fixed
+source-family ABI, then re-verifies the persisted candidate closure and counts
+the failing expansion probe separately. The target remains proof-only and does
+not broaden P2 ingestion support or support arbitrary source-family layouts.
 
 Astryx has no current repo-defined proof target. It should remain a candidate
 source-family or target-conformance subject until a later proof defines schemas,
@@ -91,9 +94,12 @@ If Astryx CLI, MCP, docs, templates, themes, or swizzle output are considered,
 the snapshot must record the tool or command id, version, arguments or request,
 response material, source refs, and hashes. Live tool output is not authority.
 
-## Planned Proof Shape
-A future design-system-readiness proof or a scoped source-conformance extension
-would need:
+## Implemented Slice And Remaining Proof Shape
+The scoped source-conformance extension now includes the authority profiles,
+fact coverage, policy maps, review queues, connection reports, diagnostics,
+fixtures, aggregate package evidence, and CI shape for two checked local bundle
+instances. Future design-system-readiness work must reuse those boundaries
+while adding separately proven candidate source shapes or coverage:
 
 - schemas for a candidate source manifest, source-material inventory, source
   authority matrix, fact coverage report, policy map, review queue or review
@@ -182,8 +188,6 @@ authority, template authority, swizzle authority, or production adoption until
 the relevant target-specific evidence exists and passes.
 
 ## Open Decisions
-- Whether to implement readiness as a new non-numbered
-  `design-system-readiness` target or as a scoped source-conformance extension.
 - Whether the next proof candidate should expand Spectrum component coverage
   first or prove an Astryx source-family eligibility slice first.
 - Whether Astryx should be modeled initially as source-family eligibility,

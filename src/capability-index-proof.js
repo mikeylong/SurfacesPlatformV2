@@ -798,7 +798,7 @@ async function verifyEvidenceClosure({ cwd, evidence, evidencePath }) {
     let actualHash;
     if (ref.path === evidencePath) {
       actualHash = computeEvidenceSelfHash(evidence, evidencePath);
-    } else if (group === "sourceFileRefs") {
+    } else if (["sourceFileRefs", "candidateSourceRefs", "compilerRefs", "runtimeRefs", "candidateAuthorityProfileRef"].includes(group)) {
       actualHash = await rawFileHash(path.join(cwd, ref.path));
     } else if (ref.path.endsWith("/evidence.json")) {
       const upstream = await readRegularJson(cwd, ref.path, "CAPABILITY_EVIDENCE_MISSING");
@@ -812,6 +812,12 @@ async function verifyEvidenceClosure({ cwd, evidence, evidencePath }) {
     }
     if (actualHash !== ref.hash) throw diagnosticError("CAPABILITY_EVIDENCE_HASH_MISMATCH", ref.path);
   }
+  if (evidence.contractId === "surfaces-source-family-packaging-proof") {
+    const { sourceFamilyPackagingInternals } = await import("./source-family-packaging-proof.js");
+    if (await sourceFamilyPackagingInternals.firstEvidenceIntegrityFailureCode(cwd, evidence) !== null) {
+      throw diagnosticError("CAPABILITY_EVIDENCE_HASH_MISMATCH", evidencePath);
+    }
+  }
 }
 
 function collectHashRefs(evidence) {
@@ -824,11 +830,14 @@ function collectHashRefs(evidence) {
     "schemaClosure",
     "fixtureRefs",
     "sourceFileRefs",
+    "candidateSourceRefs",
+    "compilerRefs",
+    "runtimeRefs",
     "compatibilityPreflightRefs"
   ]) {
     for (const ref of evidence[group] || []) refs.push({ group, ref });
   }
-  for (const group of ["sourceManifestRef", "runtimeAdapterReportRef", "runtimeProjectionRef"]) {
+  for (const group of ["sourceManifestRef", "packageRef", "candidateManifestRef", "candidateAuthorityProfileRef", "runtimeAdapterReportRef", "runtimeProjectionRef"]) {
     if (evidence[group]) refs.push({ group, ref: evidence[group] });
   }
   return refs;

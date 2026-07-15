@@ -75,6 +75,37 @@ test("capability proof is deterministic and emits exactly three artifacts", asyn
   ]);
 });
 
+test("capability index exposes the bounded authority compiler without authority escalation", async () => {
+  const index = await readJson(indexPath);
+  const row = index.implementedCapabilities.find((candidate) => candidate.capabilityId === "declared-source-conformance");
+  assert.equal(row.canAddAuthority, false);
+  assert.match(row.userValue, /checked source facts/);
+  assert.match(row.scopeStatement, /exactly two manifest-declared local authority bundles/);
+  assert.match(row.scopeStatement, /without expanding catalog capability/);
+  assert.deepEqual(row.nonCapabilities, ["arbitrary source connector", "broader P2 component coverage", "live source crawling", "self-serve connection UI"]);
+  assert.equal(row.proofCommand, "interfacectl surfaces source-family-packaging proof");
+  assert.equal(row.packageProofScript, "proof:source-conformance");
+  assert.equal(row.ciGate, "npm run check:source-family-packaging:ci");
+  assert.equal(row.evidencePath, "artifacts/source-family-packaging/evidence.json");
+  assert.equal(row.evidenceSchemaId, "source-family-packaging-evidence.v0");
+  assert.equal(row.outputPaths.length, 18);
+  for (const requiredPath of [
+    "artifacts/source-conformance/evidence.json",
+    "artifacts/source-conformance/governed-catalog.json",
+    "artifacts/source-family-packaging/candidate-source-conformance-evidence.json",
+    "artifacts/source-family-packaging/candidate-governed-catalog.json",
+    "artifacts/source-family-packaging/source-family-packaging-report.json",
+    "artifacts/source-family-packaging/evidence.json"
+  ]) assert.equal(row.outputPaths.includes(requiredPath), true, requiredPath);
+  assert.deepEqual(row.reportPaths, [
+    "artifacts/source-conformance/authority-connection-report.json",
+    "artifacts/source-conformance/source-conformance-report.json",
+    "artifacts/source-family-packaging/candidate-authority-connection-report.json",
+    "artifacts/source-family-packaging/candidate-source-conformance-report.json",
+    "artifacts/source-family-packaging/source-family-packaging-report.json"
+  ].sort());
+});
+
 test("read-only verification preserves every repository byte, type, size, and mtime", async () => {
   const before = await workspaceSnapshot(root);
   const result = await verifyCapabilityIndex({ cwd: root, indexPath, evidencePath });

@@ -88,13 +88,43 @@ not replace target evidence or turn demos and plans into proof.
 
 Current foundation: P2 proves bounded ingestion from the locked Adobe Spectrum
 Design Data package for `button` and `in-line-alert`. The declared-source
-conformance target proves source precedence, exceptions, conflicts, review,
-and expiry handling for its bounded local bundle.
+conformance target now reads field-level component facts and a checked,
+team-owned authority profile from its bounded local bundle. It derives fact
+coverage, source precedence, policy bindings, exceptions, review ownership,
+and actionable findings; emits a governed catalog that cannot expand the
+accepted P2 component, token, runtime-capability, or compatibility boundary;
+and proves that profile-only ownership changes affect output without compiler
+edits.
+
+The reusable package slice now executes that same compiler over the canonical
+bundle and a second distinct, manifest-declared team bundle in separate
+isolated workspaces. The report records two passing accepted-bundle executions
+and counts the failing causal probe separately. The package proof binds the
+seven-file local JavaScript closure, Node 22 and package inputs, both evidence
+boundaries, and the second bundle's physical source bytes. It derives the
+active owner from referenced review routes, captures the complete second output
+set, and reconstructs the compiler's logical workspace to re-verify that
+captured evidence after the original workspace is gone. The two runs match the
+same six normalized source facts, including each primary and supporting logical
+fact ref and JCS value hash plus conflict, resolution, catalog hash, and status,
+and nine immutable P2 catalog fields. The unchanged compiler blocks an
+`expressive` Button expansion with `SOURCE_FACT_AUTHORITY_ESCALATION`. Both
+bundles remain limited to Button and InLineAlert. The capability index exposes
+the aggregate result at
+`artifacts/source-family-packaging/evidence.json` without adding a thirteenth
+target.
 
 Complete when a team can declare its authoritative sources, precedence,
 policies, and review ownership without repo-specific implementation changes,
 then compile a traceable governed catalog with actionable conflict and
-ambiguity handling.
+ambiguity handling. The current slice proves that path for two checked
+instances of one fixed source-family package ABI. Arbitrary source layouts or
+namespaces, broader component coverage, live connectors, and a self-serve
+connection path remain open and require separate proof.
+
+What's next: choose the next bounded Connect Authority proof separately. The
+current evidence does not authorize broader P2 coverage, arbitrary packaging,
+live connectors, self-serve UI, or JudgmentKit use.
 
 ## 3. Generate Within Bounds
 
