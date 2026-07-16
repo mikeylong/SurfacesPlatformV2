@@ -5,7 +5,7 @@ roadmap. It is subordinate to `VISION.md`, `PLAN.md`, the phase plans, and
 passing evidence. It does not create proof authority or broaden an implemented
 target.
 
-Last updated: 2026-07-14
+Last updated: 2026-07-15
 Current focus: **Connect Authority**
 
 ## Status Semantics
@@ -43,7 +43,7 @@ boundary.
 
 Completion record:
 
-- [x] One schema-validated capability index covers all 12 implemented proof
+- [x] One schema-validated capability index covers all 13 implemented proof
   targets that existed before the capability-index target.
 - [x] Each implemented row exposes its identity, scope, authority boundary,
   non-capabilities, dependencies, commands, CI gate, inputs, outputs,
@@ -77,7 +77,7 @@ Proof and evidence:
 - Read-only verification: `interfacectl surfaces capabilities verify --index artifacts/capability-index/capability-index.json --evidence artifacts/capability-index/evidence.json`
 - Proof-bearing gate: `npm run check:capability-index:ci`
 
-The index intentionally covers the 12 pre-existing targets rather than
+The index intentionally covers the 13 pre-existing targets rather than
 indexing itself. Its evidence proves the index contract without creating a
 circular authority chain. The index is a derived discovery surface. It does
 not replace target evidence or turn demos and plans into proof.
@@ -111,8 +111,20 @@ and nine immutable P2 catalog fields. The unchanged compiler blocks an
 `expressive` Button expansion with `SOURCE_FACT_AUTHORITY_ESCALATION`. Both
 bundles remain limited to Button and InLineAlert. The capability index exposes
 the aggregate result at
-`artifacts/source-family-packaging/evidence.json` without adding a thirteenth
-target.
+`artifacts/source-family-packaging/evidence.json` as one target.
+
+The source-accessibility-policy slice closes the next bounded reconciliation
+gap. It reads five checked structured behavior declarations, hash-binds the
+referenced policy requirement values as opaque identifiers, and compares
+explicit `equals` and `exists` assertions with accepted P2 catalog facts. The
+source-conformance catalog remains an integrity-bound upstream input, not a
+second fact authority. Three declarations reconcile as allowed.
+Two missing authoritative facts remain non-executable and owner-bound for
+review. Free-form policy text, contradiction, unsupported behavior, unresolved
+precedence, missing source refs, and authority expansion fail with canonical
+diagnostics. Passing evidence records 18 matching fixture results and
+`promotionStatus: "review_required"` without emitting or mutating a governed
+catalog.
 
 Complete when a team can declare its authoritative sources, precedence,
 policies, and review ownership without repo-specific implementation changes,
@@ -122,9 +134,10 @@ instances of one fixed source-family package ABI. Arbitrary source layouts or
 namespaces, broader component coverage, live connectors, and a self-serve
 connection path remain open and require separate proof.
 
-What's next: choose the next bounded Connect Authority proof separately. The
-current evidence does not authorize broader P2 coverage, arbitrary packaging,
-live connectors, self-serve UI, or JudgmentKit use.
+What's next: choose any further Connect Authority slice separately. Current
+evidence does not authorize broader P2 coverage, arbitrary packaging, live
+connectors, self-serve UI, runtime accessibility compliance, or JudgmentKit
+use.
 
 ## 3. Generate Within Bounds
 

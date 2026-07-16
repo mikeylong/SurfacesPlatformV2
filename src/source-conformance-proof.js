@@ -742,15 +742,19 @@ function buildSourceFactCoverage({ authorityProfile, authorityProfileRef, source
           if (!primaryFact) {
             resolution = "missing-primary-fact";
             factStatus = "blocked";
-          } else if (primaryRelation === "outside" || supportingRelations.includes("outside")) {
+          } else if (primaryRelation === "outside") {
             resolution = "outside-catalog";
             factStatus = "blocked";
-            const index = supportingRelations.indexOf("outside");
-            if (primaryRelation !== "outside" && index >= 0) offendingRef = supportingFacts[index].sourceRef;
+          } else if (conflict && binding.precedence.mode === "primary-wins") {
+            resolution = "primary-precedence";
+            factStatus = "allowed";
+          } else if (supportingRelations.includes("outside")) {
+            resolution = "outside-catalog";
+            factStatus = "blocked";
+            offendingRef = supportingFacts[supportingRelations.indexOf("outside")].sourceRef;
           } else if (conflict) {
-            resolution = binding.precedence.mode === "primary-wins" ? "primary-precedence" : "review-required";
-            factStatus = binding.precedence.mode === "primary-wins" ? "allowed" : "review_required";
-            if (factStatus === "review_required" && !route) factStatus = "blocked";
+            resolution = "review-required";
+            factStatus = route ? "review_required" : "blocked";
           }
           if (factStatus === "blocked") {
             findings.push({

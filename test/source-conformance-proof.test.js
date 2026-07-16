@@ -87,6 +87,11 @@ test("source conformance compiles checked facts into an actionable non-expanding
   assert.equal(variant.resolution, "primary-precedence");
   assert.equal(variant.status, "allowed");
   assert.equal(variant.supportingFactRefs.length, 2);
+  const role = button.facts.find((fact) => fact.catalogPointer === "/components/Button/accessibility/role");
+  assert.equal(role.conflict, true);
+  assert.equal(role.resolution, "primary-precedence");
+  assert.equal(role.status, "allowed");
+  assert.equal(role.supportingFactRefs.length, 2);
   const alert = coverage.componentCoverage.find((row) => row.componentId === "InLineAlert");
   assert.equal(alert.facts.length, 3);
   assert.equal(alert.facts.every((fact) => fact.conflict === false && fact.resolution === "exact-match"), true);
@@ -95,7 +100,7 @@ test("source conformance compiles checked facts into an actionable non-expanding
 
   assert.equal(connection.status, "pass");
   assert.equal(connection.promotionStatus, "review_required");
-  assert.equal(connection.components.find((row) => row.componentId === "Button").conflictCount, 1);
+  assert.equal(connection.components.find((row) => row.componentId === "Button").conflictCount, 2);
   assert.equal(connection.components.reduce((count, row) => count + row.understoodFactCount, 0), 6);
   assert.equal(connection.findings.filter((finding) => finding.status !== "allowed").every((finding) =>
     finding.actionType !== "none" &&

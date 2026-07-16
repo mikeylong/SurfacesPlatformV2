@@ -57,7 +57,7 @@ test("capability proof is deterministic and emits exactly three artifacts", asyn
   });
   assert.equal(first.status, "pass");
   assert.equal(first.promotionStatus, "allowed");
-  assert.equal(first.implementedCount, 12);
+  assert.equal(first.implementedCount, 13);
   const firstBytes = await artifactBytes();
   const second = await runCapabilityIndexProof({
     cwd: root,
@@ -106,15 +106,36 @@ test("capability index exposes the bounded authority compiler without authority 
   ].sort());
 });
 
+test("capability index exposes structured accessibility reconciliation without policy or runtime escalation", async () => {
+  const index = await readJson(indexPath);
+  const row = index.implementedCapabilities.find((candidate) => candidate.capabilityId === "source-accessibility-policy");
+  assert.equal(row.canAddAuthority, false);
+  assert.equal(row.evidencePath, "artifacts/source-accessibility-policy/evidence.json");
+  assert.equal(row.evidenceSchemaId, "source-accessibility-policy-evidence.v0");
+  assert.equal(row.proofCommand, "interfacectl surfaces source-accessibility-policy proof");
+  assert.equal(row.packageProofScript, "proof:source-accessibility-policy");
+  assert.deepEqual(row.nonCapabilities, [
+    "free-form policy interpretation",
+    "runtime accessibility compliance",
+    "broader P2 component coverage",
+    "arbitrary source packaging",
+    "live source connectors",
+    "self-serve connection UI",
+    "production adapters",
+    "JudgmentKit invocation"
+  ]);
+  assert.deepEqual(row.dependencies.evidence, ["p2-spectrum-ingestion", "declared-source-conformance"]);
+});
+
 test("read-only verification preserves every repository byte, type, size, and mtime", async () => {
   const before = await workspaceSnapshot(root);
   const result = await verifyCapabilityIndex({ cwd: root, indexPath, evidencePath });
-  assert.equal(result.implemented.length, 12);
+  assert.equal(result.implemented.length, 13);
   assert.deepEqual(await workspaceSnapshot(root), before);
 
   const cli = await invoke(["verify", "--index", indexPath, "--evidence", evidencePath]);
   assert.equal(cli.exitCode, 0);
-  assert.match(cli.stdout, /implemented: 12\/12 verified/);
+  assert.match(cli.stdout, /implemented: 13\/13 verified/);
   assert.match(cli.stdout, /planned:/);
   assert.equal(cli.stderr, "");
   assert.deepEqual(await workspaceSnapshot(root), before);

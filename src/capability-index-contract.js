@@ -232,6 +232,51 @@ const IMPLEMENTED_CAPABILITIES = [
     dependencies: { evidence: ["p2-spectrum-ingestion"], phaseGate: [], compatibility: [] }
   }),
   implemented({
+    capabilityId: "source-accessibility-policy",
+    displayName: "Structured accessibility policy reconciliation",
+    roadmapPhase: "Target",
+    proofMode: "report-only",
+    userValue: "Reconciles explicitly declared accessibility behavior requirements with accepted catalog facts without interpreting policy prose.",
+    scopeStatement: "Evaluates structured accessibility behavior declarations for Button and InLineAlert against accepted P2 and declared-source evidence without adding catalog capability.",
+    authorityRole: "structured-policy-reconciliation-consumer",
+    nonCapabilities: [
+      "free-form policy interpretation",
+      "runtime accessibility compliance",
+      "broader P2 component coverage",
+      "arbitrary source packaging",
+      "live source connectors",
+      "self-serve connection UI",
+      "production adapters",
+      "JudgmentKit invocation"
+    ],
+    lifecycleRoles: ["connect-authority", "govern-change"],
+    proofCommand: "interfacectl surfaces source-accessibility-policy proof",
+    packageProofScript: "proof:source-accessibility-policy",
+    ciGate: "npm run check:source-accessibility-policy:ci",
+    evidencePath: "artifacts/source-accessibility-policy/evidence.json",
+    evidenceSchemaId: "source-accessibility-policy-evidence.v0",
+    inputPaths: [
+      "artifacts/p2/evidence.json",
+      "artifacts/p2/governed-catalog.json",
+      "artifacts/source-conformance/evidence.json",
+      "artifacts/source-conformance/governed-catalog.json",
+      "artifacts/source-family-packaging/evidence.json",
+      "sources/source-accessibility-policy",
+      "fixtures/source-accessibility-policy"
+    ],
+    outputPaths: [
+      "artifacts/source-accessibility-policy/accessibility-policy-coverage.json",
+      "artifacts/source-accessibility-policy/accessibility-policy-authority-map.json",
+      "artifacts/source-accessibility-policy/accessibility-policy-review-queue.json",
+      "artifacts/source-accessibility-policy/accessibility-policy-conformance-report.json",
+      "artifacts/source-accessibility-policy/evidence.json"
+    ],
+    diagnosticSchemaPath: "schemas/source-accessibility-policy-diagnostics.v0.schema.json",
+    reportPaths: ["artifacts/source-accessibility-policy/accessibility-policy-conformance-report.json"],
+    documentationRefs: ["PLAN.md", "VISION.md", "plans/source-accessibility-policy.md"],
+    dependencies: { evidence: ["p2-spectrum-ingestion", "declared-source-conformance"], phaseGate: [], compatibility: [] }
+  }),
+  implemented({
     capabilityId: "designer-workflow-trace",
     displayName: "Designer workflow trace",
     roadmapPhase: "Target",

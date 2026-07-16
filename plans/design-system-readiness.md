@@ -43,6 +43,13 @@ source-family ABI, then re-verifies the persisted candidate closure and counts
 the failing expansion probe separately. The target remains proof-only and does
 not broaden P2 ingestion support or support arbitrary source-family layouts.
 
+The source-accessibility-policy proof adds one adjacent readiness check for the
+same Button and InLineAlert boundary. Five closed behavior declarations are
+reconciled against existing catalog facts while policy requirement values stay
+opaque and hash-bound. Missing facts remain owner-bound review work. This does
+not make accessibility prose executable, expand Spectrum coverage, or prove
+runtime accessibility compliance.
+
 Astryx has no current repo-defined proof target. It should remain a candidate
 source-family or target-conformance subject until a later proof defines schemas,
 fixtures, diagnostics, command behavior, generated reports or artifacts, evidence

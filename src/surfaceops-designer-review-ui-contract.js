@@ -22,7 +22,7 @@ export const DRUI_P4_DECISION_LEDGER_PATH = "artifacts/p4/surfaceops-decision-le
 export const DRUI_KANBAN_LIVE_EVIDENCE_PATH = "artifacts/surfaceops-kanban-live/evidence.json";
 export const DRUI_KANBAN_LIVE_OPERATION_PLAN_PATH = "artifacts/surfaceops-kanban-live/surfaceops-kanban-live-operation-plan.json";
 
-export const DRUI_ACCEPTED_DWT_EVIDENCE_HASH = "7def46aacc1fddffe685e3e514a2fda9b21e6349b8cf447b30cd139935f51715";
+export const DRUI_ACCEPTED_DWT_EVIDENCE_HASH = "f1911d2739c13fd15914c0fb3c89f9254c66062a9824375392b69c6c967f8b19";
 export const DRUI_ACCEPTED_KANBAN_LIVE_EVIDENCE_HASH = "9b631ba1b22854bb7241eea073c1a182053713385bda4cf5057826fb73807372";
 export const DRUI_ACCEPTED_P4_EVIDENCE_HASH = "553ed16729bd0fd3ee7bb385364f1d82b756f236393a85e98f9aa05fdea3201d";
 
