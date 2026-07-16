@@ -124,6 +124,26 @@ jobs:
       - name: Run source-family packaging contract gate
         run: npm run check:source-family-packaging:ci:phase
 
+  source-accessibility-policy-proof:
+    runs-on: ubuntu-latest
+    needs: source-family-packaging-proof
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run source accessibility policy contract gate
+        run: npm run check:source-accessibility-policy:ci:phase
+
   p4-proof:
     runs-on: ubuntu-latest
     needs: p3-proof
@@ -355,6 +375,7 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - designer-workflow-trace-proof
+      - source-accessibility-policy-proof
       - surfaceops-kanban-static-proof
       - surfaceops-designer-review-ui-proof
 

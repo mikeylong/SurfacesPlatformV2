@@ -39,6 +39,7 @@ The current tracked phase evidence files report passing status for P0 through th
 | P5 | `surfaces-protocol-static` inert protocol-envelope proof | `artifacts/p5/protocol/evidence.json` | `pass` | `review_required` | `demo/p5/protocol/index.html` |
 | P5 | `surfaces-native-static` inert native-packet proof | `artifacts/p5/native/evidence.json` | `pass` | `review_required` | `demo/p5/native/index.html` |
 | Target | Reusable checked authority-profile and source-fact conformance proof for two compatible bundles | `artifacts/source-family-packaging/evidence.json` | `pass` | `review_required` | none; report/evidence only |
+| Target | Structured accessibility behavior reconciliation against accepted catalog facts | `artifacts/source-accessibility-policy/evidence.json` | `pass` | `review_required` | none; report/evidence only |
 | Target | Designer workflow trace evidence index | `artifacts/designer-workflow-trace/evidence.json` | `pass` | `blocked` | none; report/evidence only |
 
 The promotion status is not a marketing status. It is part of the proof contract: allowed work may proceed, review-required work stays inspectable but blocked from unattended promotion, and blocked work remains rejected by deterministic diagnostics or review policy.
@@ -48,7 +49,7 @@ P4's `status: "pass"` with `promotionStatus: "blocked"` is intentional in the cu
 ## Human Value Readout
 A reviewer should be able to demonstrate platform value by walking the evidence loop for a declared target:
 
-- Authority connection time: show both checked profiles, the two fresh accepted compiler executions, the post-workspace candidate evidence check, fact coverage, discovered conflicts, applied precedence, referenced-route owner exceptions, and connection reports; source changes that exceed P2 must block instead of silently changing either catalog.
+- Authority connection time: show both checked profiles, the two fresh accepted compiler executions, the post-workspace candidate evidence check, fact coverage, discovered conflicts, applied precedence, referenced-route owner exceptions, and connection reports; then show structured accessibility declarations matching existing facts or remaining non-executable review work. Source changes that exceed P2 and policy prose presented as behavior authority must block.
 - Generation time: show the governed catalog, valid fixtures, invalid fixtures, review-required fixtures, and diagnostics that prevent unsupported UI from becoming hidden output.
 - CI/CD integration time: show the package gate, tracked drift check, untracked-output guard, evidence file, and proof-bearing workflow result for the phase.
 - Review time: show the P3 review queue, P4 decision ledger, JudgmentKit-shaped findings, diagnostics, and promotion status without claiming live SurfaceOps or live JudgmentKit behavior.
@@ -569,6 +570,8 @@ Evidence paths:
 - `artifacts/p4/evidence.json`
 - `artifacts/p5/protocol/evidence.json`
 - `artifacts/p5/native/evidence.json`
+- `artifacts/source-family-packaging/evidence.json`
+- `artifacts/source-accessibility-policy/evidence.json`
 
 Gate commands:
 
@@ -580,6 +583,8 @@ npm run check:p3:ci
 npm run check:p4:ci
 npm run check:p5:protocol:ci
 npm run check:p5:native:ci
+npm run check:source-family-packaging:ci
+npm run check:source-accessibility-policy:ci
 npm run check:designer-workflow-trace:ci
 ```
 

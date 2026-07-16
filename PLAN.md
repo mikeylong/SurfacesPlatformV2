@@ -6,7 +6,7 @@ Read [Surfaces Platform Vision And Roadmap](VISION.md) before selecting or imple
 ## Plan Scope
 Subordinate to [VISION.md](VISION.md), this plan tracks the mechanical proof contracts for compiling design-system source material into governed UI contracts for bounded generation, CI/CD validation, evidence review, and runtime-safe rendering.
 
-Cross-cutting product and value documentation lives in [Product Portfolio Boundaries](plans/product-portfolio-boundaries.md), [SurfaceOps Product Brief](plans/surfaceops-product-brief.md), [SurfaceOps UI Decisions And Review Criteria](plans/surfaceops-ui-decisions-review-criteria.md), [SurfaceOps Button Variants Journey](plans/surfaceops-button-variants-journey.md), [Product Designer Workflow](plans/product-designer-workflow.md), [Product Designer Workflow Trace](plans/product-designer-workflow-trace.md), and [Usability And Value Evidence Plan](plans/usability-value-evidence.md). Those files are subordinate to `VISION.md` and must not redefine product authority, roadmap sequence, or implemented proof status.
+Cross-cutting product and value documentation lives in [Product Portfolio Boundaries](plans/product-portfolio-boundaries.md), [SurfaceOps Product Brief](plans/surfaceops-product-brief.md), [SurfaceOps UI Decisions And Review Criteria](plans/surfaceops-ui-decisions-review-criteria.md), [SurfaceOps Button Variants Journey](plans/surfaceops-button-variants-journey.md), [Product Designer Workflow](plans/product-designer-workflow.md), [Product Designer Workflow Trace](plans/product-designer-workflow-trace.md), [Source Accessibility Policy Proof Target](plans/source-accessibility-policy.md), and [Usability And Value Evidence Plan](plans/usability-value-evidence.md). Those files are subordinate to `VISION.md` and must not redefine product authority, roadmap sequence, or implemented proof status.
 
 [Design-System Readiness Plan](plans/design-system-readiness.md) records the
 planning-only checklist for testing or supporting additional agent-friendly
@@ -15,7 +15,7 @@ create implementation support, a proof command, schemas, fixtures, artifacts,
 evidence, CI gates, or product adoption claims.
 
 [Capability Index Proof Target](plans/capability-index.md) records the
-implemented non-numbered proof for discovering and read-only verifying the 12
+implemented non-numbered proof for discovering and read-only verifying the 13
 proof targets that existed before the index. Its seven planned groups are
 roadmap visibility only. The index does not replace target evidence, broaden
 target authority, or index itself.
@@ -576,6 +576,62 @@ Given the passing base evidence, the second package descriptor, and the source-f
 
 The target has no generated demo. `artifacts/source-family-packaging/evidence.json` is the indexed aggregate proof authority for reusable packaging. `artifacts/source-conformance/evidence.json` remains the authority for the original compiler run and the direct input to designer-workflow-trace. Reports, fact coverage, queues, maps, and captured candidate artifacts remain consumers of those evidence boundaries.
 
+## Source Accessibility Policy Target
+
+The source-accessibility-policy proof is a non-numbered Connect Authority
+target over the existing P2, declared-source conformance, and source-family
+packaging boundaries. It reconciles five checked accessibility behavior
+declarations with opaque policy requirement refs, accepted governed-catalog
+facts, and existing owner-bound review routes. Behavior semantics come only
+from closed structured declarations. Policy requirement strings are identifiers
+whose exact values are hash-bound; the proof never interprets their prose.
+
+The proof path is:
+
+```text
+artifacts/p2/evidence.json
+artifacts/p2/governed-catalog.json
+artifacts/source-conformance/evidence.json
+artifacts/source-conformance/governed-catalog.json
+artifacts/source-family-packaging/evidence.json
+sources/source-accessibility-policy/manifest.json
+sources/source-accessibility-policy/accessibility-behavior-declarations.json
+fixtures/source-accessibility-policy/expectations.manifest.json
+  -> validate fixtures/source-accessibility-policy/valid/*.json,
+     review/*.json, invalid/*.json, and mutations/*.json
+  -> artifacts/source-accessibility-policy/accessibility-policy-coverage.json
+  -> artifacts/source-accessibility-policy/accessibility-policy-authority-map.json
+  -> artifacts/source-accessibility-policy/accessibility-policy-review-queue.json
+  -> artifacts/source-accessibility-policy/accessibility-policy-conformance-report.json
+  -> artifacts/source-accessibility-policy/evidence.json
+```
+
+Implemented command:
+
+```bash
+interfacectl surfaces source-accessibility-policy proof --source sources/source-accessibility-policy --ingestion-evidence artifacts/p2/evidence.json --catalog artifacts/p2/governed-catalog.json --source-conformance-evidence artifacts/source-conformance/evidence.json --source-conformance-catalog artifacts/source-conformance/governed-catalog.json --source-family-packaging-evidence artifacts/source-family-packaging/evidence.json --fixture fixtures/source-accessibility-policy --out artifacts/source-accessibility-policy
+```
+
+Given accepted upstream evidence, exact structured declaration source bytes,
+and the target fixture set, the command validates every source and boundary
+hash, resolves only the declared `equals` and `exists` operators, requires
+explicit policy and fact source refs, and matches supported assertions to
+existing catalog facts without mutating the catalog. A policy-authorized
+precedence fixture proves the explicit conflict path. Missing authoritative
+facts remain non-executable and owner-bound in the review queue. Contradictory,
+unsupported, ambiguous-without-review, source-less, or authority-expanding
+inputs fail with canonical diagnostics. The current result records three
+allowed declarations, two review-required declarations, 18 matching fixture
+results, `status: "pass"`, and `promotionStatus: "review_required"`.
+
+Passing evidence proves deterministic reconciliation for these five Button and
+InLineAlert declarations only. It does not expand P2, create catalog facts,
+interpret free-form policy text, prove runtime accessibility compliance,
+support arbitrary source packaging, call live connectors, add a self-serve UI,
+or authorize production adapters or JudgmentKit. The target has no generated
+demo; its coverage, authority map, review queue, report, and final evidence are
+report/evidence-only consumers.
+
 ## Designer Workflow Trace Target
 The designer-workflow-trace proof is a non-numbered, cross-cutting proof-only target that consumes accepted P2, source-conformance, P3, P4, protocol, and native evidence. It emits one deterministic Button scenario index from design authority through governed catalog, diagnostics/review-required status, review/evaluation refs, static target handoff artifacts, and evidence status.
 
@@ -619,7 +675,7 @@ The proof currently has no generated demo. Use `designer-workflow-trace-report.j
 ## Capability Index Target
 
 The capability-index proof is a non-numbered, cross-cutting target. It
-materializes a machine-readable discovery index and report over exactly the 12
+materializes a machine-readable discovery index and report over exactly the 13
 implemented proof targets that existed before it. It also records seven
 separate planned capability groups without giving them proof commands,
 evidence, or implemented status.
@@ -629,7 +685,7 @@ The proof path is:
 ```text
 fixtures/capability-index/capabilities.fixture.json
 fixtures/capability-index/expectations.manifest.json
-12 accepted target evidence files
+13 accepted target evidence files
   -> validate fixtures/capability-index/valid/*.json,
      review/*.json, invalid/*.json, and mutations/*.json
   -> artifacts/capability-index/capability-index.json
@@ -730,6 +786,7 @@ read-only status output for human inspection.
 - [P5 Native Static Proof](plans/p5/native-static-proof.md)
 - [Declared Source Conformance Proof](plans/source-conformance/README.md)
 - [Source Conformance Validation and Evidence](plans/source-conformance/validation-evidence.md)
+- [Source Accessibility Policy Proof Target](plans/source-accessibility-policy.md)
 - [Product Designer Workflow Trace](plans/product-designer-workflow-trace.md)
 - [Capability Index Proof Target](plans/capability-index.md)
 - [Product Portfolio Boundaries](plans/product-portfolio-boundaries.md)
@@ -742,13 +799,18 @@ The P5 subplans linked above define the implemented `surfaces-protocol-static` a
 
 The source-conformance subplans define a proof-only declared-source conformance target over accepted P2 evidence. They do not implement live ingestion, production adapter behavior, API/SDK support, A2UI support, live SurfaceOps, live JudgmentKit, native runtime behavior, or action execution.
 
+The source-accessibility-policy subplan defines structured accessibility
+behavior reconciliation over accepted P2, source-conformance, and
+source-family packaging evidence. It does not interpret policy prose, expand
+P2, or prove runtime accessibility compliance.
+
 The capability-index subplan defines discovery and read-only verification over
-the 12 pre-existing implemented proof targets. The index does not prove those
+the 13 pre-existing implemented proof targets. The index does not prove those
 targets, self-index, or turn planned capability groups into implemented work.
 
 ## Capability Index Decisions
 
-- Indexed implemented target count: exactly 12 pre-existing proof targets.
+- Indexed implemented target count: exactly 13 pre-existing proof targets.
 - Self-indexing: forbidden; capability-index evidence proves the index target.
 - Planned scope: seven capability groups for roadmap visibility only.
 - Status model: implementation status, evidence status, and governance

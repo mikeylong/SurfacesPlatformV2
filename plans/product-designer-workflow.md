@@ -65,6 +65,12 @@ The proof shape is tracked in [Product Designer Workflow Trace](product-designer
 
 The reusable source-family package proof is adjacent to this walkthrough rather than a second trace scenario. `artifacts/source-family-packaging/evidence.json` records fresh passing executions for the canonical and second compatible team-owned Button and InLineAlert bundles, then separately records the failing authority-expansion probe. It does not expand P2. The current designer trace continues to index the canonical `artifacts/source-conformance/evidence.json` run.
 
+The source-accessibility-policy proof is also adjacent evidence, not a new
+designer-trace input. It shows whether five structured Button and InLineAlert
+behavior declarations match existing catalog facts or remain non-executable
+review work. It never derives behavior from policy prose and does not prove
+runtime accessibility compliance.
+
 For the governed Button exception path, the trace report indexes the
 source-conformance review-required row and the expired blocked row together in
 `sourceConformanceGovernance.exceptionLifecycle`. That lifecycle records the

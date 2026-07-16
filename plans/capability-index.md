@@ -26,7 +26,7 @@ evidence remains the proof authority for that target.
 
 ## Indexed Scope
 
-The index contains exactly the 12 implemented proof targets that existed before
+The index contains exactly the 13 implemented proof targets that existed before
 the capability-index target:
 
 | Implemented target | Evidence authority | CI gate |
@@ -39,6 +39,7 @@ the capability-index target:
 | P5 `surfaces-protocol-static` | `artifacts/p5/protocol/evidence.json` | `npm run check:p5:protocol:ci` |
 | P5 `surfaces-native-static` | `artifacts/p5/native/evidence.json` | `npm run check:p5:native:ci` |
 | Reusable declared-source conformance | `artifacts/source-family-packaging/evidence.json` | `npm run check:source-family-packaging:ci` |
+| Structured source accessibility policy | `artifacts/source-accessibility-policy/evidence.json` | `npm run check:source-accessibility-policy:ci` |
 | Designer workflow trace | `artifacts/designer-workflow-trace/evidence.json` | `npm run check:designer-workflow-trace:ci` |
 | SurfaceOps kanban static | `artifacts/surfaceops-kanban-static/evidence.json` | `npm run check:surfaceops-kanban-static:ci` |
 | SurfaceOps kanban live | `artifacts/surfaceops-kanban-live/evidence.json` | `npm run check:surfaceops-kanban-live:ci` |
@@ -56,7 +57,14 @@ arbitrary connectors, broader P2 coverage, live crawling, and self-serve
 connection UI as non-capabilities. Neither governed catalog can broaden
 accepted P2 capability.
 
-The capability-index target does not index itself. Adding it as a thirteenth
+The source-accessibility-policy row points to report/evidence-only
+reconciliation over five structured behavior declarations. It records
+`promotionStatus: "review_required"`, keeps `canAddAuthority: false`, and names
+free-form policy interpretation, runtime accessibility compliance, broader P2
+coverage, arbitrary source packaging, live connectors, self-serve connection,
+production adapters, and JudgmentKit invocation as non-capabilities.
+
+The capability-index target does not index itself. Adding it as a fourteenth
 row would create a circular self-evidence boundary. Its own final evidence is
 the authority for the index target.
 
@@ -182,13 +190,13 @@ root and satisfy the repository output-root rules.
 `npm run status` aliases the `capabilities verify` command. Verification:
 
 - reads the tracked index, report, capability-index evidence, package command
-  registry, declared schemas and fixtures, the 12 indexed target evidence
+  registry, declared schemas and fixtures, the 13 indexed target evidence
   files, and their referenced closure;
 - validates the index and evidence schemas, hashes, declared status, target
   count, dependencies, authority boundaries, and evidence refs;
 - writes a concise table with capability, evidence status, promotion status,
   and evidence path to stdout;
-- reports `implemented: 12/12 verified` plus the planned group count and ids;
+- reports `implemented: 13/13 verified` plus the planned group count and ids;
 - writes no file, creates no output directory, regenerates no artifact, and
   makes no network call.
 
@@ -225,7 +233,7 @@ manifest. Proof output must use those values exactly.
 
 - all capability-index-owned schemas;
 - the complete declared fixture set;
-- the 12 accepted target evidence files and their hashes;
+- the 13 accepted target evidence files and their hashes;
 - `capability-index.json`;
 - `capability-index-report.json`;
 - the final evidence self-ref using the repository's canonical null-placeholder
@@ -239,7 +247,7 @@ host-derived fields as `null`, `status: "pass"`, and
 
 `npm run check:capability-index:ci` runs the required upstream target gates,
 materializes and proves the capability index, checks tracked drift, and rejects
-untracked capability-index files. The phase-only gate may run after the 12
+untracked capability-index files. The phase-only gate may run after the 13
 indexed target proof jobs have already passed.
 
 CI must also prove that `npm run status` leaves the worktree unchanged. The
@@ -249,7 +257,7 @@ read-only verifier cannot hide stale output by regenerating it.
 
 The target is accepted only when:
 
-- the index contains exactly the 12 implemented targets listed above;
+- the index contains exactly the 13 implemented targets listed above;
 - every implemented row points to present, passing, hash-matching target
   evidence;
 - every proof status and promotion status matches the target evidence;
