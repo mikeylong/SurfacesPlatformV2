@@ -2,7 +2,7 @@
 
 For product vision, authority taxonomy, roadmap sequence, surface roles, and agent operating rules, read [Surfaces Platform Vision And Roadmap](../VISION.md) first. This index is the mechanical contract reference for phase subplans. Phase subplans add phase-local deltas and mechanics only. Developer and agent documentation obligations for `surfaces.dev` are tracked in [Surfaces.dev Documentation Tracking](surfaces-dev.md).
 
-These subplans define the Surfaces Platform proof contracts and their materialized schemas, fixtures, artifacts, demos, scripts, and tests. P0 specifies the first executable catalog proof, P1 specifies the first runtime projection proof, P2 specifies bounded real design-system ingestion, P3 specifies inert agent orchestration proof, P4 specifies review and judgment proof without turning derived consumers into new authority, and P5 specifies the bounded `surfaces-protocol-static` protocol-envelope proof plus the sibling `surfaces-native-static` native-packet proof. The source-conformance subplan specifies a target-specific compiler for checked source facts and a team-owned authority profile over accepted P2 evidence, plus aggregate packaging evidence that proves the unchanged compiler can consume a second compatible team-owned bundle for the same P2 components. Source Accessibility Policy specifies structured accessibility behavior reconciliation against accepted catalog facts and opaque, hash-bound policy requirement refs. Product Designer Workflow Trace specifies the implemented non-numbered trace target over accepted P2, source-conformance, P3, P4, protocol, and native evidence. SurfaceOps Kanban Static specifies the implemented non-numbered target over accepted P3/P4 evidence and a manifest-declared local `kanban.cards` substrate contract. SurfaceOps Kanban Live specifies the implemented non-numbered target for a local-loopback live `kanban.cards` API/browser proof over accepted P3/P4 evidence and a hash-bound API manifest. SurfaceOps Designer Review UI specifies the implemented non-numbered target for the local-live Button variants inspection workbench and rationale-required blocked receipt mirrored to `kanban.cards` over accepted designer-workflow, P4, and kanban-live evidence. Capability Index specifies the implemented non-numbered discovery and read-only verification target over the 13 proof targets that existed before it. Future targets remain planned until they add their own complete proof shape and passing evidence.
+These subplans define the Surfaces Platform proof contracts and their materialized schemas, fixtures, artifacts, demos, scripts, and tests. P0 specifies the first executable catalog proof, P1 specifies the first runtime projection proof, P2 specifies bounded real design-system ingestion, P3 specifies inert agent orchestration proof, P4 specifies review and judgment proof without turning derived consumers into new authority, and P5 specifies the bounded `surfaces-protocol-static` protocol-envelope proof plus the sibling `surfaces-native-static` native-packet proof. The source-conformance subplan specifies a target-specific compiler for checked source facts and a team-owned authority profile over accepted P2 evidence, plus aggregate packaging evidence that proves the unchanged compiler can consume a second compatible team-owned bundle for the same P2 components. Source Accessibility Policy specifies structured accessibility behavior reconciliation against accepted catalog facts and opaque, hash-bound policy requirement refs. Source Family Layout Mapping is a planning-only future target for one alternate physical-layout instance of that accepted bundle mapped byte-for-byte into the existing logical ABI. Product Designer Workflow Trace specifies the implemented non-numbered trace target over accepted P2, source-conformance, P3, P4, protocol, and native evidence. SurfaceOps Kanban Static specifies the implemented non-numbered target over accepted P3/P4 evidence and a manifest-declared local `kanban.cards` substrate contract. SurfaceOps Kanban Live specifies the implemented non-numbered target for a local-loopback live `kanban.cards` API/browser proof over accepted P3/P4 evidence and a hash-bound API manifest. SurfaceOps Designer Review UI specifies the implemented non-numbered target for the local-live Button variants inspection workbench and rationale-required blocked receipt mirrored to `kanban.cards` over accepted designer-workflow, P4, and kanban-live evidence. Capability Index specifies the implemented non-numbered discovery and read-only verification target over the 13 proof targets that existed before it. Future targets remain planned until they add their own complete proof shape and passing evidence.
 
 ## Roadmap Status Snapshot
 The current implemented proof roadmap is P0-P5, where P5 means only the `surfaces-protocol-static` and `surfaces-native-static` proof-only slices. The repo also includes the declared-source conformance, source-accessibility-policy, designer-workflow-trace, `surfaceops-kanban-static`, `surfaceops-kanban-live`, `surfaceops-designer-review-ui`, and capability-index target proofs listed in [VISION.md](../VISION.md#current-roadmap-proof-snapshot). The capability index covers the 13 targets that existed before it and intentionally stays outside its own rows. Its seven planned groups are roadmap visibility only. The canonical status snapshot lives in `VISION.md`, the outcome tracker lives in [PROGRESS.md](../PROGRESS.md), and the human-readable value map lives in [Usability And Value Evidence Plan](usability-value-evidence.md). Future P5 targets such as A2UI conformance, production APIs, SDKs, live protocol services, live native runtimes, production SurfaceOps, production `kanban.cards` sync, Auth0 delegated production auth, hosted persistence, or live JudgmentKit remain planned until they add their own target-specific schema, fixture, diagnostics, command contract, report or artifact path, evidence path, demo boundary, CI gate, and passing evidence.
@@ -24,7 +24,8 @@ These documents are subordinate to `VISION.md` and support the phase plans witho
 12. [SurfaceOps Kanban Live Proof Target](surfaceops-kanban-live.md)
 13. [SurfaceOps Designer Review UI Proof Target](surfaceops-designer-review-ui.md)
 14. [Source Accessibility Policy Proof Target](source-accessibility-policy.md)
-15. [Capability Index Proof Target](capability-index.md)
+15. [Source Family Layout Mapping Proof Plan](source-family-layout-mapping.md)
+16. [Capability Index Proof Target](capability-index.md)
 
 The curated design-partner testing program and templates under `plans/design-partner-testing/` are also subordinate to `VISION.md`, `PLAN.md`, and passing phase evidence. Treat them as non-proof research and planning surfaces for partner task design, synthetic dry runs, feedback capture, scorecards, and synthesis. They may point testers to evidence-backed demos for inspection, but they must not create implementation claims, proof status, catalog authority, or demo authority.
 
@@ -187,6 +188,26 @@ compliance.
 5. `sources/source-accessibility-policy/manifest.json`
 6. `fixtures/source-accessibility-policy/expectations.manifest.json`
 7. `artifacts/source-accessibility-policy/evidence.json`
+
+## Planned Source Family Layout Mapping Boundary
+
+The [Source Family Layout Mapping Proof Plan](source-family-layout-mapping.md)
+defines a future non-numbered target over accepted P2 and source-family
+packaging evidence. It is planning-only and adds no implemented capability.
+
+Its proposed dependency order is:
+
+1. `artifacts/p2/evidence.json` and `artifacts/p2/governed-catalog.json`;
+2. `artifacts/source-family-packaging/evidence.json` and its referenced closure;
+3. one checked alternate physical-layout instance of the accepted team-owned
+   bundle, a byte-only mapping descriptor, and a separate immutable
+   layout-package trust anchor; and
+4. future target-owned schemas, fixtures, diagnostics, report, and evidence.
+
+The planned target is limited to byte-preserving physical-to-logical path
+mapping for one named bundle. It does not include arbitrary layouts, source-ref
+namespace changes, broader P2 coverage, live connectors, self-serve UI, runtime
+accessibility claims, or JudgmentKit.
 
 ## Capability Index Dependency Order
 
@@ -506,3 +527,21 @@ does not interpret free-form policy text, expand P2 coverage, prove runtime
 accessibility compliance, support arbitrary source packaging, call live
 connectors, provide self-serve connection, or authorize production adapters or
 JudgmentKit.
+
+## Planned Source Family Layout Mapping Contract Summary
+
+The planning-only layout-mapping target would consume one third physical-layout
+instance of the currently accepted team-owned bundle, whose physical paths
+differ from the current fixed package without introducing a new bundle
+identity. A closed descriptor, hash-bound by a separate immutable
+layout-package trust anchor, would map its unchanged independent regular-file
+bytes one-to-one onto exactly `manifest.json` plus the ordered 11-file
+`SC_SOURCE_FILES` closure, after which the unchanged source-conformance compiler
+would run in an isolated workspace. The future proof would persist a mapping
+receipt, the eight inner compiler artifacts, a target report, and final
+evidence, then re-verify the inner closure after workspace cleanup.
+
+No command or evidence exists yet. The plan proves no current support and does
+not authorize arbitrary layouts or namespaces, source rewriting, semantic
+transformation, broader P2 coverage, live connectors, self-serve UI, runtime
+accessibility claims, or JudgmentKit.

@@ -14,6 +14,13 @@ design-system candidates such as broader Spectrum slices or Astryx. It does not
 create implementation support, a proof command, schemas, fixtures, artifacts,
 evidence, CI gates, or product adoption claims.
 
+[Source Family Layout Mapping Proof Plan](plans/source-family-layout-mapping.md)
+records the planning-only next Connect Authority candidate: byte-preserving
+physical-to-logical path mapping for one additional physical-layout instance of
+the accepted team-owned bundle before the unchanged source-conformance compiler
+runs. It creates no implementation, command, schema, fixture, artifact,
+evidence, CI, capability-index, or arbitrary layout claim.
+
 [Capability Index Proof Target](plans/capability-index.md) records the
 implemented non-numbered proof for discovering and read-only verifying the 13
 proof targets that existed before the index. Its seven planned groups are
@@ -632,6 +639,22 @@ or authorize production adapters or JudgmentKit. The target has no generated
 demo; its coverage, authority map, review queue, report, and final evidence are
 report/evidence-only consumers.
 
+## Planned Source Family Layout Mapping Target
+
+The [Source Family Layout Mapping Proof Plan](plans/source-family-layout-mapping.md)
+defines one bounded future Connect Authority target. It would prove that exactly
+one third physical-layout instance of the currently accepted team-owned bundle
+can use a different physical directory and filename layout by using an
+immutable layout-package trust anchor to map its unchanged bytes bijectively
+into exactly `manifest.json` plus the ordered 11-file `SC_SOURCE_FILES` closure
+before running the unchanged source-conformance compiler.
+
+This target is planned only. It has no runnable command, schemas, fixtures,
+artifacts, evidence, CI gate, capability-index row, or implementation claim. It
+must not be described as arbitrary layout support, source-ref namespace
+portability, content transformation, broader P2 coverage, live connector or
+self-serve support, runtime accessibility compliance, or JudgmentKit use.
+
 ## Designer Workflow Trace Target
 The designer-workflow-trace proof is a non-numbered, cross-cutting proof-only target that consumes accepted P2, source-conformance, P3, P4, protocol, and native evidence. It emits one deterministic Button scenario index from design authority through governed catalog, diagnostics/review-required status, review/evaluation refs, static target handoff artifacts, and evidence status.
 
@@ -787,6 +810,7 @@ read-only status output for human inspection.
 - [Declared Source Conformance Proof](plans/source-conformance/README.md)
 - [Source Conformance Validation and Evidence](plans/source-conformance/validation-evidence.md)
 - [Source Accessibility Policy Proof Target](plans/source-accessibility-policy.md)
+- [Source Family Layout Mapping Proof Plan](plans/source-family-layout-mapping.md)
 - [Product Designer Workflow Trace](plans/product-designer-workflow-trace.md)
 - [Capability Index Proof Target](plans/capability-index.md)
 - [Product Portfolio Boundaries](plans/product-portfolio-boundaries.md)
@@ -803,6 +827,12 @@ The source-accessibility-policy subplan defines structured accessibility
 behavior reconciliation over accepted P2, source-conformance, and
 source-family packaging evidence. It does not interpret policy prose, expand
 P2, or prove runtime accessibility compliance.
+
+The source-family-layout-mapping subplan is planning-only. It defines a future
+proof for one alternate physical layout mapped byte-for-byte into the current
+logical source-family ABI. It does not implement arbitrary layouts or
+namespaces, change source refs, expand P2, call live connectors, add self-serve
+UI, prove runtime accessibility, or authorize JudgmentKit.
 
 The capability-index subplan defines discovery and read-only verification over
 the 13 pre-existing implemented proof targets. The index does not prove those
