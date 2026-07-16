@@ -419,3 +419,7 @@ Passing evidence supports only these claims:
 - No live SurfaceOps action and no JudgmentKit invocation or judgment claim.
 - No customer validation, pilot readiness, production readiness, or public
   product adoption claim.
+
+## Causal precedence and evidence re-verification
+
+A valid precedence result must bind its selected value to the accepted P2 catalog pointer and bind every primary and supporting value to manifest-hashed source-conformance facts. Mutation fixtures alter candidate input state and pass through the same validators used by the proof; fixture ids and expected diagnostics are not evidence of failure. Read-only verification regenerates the deterministic artifact set in an isolated temporary workspace and compares canonical semantics, so coordinated artifact and self-hash changes cannot self-bless. This adds no P2 catalog capability and makes no runtime-accessibility or compliance claim.

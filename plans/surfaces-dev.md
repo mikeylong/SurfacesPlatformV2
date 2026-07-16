@@ -58,3 +58,7 @@ Each phase update must include:
 - No replacement for schemas, manifests, proof commands, or evidence.
 - No product marketing content.
 - No live API reference beyond implemented commands.
+
+### Source accessibility policy causal hardening
+
+The source-accessibility-policy proof uses a checked acquired-source accessibility conflict, binds precedence values to P2 and source-conformance facts, evaluates mutation fixtures causally, and re-verifies generated artifact semantics in isolation. P2 catalog authority, runtime accessibility, compliance, live connectors, and production adapters remain out of scope.

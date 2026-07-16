@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 import assert from "node:assert/strict";
 import { execFile } from "node:child_process";
 import fs from "node:fs/promises";
@@ -25,6 +26,7 @@ import {
   sapSourcePaths
 } from "../src/source-accessibility-policy-contract.js";
 import { sourceAccessibilityPolicyInternals } from "../src/source-accessibility-policy-proof.js";
+import { checkedPrecedenceConflictAuthorized, firstCausalFixtureDiagnosticCode } from "../src/source-accessibility-policy-causal.js";
 
 const execFileAsync = promisify(execFile);
 const root = fileURLToPath(new URL("..", import.meta.url));
@@ -484,3 +486,63 @@ async function readJson(relativePath) {
 function escapeRegExp(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
+
+
+test("checked accessibility precedence is bound to P2 and manifest-hashed source facts", async () => {
+  const fixture = JSON.parse(await fs.readFile(path.join(root, "fixtures/source-accessibility-policy/valid/policy-authorized-precedence.source-accessibility-policy.json"), "utf8"));
+  assert.equal(await checkedPrecedenceConflictAuthorized({ cwd: root, conflict: fixture.authorityConflict }), true);
+
+  const inventedSupportingValue = structuredClone(fixture.authorityConflict);
+  inventedSupportingValue.supportingValues[0] = "menuitem";
+  assert.equal(await checkedPrecedenceConflictAuthorized({ cwd: root, conflict: inventedSupportingValue }), false);
+
+  const inventedPrimaryValue = structuredClone(fixture.authorityConflict);
+  inventedPrimaryValue.primaryValue = "link";
+  inventedPrimaryValue.selectedValue = "link";
+  assert.equal(await checkedPrecedenceConflictAuthorized({ cwd: root, conflict: inventedPrimaryValue }), false);
+});
+
+test("integrity mutation fixtures cause failures through candidate-state validation", async () => {
+  const expectations = JSON.parse(await fs.readFile(path.join(root, "fixtures/source-accessibility-policy/expectations.manifest.json"), "utf8"));
+  for (const fixtureId of ["source-hash-mismatch", "evidence-hash-mismatch"]) {
+    const expectation = expectations.expectations.find((row) => row.fixturePath.includes(fixtureId));
+    const fixture = JSON.parse(await fs.readFile(path.join(root, expectation.fixturePath), "utf8"));
+    assert.equal(
+      await firstCausalFixtureDiagnosticCode({ cwd: root, fixture }),
+      expectation.diagnosticCodes[0]
+    );
+  }
+
+  const freeFormPath = "fixtures/source-accessibility-policy/invalid/free-form-policy-text.source-accessibility-policy.json";
+  const freeForm = JSON.parse(await fs.readFile(path.join(root, freeFormPath), "utf8"));
+  assert.equal(await firstCausalFixtureDiagnosticCode({ cwd: root, fixture: freeForm }), "SOURCE_ACCESSIBILITY_FREE_FORM_POLICY_FORBIDDEN");
+  freeForm.freeFormPolicyText = null;
+  assert.equal(await firstCausalFixtureDiagnosticCode({ cwd: root, fixture: freeForm }), null);
+});
+
+test("semantic evidence verification rejects coordinated artifact and self-hash rebinding", async () => {
+  const coveragePath = "artifacts/source-accessibility-policy/accessibility-policy-coverage.json";
+  const evidencePath = "artifacts/source-accessibility-policy/evidence.json";
+  const originals = new Map([
+    [coveragePath, await fs.readFile(path.join(root, coveragePath))],
+    [evidencePath, await fs.readFile(path.join(root, evidencePath))]
+  ]);
+  try {
+    const coverage = JSON.parse(originals.get(coveragePath).toString("utf8"));
+    coverage.summary.allowedCount += 1;
+    await fs.writeFile(path.join(root, coveragePath), canonicalJson(coverage));
+
+    const evidence = JSON.parse(originals.get(evidencePath).toString("utf8"));
+    evidence.artifacts.find((ref) => ref.path === coveragePath).hash = crypto.createHash("sha256").update(canonicalJson(coverage)).digest("hex");
+    evidence.artifacts.at(-1).hash = null;
+    evidence.artifacts.at(-1).hash = sourceAccessibilityPolicyInternals.computeEvidenceSelfHash(evidence);
+    await fs.writeFile(path.join(root, evidencePath), canonicalJson(evidence));
+
+    assert.equal(
+      await sourceAccessibilityPolicyInternals.firstEvidenceIntegrityFailureCode(root, evidence),
+      "SOURCE_ACCESSIBILITY_EVIDENCE_HASH_MISMATCH"
+    );
+  } finally {
+    for (const [relativePath, bytes] of originals) await fs.writeFile(path.join(root, relativePath), bytes);
+  }
+});

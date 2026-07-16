@@ -1,3 +1,4 @@
+import { checkedPrecedenceConflictAuthorized, firstCausalFixtureDiagnosticCode, firstSourceAccessibilityPolicySemanticFailureCode } from "./source-accessibility-policy-causal.js";
 import fs from "node:fs/promises";
 import path from "node:path";
 import Ajv2020 from "ajv/dist/2020.js";
@@ -159,7 +160,7 @@ export async function runSourceAccessibilityPolicyProof({
   await writeCanonicalJson(path.join(cwd, outRoot, "accessibility-policy-authority-map.json"), authorityMap);
   const authorityMapRef = await generatedRef(cwd, outRoot, "accessibility-policy-authority-map.json", "source-accessibility-policy-authority-map.v0");
 
-  const validationResults = fixtureRows.map((row) => evaluateFixture(row, source, upstream.p2Catalog));
+  const validationResults = await Promise.all(fixtureRows.map((row) => evaluateFixture(cwd, row, source, upstream.p2Catalog)));
   const mismatches = validationResults.filter((row) => !row.matched);
   if (mismatches.length > 0) throw contractError(`source accessibility policy validation expectation mismatch: ${mismatches.map((row) => row.fixturePath).join(", ")}`, 1);
   const diagnostics = sortDiagnostics(uniqueDiagnostics(validationResults.flatMap((row) => row.diagnostics)));
@@ -210,6 +211,22 @@ function assertCommandRoots(actual) {
 }
 
 async function strictUpstreamPreflight(cwd) {
+  for (const upstreamEvidencePath of [
+    "artifacts/p2/evidence.json",
+    "artifacts/source-conformance/evidence.json",
+    "artifacts/source-family-packaging/evidence.json"
+  ]) {
+    try {
+      const stat = await fs.lstat(path.join(cwd, upstreamEvidencePath));
+      if (!stat.isFile()) throw Object.assign(new Error("not a regular file"), { code: "ENOENT" });
+    } catch (error) {
+      if (error?.code === "ENOENT") {
+        throw contractError(`SOURCE_ACCESSIBILITY_UPSTREAM_EVIDENCE_MISSING: required upstream evidence path is missing: ${upstreamEvidencePath}`, 1);
+      }
+      throw error;
+    }
+  }
+
   for (const upstreamPath of BOUNDARY_PATHS) await assertRegularFile(path.join(cwd, upstreamPath), upstreamPath);
   const p2Evidence = await readJson(path.join(cwd, SAP_P2_EVIDENCE_PATH));
   const p2Catalog = await readJson(path.join(cwd, SAP_P2_CATALOG_PATH));
@@ -300,7 +317,7 @@ function checkedFactSourceRefs(declaration, catalog) {
   return refs.filter((ref) => typeof ref === "string");
 }
 
-function precedenceConflictAuthorized(conflict, authorityProfile) {
+function profilePrecedenceConflictAuthorized(conflict, authorityProfile) {
   const componentMatch = conflict.catalogPointer.match(/^\/components\/([^/]+)\//);
   const binding = authorityProfile.componentBindings?.find((entry) => entry.componentId === componentMatch?.[1]);
   return (
@@ -311,6 +328,11 @@ function precedenceConflictAuthorized(conflict, authorityProfile) {
     binding?.precedence?.mode === "primary-wins" &&
     binding?.precedence?.policyRef === conflict.policyRef
   );
+}
+
+async function precedenceConflictAuthorized(conflict, authorityProfile, cwd) {
+  return profilePrecedenceConflictAuthorized(conflict, authorityProfile) &&
+    await checkedPrecedenceConflictAuthorized({ cwd, conflict });
 }
 
 function buildCoverage(declarations, catalog, declarationSetRef, catalogRef) {
@@ -383,14 +405,17 @@ async function loadFixtureRows(cwd, expectations, validators) {
   return rows;
 }
 
-function evaluateFixture(row, source, catalog) {
+async function evaluateFixture(cwd, row, source, catalog) {
   const declarations = source.declarations;
   const value = row.value;
   let diagnosticCodes = [];
   let actualResult = "valid";
   let promotionStatus = "allowed";
   let behaviorId = value.behaviorId || null;
-  if (value.schemaId === "source-accessibility-policy-preflight-mutation.v0") {
+  if (row.kind === "invalid" || row.kind === "mutation") {
+    const causalDiagnosticCode = await firstCausalFixtureDiagnosticCode({ cwd, fixture: value });
+    if (causalDiagnosticCode !== null) diagnosticCodes = [causalDiagnosticCode];
+  } else if (value.schemaId === "source-accessibility-policy-preflight-mutation.v0") {
     diagnosticCodes = [value.mutation === "missing" ? "SOURCE_ACCESSIBILITY_UPSTREAM_EVIDENCE_MISSING" : "SOURCE_ACCESSIBILITY_UPSTREAM_HASH_MISMATCH"];
   } else if (value.fixtureId === "source-hash-mismatch") {
     diagnosticCodes = ["SOURCE_ACCESSIBILITY_SOURCE_HASH_MISMATCH"];
@@ -406,7 +431,7 @@ function evaluateFixture(row, source, catalog) {
     diagnosticCodes = ["SOURCE_ACCESSIBILITY_PRECEDENCE_UNRESOLVED"];
   } else if (value.authorityConflict !== null) {
     const conflict = value.authorityConflict;
-    if (!precedenceConflictAuthorized(conflict, source.authorityProfile)) diagnosticCodes = ["SOURCE_ACCESSIBILITY_PRECEDENCE_UNRESOLVED"];
+    if (!await precedenceConflictAuthorized(conflict, source.authorityProfile, cwd)) diagnosticCodes = ["SOURCE_ACCESSIBILITY_PRECEDENCE_UNRESOLVED"];
   } else if (value.ambiguity !== null) {
     diagnosticCodes = ["SOURCE_ACCESSIBILITY_MAPPING_AMBIGUOUS"];
   } else {
@@ -586,7 +611,13 @@ async function firstEvidenceIntegrityFailureCode(cwd, evidence) {
     if (canonicalJson(evidence.summary) !== canonicalJson(coverage.summary) || evidence.promotionStatus !== coverage.promotionStatus) return failureCode;
     const sharedReportFields = ["contractId", "version", "runId", "checkedAt", "command", "args", "environment", "boundaryRefs", "coverageRef", "authorityMapRef", "reviewQueueRef", "validationResults", "diagnostics", "diagnosticsRegistry", "summary", "structuredDeclarationsOnly", "catalogCapabilityAdded", "status", "promotionStatus"];
     for (const field of sharedReportFields) if (canonicalJson(report[field]) !== canonicalJson(evidence[field])) return failureCode;
-    return null;
+    const semanticFailureCode = await firstSourceAccessibilityPolicySemanticFailureCode({
+    cwd,
+    evidence,
+    runProof: runSourceAccessibilityPolicyProof
+  });
+  if (semanticFailureCode !== null) return semanticFailureCode;
+  return null;
   } catch {
     return failureCode;
   }

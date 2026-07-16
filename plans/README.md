@@ -83,7 +83,8 @@ JudgmentKit, work execution, or product adoption.
 The capability-index proof target is implemented for deterministic discovery
 and read-only verification across P0, P1, P2, P3, P4, P5 protocol, P5 native,
 declared-source conformance, designer-workflow trace, SurfaceOps kanban static,
-SurfaceOps kanban live, and the SurfaceOps designer review UI. It does not
+SurfaceOps kanban live, structured source-accessibility-policy reconciliation,
+and the SurfaceOps designer review UI. It does not
 self-index. Its seven planned groups have no proof command or evidence claim,
 and passing capability-index evidence proves the index contract rather than
 the indexed targets.
