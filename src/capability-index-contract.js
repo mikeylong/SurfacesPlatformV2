@@ -232,6 +232,58 @@ const IMPLEMENTED_CAPABILITIES = [
     dependencies: { evidence: ["p2-spectrum-ingestion"], phaseGate: [], compatibility: [] }
   }),
   implemented({
+    capabilityId: "source-family-layout-mapping",
+    displayName: "Source family layout mapping",
+    roadmapPhase: "Target",
+    proofMode: "report-only",
+    userValue: "Connects one accepted team-owned authority bundle from a different physical file layout without compiler changes.",
+    scopeStatement: "Maps one checked alternate physical-layout instance byte-for-byte onto the exact 12-entry declared-source logical ABI and runs the unchanged source-conformance compiler without expanding accepted authority.",
+    authorityRole: "derived-layout-mapping-consumer",
+    nonCapabilities: [
+      "arbitrary source layouts",
+      "source-ref namespace rewriting",
+      "broader P2 component coverage",
+      "live source connectors",
+      "self-serve connection UI",
+      "runtime accessibility compliance",
+      "production adapters",
+      "SurfaceOps expansion",
+      "JudgmentKit invocation"
+    ],
+    lifecycleRoles: ["connect-authority", "govern-change"],
+    proofCommand: "interfacectl surfaces source-family-layout-mapping proof",
+    packageProofScript: "proof:source-family-layout-mapping",
+    ciGate: "npm run check:source-family-layout-mapping:ci",
+    evidencePath: "artifacts/source-family-layout-mapping/evidence.json",
+    evidenceSchemaId: "source-family-layout-mapping-evidence.v0",
+    expectedPromotionStatus: "review_required",
+    inputPaths: [
+      "artifacts/p2/evidence.json",
+      "artifacts/p2/governed-catalog.json",
+      "artifacts/source-family-packaging/evidence.json",
+      "sources/source-family-layout-mapping/team-owned-physical-bundle",
+      "sources/source-family-layout-mapping/layout-mapping.json",
+      "fixtures/source-family-layout-mapping"
+    ],
+    outputPaths: [
+      "artifacts/source-family-layout-mapping/layout-mapping-receipt.json",
+      "artifacts/source-family-layout-mapping/mapped-source-inventory.json",
+      "artifacts/source-family-layout-mapping/mapped-source-fact-coverage.json",
+      "artifacts/source-family-layout-mapping/mapped-source-authority-map.json",
+      "artifacts/source-family-layout-mapping/mapped-source-review-queue.json",
+      "artifacts/source-family-layout-mapping/mapped-governed-catalog.json",
+      "artifacts/source-family-layout-mapping/mapped-authority-connection-report.json",
+      "artifacts/source-family-layout-mapping/mapped-source-conformance-report.json",
+      "artifacts/source-family-layout-mapping/mapped-source-conformance-evidence.json",
+      "artifacts/source-family-layout-mapping/source-family-layout-mapping-report.json",
+      "artifacts/source-family-layout-mapping/evidence.json"
+    ],
+    diagnosticSchemaPath: "schemas/source-family-layout-mapping-diagnostics.v0.schema.json",
+    reportPaths: ["artifacts/source-family-layout-mapping/source-family-layout-mapping-report.json"],
+    documentationRefs: ["PLAN.md", "VISION.md", "plans/source-family-layout-mapping.md"],
+    dependencies: { evidence: ["p2-spectrum-ingestion", "declared-source-conformance"], phaseGate: [], compatibility: [] }
+  }),
+  implemented({
     capabilityId: "source-accessibility-policy",
     displayName: "Structured accessibility policy reconciliation",
     roadmapPhase: "Target",

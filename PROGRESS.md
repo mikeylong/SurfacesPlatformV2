@@ -43,7 +43,7 @@ boundary.
 
 Completion record:
 
-- [x] One schema-validated capability index covers all 13 implemented proof
+- [x] One schema-validated capability index covers all 14 implemented proof
   targets that existed before the capability-index target.
 - [x] Each implemented row exposes its identity, scope, authority boundary,
   non-capabilities, dependencies, commands, CI gate, inputs, outputs,
@@ -77,7 +77,7 @@ Proof and evidence:
 - Read-only verification: `interfacectl surfaces capabilities verify --index artifacts/capability-index/capability-index.json --evidence artifacts/capability-index/evidence.json`
 - Proof-bearing gate: `npm run check:capability-index:ci`
 
-The index intentionally covers the 13 pre-existing targets rather than
+The index intentionally covers the 14 pre-existing targets rather than
 indexing itself. Its evidence proves the index contract without creating a
 circular authority chain. The index is a derived discovery surface. It does
 not replace target evidence or turn demos and plans into proof.
@@ -126,21 +126,29 @@ diagnostics. Passing evidence records 18 matching fixture results and
 `promotionStatus: "review_required"` without emitting or mutating a governed
 catalog.
 
+The source-family-layout-mapping slice removes one more fixed packaging
+constraint. A third physical instance of the accepted team-owned bundle uses
+different directories and filenames, while an immutable layout-package trust
+anchor maps its 12 byte-identical files onto the existing logical ABI. The
+unchanged compiler produces the same eight inner artifacts, six normalized
+fact tuples, nine immutable P2 catalog fields, owner-bound review semantics,
+and causal `SOURCE_FACT_AUTHORITY_ESCALATION` rejection. Passing evidence
+records all 20 fixture results and `promotionStatus: "review_required"`.
+
 Complete when a team can declare its authoritative sources, precedence,
 policies, and review ownership without repo-specific implementation changes,
 then compile a traceable governed catalog with actionable conflict and
 ambiguity handling. The current slice proves that path for two checked
-instances of one fixed source-family package ABI. Arbitrary source layouts or
+instances of one fixed source-family package ABI plus one fixed alternate
+physical layout mapped onto that same ABI. Arbitrary source layouts or
 namespaces, broader component coverage, live connectors, and a self-serve
 connection path remain open and require separate proof.
 
-What's next: the planning-only [Source Family Layout Mapping Proof
-Plan](plans/source-family-layout-mapping.md) defines one candidate proof for
-mapping a single alternate physical-layout instance byte-for-byte into the
-existing logical ABI. It has no implementation or proof status yet. Current
-evidence does not authorize arbitrary layouts or namespaces, broader P2
-coverage, live connectors, self-serve UI, runtime accessibility compliance, or
-JudgmentKit use.
+What's next: use the passing fixed-layout proof as the new Connect Authority
+baseline, then select one bounded next proof slice from the remaining milestone
+gaps. Current evidence does not authorize arbitrary layouts or namespaces,
+broader P2 coverage, live connectors, self-serve UI, runtime accessibility
+claims, production adapters, SurfaceOps expansion, or JudgmentKit use.
 
 ## 3. Generate Within Bounds
 

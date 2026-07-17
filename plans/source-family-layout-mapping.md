@@ -2,18 +2,15 @@
 
 ## Status
 
-Planned. This document defines a bounded non-numbered Connect Authority proof
-slice. It does not add a runnable command, schemas, fixtures, artifacts,
-evidence, CI coverage, capability-index row, or implementation claim.
-
-The target may be described as implemented only after its complete proof shape
-exists and `artifacts/source-family-layout-mapping/evidence.json` records
-`status: "pass"`.
+Implemented as a bounded non-numbered Connect Authority proof slice when
+`artifacts/source-family-layout-mapping/evidence.json` records
+`status: "pass"`. The current tracked evidence passes with
+`promotionStatus: "review_required"`.
 
 This plan is subordinate to [VISION.md](../VISION.md), [PLAN.md](../PLAN.md),
 [the subplan index](README.md), and [PROGRESS.md](../PROGRESS.md). The existing
 [Declared Source Conformance Proof](source-conformance/README.md) remains the
-implemented mechanical boundary that this future target would consume.
+implemented inner compiler boundary consumed by this target.
 
 ## Purpose
 
@@ -22,10 +19,10 @@ directory and filename layout while preserving the existing
 `declared-local-source-bundle.v0` logical ABI, canonical source refs, source
 bytes, Button and InLineAlert facts, review semantics, and accepted P2 ceiling.
 
-Passing evidence for this slice would advance the Connect Authority requirement
-that a team connect its authority without repo-specific compiler changes. It
-would remove one physical packaging constraint only. It would not prove
-arbitrary layouts or source-ref namespaces, and it would not complete the
+Passing evidence for this slice advances the Connect Authority requirement that
+a team connect its authority without repo-specific compiler changes. It removes
+one physical packaging constraint only. It does not prove arbitrary layouts or
+source-ref namespaces, and it does not complete the
 Connect Authority milestone.
 
 ## Locked Boundary
@@ -58,14 +55,14 @@ Connect Authority milestone.
   normalized source-fact tuples, nine immutable P2 catalog fields, referenced-
   route ownership, non-executable review items, and causal authority-expansion
   rejection.
-- Emit report/evidence artifacts only. No demo is planned.
+- Emit report/evidence artifacts only. No demo is generated.
 
 ## Authority And Dependencies
 
 The target is a derived proof consumer. Accepted P2 evidence and catalog remain
 authority; source-family packaging evidence supplies compatibility and baseline
 comparison only. The target cannot add or override upstream catalog, policy,
-review, or proof authority. Its final evidence would be authoritative only for
+review, or proof authority. Its final evidence is authoritative only for
 this physical-layout mapping contract.
 
 Required accepted boundaries:
@@ -77,7 +74,7 @@ Required accepted boundaries:
 - the checked source-conformance schema, fixture, compiler, Node 22, and package
   dependency closure already bound by the source-family packaging proof.
 
-New checked inputs are planned under:
+Checked inputs live under:
 
 ```text
 sources/source-family-layout-mapping/team-owned-physical-bundle/
@@ -112,9 +109,9 @@ layout for at least one directory and one filename so the proof cannot pass by
 replaying the current package. The manifest's `sourceBundleId`, source-file
 order, source refs, and all other content remain unchanged.
 
-## Planned Schemas
+## Schemas
 
-The target should own a closed schema set:
+The target owns this closed schema set:
 
 ```text
 schemas/source-family-layout-mapping.v0.schema.json
@@ -133,9 +130,9 @@ raw hashes, mapping cardinality, staging receipts, captured inner artifacts,
 diagnostics, validation results, upstream refs, generated refs, environment,
 status, promotion status, and final evidence self-hash.
 
-## Planned Command Contract
+## Command Contract
 
-The proposed command is:
+The implemented command is:
 
 ```bash
 interfacectl surfaces source-family-layout-mapping proof \
@@ -152,17 +149,17 @@ interfacectl surfaces source-family-layout-mapping proof \
 All arguments are required fixed POSIX-relative paths. Absolute, duplicate,
 substituted, non-normalized, hidden, traversal-bearing, symlinked, or
 hardlink-aliased inputs and outputs must fail. The command may write only the
-exact planned artifact set under `--out`; stale output must fail closed.
+exact artifact set under `--out`; stale output must fail closed.
 
-Exit codes should preserve the repository convention:
+Exit codes preserve the repository convention:
 
 - `0`: every expected result matches and final evidence passes;
 - `1`: proof, fixture, integrity, mapping, authority, or evidence failure;
 - `2`: invalid command usage or unsafe path.
 
-## Planned Artifacts
+## Artifacts
 
-The target should emit exactly:
+The target emits exactly:
 
 ```text
 artifacts/source-family-layout-mapping/
@@ -188,7 +185,7 @@ comparison, probe, and fixture results before final evidence. Both the report
 and final evidence require `mappedEvidenceRemap`, containing the logical source
 root, physical source root, mapping ref, all eight logical-to-persisted artifact
 pairs, and `verifiedAfterTemporaryWorkspaceRemoval: true`. `evidence.json` is
-the only planned proof authority for this target.
+the proof authority for this target.
 
 The report also requires a separate `authorityExpansionProbe` record. It must
 state that baseline mapping and integrity verification passed before the probe,
@@ -197,9 +194,9 @@ the unchanged inner compiler's `SOURCE_FACT_AUTHORITY_ESCALATION` code, and
 confirm that no checked source or baseline artifact was changed. The inner code
 is report evidence, not a target fixture diagnostic.
 
-## Planned Diagnostics
+## Diagnostics
 
-The target-specific registry should include canonical rows for:
+The target-specific registry includes canonical rows for:
 
 - `SOURCE_LAYOUT_UPSTREAM_EVIDENCE_MISSING`;
 - `SOURCE_LAYOUT_UPSTREAM_HASH_MISMATCH`;
@@ -243,7 +240,7 @@ replace checked source inputs or baseline output. The passing outer proof must
 record the unchanged inner `SOURCE_FACT_AUTHORITY_ESCALATION` result from this
 separate probe.
 
-## Planned Fixture Matrix
+## Fixture Matrix
 
 The minimum causal matrix is:
 
@@ -276,7 +273,7 @@ declared expected diagnostics are not evidence that a failure occurred.
 
 ## Pass Condition
 
-The future proof passes only when:
+The proof passes only when:
 
 1. accepted P2 and source-family packaging evidence pass full integrity checks;
 2. the physical source tree, descriptor, immutable layout-package fixture,
@@ -310,9 +307,9 @@ The future proof passes only when:
 13. final evidence records `status: "pass"` and
     `promotionStatus: "review_required"`.
 
-## Planned CI And Documentation
+## CI And Documentation
 
-Implementation should add serial package gates:
+Implementation includes these serial package gates:
 
 ```text
 materialize:source-family-layout-mapping
@@ -323,7 +320,7 @@ check:source-family-layout-mapping:ci:phase
 check:source-family-layout-mapping:untracked
 ```
 
-The script composition is fixed before implementation:
+The implemented script composition is:
 
 - `materialize:source-family-layout-mapping` runs
   `materialize:source-family-packaging`, then only the target materializer;
@@ -344,10 +341,10 @@ The script composition is fixed before implementation:
   `src/source-family-layout-mapping-proof.js`;
   `test/source-family-layout-mapping-proof.test.js`; and this plan path.
 
-Proof and test commands must remain sequential. A GitHub Actions job may be
-added only with implementation. The capability index may add an implemented
-row only after target evidence passes; until then this plan is roadmap
-visibility only.
+Proof and test commands remain sequential. The
+`source-family-layout-mapping-proof` GitHub Actions job runs the phase gate
+after source-family packaging passes. The capability index includes this target
+because its evidence passes.
 
 Implementation must update `PLAN.md`, `plans/README.md`, `PROGRESS.md`, and
 `plans/surfaces-dev.md` in the same change set without changing `VISION.md`
@@ -370,17 +367,17 @@ authority or claiming milestone completion.
 - No customer validation, pilot readiness, production readiness, or product
   adoption claim.
 
-## Implementation Sequence After Approval
+## Implementation Record
 
-1. Add the alternate physical-layout instance, checked byte-only mapping
+1. Added the alternate physical-layout instance, checked byte-only mapping
    descriptor, and separate immutable layout-package trust anchor.
-2. Add the target-owned schemas and diagnostics registry.
-3. Add valid, review, invalid, mutation, and expectations fixtures.
-4. Implement isolated byte-preserving staging by reusing the checked
-   source-family packaging machinery without changing the inner compiler.
-5. Capture, remap, and re-verify the eight inner artifacts after workspace
+2. Added the target-owned schemas and diagnostics registry.
+3. Added valid, review, invalid, mutation, probe, and expectations fixtures.
+4. Implemented isolated byte-preserving staging with the unchanged inner
+   source-conformance compiler.
+5. Captured, remapped, and re-verified the eight inner artifacts after workspace
    cleanup.
-6. Add comparison, causal probe, report, final evidence, tests, and serial gates.
-7. Update canonical docs and `surfaces.dev` tracking without broadening claims.
-8. Run the full relevant gate chain sequentially and add a capability-index row
-   only after the new target evidence passes.
+6. Added baseline comparison, two causal failing probes, report, final evidence,
+   tests, and serial gates.
+7. Recorded passing evidence with `promotionStatus: "review_required"` and added
+   the capability-index row without broadening the target boundary.
