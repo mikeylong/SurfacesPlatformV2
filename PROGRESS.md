@@ -5,7 +5,7 @@ roadmap. It is subordinate to `VISION.md`, `PLAN.md`, the phase plans, and
 passing evidence. It does not create proof authority or broaden an implemented
 target.
 
-Last updated: 2026-07-15
+Last updated: 2026-07-16
 Current focus: **Connect Authority**
 
 ## Status Semantics
@@ -134,10 +134,13 @@ instances of one fixed source-family package ABI. Arbitrary source layouts or
 namespaces, broader component coverage, live connectors, and a self-serve
 connection path remain open and require separate proof.
 
-What's next: choose any further Connect Authority slice separately. Current
-evidence does not authorize broader P2 coverage, arbitrary packaging, live
-connectors, self-serve UI, runtime accessibility compliance, or JudgmentKit
-use.
+What's next: the planning-only [Source Family Layout Mapping Proof
+Plan](plans/source-family-layout-mapping.md) defines one candidate proof for
+mapping a single alternate physical-layout instance byte-for-byte into the
+existing logical ABI. It has no implementation or proof status yet. Current
+evidence does not authorize arbitrary layouts or namespaces, broader P2
+coverage, live connectors, self-serve UI, runtime accessibility compliance, or
+JudgmentKit use.
 
 ## 3. Generate Within Bounds
 
