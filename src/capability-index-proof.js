@@ -13,7 +13,7 @@ import {
 import { p2Internals } from "./p2-proof.js";
 import * as capabilityContract from "./capability-index-contract.js";
 
-const IMPLEMENTED_COUNT = 14;
+const IMPLEMENTED_COUNT = 15;
 const HASH_PATTERN = /^[0-9a-f]{64}$/;
 const CI_TIMESTAMP = capabilityContract.CI_TIMESTAMP ?? capabilityContract.CAPABILITY_INDEX_TIMESTAMP;
 const CI_VERSION = capabilityContract.CI_VERSION ?? capabilityContract.CAPABILITY_INDEX_VERSION;
@@ -821,6 +821,12 @@ async function verifyEvidenceClosure({ cwd, evidence, evidencePath }) {
   if (evidence.contractId === "surfaces-source-family-layout-mapping-proof") {
     const { sourceFamilyLayoutMappingInternals } = await import("./source-family-layout-mapping-proof.js");
     if (await sourceFamilyLayoutMappingInternals.firstEvidenceIntegrityFailureCode(cwd, evidence) !== null) {
+      throw diagnosticError("CAPABILITY_EVIDENCE_HASH_MISMATCH", evidencePath);
+    }
+  }
+  if (evidence.contractId === "surfaces-source-family-namespace-mapping-proof") {
+    const { sourceFamilyNamespaceMappingInternals } = await import("./source-family-namespace-mapping-proof.js");
+    if (await sourceFamilyNamespaceMappingInternals.firstEvidenceIntegrityFailureCode(cwd, evidence) !== null) {
       throw diagnosticError("CAPABILITY_EVIDENCE_HASH_MISMATCH", evidencePath);
     }
   }

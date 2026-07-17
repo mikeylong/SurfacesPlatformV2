@@ -26,8 +26,8 @@ evidence remains the proof authority for that target.
 
 ## Indexed Scope
 
-The index contains exactly the 14 implemented proof targets that existed before
-the capability-index target:
+The index contains exactly the 15 implemented proof targets other than the
+capability-index target:
 
 | Implemented target | Evidence authority | CI gate |
 | --- | --- | --- |
@@ -41,6 +41,7 @@ the capability-index target:
 | Reusable declared-source conformance | `artifacts/source-family-packaging/evidence.json` | `npm run check:source-family-packaging:ci` |
 | Structured source accessibility policy | `artifacts/source-accessibility-policy/evidence.json` | `npm run check:source-accessibility-policy:ci` |
 | Fixed source-family layout mapping | `artifacts/source-family-layout-mapping/evidence.json` | `npm run check:source-family-layout-mapping:ci` |
+| Fixed source-family namespace mapping | `artifacts/source-family-namespace-mapping/evidence.json` | `npm run check:source-family-namespace-mapping:ci` |
 | Designer workflow trace | `artifacts/designer-workflow-trace/evidence.json` | `npm run check:designer-workflow-trace:ci` |
 | SurfaceOps kanban static | `artifacts/surfaceops-kanban-static/evidence.json` | `npm run check:surfaceops-kanban-static:ci` |
 | SurfaceOps kanban live | `artifacts/surfaceops-kanban-live/evidence.json` | `npm run check:surfaceops-kanban-live:ci` |
@@ -73,7 +74,15 @@ mapping, broader P2 coverage, live connectors, self-serve UI, runtime
 accessibility claims, production adapters, SurfaceOps expansion, and
 JudgmentKit as non-capabilities.
 
-The capability-index target does not index itself. Adding it as a fifteenth
+The source-family-namespace-mapping row points to report/evidence-only proof for
+one fixed alternate declared-source prefix normalized at 78 checked JSON
+pointers onto the canonical namespace. It records
+`promotionStatus: "review_required"`, keeps `canAddAuthority: false`, and names
+arbitrary namespaces, additional layouts, broader P2 coverage, live connectors,
+self-serve UI, runtime accessibility, production adapters, SurfaceOps
+expansion, and JudgmentKit as non-capabilities.
+
+The capability-index target does not index itself. Adding it as a sixteenth
 row would create a circular self-evidence boundary. Its own final evidence is
 the authority for the index target.
 
@@ -199,13 +208,13 @@ root and satisfy the repository output-root rules.
 `npm run status` aliases the `capabilities verify` command. Verification:
 
 - reads the tracked index, report, capability-index evidence, package command
-  registry, declared schemas and fixtures, the 14 indexed target evidence
+  registry, declared schemas and fixtures, the 15 indexed target evidence
   files, and their referenced closure;
 - validates the index and evidence schemas, hashes, declared status, target
   count, dependencies, authority boundaries, and evidence refs;
 - writes a concise table with capability, evidence status, promotion status,
   and evidence path to stdout;
-- reports `implemented: 14/14 verified` plus the planned group count and ids;
+- reports `implemented: 15/15 verified` plus the planned group count and ids;
 - writes no file, creates no output directory, regenerates no artifact, and
   makes no network call.
 
@@ -242,7 +251,7 @@ manifest. Proof output must use those values exactly.
 
 - all capability-index-owned schemas;
 - the complete declared fixture set;
-- the 14 accepted target evidence files and their hashes;
+- the 15 accepted target evidence files and their hashes;
 - `capability-index.json`;
 - `capability-index-report.json`;
 - the final evidence self-ref using the repository's canonical null-placeholder
@@ -256,7 +265,7 @@ host-derived fields as `null`, `status: "pass"`, and
 
 `npm run check:capability-index:ci` runs the required upstream target gates,
 materializes and proves the capability index, checks tracked drift, and rejects
-untracked capability-index files. The phase-only gate may run after the 14
+untracked capability-index files. The phase-only gate may run after the 15
 indexed target proof jobs have already passed.
 
 CI must also prove that `npm run status` leaves the worktree unchanged. The
@@ -266,7 +275,7 @@ read-only verifier cannot hide stale output by regenerating it.
 
 The target is accepted only when:
 
-- the index contains exactly the 14 implemented targets listed above;
+- the index contains exactly the 15 implemented targets listed above;
 - every implemented row points to present, passing, hash-matching target
   evidence;
 - every proof status and promotion status matches the target evidence;

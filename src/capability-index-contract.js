@@ -284,6 +284,58 @@ const IMPLEMENTED_CAPABILITIES = [
     dependencies: { evidence: ["p2-spectrum-ingestion", "declared-source-conformance"], phaseGate: [], compatibility: [] }
   }),
   implemented({
+    capabilityId: "source-family-namespace-mapping",
+    displayName: "Source family namespace mapping",
+    roadmapPhase: "Target",
+    proofMode: "report-only",
+    userValue: "Connects one accepted team-owned authority bundle from a fixed alternate source-ref namespace without compiler changes.",
+    scopeStatement: "Normalizes one checked alternate source-ref prefix onto the canonical declared-source namespace for the exact accepted 12-file Button and InLineAlert bundle, then runs the unchanged source-conformance compiler without expanding authority.",
+    authorityRole: "derived-namespace-normalization-consumer",
+    nonCapabilities: [
+      "arbitrary source namespaces",
+      "additional source layouts",
+      "broader P2 component coverage",
+      "live source connectors",
+      "self-serve connection UI",
+      "runtime accessibility compliance",
+      "production adapters",
+      "SurfaceOps expansion",
+      "JudgmentKit invocation"
+    ],
+    lifecycleRoles: ["connect-authority", "govern-change"],
+    proofCommand: "interfacectl surfaces source-family-namespace-mapping proof",
+    packageProofScript: "proof:source-family-namespace-mapping",
+    ciGate: "npm run check:source-family-namespace-mapping:ci",
+    evidencePath: "artifacts/source-family-namespace-mapping/evidence.json",
+    evidenceSchemaId: "source-family-namespace-mapping-evidence.v0",
+    expectedPromotionStatus: "review_required",
+    inputPaths: [
+      "artifacts/p2/evidence.json",
+      "artifacts/p2/governed-catalog.json",
+      "artifacts/source-family-layout-mapping/evidence.json",
+      "sources/source-family-namespace-mapping/team-owned-namespaced-bundle",
+      "sources/source-family-namespace-mapping/namespace-mapping.json",
+      "fixtures/source-family-namespace-mapping"
+    ],
+    outputPaths: [
+      "artifacts/source-family-namespace-mapping/namespace-mapping-receipt.json",
+      "artifacts/source-family-namespace-mapping/normalized-source-inventory.json",
+      "artifacts/source-family-namespace-mapping/normalized-source-fact-coverage.json",
+      "artifacts/source-family-namespace-mapping/normalized-source-authority-map.json",
+      "artifacts/source-family-namespace-mapping/normalized-source-review-queue.json",
+      "artifacts/source-family-namespace-mapping/normalized-governed-catalog.json",
+      "artifacts/source-family-namespace-mapping/normalized-authority-connection-report.json",
+      "artifacts/source-family-namespace-mapping/normalized-source-conformance-report.json",
+      "artifacts/source-family-namespace-mapping/normalized-source-conformance-evidence.json",
+      "artifacts/source-family-namespace-mapping/source-family-namespace-mapping-report.json",
+      "artifacts/source-family-namespace-mapping/evidence.json"
+    ],
+    diagnosticSchemaPath: "schemas/source-family-namespace-mapping-diagnostics.v0.schema.json",
+    reportPaths: ["artifacts/source-family-namespace-mapping/source-family-namespace-mapping-report.json"],
+    documentationRefs: ["PLAN.md", "VISION.md", "plans/source-family-namespace-mapping.md"],
+    dependencies: { evidence: ["p2-spectrum-ingestion", "declared-source-conformance", "source-family-layout-mapping"], phaseGate: [], compatibility: [] }
+  }),
+  implemented({
     capabilityId: "source-accessibility-policy",
     displayName: "Structured accessibility policy reconciliation",
     roadmapPhase: "Target",

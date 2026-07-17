@@ -22,9 +22,17 @@ runs. Passing `artifacts/source-family-layout-mapping/evidence.json` proves this
 one fixed mapping contract only; it does not establish arbitrary layout or
 namespace support.
 
+[Source Family Namespace Mapping Proof Plan](plans/source-family-namespace-mapping.md)
+records the implemented bounded Connect Authority proof for normalizing one
+fixed alternate source-ref prefix at 78 checked JSON pointers, refreshing only
+the 11 manifest source-file hashes, and reproducing the accepted 12-file logical
+bundle before the unchanged source-conformance compiler runs. Passing
+`artifacts/source-family-namespace-mapping/evidence.json` proves this one prefix
+pair only; it does not establish arbitrary namespace support.
+
 [Capability Index Proof Target](plans/capability-index.md) records the
-implemented non-numbered proof for discovering and read-only verifying the 14
-proof targets that existed before the index. Its seven planned groups are
+implemented non-numbered proof for discovering and read-only verifying the 15
+implemented proof targets other than itself. Its seven planned groups are
 roadmap visibility only. The index does not replace target evidence, broaden
 target authority, or index itself.
 
@@ -666,6 +674,33 @@ broader P2 coverage, live connector or self-serve support, runtime
 accessibility compliance, production adapter support, SurfaceOps expansion, or
 JudgmentKit use.
 
+## Source Family Namespace Mapping Target
+
+The [Source Family Namespace Mapping Proof Plan](plans/source-family-namespace-mapping.md)
+defines one bounded implemented Connect Authority target over accepted P2 and
+source-family layout-mapping evidence. It verifies a checked copy of the exact
+accepted fixed-layout bundle whose declared-source refs use one alternate
+prefix. An immutable namespace package binds the exact 78 JSON-pointer
+substitutions and 11 manifest hash refreshes. The target normalizes only those
+declared values in an isolated workspace, requires all 12 logical files to
+match the accepted baseline byte-for-byte, then runs the unchanged
+source-conformance compiler.
+
+The implemented command is:
+
+```bash
+interfacectl surfaces source-family-namespace-mapping proof --source sources/source-family-namespace-mapping/team-owned-namespaced-bundle --mapping sources/source-family-namespace-mapping/namespace-mapping.json --namespace-package fixtures/source-family-namespace-mapping/namespace-package.fixture.json --ingestion-evidence artifacts/p2/evidence.json --catalog artifacts/p2/governed-catalog.json --source-family-layout-mapping-evidence artifacts/source-family-layout-mapping/evidence.json --fixture fixtures/source-family-namespace-mapping --out artifacts/source-family-namespace-mapping
+```
+
+Passing `artifacts/source-family-namespace-mapping/evidence.json` records
+`status: "pass"` and `promotionStatus: "review_required"`; the proof-bearing
+gate is `npm run check:source-family-namespace-mapping:ci`. The target emits one
+namespace receipt, eight persisted inner artifacts, one report, and final
+evidence, with no demo. It must not be described as arbitrary namespace or
+alias support, another physical layout, broader P2 coverage, live connector or
+self-serve support, runtime accessibility compliance, production adapter
+support, SurfaceOps expansion, or JudgmentKit use.
+
 ## Designer Workflow Trace Target
 The designer-workflow-trace proof is a non-numbered, cross-cutting proof-only target that consumes accepted P2, source-conformance, P3, P4, protocol, and native evidence. It emits one deterministic Button scenario index from design authority through governed catalog, diagnostics/review-required status, review/evaluation refs, static target handoff artifacts, and evidence status.
 
@@ -709,8 +744,8 @@ The proof currently has no generated demo. Use `designer-workflow-trace-report.j
 ## Capability Index Target
 
 The capability-index proof is a non-numbered, cross-cutting target. It
-materializes a machine-readable discovery index and report over exactly the 14
-implemented proof targets that existed before it. It also records seven
+materializes a machine-readable discovery index and report over exactly the 15
+implemented proof targets other than itself. It also records seven
 separate planned capability groups without giving them proof commands,
 evidence, or implemented status.
 
@@ -719,7 +754,7 @@ The proof path is:
 ```text
 fixtures/capability-index/capabilities.fixture.json
 fixtures/capability-index/expectations.manifest.json
-14 accepted target evidence files
+15 accepted target evidence files
   -> validate fixtures/capability-index/valid/*.json,
      review/*.json, invalid/*.json, and mutations/*.json
   -> artifacts/capability-index/capability-index.json
@@ -822,6 +857,7 @@ read-only status output for human inspection.
 - [Source Conformance Validation and Evidence](plans/source-conformance/validation-evidence.md)
 - [Source Accessibility Policy Proof Target](plans/source-accessibility-policy.md)
 - [Source Family Layout Mapping Proof Target](plans/source-family-layout-mapping.md)
+- [Source Family Namespace Mapping Proof Target](plans/source-family-namespace-mapping.md)
 - [Product Designer Workflow Trace](plans/product-designer-workflow-trace.md)
 - [Capability Index Proof Target](plans/capability-index.md)
 - [Product Portfolio Boundaries](plans/product-portfolio-boundaries.md)
@@ -846,13 +882,20 @@ change source refs, expand P2, call live connectors, add self-serve UI, prove
 runtime accessibility, authorize production adapters, expand SurfaceOps, or
 authorize JudgmentKit.
 
+The source-family-namespace-mapping subplan defines the implemented proof for
+one fixed alternate declared-source prefix normalized at exact checked pointers
+onto the current canonical namespace. It does not implement arbitrary
+namespaces, add layouts or components, expand P2, call live connectors, add
+self-serve UI, authorize production adapters, expand SurfaceOps, or authorize
+JudgmentKit.
+
 The capability-index subplan defines discovery and read-only verification over
-the 14 pre-existing implemented proof targets. The index does not prove those
+the 15 implemented proof targets other than itself. The index does not prove those
 targets, self-index, or turn planned capability groups into implemented work.
 
 ## Capability Index Decisions
 
-- Indexed implemented target count: exactly 14 pre-existing proof targets.
+- Indexed implemented target count: exactly 15 proof targets other than the index itself.
 - Self-indexing: forbidden; capability-index evidence proves the index target.
 - Planned scope: seven capability groups for roadmap visibility only.
 - Status model: implementation status, evidence status, and governance

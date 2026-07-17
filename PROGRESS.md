@@ -5,7 +5,7 @@ roadmap. It is subordinate to `VISION.md`, `PLAN.md`, the phase plans, and
 passing evidence. It does not create proof authority or broaden an implemented
 target.
 
-Last updated: 2026-07-16
+Last updated: 2026-07-17
 Current focus: **Connect Authority**
 
 ## Status Semantics
@@ -43,8 +43,8 @@ boundary.
 
 Completion record:
 
-- [x] One schema-validated capability index covers all 14 implemented proof
-  targets that existed before the capability-index target.
+- [x] One schema-validated capability index covers all 15 implemented proof
+  targets other than the capability-index target.
 - [x] Each implemented row exposes its identity, scope, authority boundary,
   non-capabilities, dependencies, commands, CI gate, inputs, outputs,
   diagnostics, report, evidence, and demo references.
@@ -77,7 +77,7 @@ Proof and evidence:
 - Read-only verification: `interfacectl surfaces capabilities verify --index artifacts/capability-index/capability-index.json --evidence artifacts/capability-index/evidence.json`
 - Proof-bearing gate: `npm run check:capability-index:ci`
 
-The index intentionally covers the 14 pre-existing targets rather than
+The index intentionally covers the 15 other implemented targets rather than
 indexing itself. Its evidence proves the index contract without creating a
 circular authority chain. The index is a derived discovery surface. It does
 not replace target evidence or turn demos and plans into proof.
@@ -135,20 +135,34 @@ fact tuples, nine immutable P2 catalog fields, owner-bound review semantics,
 and causal `SOURCE_FACT_AUTHORITY_ESCALATION` rejection. Passing evidence
 records all 20 fixture results and `promotionStatus: "review_required"`.
 
+The source-family-namespace-mapping slice removes one fixed source-ref namespace
+constraint without changing source authority. A checked copy of the accepted
+fixed-layout bundle uses `declared-source://product-team-authority/` at exactly
+78 declared JSON string pointers. An immutable namespace package binds those
+substitutions and exactly 11 manifest source-file hash refreshes. The isolated
+normalization result must match all 12 accepted logical files byte-for-byte
+before the unchanged compiler runs. Passing evidence preserves the eight inner
+artifacts, six normalized fact tuples, nine immutable P2 catalog fields,
+owner-bound non-executable review semantics, and causal
+`SOURCE_FACT_AUTHORITY_ESCALATION` rejection with
+`promotionStatus: "review_required"`.
+
 Complete when a team can declare its authoritative sources, precedence,
 policies, and review ownership without repo-specific implementation changes,
 then compile a traceable governed catalog with actionable conflict and
 ambiguity handling. The current slice proves that path for two checked
 instances of one fixed source-family package ABI plus one fixed alternate
-physical layout mapped onto that same ABI. Arbitrary source layouts or
-namespaces, broader component coverage, live connectors, and a self-serve
-connection path remain open and require separate proof.
+physical layout mapped onto that same ABI and one fixed alternate source-ref
+prefix normalized onto its canonical namespace. Arbitrary additional source
+layouts or namespace pairs, broader component coverage, live connectors, and a
+self-serve connection path remain open and require separate proof.
 
-What's next: use the passing fixed-layout proof as the new Connect Authority
+What's next: use the passing fixed-namespace proof as the new Connect Authority
 baseline, then select one bounded next proof slice from the remaining milestone
-gaps. Current evidence does not authorize arbitrary layouts or namespaces,
-broader P2 coverage, live connectors, self-serve UI, runtime accessibility
-claims, production adapters, SurfaceOps expansion, or JudgmentKit use.
+gaps. Current evidence does not authorize arbitrary additional layouts or
+namespace pairs, broader P2 coverage, live connectors, self-serve UI, runtime
+accessibility claims, production adapters, SurfaceOps expansion, or JudgmentKit
+use.
 
 ## 3. Generate Within Bounds
 
