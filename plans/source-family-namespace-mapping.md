@@ -33,8 +33,8 @@ milestone.
   alternate value, canonical value, and before/after file hash in an immutable
   namespace package.
 - Reject canonical, mixed, foreign, undeclared, overlapping, traversal-bearing,
-  encoded-separator, backslash, query-bearing, or otherwise unsupported source
-  refs.
+  encoded-separator, backslash, query-bearing, invalid RFC 6901 escape, or
+  otherwise unsupported source refs.
 - Normalize only the declared string values and manifest source-file hashes in
   an isolated workspace. No regex, selector, plugin, parser hook, merge,
   default, semantic transform, or family-specific module is allowed.
@@ -180,7 +180,7 @@ The minimum matrix includes:
 | mutation | One namespaced source byte or manifest-bound hash drifts | blocked |
 | invalid | From/to namespace is malformed, mixed, canonical, foreign, or undeclared | blocked |
 | invalid | One expected substitution is absent, duplicated, overlapping, or at the wrong pointer | blocked |
-| invalid | A source-ref suffix contains traversal, backslash, query, or encoded-separator syntax | blocked |
+| invalid | A source-ref suffix contains traversal, backslash, query, encoded-separator, or invalid RFC 6901 escape syntax | blocked |
 | invalid | A path or fragment suffix changes during normalization | blocked |
 | invalid | Any non-ref value differs after normalization | blocked |
 | invalid | Regex, selector, plugin, merge, default, or semantic transform is requested | blocked |
@@ -210,7 +210,8 @@ The proof passes only when:
    equal the accepted layout-mapping outputs;
 10. Button/InLineAlert facts, P2 catalog fields, active owner, review semantics,
     and non-executable state remain unchanged;
-11. the isolated authority-expansion probe returns the exact inner diagnostic;
+11. the isolated authority-expansion probe returns exactly one blocked inner
+    diagnostic and the exact source-conformance run-expectation failure;
 12. every causal fixture result matches the registry-backed expectation; and
 13. final evidence closes every input, output, boundary, and self ref with
     `status: "pass"` and `promotionStatus: "review_required"`.

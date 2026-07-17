@@ -58,6 +58,7 @@ import {
   SFNM_TIMESTAMP,
   SFNM_VERSION,
   artifactRef,
+  assertNamespaceMapping,
   buildSourceFamilyNamespaceMappingFixtures,
   defaultNamespaceMappingArgs,
   diagnosticsRegistry,
@@ -76,15 +77,6 @@ const execFileAsync = promisify(execFile);
 const LOGICAL_PATHS = ["manifest.json", ...SC_SOURCE_FILES];
 const LAYOUT_REPORT_PATH = `${SFLM_ARTIFACT_ROOT}/source-family-layout-mapping-report.json`;
 const BOUNDARY_PATHS = [SFNM_P2_EVIDENCE_PATH, SFNM_P2_CATALOG_PATH, SFNM_LAYOUT_EVIDENCE_PATH];
-const FORBIDDEN_TRANSFORM_KEYS = new Set([
-  "regex", "replacement", "replacements", "parser", "parsers", "selector", "selectors",
-  "plugin", "plugins", "merge", "merges", "default", "defaults", "transform", "transforms",
-  "jsonPath", "jsonPaths", "callback", "callbacks"
-]);
-const FORBIDDEN_AUTHORITY_KEYS = new Set([
-  "components", "componentIds", "requestedComponentIds", "facts", "requestedFacts", "policies",
-  "requestedPolicies", "reviewRoutes", "requestedReviewRoutes", "authorityScopes", "actions"
-]);
 
 export async function runSourceFamilyNamespaceMappingInterfacectl(argv, io) {
   const parsed = parseSourceFamilyNamespaceMappingArgs(argv);
@@ -953,15 +945,17 @@ async function runAuthorityExpansionProbe({ cwd, normalization, baselineArtifact
     if (!sourceFile) throw contractError("SOURCE_NAMESPACE_BASELINE_MISMATCH: Button manifest entry is missing", 1);
     sourceFile.sha256 = await rawFileHash(buttonPath);
     await writeCanonicalJson(manifestPath, manifest);
+    const acceptedInnerEvidence = await readJson(path.join(cwd, SFNM_ARTIFACT_ROOT, "normalized-source-conformance-evidence.json"));
+    const expectedFailureDiagnosticCodes = acceptedInnerEvidence.diagnostics.map((entry) => entry.code);
     const result = await executeCompiler(cwd, probeWorkspace);
     let innerFinding = null;
     try {
       const coverage = await readJson(path.join(probeWorkspace, SC_ARTIFACT_ROOT, "source-fact-coverage.json"));
-      innerFinding = coverage.findings.find((entry) => entry.diagnosticCode === "SOURCE_FACT_AUTHORITY_ESCALATION") || null;
+      innerFinding = exactAuthorityExpansionFinding(coverage);
     } catch {
       innerFinding = null;
     }
-    if (result.exitCode !== 1 || innerFinding?.diagnosticCode !== "SOURCE_FACT_AUTHORITY_ESCALATION") {
+    if (!hasExactAuthorityExpansionFailure(result, expectedFailureDiagnosticCodes) || innerFinding?.diagnosticCode !== "SOURCE_FACT_AUTHORITY_ESCALATION") {
       throw contractError("SOURCE_NAMESPACE_BASELINE_MISMATCH: unchanged compiler did not preserve causal authority rejection", 1);
     }
     const inputsAfter = await checkedInputHashSnapshot(cwd);
@@ -984,6 +978,26 @@ async function runAuthorityExpansionProbe({ cwd, normalization, baselineArtifact
     await fs.rm(verifiedWorkspace, { recursive: true, force: true });
     await fs.rm(probeWorkspace, { recursive: true, force: true });
   }
+}
+
+function exactAuthorityExpansionFinding(coverage) {
+  if (coverage?.promotionStatus !== "blocked" || !Array.isArray(coverage.findings)) return null;
+  const blockedFindings = coverage.findings.filter((entry) => entry.status === "blocked");
+  if (
+    blockedFindings.length !== 1 ||
+    blockedFindings[0].diagnosticCode !== "SOURCE_FACT_AUTHORITY_ESCALATION"
+  ) return null;
+  return blockedFindings[0];
+}
+
+function hasExactAuthorityExpansionFailure(result, diagnosticCodes) {
+  if (
+    result?.exitCode !== 1 ||
+    !Array.isArray(diagnosticCodes) ||
+    diagnosticCodes.filter((code) => code === "SOURCE_FACT_AUTHORITY_ESCALATION").length !== 1
+  ) return false;
+  const expected = `source conformance run expectation mismatch: expected pass/review_required got fail/blocked; diagnostics ${diagnosticCodes.join(",")}`;
+  return stableChildFailure(result) === expected;
 }
 
 async function copyIndependentWorkspaceTree(sourceRoot, destinationRoot) {
@@ -1125,46 +1139,29 @@ async function evaluateReviewFixture({ cwd, fixture }) {
   return item ? reviewOutcome("SOURCE_NAMESPACE_REVIEW_REQUIRED") : allowedOutcome();
 }
 
-function evaluateMappingFixture({ fixture, mapping, namespacePackage }) {
+function evaluateMappingFixture({ fixture, mapping }) {
   const mutated = deepClone(mapping);
   applyMutation(mutated, fixture.mutation);
-  const code = classifyMutatedMapping(mutated, namespacePackage);
-  return code ? blockedOutcome(code) : allowedOutcome();
-}
-
-function classifyMutatedMapping(mapping, namespacePackage) {
   try {
-    const keys = new Set(Object.keys(mapping || {}));
-    if ([...FORBIDDEN_TRANSFORM_KEYS].some((key) => keys.has(key))) return "SOURCE_NAMESPACE_TRANSFORM_FORBIDDEN";
-    if ([...FORBIDDEN_AUTHORITY_KEYS].some((key) => keys.has(key))) return "SOURCE_NAMESPACE_TRANSFORM_FORBIDDEN";
-    if (
-      mapping.fromNamespace === mapping.toNamespace ||
-      mapping.fromNamespace?.startsWith(mapping.toNamespace || "") ||
-      mapping.toNamespace?.startsWith(mapping.fromNamespace || "")
-    ) return "SOURCE_NAMESPACE_COLLISION";
-    if (mapping.fromNamespace !== SFNM_ALTERNATE_NAMESPACE || mapping.toNamespace !== SFNM_CANONICAL_NAMESPACE) {
-      return "SOURCE_NAMESPACE_UNSUPPORTED";
-    }
-    const expectedPairs = SFNM_SOURCE_ENTRIES.map(({ physicalPath, logicalPath }) => ({ physicalPath, logicalPath }));
-    if (!Array.isArray(mapping.entries) || canonicalJson(mapping.entries) !== canonicalJson(expectedPairs)) {
-      return "SOURCE_NAMESPACE_MAPPING_INCOMPLETE";
-    }
-    const candidateHash = sha256Hex(`${canonicalJson(mapping)}\n`);
-    if (candidateHash !== namespacePackage.mappingSha256) return "SOURCE_NAMESPACE_MAPPING_HASH_MISMATCH";
-    return null;
+    assertNamespaceMapping(mutated);
+    return allowedOutcome();
   } catch (error) {
-    return diagnosticCodeFromError(error) || "SOURCE_NAMESPACE_MAPPING_HASH_MISMATCH";
+    const code = diagnosticCodeFromError(error);
+    return code ? blockedOutcome(code) : allowedOutcome();
   }
 }
 
-async function evaluatePhysicalSourceFixture({ cwd, fixture, namespacePackage }) {
+async function evaluatePhysicalSourceFixture({ cwd, fixture }) {
   return withFixtureSourceWorkspace(cwd, async (workspace) => {
     const target = resolveContainedPath(path.join(workspace, SFNM_SOURCE_ROOT), fixture.mutation.path);
     await fs.appendFile(target, Buffer.from(String(fixture.mutation.value)));
-    const expected = namespacePackage.entries.find((entry) => entry.physicalPath === fixture.mutation.path);
-    return !expected || await rawFileHash(target) !== expected.inputSha256
-      ? blockedOutcome("SOURCE_NAMESPACE_SOURCE_HASH_MISMATCH")
-      : allowedOutcome();
+    try {
+      await normalizeNamespacedBundle(workspace);
+      return allowedOutcome();
+    } catch (error) {
+      const code = diagnosticCodeFromError(error);
+      return code === "SOURCE_NAMESPACE_SOURCE_HASH_MISMATCH" ? blockedOutcome(code) : allowedOutcome();
+    }
   });
 }
 
@@ -1789,6 +1786,7 @@ export const sourceFamilyNamespaceMappingInternals = {
   resolveContainedPath,
   listIndependentRegularFiles,
   prepareOutputRoot,
-  classifyMutatedMapping,
+  exactAuthorityExpansionFinding,
+  hasExactAuthorityExpansionFailure,
   setJsonPointer
 };

@@ -3,6 +3,7 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
+import Ajv2020 from "ajv/dist/2020.js";
 import { canonicalJson, runInterfacectl } from "../src/p0.js";
 import { canonicalFileHash, rawFileHash, readJson, writeCanonicalJson } from "../src/p2-contract.js";
 import { capabilityDeclarations } from "../src/capability-index-contract.js";
@@ -85,7 +86,9 @@ test("immutable namespace inputs prove exactly 78 substitutions and 11 manifest 
     `${SFNM_ALTERNATE_NAMESPACE}components/../button.json#/`,
     `${SFNM_ALTERNATE_NAMESPACE}components\\button.json#/`,
     `${SFNM_ALTERNATE_NAMESPACE}components/button.json?raw=1#/`,
-    `${SFNM_ALTERNATE_NAMESPACE}components%2Fbutton.json#/`
+    `${SFNM_ALTERNATE_NAMESPACE}components%2Fbutton.json#/`,
+    `${SFNM_ALTERNATE_NAMESPACE}components/button.json#/facts/~2invalid`,
+    `${SFNM_ALTERNATE_NAMESPACE}components/button.json#/facts/~`
   ]) {
     assert.equal(contractInternals.isSafeNamespaceReference(unsafe, SFNM_ALTERNATE_NAMESPACE), false, unsafe);
   }
@@ -166,6 +169,29 @@ test("generated fixtures are exact-locked and every mutation stays inside the fi
   assert.equal({}.polluted, undefined);
 });
 
+test("causal mapping and source-byte mutations use production diagnostics", async () => {
+  const mapping = await readJson(path.join(root, SFNM_MAPPING_PATH));
+  const cases = [
+    ["SOURCE_NAMESPACE_MAPPING_HASH_MISMATCH", (value) => { value.mappingId = `${value.mappingId}-drift`; }],
+    ["SOURCE_NAMESPACE_UNSUPPORTED", (value) => { value.fromNamespace = "declared-source://unreviewed-authority/"; }],
+    ["SOURCE_NAMESPACE_COLLISION", (value) => { value.fromNamespace = value.toNamespace; }],
+    ["SOURCE_NAMESPACE_TRANSFORM_FORBIDDEN", (value) => { value.regex = "declared-source://(.+)"; }]
+  ];
+  for (const [code, mutate] of cases) {
+    const candidate = structuredClone(mapping);
+    mutate(candidate);
+    assert.throws(() => contractInternals.assertNamespaceMapping(candidate), new RegExp(code));
+  }
+  await withTemporaryDirectory(async (temporaryRoot) => {
+    const invalidPath = path.join(temporaryRoot, "invalid.json");
+    await fs.writeFile(invalidPath, "{}00");
+    await assert.rejects(
+      () => contractInternals.readCanonicalInput(invalidPath, "invalid.json"),
+      /SOURCE_NAMESPACE_SOURCE_HASH_MISMATCH/
+    );
+  });
+});
+
 test("outer receipt and evidence close exactly 11 deterministic artifacts", async () => {
   const evidence = await readJson(path.join(root, SFNM_ARTIFACT_ROOT, "evidence.json"));
   const report = await readJson(path.join(root, SFNM_ARTIFACT_ROOT, "source-family-namespace-mapping-report.json"));
@@ -189,6 +215,28 @@ test("outer receipt and evidence close exactly 11 deterministic artifacts", asyn
   assert.equal(receipt.totalManifestHashRefreshCount, 11);
   assert.equal(receipt.normalizedBaselineMatched, true);
   assert.equal(receipt.onlyNamespaceAndManifestHashesChanged, true);
+});
+
+test("report and evidence schemas lock reference paths in exact order", async () => {
+  const ajv = new Ajv2020({ allErrors: true, strict: false, validateFormats: false });
+  const evidenceSchema = await readJson(path.join(root, "schemas/source-family-namespace-mapping-evidence.v0.schema.json"));
+  const reportSchema = await readJson(path.join(root, "schemas/source-family-namespace-mapping-report.v0.schema.json"));
+  const evidence = await readJson(path.join(root, SFNM_ARTIFACT_ROOT, "evidence.json"));
+  const report = await readJson(path.join(root, SFNM_ARTIFACT_ROOT, "source-family-namespace-mapping-report.json"));
+  const validateEvidence = ajv.compile(evidenceSchema);
+  const validateReport = ajv.compile(reportSchema);
+  assert.equal(validateEvidence(evidence), true, JSON.stringify(validateEvidence.errors));
+  assert.equal(validateReport(report), true, JSON.stringify(validateReport.errors));
+  for (const key of ["schemaClosure", "sourceFileRefs", "compilerRefs", "proofImplementationRefs", "runtimeRefs", "fixtureRefs", "boundaryRefs", "artifacts"]) {
+    const candidate = structuredClone(evidence);
+    candidate[key][0].path = "substituted/valid-path.json";
+    assert.equal(validateEvidence(candidate), false, key);
+  }
+  for (const key of ["compilerRefs", "proofImplementationRefs", "runtimeRefs"]) {
+    const candidate = structuredClone(report);
+    candidate[key][0].path = "substituted/valid-path.json";
+    assert.equal(validateReport(candidate), false, key);
+  }
 });
 
 test("all eight normalized artifacts equal accepted layout outputs and re-verify after cleanup", async () => {
@@ -235,7 +283,7 @@ test("all causal fixture outcomes match the closed registry without registering 
   const evidence = await readJson(path.join(root, SFNM_ARTIFACT_ROOT, "evidence.json"));
   const report = await readJson(path.join(root, SFNM_ARTIFACT_ROOT, "source-family-namespace-mapping-report.json"));
   assert.deepEqual(expectations.expectations, SFNM_EXPECTATION_ROWS);
-  assert.equal(expectations.expectations.length, 21);
+  assert.equal(expectations.expectations.length, 23);
   assert.deepEqual(report.results, evidence.validationResults);
   assert.equal(report.results.every((entry) => entry.matched), true);
   for (let index = 0; index < report.results.length; index += 1) {
@@ -259,6 +307,27 @@ test("the isolated authority probe reaches the unchanged inner compiler", async 
     checkedInputsUnchanged: true,
     baselineArtifactsUnchanged: true
   });
+  const exactCoverage = {
+    promotionStatus: "blocked",
+    findings: [
+      { status: "review_required", diagnosticCode: "SOURCE_FORKED_VARIANT_REVIEW_REQUIRED" },
+      { status: "blocked", diagnosticCode: "SOURCE_FACT_AUTHORITY_ESCALATION" }
+    ]
+  };
+  assert.equal(sourceFamilyNamespaceMappingInternals.exactAuthorityExpansionFinding(exactCoverage)?.diagnosticCode, "SOURCE_FACT_AUTHORITY_ESCALATION");
+  const duplicate = structuredClone(exactCoverage);
+  duplicate.findings.push({ status: "blocked", diagnosticCode: "SOURCE_FACT_AUTHORITY_ESCALATION" });
+  assert.equal(sourceFamilyNamespaceMappingInternals.exactAuthorityExpansionFinding(duplicate), null);
+  const unrelated = structuredClone(exactCoverage);
+  unrelated.findings[1].diagnosticCode = "SOURCE_GOVERNED_CATALOG_DRIFT";
+  assert.equal(sourceFamilyNamespaceMappingInternals.exactAuthorityExpansionFinding(unrelated), null);
+  const innerEvidence = await readJson(path.join(root, SFNM_ARTIFACT_ROOT, "normalized-source-conformance-evidence.json"));
+  const diagnosticCodes = innerEvidence.diagnostics.map((entry) => entry.code);
+  const expectedFailure = `source conformance run expectation mismatch: expected pass/review_required got fail/blocked; diagnostics ${diagnosticCodes.join(",")}`;
+  assert.equal(sourceFamilyNamespaceMappingInternals.hasExactAuthorityExpansionFailure({ exitCode: 1, stderr: expectedFailure, stdout: "" }, diagnosticCodes), true);
+  assert.equal(sourceFamilyNamespaceMappingInternals.hasExactAuthorityExpansionFailure({ exitCode: 1, stderr: expectedFailure, stdout: "unrelated later failure" }, diagnosticCodes), false);
+  assert.equal(sourceFamilyNamespaceMappingInternals.hasExactAuthorityExpansionFailure({ exitCode: 1, stderr: "unrelated failure", stdout: "" }, diagnosticCodes), false);
+  assert.equal(sourceFamilyNamespaceMappingInternals.hasExactAuthorityExpansionFailure({ exitCode: 2, stderr: expectedFailure, stdout: "" }, diagnosticCodes), false);
 });
 
 test("capability and package wiring expose only the fixed namespace target", async () => {

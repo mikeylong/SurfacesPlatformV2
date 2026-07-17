@@ -44,6 +44,16 @@ export const SFNM_CANONICAL_NAMESPACE = "declared-source://source-conformance/";
 export const SFNM_EXPECTED_SUBSTITUTION_COUNT = 78;
 export const SFNM_EXPECTED_MANIFEST_HASH_REFRESH_COUNT = 11;
 
+const SFNM_FORBIDDEN_MAPPING_KEYS = new Set([
+  "regex", "replacement", "replacements", "parser", "parsers", "selector", "selectors",
+  "plugin", "plugins", "merge", "merges", "default", "defaults", "transform", "transforms",
+  "jsonPath", "jsonPaths", "callback", "callbacks", "components", "componentIds",
+  "requestedComponentIds", "facts", "requestedFacts", "policies", "requestedPolicies",
+  "reviewRoutes", "requestedReviewRoutes", "authorityScopes", "actions"
+]);
+const SFNM_REFERENCE_SUFFIX_PATTERN = "(?:(?:components|policies|governance)/[a-z0-9-]+\\.json#/(?:(?:[A-Za-z0-9._-]|~[01])+(?:/(?:[A-Za-z0-9._-]|~[01])+)*)?|<posix-path>#<rfc6901-json-pointer>)";
+const SFNM_REFERENCE_SUFFIX_REGEX = new RegExp(`^${SFNM_REFERENCE_SUFFIX_PATTERN}$`);
+
 export const SFNM_ENVIRONMENT = Object.freeze({ generatedAt: SFNM_TIMESTAMP, host: null });
 
 export const SFNM_SCHEMA_FILES = [
@@ -130,6 +140,8 @@ export const SFNM_EXPECTATION_ROWS = [
     ["SOURCE_NAMESPACE_REF_UNSAFE", "invalid/ref-backslash.source-family-namespace-mapping.json"],
     ["SOURCE_NAMESPACE_REF_UNSAFE", "invalid/ref-query.source-family-namespace-mapping.json"],
     ["SOURCE_NAMESPACE_REF_UNSAFE", "invalid/ref-encoded-separator.source-family-namespace-mapping.json"],
+    ["SOURCE_NAMESPACE_REF_UNSAFE", "invalid/ref-invalid-escape.source-family-namespace-mapping.json"],
+    ["SOURCE_NAMESPACE_REF_UNSAFE", "invalid/ref-dangling-escape.source-family-namespace-mapping.json"],
     ["SOURCE_NAMESPACE_COLLISION", null],
     ["SOURCE_NAMESPACE_SUFFIX_MISMATCH", null],
     ["SOURCE_NAMESPACE_BASELINE_MISMATCH", null],
@@ -385,6 +397,8 @@ export function buildSourceFamilyNamespaceMappingFixtures(namespacePackage) {
     "invalid/ref-backslash.source-family-namespace-mapping.json": fixture("ref-backslash", "ref-unsafe", mutation("physical-source-json", "replace-value", "ui/button-definition.json#/sourceRef", `${SFNM_ALTERNATE_NAMESPACE}components\\button.json#/`), null, sourceRef),
     "invalid/ref-query.source-family-namespace-mapping.json": fixture("ref-query", "ref-unsafe", mutation("physical-source-json", "replace-value", "ui/button-definition.json#/sourceRef", `${SFNM_ALTERNATE_NAMESPACE}components/button.json?raw=1#/`), null, sourceRef),
     "invalid/ref-encoded-separator.source-family-namespace-mapping.json": fixture("ref-encoded-separator", "ref-unsafe", mutation("physical-source-json", "replace-value", "ui/button-definition.json#/sourceRef", `${SFNM_ALTERNATE_NAMESPACE}components%2Fbutton.json#/`), null, sourceRef),
+    "invalid/ref-invalid-escape.source-family-namespace-mapping.json": fixture("ref-invalid-escape", "ref-unsafe", mutation("physical-source-json", "replace-value", "ui/button-definition.json#/sourceRef", `${SFNM_ALTERNATE_NAMESPACE}components/button.json#/facts/~2invalid`), null, sourceRef),
+    "invalid/ref-dangling-escape.source-family-namespace-mapping.json": fixture("ref-dangling-escape", "ref-unsafe", mutation("physical-source-json", "replace-value", "ui/button-definition.json#/sourceRef", `${SFNM_ALTERNATE_NAMESPACE}components/button.json#/facts/~`), null, sourceRef),
     "invalid/namespace-collision.source-family-namespace-mapping.json": fixture("namespace-collision", "namespace-collision", mutation("mapping-descriptor", "replace-value", "/fromNamespace", SFNM_CANONICAL_NAMESPACE), null, sourceRef),
     "invalid/suffix-mismatch.source-family-namespace-mapping.json": fixture("suffix-mismatch", "suffix-mismatch", mutation("normalization-result", "replace-value", "components/button.json#/sourceRef", `${SFNM_CANONICAL_NAMESPACE}components/in-line-alert.json#/`), null, sourceRef),
     "invalid/baseline-drift.source-family-namespace-mapping.json": fixture("baseline-drift", "baseline-drift", mutation("physical-source-json", "replace-value", "ui/button-definition.json#/facts/0/value", "expressive"), null, sourceRef),
@@ -432,10 +446,30 @@ function expectedNamespaceMapping() {
   };
 }
 
-function assertNamespaceMapping(mapping) {
-  assertCanonicalEqual(mapping, expectedNamespaceMapping(), "namespace mapping");
-  if (mapping.fromNamespace === mapping.toNamespace || mapping.fromNamespace.startsWith(mapping.toNamespace) || mapping.toNamespace.startsWith(mapping.fromNamespace)) {
+export function assertNamespaceMapping(mapping) {
+  if (!mapping || typeof mapping !== "object" || Array.isArray(mapping)) {
+    throw new Error("SOURCE_NAMESPACE_MAPPING_HASH_MISMATCH: namespace mapping must be an object");
+  }
+  const keys = new Set(Object.keys(mapping));
+  if ([...SFNM_FORBIDDEN_MAPPING_KEYS].some((key) => keys.has(key))) {
+    throw new Error("SOURCE_NAMESPACE_TRANSFORM_FORBIDDEN: namespace mapping includes a forbidden transform or authority key");
+  }
+  if (
+    typeof mapping.fromNamespace === "string" && mapping.fromNamespace.length > 0 &&
+    typeof mapping.toNamespace === "string" && mapping.toNamespace.length > 0 &&
+    (mapping.fromNamespace === mapping.toNamespace || mapping.fromNamespace.startsWith(mapping.toNamespace) || mapping.toNamespace.startsWith(mapping.fromNamespace))
+  ) {
     throw new Error("SOURCE_NAMESPACE_COLLISION: namespace prefixes overlap");
+  }
+  if (mapping.fromNamespace !== SFNM_ALTERNATE_NAMESPACE || mapping.toNamespace !== SFNM_CANONICAL_NAMESPACE) {
+    throw new Error("SOURCE_NAMESPACE_UNSUPPORTED: namespace mapping uses an unsupported prefix");
+  }
+  const expectedEntries = SFNM_SOURCE_ENTRIES.map(({ physicalPath, logicalPath }) => ({ physicalPath, logicalPath }));
+  if (!Array.isArray(mapping.entries) || canonicalJson(mapping.entries) !== canonicalJson(expectedEntries)) {
+    throw new Error("SOURCE_NAMESPACE_MAPPING_INCOMPLETE: namespace mapping entries are incomplete");
+  }
+  if (canonicalJson(mapping) !== canonicalJson(expectedNamespaceMapping())) {
+    throw new Error("SOURCE_NAMESPACE_MAPPING_HASH_MISMATCH: namespace mapping bytes drifted from the fixed descriptor");
   }
 }
 
@@ -526,13 +560,17 @@ function rewriteNamespaceValue(value, pointer, substitutions) {
 function isSafeNamespaceReference(value, namespace) {
   if (typeof value !== "string" || !value.startsWith(namespace)) return false;
   const suffix = value.slice(namespace.length);
-  if (suffix === "<posix-path>#<rfc6901-json-pointer>") return true;
-  return /^(?:components|policies|governance)\/[a-z0-9-]+\.json#\/(?:[A-Za-z0-9._~-]+(?:\/[A-Za-z0-9._~-]+)*)?$/.test(suffix);
+  return SFNM_REFERENCE_SUFFIX_REGEX.test(suffix);
 }
 
 async function readCanonicalInput(filePath, label) {
   const text = await fs.readFile(filePath, "utf8");
-  const value = JSON.parse(text);
+  let value;
+  try {
+    value = JSON.parse(text);
+  } catch {
+    throw new Error(`SOURCE_NAMESPACE_SOURCE_HASH_MISMATCH: source is not valid JSON: ${label}`);
+  }
   if (text !== canonicalJson(value) && text !== `${canonicalJson(value)}\n`) {
     throw new Error(`SOURCE_NAMESPACE_SOURCE_HASH_MISMATCH: source is not canonical JSON with at most one terminal newline: ${label}`);
   }
@@ -703,9 +741,9 @@ function diagnosticsSchema() {
 function reportSchema() {
   return objectSchema("source-family-namespace-mapping-report.v0", {
     schemaId: { const: "source-family-namespace-mapping-report.v0" }, version: { const: SFNM_VERSION }, runId: idSchema(),
-    namespacePackageRef: artifactRefSchema(), mappingRef: artifactRefSchema(), compilerRefs: artifactRefArraySchema(SFNM_COMPILER_IMPLEMENTATION_PATHS.length),
-    proofImplementationRefs: artifactRefArraySchema(SFNM_PROOF_IMPLEMENTATION_PATHS.length),
-    runtimeRefs: artifactRefArraySchema(SFNM_RUNTIME_DEPENDENCY_PATHS.length), namespaceMappingReceiptRef: artifactRefSchema(),
+    namespacePackageRef: artifactRefSchema({ path: SFNM_NAMESPACE_PACKAGE_PATH }), mappingRef: artifactRefSchema({ path: SFNM_MAPPING_PATH }), compilerRefs: artifactRefArraySchema(SFNM_COMPILER_IMPLEMENTATION_PATHS),
+    proofImplementationRefs: artifactRefArraySchema(SFNM_PROOF_IMPLEMENTATION_PATHS),
+    runtimeRefs: artifactRefArraySchema(SFNM_RUNTIME_DEPENDENCY_PATHS), namespaceMappingReceiptRef: artifactRefSchema({ path: `${SFNM_ARTIFACT_ROOT}/namespace-mapping-receipt.json` }),
     normalizedEvidenceRemap: normalizedEvidenceRemapSchema(), normalizationVerification: normalizationVerificationSchema(),
     baselineComparison: baselineComparisonSchema(), authorityExpansionProbe: authorityExpansionProbeSchema(),
     results: exactArraySchema(SFNM_EXPECTATION_ROWS.length, validationResultSchema()),
@@ -720,12 +758,12 @@ function evidenceSchema() {
   return objectSchema("source-family-namespace-mapping-evidence.v0", {
     contractId: { const: SFNM_CONTRACT_ID }, schemaId: { const: "source-family-namespace-mapping-evidence.v0" }, version: { const: SFNM_VERSION },
     runId: idSchema(), checkedAt: { const: SFNM_TIMESTAMP }, command: { const: SFNM_COMMAND }, args: commandArgsSchema(), environment: environmentSchema(),
-    schemaClosure: artifactRefArraySchema(sfnmSchemaPaths().length), namespacePackageRef: artifactRefSchema(), mappingRef: artifactRefSchema(),
-    sourceFileRefs: artifactRefArraySchema(SFNM_SOURCE_ENTRIES.length),
-    compilerRefs: artifactRefArraySchema(SFNM_COMPILER_IMPLEMENTATION_PATHS.length),
-    proofImplementationRefs: artifactRefArraySchema(SFNM_PROOF_IMPLEMENTATION_PATHS.length),
-    runtimeRefs: artifactRefArraySchema(SFNM_RUNTIME_DEPENDENCY_PATHS.length), fixtureRefs: artifactRefArraySchema(sfnmFixturePaths().length),
-    boundaryRefs: artifactRefArraySchema(3, { provenance: true }), artifacts: artifactRefArraySchema(SFNM_ARTIFACT_PATHS.length),
+    schemaClosure: artifactRefArraySchema(sfnmSchemaPaths()), namespacePackageRef: artifactRefSchema({ path: SFNM_NAMESPACE_PACKAGE_PATH }), mappingRef: artifactRefSchema({ path: SFNM_MAPPING_PATH }),
+    sourceFileRefs: artifactRefArraySchema(sfnmSourcePaths().slice(1)),
+    compilerRefs: artifactRefArraySchema(SFNM_COMPILER_IMPLEMENTATION_PATHS),
+    proofImplementationRefs: artifactRefArraySchema(SFNM_PROOF_IMPLEMENTATION_PATHS),
+    runtimeRefs: artifactRefArraySchema(SFNM_RUNTIME_DEPENDENCY_PATHS), fixtureRefs: artifactRefArraySchema(sfnmFixturePaths()),
+    boundaryRefs: artifactRefArraySchema([SFNM_P2_EVIDENCE_PATH, SFNM_P2_CATALOG_PATH, SFNM_LAYOUT_EVIDENCE_PATH], { provenance: true }), artifacts: artifactRefArraySchema(SFNM_ARTIFACT_PATHS),
     normalizedEvidenceRemap: normalizedEvidenceRemapSchema(), normalizedEvidenceClosureVerified: { const: true },
     diagnostics: exactArraySchema(SFNM_DIAGNOSTIC_ROWS.length, diagnosticSchema()), diagnosticsRegistry: { const: diagnosticsRegistry() },
     validationResults: exactArraySchema(SFNM_EXPECTATION_ROWS.length, validationResultSchema()), status: { const: "pass" },
@@ -748,8 +786,8 @@ function normalizationEntrySchema() {
 function substitutionSchema() {
   return objectSchema(null, {
     pointer: { type: "string", pattern: "^/" },
-    from: { type: "string", pattern: "^declared-source://product-team-authority/(?:(?:components|policies|governance)/[a-z0-9-]+\\.json#/(?:[A-Za-z0-9._~-]+(?:/[A-Za-z0-9._~-]+)*)?|<posix-path>#<rfc6901-json-pointer>)$" },
-    to: { type: "string", pattern: "^declared-source://source-conformance/(?:(?:components|policies|governance)/[a-z0-9-]+\\.json#/(?:[A-Za-z0-9._~-]+(?:/[A-Za-z0-9._~-]+)*)?|<posix-path>#<rfc6901-json-pointer>)$" }
+    from: { type: "string", pattern: `^declared-source://product-team-authority/${SFNM_REFERENCE_SUFFIX_PATTERN}$` },
+    to: { type: "string", pattern: `^declared-source://source-conformance/${SFNM_REFERENCE_SUFFIX_PATTERN}$` }
   });
 }
 
@@ -769,7 +807,7 @@ function baselineRefSchema() {
 }
 
 function artifactRefSchema(options = {}) {
-  const properties = { path: pathSchema(), schemaId: schemaIdSchema(), hashAlgorithm: { const: "sha256" }, hash: hashSchema(), sourceRef: { type: ["string", "null"] } };
+  const properties = { path: options.path ? { const: options.path } : pathSchema(), schemaId: schemaIdSchema(), hashAlgorithm: { const: "sha256" }, hash: hashSchema(), sourceRef: { type: ["string", "null"] } };
   if (options.provenance) properties.provenance = provenanceSchema();
   return objectSchema(null, properties);
 }
@@ -831,7 +869,7 @@ function validationResultSchema() {
 
 function normalizedEvidenceRemapSchema() {
   return objectSchema(null, {
-    logicalSourceRoot: { const: SC_SOURCE_ROOT }, physicalSourceRoot: { const: SFNM_SOURCE_ROOT }, mappingRef: artifactRefSchema(),
+    logicalSourceRoot: { const: SC_SOURCE_ROOT }, physicalSourceRoot: { const: SFNM_SOURCE_ROOT }, mappingRef: artifactRefSchema({ path: SFNM_MAPPING_PATH }),
     artifactMappings: { type: "array", minItems: 8, maxItems: 8, items: objectSchema(null, { logicalPath: pathSchema(), persistedPath: pathSchema() }) },
     verifiedAfterTemporaryWorkspaceRemoval: { const: true }
   });
@@ -869,8 +907,15 @@ function environmentSchema() {
   return objectSchema(null, { generatedAt: { const: SFNM_TIMESTAMP }, host: { type: "null" } });
 }
 
-function artifactRefArraySchema(count, options = {}) {
-  return exactArraySchema(count, artifactRefSchema(options));
+function artifactRefArraySchema(paths, options = {}) {
+  return {
+    type: "array",
+    minItems: paths.length,
+    maxItems: paths.length,
+    uniqueItems: true,
+    prefixItems: paths.map((pathValue) => artifactRefSchema({ ...options, path: pathValue })),
+    items: false
+  };
 }
 
 function exactArraySchema(count, items) {
