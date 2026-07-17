@@ -34,6 +34,7 @@ import {
   SFLM_ARTIFACT_ROOT,
   SFLM_CAPTURED_ARTIFACTS,
   SFLM_COMMAND,
+  SFLM_COMPILER_IMPLEMENTATION_PATHS,
   SFLM_CONTRACT_ID,
   SFLM_ENVIRONMENT,
   SFLM_EXPECTATION_ROWS,
@@ -49,6 +50,7 @@ import {
   SFLM_TIMESTAMP,
   SFLM_VERSION,
   artifactRef,
+  buildSourceFamilyLayoutMappingFixtures,
   diagnosticsRegistry,
   provenance,
   sflmArtifactOrder,
@@ -249,19 +251,13 @@ export async function runSourceFamilyLayoutMappingProof({
   await verifyImmutableLayoutInputs(cwd, layoutPackage, rawMapping);
   const mappingVerification = await verifyPhysicalMapping({ cwd, layoutPackage, mapping: rawMapping });
 
-  const expectationsPath = `${fixtureRoot}/expectations.manifest.json`;
-  const expectations = await readJson(path.join(cwd, expectationsPath));
-  assertSchema(validators, "source-family-layout-mapping-expectations.v0", expectations, expectationsPath);
-  assertExpectations(expectations, layoutPackage, rawMapping);
-  const fixtures = new Map();
-  for (const expectation of expectations.expectations) {
-    const fixture = await readJson(path.join(cwd, expectation.fixturePath));
-    const schemaId = expectation.fixturePath.endsWith("source-family-layout-mapping-preflight.json")
-      ? "source-family-layout-mapping-preflight-mutation.v0"
-      : "source-family-layout-mapping-fixture.v0";
-    assertSchema(validators, schemaId, fixture, expectation.fixturePath);
-    fixtures.set(expectation.fixturePath, fixture);
-  }
+  const { expectations, fixtures } = await loadFixtureContract({
+    cwd,
+    fixtureRoot,
+    validators,
+    layoutPackage,
+    mapping: rawMapping
+  });
 
   const p2Evidence = await readJson(path.join(cwd, ingestionEvidencePath));
   const p2Catalog = await readJson(path.join(cwd, catalogPath));
@@ -273,6 +269,7 @@ export async function runSourceFamilyLayoutMappingProof({
   assertSchema(validators, "source-family-packaging-evidence.v0", packagingEvidence, sourceFamilyPackagingEvidencePath);
   assertSchema(validators, "source-family-packaging-report.v0", packagingReport, `${SFP_ARTIFACT_ROOT}/source-family-packaging-report.json`);
   await assertUpstreamIntegrity({ cwd, p2Evidence, p2Catalog, packagingEvidence, packagingReport });
+  assertCompilerRuntime(packagingFixture, Number(process.versions.node.split(".")[0]));
   const compilerRefs = await buildCheckedRefs(cwd, packagingFixture.compiler.implementationRefs, "javascript-source", "SOURCE_LAYOUT_COMPILER_HASH_MISMATCH");
   const runtimeRefs = await buildCheckedRefs(cwd, packagingFixture.compiler.runtime.dependencyRefs, "node-package-input", "SOURCE_LAYOUT_COMPILER_HASH_MISMATCH");
 
@@ -601,6 +598,81 @@ function assertSafeMappingPath(relativePath, code) {
   }
 }
 
+function resolveContainedPath(root, relativePath, code = "SOURCE_LAYOUT_EVIDENCE_HASH_MISMATCH") {
+  assertSafeMappingPath(relativePath, code);
+  const resolvedRoot = path.resolve(root);
+  const resolvedPath = path.resolve(resolvedRoot, ...relativePath.split("/"));
+  if (!resolvedPath.startsWith(`${resolvedRoot}${path.sep}`)) {
+    throw contractError(`${code}: mutation path escapes its temporary root: ${relativePath}`, 1);
+  }
+  return resolvedPath;
+}
+
+function jsonPointerSegments(pointer, code = "SOURCE_LAYOUT_EVIDENCE_HASH_MISMATCH") {
+  if (typeof pointer !== "string" || pointer.length < 2 || !pointer.startsWith("/")) {
+    throw contractError(`${code}: invalid JSON pointer mutation`, 1);
+  }
+  const segments = pointer.slice(1).split("/").map((segment) => {
+    if (/~(?![01])/u.test(segment)) throw contractError(`${code}: invalid JSON pointer escape`, 1);
+    return segment.replace(/~1/g, "/").replace(/~0/g, "~");
+  });
+  if (segments.some((segment) => segment.length === 0 || ["__proto__", "prototype", "constructor"].includes(segment))) {
+    throw contractError(`${code}: unsafe JSON pointer mutation`, 1);
+  }
+  return segments;
+}
+
+function assertFixtureMutationSafety(fixture) {
+  const mutation = fixture?.mutation;
+  if (mutation === null || mutation === undefined) return;
+  const code = "SOURCE_LAYOUT_EVIDENCE_HASH_MISMATCH";
+  if (mutation.target === "mapping-descriptor") {
+    jsonPointerSegments(mutation.path, code);
+    return;
+  }
+  if (mutation.target === "physical-source") {
+    assertSafeMappingPath(stripPhysicalRoot(mutation.path), code);
+    if (mutation.secondaryPath !== null) assertSafeMappingPath(stripPhysicalRoot(mutation.secondaryPath), code);
+    return;
+  }
+  if (mutation.target === "staged-logical-source") {
+    const [logicalPath, pointer, ...extra] = String(mutation.path || "").split("#");
+    assertSafeMappingPath(logicalPath, code);
+    if (!LOGICAL_PATHS.includes(logicalPath) || extra.length > 0) {
+      throw contractError(`${code}: staged mutation is outside the fixed logical ABI`, 1);
+    }
+    if (mutation.operation === "replace-value") jsonPointerSegments(pointer, code);
+    else if (pointer !== undefined) throw contractError(`${code}: byte mutation cannot include a JSON pointer`, 1);
+    return;
+  }
+  if (mutation.target === "compiler-ref") {
+    assertSafeMappingPath(mutation.path, code);
+    if (!SFLM_COMPILER_IMPLEMENTATION_PATHS.includes(mutation.path)) {
+      throw contractError(`${code}: compiler mutation is outside the checked implementation closure`, 1);
+    }
+    return;
+  }
+  if (mutation.target === "probe-workspace") {
+    assertSafeMappingPath(mutation.path, code);
+    if (!LOGICAL_PATHS.includes(mutation.path)) {
+      throw contractError(`${code}: probe mutation is outside the fixed logical ABI`, 1);
+    }
+    return;
+  }
+  if (mutation.target === "captured-inner-evidence") {
+    assertSafeMappingPath(mutation.path, code);
+    if (mutation.path.includes("/") || !SFLM_CAPTURED_ARTIFACTS.some(([file]) => file === mutation.path)) {
+      throw contractError(`${code}: inner-evidence mutation is outside the captured closure`, 1);
+    }
+    return;
+  }
+  if (mutation.target === "final-evidence") {
+    jsonPointerSegments(mutation.path.startsWith("/") ? mutation.path : `/${mutation.path}`, code);
+    return;
+  }
+  throw contractError(`${code}: unsupported fixture mutation target`, 1);
+}
+
 async function listIndependentRegularFiles(cwd, relativeRoot) {
   const files = [];
   const identities = new Set();
@@ -664,6 +736,54 @@ function assertExpectations(expectations, layoutPackage, mapping) {
     canonicalJson(expectations.diagnosticsRegistry) !== canonicalJson(diagnosticsRegistry())
   ) {
     throw contractError("source-family layout mapping expectations manifest drift", 1);
+  }
+}
+
+async function loadFixtureContract({ cwd, fixtureRoot, validators, layoutPackage, mapping }) {
+  const expectationsPath = `${fixtureRoot}/expectations.manifest.json`;
+  const expectations = await readJson(path.join(cwd, expectationsPath));
+  assertSchema(validators, "source-family-layout-mapping-expectations.v0", expectations, expectationsPath);
+  assertExpectations(expectations, layoutPackage, mapping);
+  const profileEntry = layoutPackage.entries.find((entry) => entry.logicalPath === "governance/authority-profile.json");
+  if (!profileEntry) {
+    throw contractError("SOURCE_LAYOUT_EVIDENCE_HASH_MISMATCH: fixed authority profile entry is missing", 1);
+  }
+  const profile = await readJson(path.join(cwd, SFLM_PHYSICAL_SOURCE_ROOT, profileEntry.physicalPath));
+  const expectedFixtures = buildSourceFamilyLayoutMappingFixtures(layoutPackage, mapping, profile);
+  assertExactFixtureDocument(expectationsPath, expectations, expectedFixtures, fixtureRoot);
+  const fixtures = new Map();
+  for (const expectation of expectations.expectations) {
+    const fixture = await readJson(path.join(cwd, expectation.fixturePath));
+    const schemaId = expectation.fixturePath.endsWith("source-family-layout-mapping-preflight.json")
+      ? "source-family-layout-mapping-preflight-mutation.v0"
+      : "source-family-layout-mapping-fixture.v0";
+    assertSchema(validators, schemaId, fixture, expectation.fixturePath);
+    assertExactFixtureDocument(expectation.fixturePath, fixture, expectedFixtures, fixtureRoot);
+    assertFixtureMutationSafety(fixture);
+    fixtures.set(expectation.fixturePath, fixture);
+  }
+  return { expectations, fixtures };
+}
+
+function assertExactFixtureDocument(fixturePath, actual, expectedFixtures, fixtureRoot = SFLM_FIXTURE_ROOT) {
+  const prefix = `${fixtureRoot}/`;
+  if (!fixturePath.startsWith(prefix)) {
+    throw contractError(`SOURCE_LAYOUT_EVIDENCE_HASH_MISMATCH: fixture path is outside the fixed root: ${fixturePath}`, 1);
+  }
+  const relativePath = fixturePath.slice(prefix.length);
+  const expected = expectedFixtures[relativePath];
+  if (!expected || canonicalJson(actual) !== canonicalJson(expected)) {
+    throw contractError(`SOURCE_LAYOUT_EVIDENCE_HASH_MISMATCH: generated fixture body drift: ${fixturePath}`, 1);
+  }
+}
+
+function assertCompilerRuntime(packageFixture, actualNodeMajor) {
+  if (
+    packageFixture?.compiler?.runtime?.nodeMajor !== 22 ||
+    !Number.isInteger(actualNodeMajor) ||
+    actualNodeMajor !== packageFixture.compiler.runtime.nodeMajor
+  ) {
+    throw contractError("SOURCE_LAYOUT_COMPILER_HASH_MISMATCH: compiler runtime Node major drift", 1);
   }
 }
 
@@ -861,6 +981,17 @@ async function readMappedArtifacts(workspace, validators) {
   return artifacts;
 }
 
+async function readPersistedMappedArtifacts(cwd, validators) {
+  const artifacts = new Map();
+  for (const [mappedFile, schemaId, innerFile] of SFLM_CAPTURED_ARTIFACTS) {
+    const artifactPath = `${SFLM_ARTIFACT_ROOT}/${mappedFile}`;
+    const data = await readJson(path.join(cwd, artifactPath));
+    assertSchema(validators, schemaId, data, artifactPath);
+    artifacts.set(innerFile, data);
+  }
+  return artifacts;
+}
+
 async function compareMappedRun({ cwd, mappedRun, packagingReport, p2Catalog, layoutPackage }) {
   const artifactComparisons = [];
   for (const [mappedFile, , innerFile] of SFLM_CAPTURED_ARTIFACTS) {
@@ -980,6 +1111,15 @@ async function prepareOutputRoot(cwd, outRoot) {
     throw contractError(`source-family layout mapping output contains stale or unsupported entries: ${stale.sort().join(", ")}`, 1);
   }
   for (const file of allowed) await fs.rm(path.join(absolute, file), { force: true });
+}
+
+async function assertPersistedOutputClosure(cwd) {
+  await assertNoSymlinkPath(cwd, SFLM_ARTIFACT_ROOT, { allowMissingLeaf: false });
+  const tree = await listIndependentRegularFiles(cwd, SFLM_ARTIFACT_ROOT);
+  const expected = SFLM_ARTIFACT_PATHS.map((entry) => path.posix.basename(entry)).sort();
+  if (canonicalJson(tree.files.map((entry) => entry.path).sort()) !== canonicalJson(expected)) {
+    throw contractError("SOURCE_LAYOUT_EVIDENCE_HASH_MISMATCH: persisted output tree closure drift", 1);
+  }
 }
 
 async function firstPersistedMappedEvidenceIntegrityFailureCode(cwd, remap, mapping, layoutPackage, validators) {
@@ -1330,10 +1470,12 @@ async function evaluatePhysicalFixture({ cwd, fixture, mapping }) {
     if (mutation?.target !== "physical-source") return allowedOutcome();
     const physicalRoot = path.join(workspace, SFLM_PHYSICAL_SOURCE_ROOT);
     const relativePath = stripPhysicalRoot(mutation.path);
+    const absolutePath = resolveContainedPath(physicalRoot, relativePath);
     if (mutation.operation === "add-hardlink") {
       const aliasPath = stripPhysicalRoot(mutation.secondaryPath);
-      await fs.mkdir(path.dirname(path.join(physicalRoot, aliasPath)), { recursive: true });
-      await fs.link(path.join(physicalRoot, relativePath), path.join(physicalRoot, aliasPath));
+      const absoluteAliasPath = resolveContainedPath(physicalRoot, aliasPath);
+      await fs.mkdir(path.dirname(absoluteAliasPath), { recursive: true });
+      await fs.link(absolutePath, absoluteAliasPath);
       try {
         await listIndependentRegularFiles(workspace, SFLM_PHYSICAL_SOURCE_ROOT);
       } catch (error) {
@@ -1341,8 +1483,8 @@ async function evaluatePhysicalFixture({ cwd, fixture, mapping }) {
       }
     }
     if (mutation.operation === "add-file") {
-      await fs.mkdir(path.dirname(path.join(physicalRoot, relativePath)), { recursive: true });
-      await fs.writeFile(path.join(physicalRoot, relativePath), String(mutation.value));
+      await fs.mkdir(path.dirname(absolutePath), { recursive: true });
+      await fs.writeFile(absolutePath, String(mutation.value));
       const tree = await listIndependentRegularFiles(workspace, SFLM_PHYSICAL_SOURCE_ROOT);
       const expected = mapping.mappings.map((entry) => entry.physicalPath).sort();
       if (canonicalJson(tree.files.map((entry) => entry.path).sort()) !== canonicalJson(expected)) {
@@ -1350,9 +1492,9 @@ async function evaluatePhysicalFixture({ cwd, fixture, mapping }) {
       }
     }
     if (mutation.operation === "replace-byte") {
-      await fs.appendFile(path.join(physicalRoot, relativePath), Buffer.from(String(mutation.value)));
+      await fs.appendFile(absolutePath, Buffer.from(String(mutation.value)));
       const row = mapping.mappings.find((entry) => entry.physicalPath === relativePath);
-      if (!row || await rawFileHash(path.join(physicalRoot, relativePath)) !== row.sha256) {
+      if (!row || await rawFileHash(absolutePath) !== row.sha256) {
         return blockedOutcome("SOURCE_LAYOUT_SOURCE_HASH_MISMATCH");
       }
     }
@@ -1383,16 +1525,17 @@ async function evaluateStagedFixture({ cwd, fixture, mapping, layoutPackage }) {
     const mutation = fixture.mutation;
     if (mutation?.target !== "staged-logical-source") return allowedOutcome();
     if (mutation.operation === "replace-byte") {
-      const logicalPath = `${SC_SOURCE_ROOT}/${mutation.path}`;
-      await fs.appendFile(path.join(workspace, logicalPath), Buffer.from(String(mutation.value)));
+      const logicalRoot = path.join(workspace, SC_SOURCE_ROOT);
+      const absolute = resolveContainedPath(logicalRoot, mutation.path);
+      await fs.appendFile(absolute, Buffer.from(String(mutation.value)));
       const row = mapping.mappings.find((entry) => entry.logicalPath === mutation.path);
       const physicalHash = await rawFileHash(path.join(cwd, SFLM_PHYSICAL_SOURCE_ROOT, row.physicalPath));
-      const logicalHash = await rawFileHash(path.join(workspace, logicalPath));
+      const logicalHash = await rawFileHash(absolute);
       if (physicalHash !== logicalHash) return blockedOutcome("SOURCE_LAYOUT_BYTE_MISMATCH");
     }
     if (mutation.operation === "replace-value") {
       const [logicalFile, pointer = ""] = mutation.path.split("#");
-      const absolute = path.join(workspace, SC_SOURCE_ROOT, logicalFile);
+      const absolute = resolveContainedPath(path.join(workspace, SC_SOURCE_ROOT), logicalFile);
       const document = await readJson(absolute);
       setJsonPointer(document, pointer, deepClone(mutation.value));
       await writeCanonicalJson(absolute, document);
@@ -1430,7 +1573,7 @@ async function evaluateCompilerFailureFixture({ cwd, fixture, mapping, layoutPac
     await stageMappedCompilerWorkspace({ cwd, workspace, mapping, layoutPackage });
     const mutation = fixture.mutation;
     if (mutation?.target !== "probe-workspace" || mutation.operation !== "remove-file") return allowedOutcome();
-    await fs.rm(path.join(workspace, SC_SOURCE_ROOT, mutation.path));
+    await fs.rm(resolveContainedPath(path.join(workspace, SC_SOURCE_ROOT), mutation.path));
     const result = await executeCompiler(cwd, workspace);
     return result.exitCode !== 0 ? blockedOutcome("SOURCE_LAYOUT_COMPILER_RUN_FAILED") : allowedOutcome();
   } finally {
@@ -1482,12 +1625,17 @@ async function evaluateFinalEvidenceFixture({ cwd, fixture, evidence }) {
 }
 
 function setJsonPointer(target, pointer, value) {
-  const segments = String(pointer || "").split("/").slice(1).map((segment) => segment.replace(/~1/g, "/").replace(/~0/g, "~"));
-  if (segments.length === 0) throw contractError("invalid empty JSON pointer mutation", 1);
+  const segments = jsonPointerSegments(pointer);
   let current = target;
   for (const segment of segments.slice(0, -1)) {
-    if (current[segment] === undefined) current[segment] = {};
+    if (current === null || typeof current !== "object") {
+      throw contractError("SOURCE_LAYOUT_EVIDENCE_HASH_MISMATCH: JSON pointer traverses a non-container", 1);
+    }
+    if (!Object.prototype.hasOwnProperty.call(current, segment)) current[segment] = {};
     current = current[segment];
+  }
+  if (current === null || typeof current !== "object") {
+    throw contractError("SOURCE_LAYOUT_EVIDENCE_HASH_MISMATCH: JSON pointer target is not a container", 1);
   }
   current[segments.at(-1)] = value;
 }
@@ -1689,6 +1837,17 @@ async function firstEvidenceIntegrityFailureCode(cwd, evidence) {
 }
 
 async function inspectEvidenceIntegrity(cwd, evidence) {
+  await assertSafeCommandInputs(cwd, [
+    SFLM_PHYSICAL_SOURCE_ROOT,
+    SFLM_MAPPING_PATH,
+    SFLM_LAYOUT_PACKAGE_PATH,
+    SFLM_P2_EVIDENCE_PATH,
+    SFLM_P2_CATALOG_PATH,
+    SFLM_SFP_EVIDENCE_PATH,
+    SFLM_FIXTURE_ROOT
+  ], SFLM_ARTIFACT_ROOT);
+  await assertFixedInputClosures(cwd);
+  await assertPersistedOutputClosure(cwd);
   const validators = await loadValidators(cwd);
   const evidenceValidator = validators.get("source-family-layout-mapping-evidence.v0");
   if (
@@ -1729,8 +1888,19 @@ async function inspectEvidenceIntegrity(cwd, evidence) {
     if (ref.hash !== await rawFileHash(path.join(cwd, ref.path))) return "SOURCE_LAYOUT_SOURCE_HASH_MISMATCH";
   }
   const packagingFixture = await readJson(path.join(cwd, SFP_PACKAGE_PATH));
-  const expectedCompilerRefs = packagingFixture.compiler.implementationRefs.map((ref) => artifactRef(ref.path, "javascript-source", ref.hash));
-  const expectedRuntimeRefs = packagingFixture.compiler.runtime.dependencyRefs.map((ref) => artifactRef(ref.path, "node-package-input", ref.hash));
+  assertCompilerRuntime(packagingFixture, Number(process.versions.node.split(".")[0]));
+  const expectedCompilerRefs = await buildCheckedRefs(
+    cwd,
+    packagingFixture.compiler.implementationRefs,
+    "javascript-source",
+    "SOURCE_LAYOUT_COMPILER_HASH_MISMATCH"
+  );
+  const expectedRuntimeRefs = await buildCheckedRefs(
+    cwd,
+    packagingFixture.compiler.runtime.dependencyRefs,
+    "node-package-input",
+    "SOURCE_LAYOUT_COMPILER_HASH_MISMATCH"
+  );
   if (canonicalJson(evidence.compilerRefs) !== canonicalJson(expectedCompilerRefs)) return "SOURCE_LAYOUT_COMPILER_HASH_MISMATCH";
   if (canonicalJson(evidence.runtimeRefs) !== canonicalJson(expectedRuntimeRefs)) return "SOURCE_LAYOUT_COMPILER_HASH_MISMATCH";
   for (const ref of [...(evidence.compilerRefs || []), ...(evidence.runtimeRefs || [])]) {
@@ -1773,24 +1943,131 @@ async function inspectEvidenceIntegrity(cwd, evidence) {
   if (await firstPersistedMappedEvidenceIntegrityFailureCode(cwd, evidence.mappedEvidenceRemap, mapping, layoutPackage, validators) !== null) {
     return "SOURCE_LAYOUT_INNER_EVIDENCE_INVALID";
   }
+  const mappingVerification = await verifyPhysicalMapping({ cwd, layoutPackage, mapping });
+  const { expectations, fixtures } = await loadFixtureContract({
+    cwd,
+    fixtureRoot: SFLM_FIXTURE_ROOT,
+    validators,
+    layoutPackage,
+    mapping
+  });
+  const p2Evidence = await readJson(path.join(cwd, SFLM_P2_EVIDENCE_PATH));
+  const p2Catalog = await readJson(path.join(cwd, SFLM_P2_CATALOG_PATH));
+  const packagingEvidence = await readJson(path.join(cwd, SFLM_SFP_EVIDENCE_PATH));
+  const packagingReport = await readJson(path.join(cwd, `${SFP_ARTIFACT_ROOT}/source-family-packaging-report.json`));
+  assertSchema(validators, "design-system-ingestion-evidence.v0", p2Evidence, SFLM_P2_EVIDENCE_PATH);
+  assertSchema(validators, "runtime-catalog.v0", p2Catalog, SFLM_P2_CATALOG_PATH);
+  assertSchema(validators, "source-family-packaging-evidence.v0", packagingEvidence, SFLM_SFP_EVIDENCE_PATH);
+  assertSchema(validators, "source-family-packaging-report.v0", packagingReport, `${SFP_ARTIFACT_ROOT}/source-family-packaging-report.json`);
+  await assertUpstreamIntegrity({ cwd, p2Evidence, p2Catalog, packagingEvidence, packagingReport });
+
+  const mappingRef = artifactRef(SFLM_MAPPING_PATH, "source-family-layout-mapping.v0", await rawFileHash(path.join(cwd, SFLM_MAPPING_PATH)));
+  const layoutPackageRef = artifactRef(SFLM_LAYOUT_PACKAGE_PATH, "source-family-layout-mapping-package.v0", await rawFileHash(path.join(cwd, SFLM_LAYOUT_PACKAGE_PATH)));
+  const mappedEvidenceRemap = sflmMappedEvidenceRemap(mappingRef);
+  const mappedRun = await runMappedCompilerBundle({ cwd, mapping, layoutPackage, validators, mappingRef });
+  const persistedMappedArtifacts = await readPersistedMappedArtifacts(cwd, validators);
+  for (const [, , innerFile] of SFLM_CAPTURED_ARTIFACTS) {
+    if (canonicalJson(persistedMappedArtifacts.get(innerFile)) !== canonicalJson(mappedRun.artifacts.get(innerFile))) {
+      return "SOURCE_LAYOUT_INNER_EVIDENCE_INVALID";
+    }
+  }
+  const comparison = await compareMappedRun({ cwd, mappedRun, packagingReport, p2Catalog, layoutPackage });
+
+  const receiptPath = `${SFLM_ARTIFACT_ROOT}/layout-mapping-receipt.json`;
+  const receipt = await readJson(path.join(cwd, receiptPath));
+  assertSchema(validators, "source-family-layout-mapping-receipt.v0", receipt, receiptPath);
+  const expectedReceipt = buildMappingReceipt({
+    mappingRef,
+    layoutPackageRef,
+    mapping,
+    mappingVerification,
+    stagedEntries: mappedRun.stagedEntries
+  });
+  if (canonicalJson(receipt) !== canonicalJson(expectedReceipt)) return "SOURCE_LAYOUT_EVIDENCE_HASH_MISMATCH";
+  const receiptRef = artifactRef(receiptPath, "source-family-layout-mapping-receipt.v0", await canonicalFileHash(path.join(cwd, receiptPath)));
+
+  const authorityExpansionProbe = await runAuthorityExpansionProbe({
+    cwd,
+    mapping,
+    layoutPackage,
+    mappingRef,
+    baselineArtifactHashes: await artifactHashSnapshot(
+      cwd,
+      SFLM_CAPTURED_ARTIFACTS.map(([file]) => `${SFLM_ARTIFACT_ROOT}/${file}`)
+    )
+  });
+  const results = await evaluateFixtures({
+    cwd,
+    expectations,
+    fixtures,
+    mapping,
+    layoutPackage,
+    mappingVerification,
+    p2Evidence,
+    packagingEvidence,
+    compilerRefs: expectedCompilerRefs,
+    receipt: expectedReceipt,
+    mappedEvidenceRemap,
+    validators
+  });
+  if (results.some((row) => !row.matched)) return "SOURCE_LAYOUT_EVIDENCE_HASH_MISMATCH";
+  const diagnostics = diagnosticsForResults(results);
+  const runId = buildRunId({
+    layoutPackage,
+    mapping,
+    expectations,
+    compilerRefs: expectedCompilerRefs,
+    runtimeRefs: expectedRuntimeRefs,
+    comparison,
+    authorityExpansionProbe,
+    mappedEvidenceRemap
+  });
   const report = await readJson(path.join(cwd, `${SFLM_ARTIFACT_ROOT}/source-family-layout-mapping-report.json`));
+  assertSchema(validators, "source-family-layout-mapping-report.v0", report, `${SFLM_ARTIFACT_ROOT}/source-family-layout-mapping-report.json`);
+  const expectedReport = buildReport({
+    runId,
+    mappingRef,
+    layoutPackageRef,
+    receiptRef,
+    compilerRefs: expectedCompilerRefs,
+    runtimeRefs: expectedRuntimeRefs,
+    mappedEvidenceRemap,
+    mappingVerification,
+    comparison,
+    authorityExpansionProbe,
+    results,
+    diagnostics
+  });
+  if (canonicalJson(report) !== canonicalJson(expectedReport)) return "SOURCE_LAYOUT_EVIDENCE_HASH_MISMATCH";
+
+  const expectedEvidence = await buildEvidence({
+    cwd,
+    command: SFLM_COMMAND,
+    args: expectedCommandArgs(),
+    runId,
+    mapping,
+    layoutPackage,
+    mappingRef,
+    layoutPackageRef,
+    receiptRef,
+    compilerRefs: expectedCompilerRefs,
+    runtimeRefs: expectedRuntimeRefs,
+    mappedEvidenceRemap,
+    results,
+    diagnostics
+  });
+  const finalEvidenceResult = results.find((row) => row.diagnosticCodes.includes("SOURCE_LAYOUT_EVIDENCE_HASH_MISMATCH"));
+  const finalEvidenceFixture = finalEvidenceResult ? fixtures.get(finalEvidenceResult.fixturePath) : null;
+  const causalFinalEvidenceOutcome = await evaluateFinalEvidenceFixture({ cwd, fixture: finalEvidenceFixture, evidence: expectedEvidence });
   if (
-    report.runId !== evidence.runId ||
-    canonicalJson(report.layoutPackageRef) !== canonicalJson(evidence.layoutPackageRef) ||
-    canonicalJson(report.mappingRef) !== canonicalJson(evidence.mappingRef) ||
-    canonicalJson(report.compilerRefs) !== canonicalJson(evidence.compilerRefs) ||
-    canonicalJson(report.runtimeRefs) !== canonicalJson(evidence.runtimeRefs) ||
-    canonicalJson(report.mappedEvidenceRemap) !== canonicalJson(evidence.mappedEvidenceRemap) ||
-    canonicalJson(report.results) !== canonicalJson(evidence.validationResults) ||
-    canonicalJson(report.diagnostics) !== canonicalJson(evidence.diagnostics) ||
-    canonicalJson(report.compilerExecutions) !== canonicalJson({ acceptedMappedBundlePasses: 1, causalProbeFailures: 2, total: 3 }) ||
-    report.status !== "pass" ||
-    report.promotionStatus !== "review_required" ||
-    evidence.status !== "pass" ||
-    evidence.promotionStatus !== "review_required"
+    !finalEvidenceResult ||
+    causalFinalEvidenceOutcome.actualResult !== finalEvidenceResult.actualResult ||
+    causalFinalEvidenceOutcome.promotionStatus !== finalEvidenceResult.promotionStatus ||
+    canonicalJson(causalFinalEvidenceOutcome.diagnosticCode ? [causalFinalEvidenceOutcome.diagnosticCode] : []) !== canonicalJson(finalEvidenceResult.diagnosticCodes)
   ) {
     return "SOURCE_LAYOUT_EVIDENCE_HASH_MISMATCH";
   }
+  if (canonicalJson(evidence) !== canonicalJson(expectedEvidence)) return "SOURCE_LAYOUT_EVIDENCE_HASH_MISMATCH";
   return null;
 }
 
@@ -1827,6 +2104,11 @@ export const sourceFamilyLayoutMappingInternals = {
   computeEvidenceSelfHash,
   firstEvidenceIntegrityFailureCode,
   firstPersistedMappedEvidenceIntegrityFailureCode,
+  assertCompilerRuntime,
+  assertExactFixtureDocument,
+  assertFixtureMutationSafety,
+  assertPersistedOutputClosure,
+  resolveContainedPath,
   verifyPhysicalMapping,
   listIndependentRegularFiles,
   prepareOutputRoot,

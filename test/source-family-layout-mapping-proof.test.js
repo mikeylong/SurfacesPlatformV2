@@ -6,7 +6,7 @@ import path from "node:path";
 import test from "node:test";
 import { promisify } from "node:util";
 import { canonicalJson, runInterfacectl } from "../src/p0.js";
-import { rawFileHash, readJson } from "../src/p2-contract.js";
+import { canonicalFileHash, rawFileHash, readJson, writeCanonicalJson } from "../src/p2-contract.js";
 import {
   SC_SOURCE_FILES,
   SC_SOURCE_ROOT
@@ -14,7 +14,8 @@ import {
 import {
   SFP_ARTIFACT_ROOT,
   SFP_CAPTURED_ARTIFACTS,
-  SFP_CANDIDATE_SOURCE_ROOT
+  SFP_CANDIDATE_SOURCE_ROOT,
+  SFP_PACKAGE_PATH
 } from "../src/source-family-packaging-contract.js";
 import {
   SFLM_ARTIFACT_PATHS,
@@ -34,6 +35,7 @@ import {
   SFLM_PHYSICAL_SOURCE_ROOT,
   SFLM_RUNTIME_DEPENDENCY_PATHS,
   SFLM_SFP_EVIDENCE_PATH,
+  buildSourceFamilyLayoutMappingFixtures,
   diagnosticsRegistry,
   materializeSourceFamilyLayoutMappingContract,
   sflmFixturePaths,
@@ -106,6 +108,78 @@ test("layout materialization preserves every immutable mapping input byte", asyn
   await materializeSourceFamilyLayoutMappingContract(root);
   const after = await Promise.all(paths.map((entry) => fs.readFile(path.join(root, entry))));
   assert.deepEqual(after, before);
+});
+
+test("the fixed compiler runtime is enforced before layout proof execution", async () => {
+  const packageFixture = await readJson(path.join(root, SFP_PACKAGE_PATH));
+  const actualNodeMajor = Number(process.versions.node.split(".")[0]);
+  assert.doesNotThrow(() => sourceFamilyLayoutMappingInternals.assertCompilerRuntime(packageFixture, actualNodeMajor));
+  assert.throws(
+    () => sourceFamilyLayoutMappingInternals.assertCompilerRuntime(packageFixture, actualNodeMajor === 22 ? 20 : 22),
+    /SOURCE_LAYOUT_COMPILER_HASH_MISMATCH/
+  );
+});
+
+test("generated fixtures are exact-locked and every mutation target stays inside the fixed proof boundary", async () => {
+  const mapping = await readJson(path.join(root, SFLM_MAPPING_PATH));
+  const layoutPackage = await readJson(path.join(root, SFLM_LAYOUT_PACKAGE_PATH));
+  const profileEntry = layoutPackage.entries.find((entry) => entry.logicalPath === "governance/authority-profile.json");
+  const profile = await readJson(path.join(root, SFLM_PHYSICAL_SOURCE_ROOT, profileEntry.physicalPath));
+  const generated = buildSourceFamilyLayoutMappingFixtures(layoutPackage, mapping, profile);
+
+  for (const relativePath of Object.keys(generated)) {
+    const fixturePath = `${SFLM_FIXTURE_ROOT}/${relativePath}`;
+    const fixture = await readJson(path.join(root, fixturePath));
+    assert.doesNotThrow(() => sourceFamilyLayoutMappingInternals.assertExactFixtureDocument(fixturePath, fixture, generated));
+    assert.doesNotThrow(() => sourceFamilyLayoutMappingInternals.assertFixtureMutationSafety(fixture));
+  }
+
+  const physicalFixturePath = `${SFLM_FIXTURE_ROOT}/mutations/source-hash-mismatch.source-family-layout-mapping.json`;
+  const physicalFixture = await readJson(path.join(root, physicalFixturePath));
+  const driftedFixture = structuredClone(physicalFixture);
+  driftedFixture.mutation.value = "schema-valid-drift";
+  assert.throws(
+    () => sourceFamilyLayoutMappingInternals.assertExactFixtureDocument(physicalFixturePath, driftedFixture, generated),
+    /SOURCE_LAYOUT_EVIDENCE_HASH_MISMATCH/
+  );
+
+  for (const mutation of [
+    { ...physicalFixture.mutation, path: "../../outside.json" },
+    { target: "staged-logical-source", operation: "replace-byte", path: "../outside.json", secondaryPath: null, value: "00" },
+    { target: "compiler-ref", operation: "replace-hash", path: "scripts/unchecked.mjs", secondaryPath: null, value: "0".repeat(64) },
+    { target: "probe-workspace", operation: "remove-file", path: "components/card.json", secondaryPath: null, value: null },
+    { target: "captured-inner-evidence", operation: "replace-hash", path: "nested/mapped-source-inventory.json", secondaryPath: null, value: "0".repeat(64) },
+    { target: "mapping-descriptor", operation: "add-field", path: "/__proto__/polluted", secondaryPath: null, value: true },
+    { target: "final-evidence", operation: "replace-hash", path: "/constructor/prototype/polluted", secondaryPath: null, value: true }
+  ]) {
+    assert.throws(
+      () => sourceFamilyLayoutMappingInternals.assertFixtureMutationSafety({ mutation }),
+      /SOURCE_LAYOUT_EVIDENCE_HASH_MISMATCH/
+    );
+  }
+
+  const target = {};
+  assert.throws(
+    () => sourceFamilyLayoutMappingInternals.setJsonPointer(target, "/__proto__/polluted", true),
+    /SOURCE_LAYOUT_EVIDENCE_HASH_MISMATCH/
+  );
+  assert.equal({}.polluted, undefined);
+});
+
+test("read-only integrity inspection requires one independent exact output closure", async () => {
+  await assert.doesNotReject(() => sourceFamilyLayoutMappingInternals.assertPersistedOutputClosure(root));
+  await withTemporaryDirectory(async (temporaryRoot) => {
+    const outputRoot = path.join(temporaryRoot, SFLM_ARTIFACT_ROOT);
+    await fs.mkdir(outputRoot, { recursive: true });
+    for (const artifactPath of SFLM_ARTIFACT_PATHS) {
+      await fs.writeFile(path.join(outputRoot, path.basename(artifactPath)), "{}\n");
+    }
+    await fs.link(path.join(outputRoot, path.basename(SFLM_ARTIFACT_PATHS[0])), path.join(temporaryRoot, "output-alias.json"));
+    await assert.rejects(
+      () => sourceFamilyLayoutMappingInternals.assertPersistedOutputClosure(temporaryRoot),
+      /SOURCE_LAYOUT_PHYSICAL_HARDLINK_FORBIDDEN/
+    );
+  });
 });
 
 test("outer evidence and receipt close the fixed mapping proof", async () => {
@@ -436,6 +510,60 @@ test("evidence integrity identifies mapping, source, compiler, upstream, inner, 
     mutate(tampered);
     assert.equal(await sourceFamilyLayoutMappingInternals.firstEvidenceIntegrityFailureCode(root, tampered), expectedCode);
   }
+});
+
+test("evidence integrity rejects coordinated schema-valid receipt and result downgrades", async () => {
+  const receiptPath = path.join(root, SFLM_ARTIFACT_ROOT, "layout-mapping-receipt.json");
+  const reportPath = path.join(root, SFLM_ARTIFACT_ROOT, "source-family-layout-mapping-report.json");
+  const receiptBytes = await fs.readFile(receiptPath);
+  const reportBytes = await fs.readFile(reportPath);
+  const evidence = await readJson(path.join(root, SFLM_ARTIFACT_ROOT, "evidence.json"));
+
+  const updateEvidenceArtifactHash = async (candidate, artifactPath) => {
+    const relativePath = `${SFLM_ARTIFACT_ROOT}/${path.basename(artifactPath)}`;
+    const ref = candidate.artifacts.find((entry) => entry.path === relativePath);
+    assert.ok(ref, relativePath);
+    ref.hash = await canonicalFileHash(artifactPath);
+  };
+  const restoreArtifacts = async () => {
+    await fs.writeFile(receiptPath, receiptBytes);
+    await fs.writeFile(reportPath, reportBytes);
+  };
+
+  try {
+    const receipt = await readJson(receiptPath);
+    receipt.entries[0].physicalHash = "0".repeat(64);
+    await writeCanonicalJson(receiptPath, receipt);
+    const receiptDowngradeReport = await readJson(reportPath);
+    receiptDowngradeReport.layoutMappingReceiptRef.hash = await canonicalFileHash(receiptPath);
+    await writeCanonicalJson(reportPath, receiptDowngradeReport);
+    const receiptDowngradeEvidence = structuredClone(evidence);
+    await updateEvidenceArtifactHash(receiptDowngradeEvidence, receiptPath);
+    await updateEvidenceArtifactHash(receiptDowngradeEvidence, reportPath);
+    receiptDowngradeEvidence.artifacts.at(-1).hash = sourceFamilyLayoutMappingInternals.computeEvidenceSelfHash(receiptDowngradeEvidence);
+    assert.equal(
+      await sourceFamilyLayoutMappingInternals.firstEvidenceIntegrityFailureCode(root, receiptDowngradeEvidence),
+      "SOURCE_LAYOUT_EVIDENCE_HASH_MISMATCH"
+    );
+
+    await restoreArtifacts();
+    const resultDowngradeReport = await readJson(reportPath);
+    resultDowngradeReport.results[0].matched = false;
+    await writeCanonicalJson(reportPath, resultDowngradeReport);
+    const resultDowngradeEvidence = structuredClone(evidence);
+    resultDowngradeEvidence.validationResults[0].matched = false;
+    await updateEvidenceArtifactHash(resultDowngradeEvidence, reportPath);
+    resultDowngradeEvidence.artifacts.at(-1).hash = sourceFamilyLayoutMappingInternals.computeEvidenceSelfHash(resultDowngradeEvidence);
+    assert.equal(
+      await sourceFamilyLayoutMappingInternals.firstEvidenceIntegrityFailureCode(root, resultDowngradeEvidence),
+      "SOURCE_LAYOUT_EVIDENCE_HASH_MISMATCH"
+    );
+  } finally {
+    await restoreArtifacts();
+  }
+
+  assert.deepEqual(await fs.readFile(receiptPath), receiptBytes);
+  assert.deepEqual(await fs.readFile(reportPath), reportBytes);
 });
 
 test("the complete layout proof is byte-deterministic", async () => {
