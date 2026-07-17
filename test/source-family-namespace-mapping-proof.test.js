@@ -175,13 +175,21 @@ test("causal mapping and source-byte mutations use production diagnostics", asyn
     ["SOURCE_NAMESPACE_MAPPING_HASH_MISMATCH", (value) => { value.mappingId = `${value.mappingId}-drift`; }],
     ["SOURCE_NAMESPACE_UNSUPPORTED", (value) => { value.fromNamespace = "declared-source://unreviewed-authority/"; }],
     ["SOURCE_NAMESPACE_COLLISION", (value) => { value.fromNamespace = value.toNamespace; }],
-    ["SOURCE_NAMESPACE_TRANSFORM_FORBIDDEN", (value) => { value.regex = "declared-source://(.+)"; }]
+    ["SOURCE_NAMESPACE_TRANSFORM_FORBIDDEN", (value) => { value.regex = "declared-source://(.+)"; }],
+    ["SOURCE_NAMESPACE_TRANSFORM_FORBIDDEN", (value) => { value.entries[0].regex = "declared-source://(.+)"; }],
+    ["SOURCE_NAMESPACE_TRANSFORM_FORBIDDEN", (value) => { value.provenance.actions = ["connect-live-source"]; }]
   ];
   for (const [code, mutate] of cases) {
     const candidate = structuredClone(mapping);
     mutate(candidate);
     assert.throws(() => contractInternals.assertNamespaceMapping(candidate), new RegExp(code));
   }
+  const valueOnly = structuredClone(mapping);
+  valueOnly.provenance.generator = "transform";
+  assert.throws(
+    () => contractInternals.assertNamespaceMapping(valueOnly),
+    /SOURCE_NAMESPACE_MAPPING_HASH_MISMATCH/
+  );
   await withTemporaryDirectory(async (temporaryRoot) => {
     const invalidPath = path.join(temporaryRoot, "invalid.json");
     await fs.writeFile(invalidPath, "{}00");
@@ -227,6 +235,8 @@ test("report and evidence schemas lock reference paths in exact order", async ()
   const validateReport = ajv.compile(reportSchema);
   assert.equal(validateEvidence(evidence), true, JSON.stringify(validateEvidence.errors));
   assert.equal(validateReport(report), true, JSON.stringify(validateReport.errors));
+  assert.deepEqual(evidenceSchema.properties.normalizedEvidenceRemap, { const: sfnmNormalizedEvidenceRemap(evidence.mappingRef) });
+  assert.deepEqual(reportSchema.properties.normalizedEvidenceRemap, { const: sfnmNormalizedEvidenceRemap(report.mappingRef) });
   for (const key of ["schemaClosure", "sourceFileRefs", "compilerRefs", "proofImplementationRefs", "runtimeRefs", "fixtureRefs", "boundaryRefs", "artifacts"]) {
     const candidate = structuredClone(evidence);
     candidate[key][0].path = "substituted/valid-path.json";
@@ -236,6 +246,53 @@ test("report and evidence schemas lock reference paths in exact order", async ()
     const candidate = structuredClone(report);
     candidate[key][0].path = "substituted/valid-path.json";
     assert.equal(validateReport(candidate), false, key);
+  }
+  for (const [label, mutate] of [
+    ["schema-valid path substitution", (value) => { value.normalizedEvidenceRemap.artifactMappings[0].persistedPath = "artifacts/source-family-namespace-mapping/substituted.json"; }],
+    ["row reorder", (value) => { [value.normalizedEvidenceRemap.artifactMappings[0], value.normalizedEvidenceRemap.artifactMappings[1]] = [value.normalizedEvidenceRemap.artifactMappings[1], value.normalizedEvidenceRemap.artifactMappings[0]]; }]
+  ]) {
+    const evidenceCandidate = structuredClone(evidence);
+    mutate(evidenceCandidate);
+    assert.equal(validateEvidence(evidenceCandidate), false, `evidence ${label}`);
+    const reportCandidate = structuredClone(report);
+    mutate(reportCandidate);
+    assert.equal(validateReport(reportCandidate), false, `report ${label}`);
+  }
+});
+
+test("namespace package and receipt schemas lock the exact ordered entry closure", async () => {
+  const ajv = new Ajv2020({ allErrors: true, strict: false, validateFormats: false });
+  const namespacePackageSchema = await readJson(path.join(root, "schemas/source-family-namespace-package.v0.schema.json"));
+  const receiptSchema = await readJson(path.join(root, "schemas/source-family-namespace-mapping-receipt.v0.schema.json"));
+  const namespacePackage = await readJson(path.join(root, SFNM_NAMESPACE_PACKAGE_PATH));
+  const receipt = await readJson(path.join(root, SFNM_ARTIFACT_ROOT, "namespace-mapping-receipt.json"));
+  const validateNamespacePackage = ajv.compile(namespacePackageSchema);
+  const validateReceipt = ajv.compile(receiptSchema);
+  assert.equal(validateNamespacePackage(namespacePackage), true, JSON.stringify(validateNamespacePackage.errors));
+  assert.equal(validateReceipt(receipt), true, JSON.stringify(validateReceipt.errors));
+
+  const mutations = [
+    ["physical path", (value) => { value.entries[0].physicalPath = "review/substituted.json"; }],
+    ["entry order", (value) => { [value.entries[0], value.entries[1]] = [value.entries[1], value.entries[0]]; }],
+    ["substitution pointer", (value) => { value.entries.find((entry) => entry.substitutions.length > 0).substitutions[0].pointer = "/schema-valid-pointer"; }],
+    ["substitution removal", (value) => {
+      const entry = value.entries.find((candidate) => candidate.substitutions.length > 0);
+      entry.substitutions.pop();
+      entry.substitutionCount -= 1;
+    }],
+    ["manifest refresh pointer", (value) => { value.entries.find((entry) => entry.manifestHashRefreshes.length > 0).manifestHashRefreshes[0].pointer = "/sourceFiles/11/sha256"; }],
+    ["non-manifest refresh", (value) => {
+      const refresh = structuredClone(value.entries.find((entry) => entry.manifestHashRefreshes.length > 0).manifestHashRefreshes[0]);
+      value.entries.find((entry) => entry.manifestHashRefreshes.length === 0).manifestHashRefreshes.push(refresh);
+    }]
+  ];
+  for (const [label, mutate] of mutations) {
+    const packageCandidate = structuredClone(namespacePackage);
+    mutate(packageCandidate);
+    assert.equal(validateNamespacePackage(packageCandidate), false, `namespace package ${label}`);
+    const receiptCandidate = structuredClone(receipt);
+    mutate(receiptCandidate);
+    assert.equal(validateReceipt(receiptCandidate), false, `receipt ${label}`);
   }
 });
 
@@ -283,7 +340,7 @@ test("all causal fixture outcomes match the closed registry without registering 
   const evidence = await readJson(path.join(root, SFNM_ARTIFACT_ROOT, "evidence.json"));
   const report = await readJson(path.join(root, SFNM_ARTIFACT_ROOT, "source-family-namespace-mapping-report.json"));
   assert.deepEqual(expectations.expectations, SFNM_EXPECTATION_ROWS);
-  assert.equal(expectations.expectations.length, 23);
+  assert.equal(expectations.expectations.length, 25);
   assert.deepEqual(report.results, evidence.validationResults);
   assert.equal(report.results.every((entry) => entry.matched), true);
   for (let index = 0; index < report.results.length; index += 1) {

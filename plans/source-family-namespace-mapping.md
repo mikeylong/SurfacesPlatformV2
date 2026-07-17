@@ -29,15 +29,17 @@ milestone.
 - Change checked input content only by replacing the canonical prefix with the
   one fixed alternate prefix and refreshing the manifest hashes that bind those
   changed files.
-- Bind every allowed source-ref substitution to an exact file, JSON Pointer,
-  alternate value, canonical value, and before/after file hash in an immutable
-  namespace package.
+- Bind every allowed source-ref substitution to an exact ordered file and
+  receipt entry, JSON Pointer, alternate value, canonical value, and
+  before/after file hash in both the immutable namespace package and generated
+  schemas.
 - Reject canonical, mixed, foreign, undeclared, overlapping, traversal-bearing,
   encoded-separator, backslash, query-bearing, invalid RFC 6901 escape, or
   otherwise unsupported source refs.
 - Normalize only the declared string values and manifest source-file hashes in
   an isolated workspace. No regex, selector, plugin, parser hook, merge,
-  default, semantic transform, or family-specific module is allowed.
+  default, semantic transform, or family-specific module is allowed at any
+  mapping-descriptor depth.
 - Require every normalized logical file to be byte-identical to the accepted
   fixed-layout baseline before compilation.
 - Run the unchanged source-conformance compiler under Node 22, persist all eight
@@ -99,11 +101,12 @@ schemas/source-family-namespace-mapping-report.v0.schema.json
 schemas/source-family-namespace-mapping-evidence.v0.schema.json
 ```
 
-The schemas close command paths, namespace values, exact substitution pointers,
-file hashes, normalized hashes, manifest hash refreshes, receipt rows, captured
-inner artifacts, diagnostics, validation results, upstream refs, compiler and
-runtime refs, generated refs, environment, status, promotion status, and final
-evidence self-hash.
+The schemas close command paths, namespace values, the exact ordered 12-entry
+substitution and manifest-refresh closure, file hashes, normalized hashes,
+receipt rows, the exact ordered eight-row logical-to-persisted artifact remap
+including its mapping ref, captured inner artifacts, diagnostics, validation
+results, upstream refs, compiler and runtime refs, generated refs, environment,
+status, promotion status, and final evidence self-hash.
 
 ## Command
 
@@ -183,7 +186,7 @@ The minimum matrix includes:
 | invalid | A source-ref suffix contains traversal, backslash, query, encoded-separator, or invalid RFC 6901 escape syntax | blocked |
 | invalid | A path or fragment suffix changes during normalization | blocked |
 | invalid | Any non-ref value differs after normalization | blocked |
-| invalid | Regex, selector, plugin, merge, default, or semantic transform is requested | blocked |
+| invalid | Regex, selector, plugin, merge, default, semantic transform, or authority-bearing key is requested at any descriptor depth | blocked |
 | mutation | Checked compiler/runtime input drifts or the compiler cannot run | blocked |
 | mutation | Persisted inner evidence or final evidence is tampered | blocked |
 | probe | Verified input adds the unaccepted Button `expressive` variant | exact inner `SOURCE_FACT_AUTHORITY_ESCALATION` |
@@ -203,11 +206,13 @@ The proof passes only when:
 4. every alternate occurrence is declared exactly once and no canonical or
    foreign declared-source namespace remains in checked input;
 5. every path and RFC 6901 fragment suffix is preserved;
-6. manifest hash refreshes bind the exact normalized files;
+6. schema-locked ordered entry rows bind every substitution and manifest hash
+   refresh to the exact normalized files;
 7. all 12 normalized files are byte-identical to the accepted baseline;
 8. the unchanged compiler runs under Node 22 and produces passing evidence;
-9. all eight persisted inner artifacts re-verify after workspace cleanup and
-   equal the accepted layout-mapping outputs;
+9. all eight persisted inner artifacts and their schema-locked exact ordered
+   remap re-verify after workspace cleanup and equal the accepted layout-mapping
+   outputs;
 10. Button/InLineAlert facts, P2 catalog fields, active owner, review semantics,
     and non-executable state remain unchanged;
 11. the isolated authority-expansion probe returns exactly one blocked inner

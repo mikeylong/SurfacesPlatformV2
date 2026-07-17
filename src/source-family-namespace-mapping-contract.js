@@ -146,6 +146,8 @@ export const SFNM_EXPECTATION_ROWS = [
     ["SOURCE_NAMESPACE_SUFFIX_MISMATCH", null],
     ["SOURCE_NAMESPACE_BASELINE_MISMATCH", null],
     ["SOURCE_NAMESPACE_TRANSFORM_FORBIDDEN", null],
+    ["SOURCE_NAMESPACE_TRANSFORM_FORBIDDEN", "invalid/nested-transform-forbidden.source-family-namespace-mapping.json"],
+    ["SOURCE_NAMESPACE_TRANSFORM_FORBIDDEN", "invalid/nested-authority-forbidden.source-family-namespace-mapping.json"],
     ["SOURCE_NAMESPACE_COMPILER_HASH_MISMATCH", null],
     ["SOURCE_NAMESPACE_COMPILER_RUN_FAILED", null],
     ["SOURCE_NAMESPACE_INNER_EVIDENCE_INVALID", null],
@@ -235,17 +237,26 @@ export function sfnmNormalizedEvidenceRemap(mappingRef) {
     logicalSourceRoot: SC_SOURCE_ROOT,
     physicalSourceRoot: SFNM_SOURCE_ROOT,
     mappingRef,
-    artifactMappings: SFNM_CAPTURED_ARTIFACTS.map(([capturedFile, , innerFile]) => ({
-      logicalPath: `${SC_ARTIFACT_ROOT}/${innerFile}`,
-      persistedPath: `${SFNM_ARTIFACT_ROOT}/${capturedFile}`
-    })),
+    artifactMappings: sfnmNormalizedArtifactMappings(),
     verifiedAfterTemporaryWorkspaceRemoval: true
   };
 }
 
+export function sfnmNormalizedArtifactMappings() {
+  return SFNM_CAPTURED_ARTIFACTS.map(([capturedFile, , innerFile]) => ({
+    logicalPath: `${SC_ARTIFACT_ROOT}/${innerFile}`,
+    persistedPath: `${SFNM_ARTIFACT_ROOT}/${capturedFile}`
+  }));
+}
+
 export async function materializeSourceFamilyNamespaceMappingContract(cwd) {
   const immutable = await verifyImmutableNamespaceInputs(cwd);
-  for (const [file, schema] of Object.entries(buildSourceFamilyNamespaceMappingSchemas())) {
+  const mappingRef = artifactRef(
+    SFNM_MAPPING_PATH,
+    "source-family-namespace-mapping.v0",
+    immutable.namespacePackage.mappingSha256
+  );
+  for (const [file, schema] of Object.entries(buildSourceFamilyNamespaceMappingSchemas(immutable.normalization.entries, mappingRef))) {
     await writeCanonicalJson(path.join(cwd, SFNM_SCHEMA_ROOT, file), schema);
   }
   for (const [relativePath, fixture] of Object.entries(buildSourceFamilyNamespaceMappingFixtures(immutable.namespacePackage))) {
@@ -355,17 +366,29 @@ export async function normalizeNamespacedBundle(cwd, sourceRoot = SFNM_SOURCE_RO
   };
 }
 
-export function buildSourceFamilyNamespaceMappingSchemas() {
+export function buildSourceFamilyNamespaceMappingSchemas(normalizationEntries, mappingRef) {
+  if (!Array.isArray(normalizationEntries)) {
+    throw new Error("SOURCE_NAMESPACE_MAPPING_INCOMPLETE: schema entry closure is missing");
+  }
+  if (!mappingRef || mappingRef.path !== SFNM_MAPPING_PATH || mappingRef.schemaId !== "source-family-namespace-mapping.v0") {
+    throw new Error("SOURCE_NAMESPACE_MAPPING_HASH_MISMATCH: schema mapping ref is invalid");
+  }
+  const exactNormalizationEntries = deepClone(normalizationEntries);
+  const exactPathPairs = exactNormalizationEntries.map(({ physicalPath, logicalPath }) => ({ physicalPath, logicalPath }));
+  const expectedPathPairs = SFNM_SOURCE_ENTRIES.map(({ physicalPath, logicalPath }) => ({ physicalPath, logicalPath }));
+  if (canonicalJson(exactPathPairs) !== canonicalJson(expectedPathPairs)) {
+    throw new Error("SOURCE_NAMESPACE_MAPPING_INCOMPLETE: schema entry closure is incomplete");
+  }
   return {
     "source-family-namespace-mapping.v0.schema.json": mappingSchema(),
-    "source-family-namespace-package.v0.schema.json": namespacePackageSchema(),
-    "source-family-namespace-mapping-receipt.v0.schema.json": receiptSchema(),
+    "source-family-namespace-package.v0.schema.json": namespacePackageSchema(exactNormalizationEntries),
+    "source-family-namespace-mapping-receipt.v0.schema.json": receiptSchema(exactNormalizationEntries),
     "source-family-namespace-mapping-fixture.v0.schema.json": fixtureSchema(),
     "source-family-namespace-mapping-preflight-mutation.v0.schema.json": preflightMutationSchema(),
     "source-family-namespace-mapping-expectations.v0.schema.json": expectationsSchema(),
     "source-family-namespace-mapping-diagnostics.v0.schema.json": diagnosticsSchema(),
-    "source-family-namespace-mapping-report.v0.schema.json": reportSchema(),
-    "source-family-namespace-mapping-evidence.v0.schema.json": evidenceSchema()
+    "source-family-namespace-mapping-report.v0.schema.json": reportSchema(mappingRef),
+    "source-family-namespace-mapping-evidence.v0.schema.json": evidenceSchema(mappingRef)
   };
 }
 
@@ -403,6 +426,8 @@ export function buildSourceFamilyNamespaceMappingFixtures(namespacePackage) {
     "invalid/suffix-mismatch.source-family-namespace-mapping.json": fixture("suffix-mismatch", "suffix-mismatch", mutation("normalization-result", "replace-value", "components/button.json#/sourceRef", `${SFNM_CANONICAL_NAMESPACE}components/in-line-alert.json#/`), null, sourceRef),
     "invalid/baseline-drift.source-family-namespace-mapping.json": fixture("baseline-drift", "baseline-drift", mutation("physical-source-json", "replace-value", "ui/button-definition.json#/facts/0/value", "expressive"), null, sourceRef),
     "invalid/transform-forbidden.source-family-namespace-mapping.json": fixture("transform-forbidden", "transform-forbidden", mutation("mapping-descriptor", "add-field", "/regex", "declared-source://(.+)"), null, sourceRef),
+    "invalid/nested-transform-forbidden.source-family-namespace-mapping.json": fixture("nested-transform-forbidden", "transform-forbidden", mutation("mapping-descriptor", "add-field", "/entries/0/regex", "declared-source://(.+)"), null, sourceRef),
+    "invalid/nested-authority-forbidden.source-family-namespace-mapping.json": fixture("nested-authority-forbidden", "transform-forbidden", mutation("mapping-descriptor", "add-field", "/provenance/actions", ["connect-live-source"]), null, sourceRef),
     "mutations/compiler-hash-mismatch.source-family-namespace-mapping.json": fixture("compiler-hash-mismatch", "compiler-hash-mismatch", mutation("compiler-ref", "replace-hash", "src/source-conformance-proof.js", "0".repeat(64)), null, sourceRef),
     "mutations/compiler-run-failed.source-family-namespace-mapping.json": fixture("compiler-run-failed", "compiler-run-failed", mutation("probe-workspace", "remove-file", "manifest.json", null), null, sourceRef),
     "mutations/inner-evidence-invalid.source-family-namespace-mapping.json": fixture("inner-evidence-invalid", "inner-evidence-invalid", mutation("captured-inner-evidence", "replace-hash", "normalized-source-inventory.json", "0".repeat(64)), null, sourceRef),
@@ -450,9 +475,9 @@ export function assertNamespaceMapping(mapping) {
   if (!mapping || typeof mapping !== "object" || Array.isArray(mapping)) {
     throw new Error("SOURCE_NAMESPACE_MAPPING_HASH_MISMATCH: namespace mapping must be an object");
   }
-  const keys = new Set(Object.keys(mapping));
-  if ([...SFNM_FORBIDDEN_MAPPING_KEYS].some((key) => keys.has(key))) {
-    throw new Error("SOURCE_NAMESPACE_TRANSFORM_FORBIDDEN: namespace mapping includes a forbidden transform or authority key");
+  const forbiddenPointer = firstForbiddenMappingKeyPointer(mapping);
+  if (forbiddenPointer !== null) {
+    throw new Error(`SOURCE_NAMESPACE_TRANSFORM_FORBIDDEN: namespace mapping includes a forbidden transform or authority key at ${forbiddenPointer}`);
   }
   if (
     typeof mapping.fromNamespace === "string" && mapping.fromNamespace.length > 0 &&
@@ -471,6 +496,29 @@ export function assertNamespaceMapping(mapping) {
   if (canonicalJson(mapping) !== canonicalJson(expectedNamespaceMapping())) {
     throw new Error("SOURCE_NAMESPACE_MAPPING_HASH_MISMATCH: namespace mapping bytes drifted from the fixed descriptor");
   }
+}
+
+function firstForbiddenMappingKeyPointer(mapping) {
+  const queue = [{ value: mapping, pointer: "" }];
+  const visited = new WeakSet();
+  while (queue.length > 0) {
+    const current = queue.shift();
+    if (!current.value || typeof current.value !== "object" || visited.has(current.value)) continue;
+    visited.add(current.value);
+    const keys = Object.keys(current.value).sort(comparePosix);
+    for (const key of keys) {
+      if (SFNM_FORBIDDEN_MAPPING_KEYS.has(key)) {
+        return `${current.pointer}/${escapePointerSegment(key)}`;
+      }
+    }
+    for (const key of keys) {
+      const nested = current.value[key];
+      if (nested && typeof nested === "object") {
+        queue.push({ value: nested, pointer: `${current.pointer}/${escapePointerSegment(key)}` });
+      }
+    }
+  }
+  return null;
 }
 
 async function assertNamespacePackage(cwd, namespacePackage, mappingHash, normalization) {
@@ -670,11 +718,11 @@ function mappingSchema() {
     preservePathAndFragment: { const: true }, manifestHashRefresh: { const: true }, familySpecificModule: { type: "null" },
     expectedSubstitutionCount: { const: SFNM_EXPECTED_SUBSTITUTION_COUNT },
     expectedManifestHashRefreshCount: { const: SFNM_EXPECTED_MANIFEST_HASH_REFRESH_COUNT },
-    entries: { type: "array", minItems: 12, maxItems: 12, items: pathPairSchema() }, provenance: provenanceSchema()
+    entries: { const: deepClone(expectedNamespaceMapping().entries) }, provenance: provenanceSchema()
   });
 }
 
-function namespacePackageSchema() {
+function namespacePackageSchema(normalizationEntries) {
   return objectSchema("source-family-namespace-package.v0", {
     schemaId: { const: "source-family-namespace-package.v0" }, version: { const: SFNM_VERSION },
     packageId: { const: "product-team-authority-fixed-namespace-package" }, physicalSourceRoot: { const: SFNM_SOURCE_ROOT },
@@ -683,20 +731,20 @@ function namespacePackageSchema() {
     rewriteMode: { const: "exact-prefix-json-string" }, preservePathAndFragment: { const: true }, manifestHashRefresh: { const: true },
     expectedSubstitutionCount: { const: SFNM_EXPECTED_SUBSTITUTION_COUNT },
     expectedManifestHashRefreshCount: { const: SFNM_EXPECTED_MANIFEST_HASH_REFRESH_COUNT },
-    familySpecificModule: { type: "null" }, entries: { type: "array", minItems: 12, maxItems: 12, items: normalizationEntrySchema() },
+    familySpecificModule: { type: "null" }, entries: exactNormalizationEntriesSchema(normalizationEntries),
     totalSubstitutionCount: { const: SFNM_EXPECTED_SUBSTITUTION_COUNT }, totalManifestHashRefreshCount: { const: SFNM_EXPECTED_MANIFEST_HASH_REFRESH_COUNT },
     compiler: compilerSchema(), upstreamBaselineRefs: { type: "array", minItems: 3, maxItems: 3, items: baselineRefSchema() },
     provenance: provenanceSchema()
   });
 }
 
-function receiptSchema() {
+function receiptSchema(normalizationEntries) {
   return objectSchema("source-family-namespace-mapping-receipt.v0", {
     schemaId: { const: "source-family-namespace-mapping-receipt.v0" }, version: { const: SFNM_VERSION },
     namespacePackageRef: artifactRefSchema(), mappingRef: artifactRefSchema(), physicalSourceRoot: { const: SFNM_SOURCE_ROOT },
     logicalSourceRoot: { const: SC_SOURCE_ROOT }, fromNamespace: { const: SFNM_ALTERNATE_NAMESPACE }, toNamespace: { const: SFNM_CANONICAL_NAMESPACE },
     rewriteMode: { const: "exact-prefix-json-string" }, preservePathAndFragment: { const: true }, manifestHashRefresh: { const: true },
-    entryCount: { const: 12 }, entries: { type: "array", minItems: 12, maxItems: 12, items: normalizationEntrySchema() },
+    entryCount: { const: 12 }, entries: exactNormalizationEntriesSchema(normalizationEntries),
     totalSubstitutionCount: { const: SFNM_EXPECTED_SUBSTITUTION_COUNT }, totalManifestHashRefreshCount: { const: SFNM_EXPECTED_MANIFEST_HASH_REFRESH_COUNT },
     normalizedBaselineMatched: { const: true }, onlyNamespaceAndManifestHashesChanged: { const: true }, status: { const: "pass" },
     provenance: provenanceSchema()
@@ -738,13 +786,13 @@ function diagnosticsSchema() {
   });
 }
 
-function reportSchema() {
+function reportSchema(mappingRef) {
   return objectSchema("source-family-namespace-mapping-report.v0", {
     schemaId: { const: "source-family-namespace-mapping-report.v0" }, version: { const: SFNM_VERSION }, runId: idSchema(),
     namespacePackageRef: artifactRefSchema({ path: SFNM_NAMESPACE_PACKAGE_PATH }), mappingRef: artifactRefSchema({ path: SFNM_MAPPING_PATH }), compilerRefs: artifactRefArraySchema(SFNM_COMPILER_IMPLEMENTATION_PATHS),
     proofImplementationRefs: artifactRefArraySchema(SFNM_PROOF_IMPLEMENTATION_PATHS),
     runtimeRefs: artifactRefArraySchema(SFNM_RUNTIME_DEPENDENCY_PATHS), namespaceMappingReceiptRef: artifactRefSchema({ path: `${SFNM_ARTIFACT_ROOT}/namespace-mapping-receipt.json` }),
-    normalizedEvidenceRemap: normalizedEvidenceRemapSchema(), normalizationVerification: normalizationVerificationSchema(),
+    normalizedEvidenceRemap: normalizedEvidenceRemapSchema(mappingRef), normalizationVerification: normalizationVerificationSchema(),
     baselineComparison: baselineComparisonSchema(), authorityExpansionProbe: authorityExpansionProbeSchema(),
     results: exactArraySchema(SFNM_EXPECTATION_ROWS.length, validationResultSchema()),
     diagnostics: exactArraySchema(SFNM_DIAGNOSTIC_ROWS.length, diagnosticSchema()),
@@ -754,7 +802,7 @@ function reportSchema() {
   });
 }
 
-function evidenceSchema() {
+function evidenceSchema(mappingRef) {
   return objectSchema("source-family-namespace-mapping-evidence.v0", {
     contractId: { const: SFNM_CONTRACT_ID }, schemaId: { const: "source-family-namespace-mapping-evidence.v0" }, version: { const: SFNM_VERSION },
     runId: idSchema(), checkedAt: { const: SFNM_TIMESTAMP }, command: { const: SFNM_COMMAND }, args: commandArgsSchema(), environment: environmentSchema(),
@@ -764,35 +812,22 @@ function evidenceSchema() {
     proofImplementationRefs: artifactRefArraySchema(SFNM_PROOF_IMPLEMENTATION_PATHS),
     runtimeRefs: artifactRefArraySchema(SFNM_RUNTIME_DEPENDENCY_PATHS), fixtureRefs: artifactRefArraySchema(sfnmFixturePaths()),
     boundaryRefs: artifactRefArraySchema([SFNM_P2_EVIDENCE_PATH, SFNM_P2_CATALOG_PATH, SFNM_LAYOUT_EVIDENCE_PATH], { provenance: true }), artifacts: artifactRefArraySchema(SFNM_ARTIFACT_PATHS),
-    normalizedEvidenceRemap: normalizedEvidenceRemapSchema(), normalizedEvidenceClosureVerified: { const: true },
+    normalizedEvidenceRemap: normalizedEvidenceRemapSchema(mappingRef), normalizedEvidenceClosureVerified: { const: true },
     diagnostics: exactArraySchema(SFNM_DIAGNOSTIC_ROWS.length, diagnosticSchema()), diagnosticsRegistry: { const: diagnosticsRegistry() },
     validationResults: exactArraySchema(SFNM_EXPECTATION_ROWS.length, validationResultSchema()), status: { const: "pass" },
     promotionStatus: { const: "review_required" }, provenance: provenanceSchema()
   });
 }
 
-function pathPairSchema() {
-  return objectSchema(null, { physicalPath: pathSchema(), logicalPath: pathSchema() });
-}
-
-function normalizationEntrySchema() {
-  return objectSchema(null, {
-    physicalPath: pathSchema(), logicalPath: pathSchema(), inputSha256: hashSchema(), normalizedSha256: hashSchema(),
-    substitutionCount: { type: "integer", minimum: 0 }, substitutions: { type: "array", items: substitutionSchema() },
-    manifestHashRefreshes: { type: "array", items: hashRefreshSchema() }
-  });
-}
-
-function substitutionSchema() {
-  return objectSchema(null, {
-    pointer: { type: "string", pattern: "^/" },
-    from: { type: "string", pattern: `^declared-source://product-team-authority/${SFNM_REFERENCE_SUFFIX_PATTERN}$` },
-    to: { type: "string", pattern: `^declared-source://source-conformance/${SFNM_REFERENCE_SUFFIX_PATTERN}$` }
-  });
-}
-
-function hashRefreshSchema() {
-  return objectSchema(null, { pointer: { type: "string", pattern: "^/sourceFiles/[0-9]+/sha256$" }, inputHash: hashSchema(), normalizedHash: hashSchema() });
+function exactNormalizationEntriesSchema(normalizationEntries) {
+  return {
+    type: "array",
+    minItems: normalizationEntries.length,
+    maxItems: normalizationEntries.length,
+    uniqueItems: true,
+    prefixItems: normalizationEntries.map((entry) => ({ const: deepClone(entry) })),
+    items: false
+  };
 }
 
 function compilerSchema() {
@@ -867,12 +902,8 @@ function validationResultSchema() {
   });
 }
 
-function normalizedEvidenceRemapSchema() {
-  return objectSchema(null, {
-    logicalSourceRoot: { const: SC_SOURCE_ROOT }, physicalSourceRoot: { const: SFNM_SOURCE_ROOT }, mappingRef: artifactRefSchema({ path: SFNM_MAPPING_PATH }),
-    artifactMappings: { type: "array", minItems: 8, maxItems: 8, items: objectSchema(null, { logicalPath: pathSchema(), persistedPath: pathSchema() }) },
-    verifiedAfterTemporaryWorkspaceRemoval: { const: true }
-  });
+function normalizedEvidenceRemapSchema(mappingRef) {
+  return { const: sfnmNormalizedEvidenceRemap(mappingRef) };
 }
 
 function normalizationVerificationSchema() {
@@ -999,6 +1030,7 @@ function comparePosix(left, right) {
 export const sourceFamilyNamespaceMappingInternals = {
   expectedNamespaceMapping,
   assertNamespaceMapping,
+  firstForbiddenMappingKeyPointer,
   assertNamespacePackage,
   rewriteNamespaceValue,
   isSafeNamespaceReference,
