@@ -179,7 +179,8 @@ The minimum matrix includes:
 | valid | Fixed alternate prefix normalizes across the exact 12-file closure | `allowed` |
 | review | Existing owner-bound Button exception survives normalization | `review_required` |
 | preflight mutation | Upstream evidence is missing, non-passing, stale, or hash-drifted | blocked |
-| mutation | Mapping or namespace-package hash drifts | blocked |
+| mutation | Mapping descriptor bytes drift from the immutable package binding | blocked |
+| mutation | The namespace package `/mappingSha256` drifts from the checked mapping bytes | blocked |
 | mutation | One namespaced source byte or manifest-bound hash drifts | blocked |
 | invalid | From/to namespace is malformed, mixed, canonical, foreign, or undeclared | blocked |
 | invalid | One expected substitution is absent, duplicated, overlapping, or at the wrong pointer | blocked |
@@ -193,6 +194,9 @@ The minimum matrix includes:
 
 Fixture expectations must be derived from actual changed proof inputs. Fixture
 ids and declared expected diagnostics are not evidence that a failure occurred.
+The mapping-descriptor and namespace-package hash-drift fixtures execute the
+production `assertNamespaceMapping` and `assertNamespacePackage` validators,
+respectively.
 
 ## Pass Condition
 

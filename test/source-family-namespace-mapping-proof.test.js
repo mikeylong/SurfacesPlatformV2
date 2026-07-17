@@ -169,8 +169,8 @@ test("generated fixtures are exact-locked and every mutation stays inside the fi
   assert.equal({}.polluted, undefined);
 });
 
-test("causal mapping and source-byte mutations use production diagnostics", async () => {
-  const mapping = await readJson(path.join(root, SFNM_MAPPING_PATH));
+test("causal mapping, namespace-package, and source-byte mutations use production diagnostics", async () => {
+  const { mapping, namespacePackage, normalization } = await verifyImmutableNamespaceInputs(root);
   const cases = [
     ["SOURCE_NAMESPACE_MAPPING_HASH_MISMATCH", (value) => { value.mappingId = `${value.mappingId}-drift`; }],
     ["SOURCE_NAMESPACE_UNSUPPORTED", (value) => { value.fromNamespace = "declared-source://unreviewed-authority/"; }],
@@ -188,6 +188,13 @@ test("causal mapping and source-byte mutations use production diagnostics", asyn
   valueOnly.provenance.generator = "transform";
   assert.throws(
     () => contractInternals.assertNamespaceMapping(valueOnly),
+    /SOURCE_NAMESPACE_MAPPING_HASH_MISMATCH/
+  );
+  const namespacePackageDrift = structuredClone(namespacePackage);
+  namespacePackageDrift.mappingSha256 = "0".repeat(64);
+  const mappingHash = await rawFileHash(path.join(root, SFNM_MAPPING_PATH));
+  await assert.rejects(
+    () => contractInternals.assertNamespacePackage(root, namespacePackageDrift, mappingHash, normalization),
     /SOURCE_NAMESPACE_MAPPING_HASH_MISMATCH/
   );
   await withTemporaryDirectory(async (temporaryRoot) => {
@@ -340,7 +347,7 @@ test("all causal fixture outcomes match the closed registry without registering 
   const evidence = await readJson(path.join(root, SFNM_ARTIFACT_ROOT, "evidence.json"));
   const report = await readJson(path.join(root, SFNM_ARTIFACT_ROOT, "source-family-namespace-mapping-report.json"));
   assert.deepEqual(expectations.expectations, SFNM_EXPECTATION_ROWS);
-  assert.equal(expectations.expectations.length, 25);
+  assert.equal(expectations.expectations.length, 26);
   assert.deepEqual(report.results, evidence.validationResults);
   assert.equal(report.results.every((entry) => entry.matched), true);
   for (let index = 0; index < report.results.length; index += 1) {

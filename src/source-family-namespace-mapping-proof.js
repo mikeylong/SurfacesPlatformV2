@@ -59,6 +59,7 @@ import {
   SFNM_VERSION,
   artifactRef,
   assertNamespaceMapping,
+  assertNamespacePackage,
   buildSourceFamilyNamespaceMappingFixtures,
   defaultNamespaceMappingArgs,
   diagnosticsRegistry,
@@ -478,7 +479,7 @@ function assertFixtureMutationSafety(fixture) {
   }
   const mutation = fixture?.mutation;
   if (mutation === null || mutation === undefined) return;
-  if (mutation.target === "mapping-descriptor" || mutation.target === "final-evidence") {
+  if (["mapping-descriptor", "namespace-package", "final-evidence"].includes(mutation.target)) {
     jsonPointerSegments(mutation.path.startsWith("/") ? mutation.path : `/${mutation.path}`);
     return;
   }
@@ -1088,6 +1089,7 @@ async function evaluateFixture(context) {
     return valid ? allowedOutcome() : blockedOutcome("SOURCE_NAMESPACE_MAPPING_INCOMPLETE");
   }
   if (fixture.caseType === "review-required") return evaluateReviewFixture(context);
+  if (fixture.caseType === "namespace-package-hash-mismatch") return evaluateNamespacePackageFixture(context);
   if (["mapping-hash-mismatch", "namespace-unsupported", "namespace-collision", "transform-forbidden"].includes(fixture.caseType)) {
     return evaluateMappingFixture(context);
   }
@@ -1148,6 +1150,19 @@ function evaluateMappingFixture({ fixture, mapping }) {
   } catch (error) {
     const code = diagnosticCodeFromError(error);
     return code ? blockedOutcome(code) : allowedOutcome();
+  }
+}
+
+async function evaluateNamespacePackageFixture({ cwd, fixture, namespacePackage, normalization }) {
+  const mutated = deepClone(namespacePackage);
+  applyMutation(mutated, fixture.mutation);
+  try {
+    const mappingHash = await rawFileHash(path.join(cwd, SFNM_MAPPING_PATH));
+    await assertNamespacePackage(cwd, mutated, mappingHash, normalization);
+    return allowedOutcome();
+  } catch (error) {
+    const code = diagnosticCodeFromError(error);
+    return code === "SOURCE_NAMESPACE_MAPPING_HASH_MISMATCH" ? blockedOutcome(code) : allowedOutcome();
   }
 }
 

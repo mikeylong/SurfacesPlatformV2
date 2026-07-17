@@ -132,6 +132,7 @@ export const SFNM_EXPECTATION_ROWS = [
     ["SOURCE_NAMESPACE_UPSTREAM_EVIDENCE_MISSING", null],
     ["SOURCE_NAMESPACE_UPSTREAM_HASH_MISMATCH", null],
     ["SOURCE_NAMESPACE_MAPPING_HASH_MISMATCH", null],
+    ["SOURCE_NAMESPACE_MAPPING_HASH_MISMATCH", "mutations/namespace-package-hash-mismatch.source-family-namespace-mapping.json"],
     ["SOURCE_NAMESPACE_SOURCE_HASH_MISMATCH", null],
     ["SOURCE_NAMESPACE_UNSUPPORTED", null],
     ["SOURCE_NAMESPACE_UNSUPPORTED", "invalid/to-namespace-unsupported.source-family-namespace-mapping.json"],
@@ -412,6 +413,7 @@ export function buildSourceFamilyNamespaceMappingFixtures(namespacePackage) {
     "mutations/missing-upstream-evidence.source-family-namespace-mapping-preflight.json": preflightFixture("missing-upstream-evidence", "upstream-evidence-missing", "remove", SFNM_LAYOUT_EVIDENCE_PATH, "source-family-layout-mapping-evidence", null),
     "mutations/upstream-hash-mismatch.source-family-namespace-mapping-preflight.json": preflightFixture("upstream-hash-mismatch", "upstream-hash-mismatch", "replace-hash", SFNM_P2_CATALOG_PATH, "p2-catalog", "0".repeat(64)),
     "mutations/mapping-hash-mismatch.source-family-namespace-mapping.json": fixture("mapping-hash-mismatch", "mapping-hash-mismatch", mutation("mapping-descriptor", "replace-value", "/mappingId", "product-team-authority-fixed-namespace-drift"), null, sourceRef),
+    "mutations/namespace-package-hash-mismatch.source-family-namespace-mapping.json": fixture("namespace-package-hash-mismatch", "namespace-package-hash-mismatch", mutation("namespace-package", "replace-hash", "/mappingSha256", "0".repeat(64)), null, sourceRef),
     "mutations/source-hash-mismatch.source-family-namespace-mapping.json": fixture("source-hash-mismatch", "source-hash-mismatch", mutation("physical-source", "replace-byte", "ui/button-definition.json", "00"), null, sourceRef),
     "invalid/from-namespace-unsupported.source-family-namespace-mapping.json": fixture("from-namespace-unsupported", "namespace-unsupported", mutation("mapping-descriptor", "replace-value", "/fromNamespace", "declared-source://unreviewed-authority/"), null, sourceRef),
     "invalid/to-namespace-unsupported.source-family-namespace-mapping.json": fixture("to-namespace-unsupported", "namespace-unsupported", mutation("mapping-descriptor", "replace-value", "/toNamespace", "declared-source://unreviewed-canonical/"), null, sourceRef),
@@ -521,7 +523,7 @@ function firstForbiddenMappingKeyPointer(mapping) {
   return null;
 }
 
-async function assertNamespacePackage(cwd, namespacePackage, mappingHash, normalization) {
+export async function assertNamespacePackage(cwd, namespacePackage, mappingHash, normalization) {
   const expectedKeys = [
     "schemaId", "version", "packageId", "physicalSourceRoot", "logicalSourceRoot", "mappingPath", "mappingHashAlgorithm",
     "mappingSha256", "fromNamespace", "toNamespace", "rewriteMode", "preservePathAndFragment", "manifestHashRefresh",
@@ -754,7 +756,7 @@ function receiptSchema(normalizationEntries) {
 function fixtureSchema() {
   return objectSchema("source-family-namespace-mapping-fixture.v0", {
     schemaId: { const: "source-family-namespace-mapping-fixture.v0" }, version: { const: SFNM_VERSION },
-    fixtureId: idSchema(), caseType: { enum: ["valid-namespace", "review-required", "mapping-hash-mismatch", "source-hash-mismatch", "namespace-unsupported", "namespace-incomplete", "ref-unsafe", "namespace-collision", "suffix-mismatch", "baseline-drift", "transform-forbidden", "compiler-hash-mismatch", "compiler-run-failed", "inner-evidence-invalid", "evidence-hash-mismatch"] },
+    fixtureId: idSchema(), caseType: { enum: ["valid-namespace", "review-required", "mapping-hash-mismatch", "namespace-package-hash-mismatch", "source-hash-mismatch", "namespace-unsupported", "namespace-incomplete", "ref-unsafe", "namespace-collision", "suffix-mismatch", "baseline-drift", "transform-forbidden", "compiler-hash-mismatch", "compiler-run-failed", "inner-evidence-invalid", "evidence-hash-mismatch"] },
     mutation: nullable(mutationSchema()), review: nullable(reviewSchema()), provenance: provenanceSchema()
   });
 }
@@ -864,7 +866,7 @@ function reviewSchema() {
 
 function mutationSchema() {
   return objectSchema(null, {
-    target: { enum: ["mapping-descriptor", "physical-source", "physical-source-json", "normalization-result", "compiler-ref", "probe-workspace", "captured-inner-evidence", "final-evidence"] },
+    target: { enum: ["mapping-descriptor", "namespace-package", "physical-source", "physical-source-json", "normalization-result", "compiler-ref", "probe-workspace", "captured-inner-evidence", "final-evidence"] },
     operation: { enum: ["replace-value", "replace-byte", "replace-hash", "add-field", "remove-file"] }, path: { type: "string", minLength: 1 },
     secondaryPath: { type: ["string", "null"] }, value: {}
   });
