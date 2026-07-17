@@ -57,7 +57,7 @@ test("capability proof is deterministic and emits exactly three artifacts", asyn
   });
   assert.equal(first.status, "pass");
   assert.equal(first.promotionStatus, "allowed");
-  assert.equal(first.implementedCount, 13);
+  assert.equal(first.implementedCount, 14);
   const firstBytes = await artifactBytes();
   const second = await runCapabilityIndexProof({
     cwd: root,
@@ -106,6 +106,52 @@ test("capability index exposes the bounded authority compiler without authority 
   ].sort());
 });
 
+test("capability index exposes fixed source-family layout mapping without broadening authority", async () => {
+  const index = await readJson(indexPath);
+  const row = index.implementedCapabilities.find((candidate) => candidate.capabilityId === "source-family-layout-mapping");
+  assert.equal(row.canAddAuthority, false);
+  assert.equal(row.implementationStatus, "implemented");
+  assert.equal(row.proofMode, "report-only");
+  assert.match(row.scopeStatement, /one checked alternate physical-layout instance/);
+  assert.match(row.scopeStatement, /exact 12-entry declared-source logical ABI/);
+  assert.match(row.scopeStatement, /unchanged source-conformance compiler/);
+  assert.equal(row.proofCommand, "interfacectl surfaces source-family-layout-mapping proof");
+  assert.equal(row.packageProofScript, "proof:source-family-layout-mapping");
+  assert.equal(row.ciGate, "npm run check:source-family-layout-mapping:ci");
+  assert.equal(row.evidencePath, "artifacts/source-family-layout-mapping/evidence.json");
+  assert.equal(row.evidenceSchemaId, "source-family-layout-mapping-evidence.v0");
+  assert.equal(row.expectedPromotionStatus, "review_required");
+  assert.equal(row.promotionStatus, "review_required");
+  assert.deepEqual(row.nonCapabilities, [
+    "arbitrary source layouts",
+    "source-ref namespace rewriting",
+    "broader P2 component coverage",
+    "live source connectors",
+    "self-serve connection UI",
+    "runtime accessibility compliance",
+    "production adapters",
+    "SurfaceOps expansion",
+    "JudgmentKit invocation"
+  ]);
+  assert.deepEqual(row.dependencies.evidence, ["p2-spectrum-ingestion", "declared-source-conformance"]);
+  assert.deepEqual(row.outputPaths, [
+    "artifacts/source-family-layout-mapping/evidence.json",
+    "artifacts/source-family-layout-mapping/layout-mapping-receipt.json",
+    "artifacts/source-family-layout-mapping/mapped-authority-connection-report.json",
+    "artifacts/source-family-layout-mapping/mapped-governed-catalog.json",
+    "artifacts/source-family-layout-mapping/mapped-source-authority-map.json",
+    "artifacts/source-family-layout-mapping/mapped-source-conformance-evidence.json",
+    "artifacts/source-family-layout-mapping/mapped-source-conformance-report.json",
+    "artifacts/source-family-layout-mapping/mapped-source-fact-coverage.json",
+    "artifacts/source-family-layout-mapping/mapped-source-inventory.json",
+    "artifacts/source-family-layout-mapping/mapped-source-review-queue.json",
+    "artifacts/source-family-layout-mapping/source-family-layout-mapping-report.json"
+  ]);
+  assert.deepEqual(row.reportPaths, ["artifacts/source-family-layout-mapping/source-family-layout-mapping-report.json"]);
+  assert.deepEqual(row.demoPaths, []);
+  assert.deepEqual(row.runtimeEvidencePaths, []);
+});
+
 test("capability index exposes structured accessibility reconciliation without policy or runtime escalation", async () => {
   const index = await readJson(indexPath);
   const row = index.implementedCapabilities.find((candidate) => candidate.capabilityId === "source-accessibility-policy");
@@ -130,12 +176,12 @@ test("capability index exposes structured accessibility reconciliation without p
 test("read-only verification preserves every repository byte, type, size, and mtime", async () => {
   const before = await workspaceSnapshot(root);
   const result = await verifyCapabilityIndex({ cwd: root, indexPath, evidencePath });
-  assert.equal(result.implemented.length, 13);
+  assert.equal(result.implemented.length, 14);
   assert.deepEqual(await workspaceSnapshot(root), before);
 
   const cli = await invoke(["verify", "--index", indexPath, "--evidence", evidencePath]);
   assert.equal(cli.exitCode, 0);
-  assert.match(cli.stdout, /implemented: 13\/13 verified/);
+  assert.match(cli.stdout, /implemented: 14\/14 verified/);
   assert.match(cli.stdout, /planned:/);
   assert.equal(cli.stderr, "");
   assert.deepEqual(await workspaceSnapshot(root), before);
@@ -161,6 +207,17 @@ test("verifier rejects tampered target evidence", async () => {
     const target = await readJson(targetPath);
     target.status = target.status === "pass" ? "fail" : "pass";
     await writeJson(targetPath, target);
+    await assertDiagnostic("CAPABILITY_EVIDENCE_HASH_MISMATCH");
+  });
+});
+
+test("verifier rechecks the source-family layout-mapping physical source closure", async () => {
+  const targetEvidencePath = "artifacts/source-family-layout-mapping/evidence.json";
+  const targetEvidence = await readJson(targetEvidencePath);
+  const physicalPath = targetEvidence.physicalSourceRefs[0].path;
+  await withRestoredFiles([physicalPath], async () => {
+    const bytes = await fs.readFile(path.join(root, physicalPath));
+    await fs.writeFile(path.join(root, physicalPath), Buffer.concat([bytes, Buffer.from("\n")]));
     await assertDiagnostic("CAPABILITY_EVIDENCE_HASH_MISMATCH");
   });
 });
