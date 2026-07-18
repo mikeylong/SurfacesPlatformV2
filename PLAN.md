@@ -30,8 +30,20 @@ bundle before the unchanged source-conformance compiler runs. Passing
 `artifacts/source-family-namespace-mapping/evidence.json` proves this one prefix
 pair only; it does not establish arbitrary namespace support.
 
+[Source Family Component Identity Mapping Proof Plan](plans/source-family-component-identity-mapping.md)
+records the implemented bounded Connect Authority proof for one explicit,
+team-owned authority declaration that authorizes the exact fixture-local
+`TeamButton` to accepted P2 `Button` identity relation for one checked 12-file
+bundle. A derived Stage 1 mapping applies exactly 22 declared substitutions in
+five files, refreshes five manifest hashes, preserves four narrative `Button`
+mentions, and feeds the existing fixed-namespace normalizer before the unchanged
+compiler runs. Passing
+`artifacts/source-family-component-identity-mapping/evidence.json` proves this
+one declared relation only; it does not establish arbitrary component identity,
+an alias registry, or semantic mapping support.
+
 [Capability Index Proof Target](plans/capability-index.md) records the
-implemented non-numbered proof for discovering and read-only verifying the 15
+implemented non-numbered proof for discovering and read-only verifying the 16
 implemented proof targets other than itself. Its seven planned groups are
 roadmap visibility only. The index does not replace target evidence, broaden
 target authority, or index itself.
@@ -701,6 +713,50 @@ alias support, another physical layout, broader P2 coverage, live connector or
 self-serve support, runtime accessibility compliance, production adapter
 support, SurfaceOps expansion, or JudgmentKit use.
 
+## Source Family Component Identity Mapping Target
+
+The [Source Family Component Identity Mapping Proof Plan](plans/source-family-component-identity-mapping.md)
+defines one bounded implemented Connect Authority target over accepted P2 and
+source-family namespace-mapping evidence. One manifest-declared, team-owned
+authority declaration authorizes the exact fixture-local `TeamButton` to
+accepted P2 `Button` identity relation for one checked 12-file bundle. The
+declaration binds the relation to declared source refs, provenance, exact source
+hashes, current P2 catalog and evidence refs, the JCS hash of the accepted
+`components.Button` record, and owner-bound accepted
+review metadata. It is the authority for the relation; the mapping descriptor,
+normalizers, receipt, reports, and evidence are derived consumers and cannot add
+or infer authority.
+
+The target runs a causal two-stage boundary before the unchanged
+source-conformance compiler. Stage 1 applies exactly 22 declared identity
+substitutions across five files, refreshes exactly five manifest source-file
+hashes, preserves four narrative `Button` mentions unchanged, and must reproduce
+the accepted fixed-namespace input byte-for-byte. Stage 2 invokes the existing
+fixed namespace normalizer, which must reproduce the accepted canonical
+12-file logical bundle before the unchanged compiler runs. The target persists
+all eight inner compiler artifacts, re-verifies their evidence after the
+temporary workspace is removed, and requires exact equality with accepted
+source-family namespace-mapping output.
+
+The implemented command is:
+
+```bash
+interfacectl surfaces source-family-component-identity-mapping proof --source sources/source-family-component-identity-mapping/team-owned-identity-bundle --authority-manifest sources/source-family-component-identity-mapping/authority/component-identity-authority-manifest.json --authority-declaration sources/source-family-component-identity-mapping/authority/component-identity-declaration.json --mapping sources/source-family-component-identity-mapping/component-identity-mapping.json --identity-package fixtures/source-family-component-identity-mapping/component-identity-package.fixture.json --ingestion-evidence artifacts/p2/evidence.json --catalog artifacts/p2/governed-catalog.json --source-family-namespace-mapping-evidence artifacts/source-family-namespace-mapping/evidence.json --fixture fixtures/source-family-component-identity-mapping --out artifacts/source-family-component-identity-mapping
+```
+
+Passing `artifacts/source-family-component-identity-mapping/evidence.json`
+records `status: "pass"` and `promotionStatus: "review_required"`; the
+proof-bearing gate is
+`npm run check:source-family-component-identity-mapping:ci`. The target emits
+one component-identity mapping receipt, the persisted Stage 2 namespace receipt,
+eight persisted inner artifacts, one report, and final evidence, with no demo.
+It removes one exact component-identity constraint only. It must not be
+described as arbitrary identity or alias
+support, an alias registry, semantic inference, another layout or namespace,
+broader P2 coverage, live connector or self-serve support, runtime
+accessibility compliance, production adapter support, SurfaceOps expansion, or
+JudgmentKit use.
+
 ## Designer Workflow Trace Target
 The designer-workflow-trace proof is a non-numbered, cross-cutting proof-only target that consumes accepted P2, source-conformance, P3, P4, protocol, and native evidence. It emits one deterministic Button scenario index from design authority through governed catalog, diagnostics/review-required status, review/evaluation refs, static target handoff artifacts, and evidence status.
 
@@ -744,7 +800,7 @@ The proof currently has no generated demo. Use `designer-workflow-trace-report.j
 ## Capability Index Target
 
 The capability-index proof is a non-numbered, cross-cutting target. It
-materializes a machine-readable discovery index and report over exactly the 15
+materializes a machine-readable discovery index and report over exactly the 16
 implemented proof targets other than itself. It also records seven
 separate planned capability groups without giving them proof commands,
 evidence, or implemented status.
@@ -754,7 +810,7 @@ The proof path is:
 ```text
 fixtures/capability-index/capabilities.fixture.json
 fixtures/capability-index/expectations.manifest.json
-15 accepted target evidence files
+16 accepted target evidence files
   -> validate fixtures/capability-index/valid/*.json,
      review/*.json, invalid/*.json, and mutations/*.json
   -> artifacts/capability-index/capability-index.json
@@ -858,6 +914,7 @@ read-only status output for human inspection.
 - [Source Accessibility Policy Proof Target](plans/source-accessibility-policy.md)
 - [Source Family Layout Mapping Proof Target](plans/source-family-layout-mapping.md)
 - [Source Family Namespace Mapping Proof Target](plans/source-family-namespace-mapping.md)
+- [Source Family Component Identity Mapping Proof Target](plans/source-family-component-identity-mapping.md)
 - [Product Designer Workflow Trace](plans/product-designer-workflow-trace.md)
 - [Capability Index Proof Target](plans/capability-index.md)
 - [Product Portfolio Boundaries](plans/product-portfolio-boundaries.md)
@@ -889,13 +946,22 @@ namespaces, add layouts or components, expand P2, call live connectors, add
 self-serve UI, authorize production adapters, expand SurfaceOps, or authorize
 JudgmentKit.
 
+The source-family-component-identity-mapping subplan defines the implemented
+proof for one team-owned declaration authorizing the exact fixture-local
+`TeamButton` to accepted P2 `Button` identity relation. Its derived Stage 1
+mapping and existing namespace normalizer cannot add authority. It does not
+implement arbitrary component identities, alias registries, semantic inference,
+additional layouts or namespaces, broader P2 coverage, live connectors,
+self-serve UI, runtime accessibility, production adapters, SurfaceOps
+expansion, or JudgmentKit.
+
 The capability-index subplan defines discovery and read-only verification over
-the 15 implemented proof targets other than itself. The index does not prove those
+the 16 implemented proof targets other than itself. The index does not prove those
 targets, self-index, or turn planned capability groups into implemented work.
 
 ## Capability Index Decisions
 
-- Indexed implemented target count: exactly 15 proof targets other than the index itself.
+- Indexed implemented target count: exactly 16 proof targets other than the index itself.
 - Self-indexing: forbidden; capability-index evidence proves the index target.
 - Planned scope: seven capability groups for roadmap visibility only.
 - Status model: implementation status, evidence status, and governance

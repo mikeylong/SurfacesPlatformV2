@@ -57,7 +57,7 @@ test("capability proof is deterministic and emits exactly three artifacts", asyn
   });
   assert.equal(first.status, "pass");
   assert.equal(first.promotionStatus, "allowed");
-  assert.equal(first.implementedCount, 15);
+  assert.equal(first.implementedCount, 16);
   const firstBytes = await artifactBytes();
   const second = await runCapabilityIndexProof({
     cwd: root,
@@ -198,6 +198,74 @@ test("capability index exposes fixed source-family namespace mapping without bro
   assert.deepEqual(row.runtimeEvidencePaths, []);
 });
 
+test("capability index exposes fixed source-family component identity mapping without broadening authority", async () => {
+  const index = await readJson(indexPath);
+  const row = index.implementedCapabilities.find((candidate) => candidate.capabilityId === "source-family-component-identity-mapping");
+  assert.equal(row.canAddAuthority, false);
+  assert.equal(row.implementationStatus, "implemented");
+  assert.equal(row.proofMode, "report-only");
+  assert.match(row.scopeStatement, /one checked TeamButton to Button declaration/);
+  assert.match(row.scopeStatement, /exactly 22 declared identity values in five files/);
+  assert.match(row.scopeStatement, /refreshes five manifest hashes/);
+  assert.match(row.scopeStatement, /preserves four narrative Button fields/);
+  assert.match(row.scopeStatement, /unchanged source-conformance compiler/);
+  assert.equal(row.proofCommand, "interfacectl surfaces source-family-component-identity-mapping proof");
+  assert.equal(row.packageProofScript, "proof:source-family-component-identity-mapping");
+  assert.equal(row.ciGate, "npm run check:source-family-component-identity-mapping:ci");
+  assert.equal(row.evidencePath, "artifacts/source-family-component-identity-mapping/evidence.json");
+  assert.equal(row.evidenceSchemaId, "source-family-component-identity-mapping-evidence.v0");
+  assert.equal(row.expectedPromotionStatus, "review_required");
+  assert.equal(row.promotionStatus, "review_required");
+  assert.deepEqual(row.nonCapabilities, [
+    "arbitrary component identities",
+    "alias registries",
+    "semantic inference or equivalence",
+    "new components or facts",
+    "additional source layouts or namespaces",
+    "broader P2 component coverage",
+    "live source connectors",
+    "self-serve connection UI",
+    "runtime accessibility compliance",
+    "production adapters",
+    "SurfaceOps expansion",
+    "JudgmentKit invocation"
+  ]);
+  assert.deepEqual(row.dependencies.evidence, [
+    "p2-spectrum-ingestion",
+    "declared-source-conformance",
+    "source-family-layout-mapping",
+    "source-family-namespace-mapping"
+  ]);
+  assert.deepEqual(row.inputPaths, [
+    "artifacts/p2/evidence.json",
+    "artifacts/p2/governed-catalog.json",
+    "artifacts/source-family-namespace-mapping/evidence.json",
+    "fixtures/source-family-component-identity-mapping",
+    "fixtures/source-family-component-identity-mapping/component-identity-package.fixture.json",
+    "sources/source-family-component-identity-mapping/authority/component-identity-authority-manifest.json",
+    "sources/source-family-component-identity-mapping/authority/component-identity-declaration.json",
+    "sources/source-family-component-identity-mapping/component-identity-mapping.json",
+    "sources/source-family-component-identity-mapping/team-owned-identity-bundle"
+  ]);
+  assert.deepEqual(row.outputPaths, [
+    "artifacts/source-family-component-identity-mapping/component-identity-mapping-receipt.json",
+    "artifacts/source-family-component-identity-mapping/evidence.json",
+    "artifacts/source-family-component-identity-mapping/identity-mapped-authority-connection-report.json",
+    "artifacts/source-family-component-identity-mapping/identity-mapped-governed-catalog.json",
+    "artifacts/source-family-component-identity-mapping/identity-mapped-source-authority-map.json",
+    "artifacts/source-family-component-identity-mapping/identity-mapped-source-conformance-evidence.json",
+    "artifacts/source-family-component-identity-mapping/identity-mapped-source-conformance-report.json",
+    "artifacts/source-family-component-identity-mapping/identity-mapped-source-fact-coverage.json",
+    "artifacts/source-family-component-identity-mapping/identity-mapped-source-inventory.json",
+    "artifacts/source-family-component-identity-mapping/identity-mapped-source-review-queue.json",
+    "artifacts/source-family-component-identity-mapping/namespace-mapping-receipt.json",
+    "artifacts/source-family-component-identity-mapping/source-family-component-identity-mapping-report.json"
+  ]);
+  assert.deepEqual(row.reportPaths, ["artifacts/source-family-component-identity-mapping/source-family-component-identity-mapping-report.json"]);
+  assert.deepEqual(row.demoPaths, []);
+  assert.deepEqual(row.runtimeEvidencePaths, []);
+});
+
 test("capability index exposes structured accessibility reconciliation without policy or runtime escalation", async () => {
   const index = await readJson(indexPath);
   const row = index.implementedCapabilities.find((candidate) => candidate.capabilityId === "source-accessibility-policy");
@@ -222,12 +290,12 @@ test("capability index exposes structured accessibility reconciliation without p
 test("read-only verification preserves every repository byte, type, size, and mtime", async () => {
   const before = await workspaceSnapshot(root);
   const result = await verifyCapabilityIndex({ cwd: root, indexPath, evidencePath });
-  assert.equal(result.implemented.length, 15);
+  assert.equal(result.implemented.length, 16);
   assert.deepEqual(await workspaceSnapshot(root), before);
 
   const cli = await invoke(["verify", "--index", indexPath, "--evidence", evidencePath]);
   assert.equal(cli.exitCode, 0);
-  assert.match(cli.stdout, /implemented: 15\/15 verified/);
+  assert.match(cli.stdout, /implemented: 16\/16 verified/);
   assert.match(cli.stdout, /planned:/);
   assert.equal(cli.stderr, "");
   assert.deepEqual(await workspaceSnapshot(root), before);
@@ -266,6 +334,30 @@ test("verifier rechecks the source-family layout-mapping physical source closure
     await fs.writeFile(path.join(root, physicalPath), Buffer.concat([bytes, Buffer.from("\n")]));
     await assertDiagnostic("CAPABILITY_EVIDENCE_HASH_MISMATCH");
   });
+});
+
+test("verifier rechecks the source-family component-identity physical source closure", async () => {
+  const targetEvidencePath = "artifacts/source-family-component-identity-mapping/evidence.json";
+  const targetEvidence = await readJson(targetEvidencePath);
+  const physicalPath = targetEvidence.sourceFileRefs[0].path;
+  await withRestoredFiles([physicalPath], async () => {
+    const bytes = await fs.readFile(path.join(root, physicalPath));
+    await fs.writeFile(path.join(root, physicalPath), Buffer.concat([bytes, Buffer.from("\n")]));
+    await assertDiagnostic("CAPABILITY_EVIDENCE_HASH_MISMATCH");
+  });
+});
+
+test("verifier rechecks component-identity authority, mapping, and package bindings", async () => {
+  const targetEvidencePath = "artifacts/source-family-component-identity-mapping/evidence.json";
+  const targetEvidence = await readJson(targetEvidencePath);
+  for (const field of ["authorityManifestRef", "authorityDeclarationRef", "mappingRef", "identityPackageRef"]) {
+    const boundPath = targetEvidence[field].path;
+    await withRestoredFiles([boundPath], async () => {
+      const bytes = await fs.readFile(path.join(root, boundPath));
+      await fs.writeFile(path.join(root, boundPath), Buffer.concat([bytes, Buffer.from("\n")]));
+      await assertDiagnostic("CAPABILITY_EVIDENCE_HASH_MISMATCH");
+    });
+  }
 });
 
 test("verifier rejects a stale index hash", async () => {

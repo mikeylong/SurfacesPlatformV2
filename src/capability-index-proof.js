@@ -13,7 +13,7 @@ import {
 import { p2Internals } from "./p2-proof.js";
 import * as capabilityContract from "./capability-index-contract.js";
 
-const IMPLEMENTED_COUNT = 15;
+const IMPLEMENTED_COUNT = 16;
 const HASH_PATTERN = /^[0-9a-f]{64}$/;
 const CI_TIMESTAMP = capabilityContract.CI_TIMESTAMP ?? capabilityContract.CAPABILITY_INDEX_TIMESTAMP;
 const CI_VERSION = capabilityContract.CI_VERSION ?? capabilityContract.CAPABILITY_INDEX_VERSION;
@@ -525,7 +525,7 @@ function buildReport({ runId, indexRef, implemented, planned, validationResults,
     version: CI_VERSION,
     runId,
     targetId: CI_TARGET_ID,
-    scopeStatement: "Reports the current proof and governance status of the 15 declared implemented targets plus planned capability groups.",
+    scopeStatement: "Reports the current proof and governance status of the 16 declared implemented targets plus planned capability groups.",
     nonAuthorityStatement: "This report is a derived discovery consumer; each target evidence file remains proof authority.",
     indexRef,
     summary,
@@ -827,6 +827,12 @@ async function verifyEvidenceClosure({ cwd, evidence, evidencePath }) {
   if (evidence.contractId === "surfaces-source-family-namespace-mapping-proof") {
     const { sourceFamilyNamespaceMappingInternals } = await import("./source-family-namespace-mapping-proof.js");
     if (await sourceFamilyNamespaceMappingInternals.firstEvidenceIntegrityFailureCode(cwd, evidence) !== null) {
+      throw diagnosticError("CAPABILITY_EVIDENCE_HASH_MISMATCH", evidencePath);
+    }
+  }
+  if (evidence.contractId === "surfaces-source-family-component-identity-mapping-proof") {
+    const { sourceFamilyComponentIdentityMappingInternals } = await import("./source-family-component-identity-mapping-proof.js");
+    if (await sourceFamilyComponentIdentityMappingInternals.firstEvidenceIntegrityFailureCode(cwd, evidence) !== null) {
       throw diagnosticError("CAPABILITY_EVIDENCE_HASH_MISMATCH", evidencePath);
     }
   }
