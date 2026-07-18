@@ -57,7 +57,7 @@ test("capability proof is deterministic and emits exactly three artifacts", asyn
   });
   assert.equal(first.status, "pass");
   assert.equal(first.promotionStatus, "allowed");
-  assert.equal(first.implementedCount, 14);
+  assert.equal(first.implementedCount, 15);
   const firstBytes = await artifactBytes();
   const second = await runCapabilityIndexProof({
     cwd: root,
@@ -152,6 +152,52 @@ test("capability index exposes fixed source-family layout mapping without broade
   assert.deepEqual(row.runtimeEvidencePaths, []);
 });
 
+test("capability index exposes fixed source-family namespace mapping without broadening authority", async () => {
+  const index = await readJson(indexPath);
+  const row = index.implementedCapabilities.find((candidate) => candidate.capabilityId === "source-family-namespace-mapping");
+  assert.equal(row.canAddAuthority, false);
+  assert.equal(row.implementationStatus, "implemented");
+  assert.equal(row.proofMode, "report-only");
+  assert.match(row.scopeStatement, /one checked alternate source-ref prefix/);
+  assert.match(row.scopeStatement, /exact accepted 12-file Button and InLineAlert bundle/);
+  assert.match(row.scopeStatement, /unchanged source-conformance compiler/);
+  assert.equal(row.proofCommand, "interfacectl surfaces source-family-namespace-mapping proof");
+  assert.equal(row.packageProofScript, "proof:source-family-namespace-mapping");
+  assert.equal(row.ciGate, "npm run check:source-family-namespace-mapping:ci");
+  assert.equal(row.evidencePath, "artifacts/source-family-namespace-mapping/evidence.json");
+  assert.equal(row.evidenceSchemaId, "source-family-namespace-mapping-evidence.v0");
+  assert.equal(row.expectedPromotionStatus, "review_required");
+  assert.equal(row.promotionStatus, "review_required");
+  assert.deepEqual(row.nonCapabilities, [
+    "arbitrary source namespaces",
+    "additional source layouts",
+    "broader P2 component coverage",
+    "live source connectors",
+    "self-serve connection UI",
+    "runtime accessibility compliance",
+    "production adapters",
+    "SurfaceOps expansion",
+    "JudgmentKit invocation"
+  ]);
+  assert.deepEqual(row.dependencies.evidence, ["p2-spectrum-ingestion", "declared-source-conformance", "source-family-layout-mapping"]);
+  assert.deepEqual(row.outputPaths, [
+    "artifacts/source-family-namespace-mapping/evidence.json",
+    "artifacts/source-family-namespace-mapping/namespace-mapping-receipt.json",
+    "artifacts/source-family-namespace-mapping/normalized-authority-connection-report.json",
+    "artifacts/source-family-namespace-mapping/normalized-governed-catalog.json",
+    "artifacts/source-family-namespace-mapping/normalized-source-authority-map.json",
+    "artifacts/source-family-namespace-mapping/normalized-source-conformance-evidence.json",
+    "artifacts/source-family-namespace-mapping/normalized-source-conformance-report.json",
+    "artifacts/source-family-namespace-mapping/normalized-source-fact-coverage.json",
+    "artifacts/source-family-namespace-mapping/normalized-source-inventory.json",
+    "artifacts/source-family-namespace-mapping/normalized-source-review-queue.json",
+    "artifacts/source-family-namespace-mapping/source-family-namespace-mapping-report.json"
+  ]);
+  assert.deepEqual(row.reportPaths, ["artifacts/source-family-namespace-mapping/source-family-namespace-mapping-report.json"]);
+  assert.deepEqual(row.demoPaths, []);
+  assert.deepEqual(row.runtimeEvidencePaths, []);
+});
+
 test("capability index exposes structured accessibility reconciliation without policy or runtime escalation", async () => {
   const index = await readJson(indexPath);
   const row = index.implementedCapabilities.find((candidate) => candidate.capabilityId === "source-accessibility-policy");
@@ -176,12 +222,12 @@ test("capability index exposes structured accessibility reconciliation without p
 test("read-only verification preserves every repository byte, type, size, and mtime", async () => {
   const before = await workspaceSnapshot(root);
   const result = await verifyCapabilityIndex({ cwd: root, indexPath, evidencePath });
-  assert.equal(result.implemented.length, 14);
+  assert.equal(result.implemented.length, 15);
   assert.deepEqual(await workspaceSnapshot(root), before);
 
   const cli = await invoke(["verify", "--index", indexPath, "--evidence", evidencePath]);
   assert.equal(cli.exitCode, 0);
-  assert.match(cli.stdout, /implemented: 14\/14 verified/);
+  assert.match(cli.stdout, /implemented: 15\/15 verified/);
   assert.match(cli.stdout, /planned:/);
   assert.equal(cli.stderr, "");
   assert.deepEqual(await workspaceSnapshot(root), before);

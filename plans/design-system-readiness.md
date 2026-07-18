@@ -50,6 +50,14 @@ opaque and hash-bound. Missing facts remain owner-bound review work. This does
 not make accessibility prose executable, expand Spectrum coverage, or prove
 runtime accessibility compliance.
 
+The source-family namespace-mapping proof removes one additional fixed
+connection constraint for that same boundary. A checked fixed-layout copy uses
+one alternate declared-source prefix at 78 exact JSON pointers; normalization
+refreshes only 11 manifest hashes and must reproduce all 12 accepted logical
+files byte-for-byte before the unchanged compiler runs. This proves one prefix
+pair only. It does not establish arbitrary namespaces, another layout, broader
+component coverage, live connection, or self-serve support.
+
 Astryx has no current repo-defined proof target. It should remain a candidate
 source-family or target-conformance subject until a later proof defines schemas,
 fixtures, diagnostics, command behavior, generated reports or artifacts, evidence
