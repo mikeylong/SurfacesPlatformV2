@@ -58,6 +58,18 @@ files byte-for-byte before the unchanged compiler runs. This proves one prefix
 pair only. It does not establish arbitrary namespaces, another layout, broader
 component coverage, live connection, or self-serve support.
 
+The source-family component-identity-mapping proof removes one further exact
+connection constraint without broadening design-system support. One explicit,
+team-owned authority declaration binds the fixture-local `TeamButton` identity
+to the current accepted P2 `Button` target with source refs, provenance, hashes,
+and owner-bound review status. A derived 22-row Stage 1 mapping changes five
+checked files and five manifest hashes while preserving four narrative `Button`
+mentions, then feeds the existing namespace normalizer and unchanged compiler.
+The declaration is authority; the normalizers are not. This proves one identity
+relation only. It does not establish arbitrary identities, alias registries,
+semantic inference, broader component coverage, live connection, or self-serve
+support.
+
 Astryx has no current repo-defined proof target. It should remain a candidate
 source-family or target-conformance subject until a later proof defines schemas,
 fixtures, diagnostics, command behavior, generated reports or artifacts, evidence
@@ -113,8 +125,11 @@ response material, source refs, and hashes. Live tool output is not authority.
 The scoped source-conformance extension now includes the authority profiles,
 fact coverage, policy maps, review queues, connection reports, diagnostics,
 fixtures, aggregate package evidence, and CI shape for two checked local bundle
-instances. Future design-system-readiness work must reuse those boundaries
-while adding separately proven candidate source shapes or coverage:
+instances. The fixed layout, namespace, and component-identity targets add three
+separate bounded connection proofs without broadening P2: one physical layout,
+one prefix pair, and one explicitly declared `TeamButton` to accepted P2
+`Button` relation. Future design-system-readiness work must reuse those
+boundaries while adding separately proven candidate source shapes or coverage:
 
 - schemas for a candidate source manifest, source-material inventory, source
   authority matrix, fact coverage report, policy map, review queue or review
@@ -197,12 +212,26 @@ preserved source refs, deterministic blocked/review_required diagnostics,
 non-executable review rows, and reproducible CI evidence.
 ```
 
+For the component-identity target specifically, the safe claim is narrower:
+
+```text
+Surfaces verifies one explicit team-owned declaration that the fixture-local
+TeamButton source identity resolves to the already accepted P2 Button contract,
+then applies that exact relation through a derived, non-authoritative mapping.
+```
+
+Do not shorten this to semantic equivalence, alias support, arbitrary component
+identity support, or broader design-system readiness.
+
 Do not claim broad Spectrum support, Astryx support, live ingestion, production
 adapters, APIs, SDKs, A2UI, live SurfaceOps, live JudgmentKit, live MCP/CLI
 authority, template authority, swizzle authority, or production adoption until
 the relevant target-specific evidence exists and passes.
 
 ## Open Decisions
+- How future component identities or terminology mappings should be proved
+  beyond the one fixed `TeamButton` to accepted P2 `Button` relation; the current
+  target does not define an alias registry or inference model.
 - Whether the next proof candidate should expand Spectrum component coverage
   first or prove an Astryx source-family eligibility slice first.
 - Whether Astryx should be modeled initially as source-family eligibility,

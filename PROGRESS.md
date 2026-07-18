@@ -43,7 +43,7 @@ boundary.
 
 Completion record:
 
-- [x] One schema-validated capability index covers all 15 implemented proof
+- [x] One schema-validated capability index covers all 16 implemented proof
   targets other than the capability-index target.
 - [x] Each implemented row exposes its identity, scope, authority boundary,
   non-capabilities, dependencies, commands, CI gate, inputs, outputs,
@@ -77,7 +77,7 @@ Proof and evidence:
 - Read-only verification: `interfacectl surfaces capabilities verify --index artifacts/capability-index/capability-index.json --evidence artifacts/capability-index/evidence.json`
 - Proof-bearing gate: `npm run check:capability-index:ci`
 
-The index intentionally covers the 15 other implemented targets rather than
+The index intentionally covers the 16 other implemented targets rather than
 indexing itself. Its evidence proves the index contract without creating a
 circular authority chain. The index is a derived discovery surface. It does
 not replace target evidence or turn demos and plans into proof.
@@ -147,21 +147,40 @@ owner-bound non-executable review semantics, and causal
 `SOURCE_FACT_AUTHORITY_ESCALATION` rejection with
 `promotionStatus: "review_required"`.
 
+The source-family-component-identity-mapping slice removes one exact component-
+identity constraint without expanding accepted P2 catalog authority. One explicit,
+team-owned declaration binds the fixture-local `TeamButton` identity to the
+already accepted P2 `Button` target with declared source refs, provenance,
+hashes, current P2 catalog/evidence refs, the JCS hash of the accepted Button
+record, and owner-bound accepted review
+metadata. The declaration authorizes the relation; the derived mapping and
+normalizers add no authority. Stage 1 applies exactly 22 substitutions in five
+files, refreshes five manifest hashes, preserves four narrative `Button`
+mentions, and reproduces the accepted fixed-namespace input. The existing
+namespace normalizer then reproduces the canonical logical bundle before the
+unchanged compiler runs. Passing evidence preserves and re-verifies all eight
+inner artifacts with exact equality to the fixed-namespace baseline and records
+`promotionStatus: "review_required"`.
+
 Complete when a team can declare its authoritative sources, precedence,
 policies, and review ownership without repo-specific implementation changes,
 then compile a traceable governed catalog with actionable conflict and
 ambiguity handling. The current slice proves that path for two checked
 instances of one fixed source-family package ABI plus one fixed alternate
 physical layout mapped onto that same ABI and one fixed alternate source-ref
-prefix normalized onto its canonical namespace. Arbitrary additional source
-layouts or namespace pairs, broader component coverage, live connectors, and a
-self-serve connection path remain open and require separate proof.
+prefix normalized onto its canonical namespace, plus one explicit team-owned
+declaration for the exact fixture-local `TeamButton` to accepted P2 `Button`
+identity relation. Arbitrary additional source layouts, namespace pairs,
+component identities or alias registries, broader component coverage, live
+connectors, and a self-serve connection path remain open and require separate
+proof.
 
-What's next: use the passing fixed-namespace proof as the new Connect Authority
-baseline, then select one bounded next proof slice from the remaining milestone
-gaps. Current evidence does not authorize arbitrary additional layouts or
-namespace pairs, broader P2 coverage, live connectors, self-serve UI, runtime
-accessibility claims, production adapters, SurfaceOps expansion, or JudgmentKit
+What's next: use the passing fixed component-identity proof as the new Connect
+Authority baseline, then select one bounded next proof slice from the remaining
+milestone gaps. Current evidence does not authorize arbitrary additional
+layouts, namespace pairs, component identities, alias registries, or semantic
+mappings; broader P2 coverage; live connectors; self-serve UI; runtime
+accessibility claims; production adapters; SurfaceOps expansion; or JudgmentKit
 use.
 
 ## 3. Generate Within Bounds
