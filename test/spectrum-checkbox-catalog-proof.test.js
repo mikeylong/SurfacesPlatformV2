@@ -59,6 +59,9 @@ test("Checkbox fixtures cover valid, review, invalid, and causal mutation outcom
   assert.equal(manifest.expectations.length, SCC_EXPECTATION_ROWS.length);
   assert.deepEqual([...new Set(manifest.expectations.map((row) => row.kind))].sort(), ["invalid", "mutation", "review", "valid"]);
   assert.equal(manifest.runExpectation.promotionStatus, "review_required");
+  const tamperedP2EvidencePath = `${SCC_FIXTURE_ROOT}/mutations/tampered-p2-evidence.spectrum-checkbox-catalog-preflight.json`;
+  const tamperedP2Evidence = await readJson(path.join(root, tamperedP2EvidencePath));
+  assert.equal(tamperedP2Evidence.targetPath, SCC_P2_EVIDENCE_PATH);
   const report = await readJson(path.join(root, `${SCC_ARTIFACT_ROOT}/spectrum-checkbox-catalog-report.json`));
   assert.equal(report.status, "pass");
   assert.equal(report.promotionStatus, "review_required");
@@ -68,6 +71,11 @@ test("Checkbox fixtures cover valid, review, invalid, and causal mutation outcom
     ["surfaces-p2-governed-spectrum", "surfaces-spectrum-checkbox-catalog-governed", true]
   );
   assert.equal(report.validationResults.every((row) => row.matched), true);
+  const tamperedP2EvidenceResult = report.validationResults.find((row) => row.fixturePath === tamperedP2EvidencePath);
+  assert.deepEqual(
+    [tamperedP2EvidenceResult?.actualResult, tamperedP2EvidenceResult?.actualPromotionStatus, tamperedP2EvidenceResult?.actualDiagnosticCodes],
+    ["invalid", "blocked", ["SPECTRUM_CHECKBOX_UPSTREAM_HASH_MISMATCH"]]
+  );
 });
 
 test("Checkbox evidence has a valid semantic and hash closure", async () => {

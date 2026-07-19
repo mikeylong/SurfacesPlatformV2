@@ -804,7 +804,7 @@ manifest, and exact mapping rows before compiling. It adds seven Checkbox
 props, three states, structured indeterminate precedence, the declared
 accessibility facts, one purpose example, one desktop token, and two
 owner-bound non-executable review rows. It preserves every accepted P2
-component and token record by JCS hash, runs all 24 valid, review, invalid, and
+component and token record by JCS hash, runs all 25 valid, review, invalid, and
 causal mutation fixtures, and reconstructs the report and final evidence before
 acceptance. Passing evidence records `promotionStatus: "review_required"`.
 

@@ -847,6 +847,24 @@ async function evaluateMutationFixture(cwd, fixture, context) {
       const value = await readJson(target);
       value.status = "fail";
       await writeCanonicalJson(target, value);
+    } else if (fixture.mutationId === "tampered-p2-evidence") {
+      const value = await readJson(target);
+      const fixtureRef = value.fixtureRefs[0];
+      fixtureRef.hash = flippedHash(fixtureRef.hash);
+      fixtureRef.provenance.artifactHash = fixtureRef.hash;
+      value.artifactRefs.at(-1).hash = p2Internals.computeEvidenceSelfHash(value);
+      context.assertFixtureSchema("design-system-ingestion-evidence.v0", value, fixture.targetPath);
+      const catalogRef = value.artifactRefs.find((ref) => ref.path === SCC_P2_CATALOG_PATH);
+      if (value.status !== "pass" || catalogRef?.hash !== context.p2CatalogRef.hash) {
+        throw contractError("tampered P2 evidence fixture escaped its bounded still-pass closure", 1);
+      }
+      await writeCanonicalJson(target, value);
+
+      const manifestPath = path.join(mutationCwd, SCC_MANIFEST_PATH);
+      const manifest = await readJson(manifestPath);
+      manifest.baseP2Boundary.evidenceRef.hash = value.artifactRefs.at(-1).hash;
+      context.assertFixtureSchema("spectrum-checkbox-source-manifest.v0", manifest, SCC_MANIFEST_PATH);
+      await writeCanonicalJson(manifestPath, manifest);
     } else if (fixture.mutationId === "upstream-hash-mismatch") {
       const value = await readJson(target);
       value.catalogId = `${value.catalogId}-mutated`;

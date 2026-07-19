@@ -228,6 +228,7 @@ export const SCC_EXPECTATION_ROWS = [
   expectation("invalid/review-promoted.spectrum-checkbox-catalog.json", "invalid", "invalid", "blocked", ["SPECTRUM_CHECKBOX_REVIEW_PROMOTION_FORBIDDEN"]),
   expectation("mutations/missing-p2-evidence.spectrum-checkbox-catalog-preflight.json", "mutation", "invalid", "blocked", ["SPECTRUM_CHECKBOX_UPSTREAM_EVIDENCE_MISSING"]),
   expectation("mutations/nonpass-p2-evidence.spectrum-checkbox-catalog-preflight.json", "mutation", "invalid", "blocked", ["SPECTRUM_CHECKBOX_UPSTREAM_EVIDENCE_NONPASS"]),
+  expectation("mutations/tampered-p2-evidence.spectrum-checkbox-catalog-preflight.json", "mutation", "invalid", "blocked", ["SPECTRUM_CHECKBOX_UPSTREAM_HASH_MISMATCH"]),
   expectation("mutations/upstream-hash-mismatch.spectrum-checkbox-catalog-preflight.json", "mutation", "invalid", "blocked", ["SPECTRUM_CHECKBOX_UPSTREAM_HASH_MISMATCH"]),
   expectation("mutations/source-byte-hash-mismatch.spectrum-checkbox-catalog-preflight.json", "mutation", "invalid", "blocked", ["SPECTRUM_CHECKBOX_SOURCE_HASH_MISMATCH"]),
   expectation("mutations/extra-source-path.spectrum-checkbox-catalog-preflight.json", "mutation", "invalid", "blocked", ["SPECTRUM_CHECKBOX_SOURCE_PATH_UNDECLARED"]),
@@ -528,6 +529,7 @@ function buildFixtures() {
   const mutation = (mutationId, targetPath, mutationValue) => ({ schemaId: "spectrum-checkbox-catalog-preflight-mutation.v0", version: SCC_VERSION, mutationId, targetPath, mutation: mutationValue });
   put("mutations/missing-p2-evidence.spectrum-checkbox-catalog-preflight.json", mutation("missing-p2-evidence", SCC_P2_EVIDENCE_PATH, "missing"));
   put("mutations/nonpass-p2-evidence.spectrum-checkbox-catalog-preflight.json", mutation("nonpass-p2-evidence", SCC_P2_EVIDENCE_PATH, "nonpass"));
+  put("mutations/tampered-p2-evidence.spectrum-checkbox-catalog-preflight.json", mutation("tampered-p2-evidence", SCC_P2_EVIDENCE_PATH, "hash-mismatch"));
   put("mutations/upstream-hash-mismatch.spectrum-checkbox-catalog-preflight.json", mutation("upstream-hash-mismatch", SCC_P2_CATALOG_PATH, "hash-mismatch"));
   put("mutations/source-byte-hash-mismatch.spectrum-checkbox-catalog-preflight.json", mutation("source-byte-hash-mismatch", SCC_COMPONENT_PATH, "hash-mismatch"));
   put("mutations/extra-source-path.spectrum-checkbox-catalog-preflight.json", mutation("extra-source-path", `${SCC_SOURCE_ROOT}/${SCC_PACKAGE_ROOT}/components/extra.json`, "extra-path"));

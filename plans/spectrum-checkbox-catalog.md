@@ -90,7 +90,7 @@ Fixtures cover:
 - valid complete Checkbox, indeterminate precedence, and desktop token cases;
 - review-required standalone label, unspecified token mode, and activation intent cases;
 - unsupported identity, invented behavior, invalid state normalization, missing precedence, missing or undeclared source refs, executable prose, and unattended promotion cases;
-- causal mutations for missing/nonpassing/tampered P2 evidence, source-byte drift, undeclared source paths, lock drift, manifest drift, mapping drift, schema drift, and final report/evidence drift.
+- causal mutations for missing/nonpassing P2 evidence, tampered still-pass P2 evidence closure, P2 catalog drift, source-byte drift, undeclared source paths, lock drift, manifest drift, mapping drift, schema drift, and final report/evidence drift.
 
 The proof writes:
 

@@ -172,7 +172,7 @@ and emits a distinct governed catalog containing Button, Checkbox, and
 InLineAlert. The catalog adds seven Checkbox props, three interaction states,
 structured indeterminate precedence, one desktop token, and two owner-bound
 non-executable review rows. Every accepted P2 component and token record keeps
-the same JCS hash. Passing evidence records all 24 fixture results and
+the same JCS hash. Passing evidence records all 25 fixture results and
 `promotionStatus: "review_required"`.
 
 Complete when a team can declare its authoritative sources, precedence,
