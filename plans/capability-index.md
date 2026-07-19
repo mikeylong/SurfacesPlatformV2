@@ -26,7 +26,7 @@ evidence remains the proof authority for that target.
 
 ## Indexed Scope
 
-The index contains exactly the 16 implemented proof targets other than the
+The index contains exactly the 17 implemented proof targets other than the
 capability-index target:
 
 | Implemented target | Evidence authority | CI gate |
@@ -34,6 +34,7 @@ capability-index target:
 | P0 synthetic catalog contract | `artifacts/p0/evidence.json` | `npm run check:p0:ci` |
 | P1 `web-static` runtime projection | `artifacts/p1/evidence.json` | `npm run check:p1:ci` |
 | P2 bounded Spectrum ingestion | `artifacts/p2/evidence.json` | `npm run check:p2:ci` |
+| Spectrum Checkbox catalog authority | `artifacts/spectrum-checkbox-catalog/evidence.json` | `npm run check:spectrum-checkbox-catalog:ci` |
 | P3 inert agent orchestration | `artifacts/p3/evidence.json` | `npm run check:p3:ci` |
 | P4 deterministic review and judgment | `artifacts/p4/evidence.json` | `npm run check:p4:ci` |
 | P5 `surfaces-protocol-static` | `artifacts/p5/protocol/evidence.json` | `npm run check:p5:protocol:ci` |
@@ -95,7 +96,15 @@ namespaces, broader P2 coverage, live connectors, self-serve UI, runtime
 accessibility, production adapters, SurfaceOps expansion, and JudgmentKit as
 non-capabilities.
 
-The capability-index target does not index itself. Adding it as a seventeenth
+The Spectrum Checkbox catalog row points to the separate real-source catalog
+expansion that consumes accepted P2 evidence without changing P2. It records
+`promotionStatus: "review_required"`, preserves every accepted P2 component and
+token record, and adds only Checkbox plus one desktop token to a distinct
+governed catalog. Full Spectrum support, live connectors, self-serve UI,
+runtime accessibility compliance, production adapters, SurfaceOps expansion,
+JudgmentKit, and A2UI remain non-capabilities.
+
+The capability-index target does not index itself. Adding it as an eighteenth
 row would create a circular self-evidence boundary. Its own final evidence is
 the authority for the index target.
 
@@ -221,13 +230,13 @@ root and satisfy the repository output-root rules.
 `npm run status` aliases the `capabilities verify` command. Verification:
 
 - reads the tracked index, report, capability-index evidence, package command
-  registry, declared schemas and fixtures, the 16 indexed target evidence
+  registry, declared schemas and fixtures, the 17 indexed target evidence
   files, and their referenced closure;
 - validates the index and evidence schemas, hashes, declared status, target
   count, dependencies, authority boundaries, and evidence refs;
 - writes a concise table with capability, evidence status, promotion status,
   and evidence path to stdout;
-- reports `implemented: 16/16 verified` plus the planned group count and ids;
+- reports `implemented: 17/17 verified` plus the planned group count and ids;
 - writes no file, creates no output directory, regenerates no artifact, and
   makes no network call.
 
@@ -264,7 +273,7 @@ manifest. Proof output must use those values exactly.
 
 - all capability-index-owned schemas;
 - the complete declared fixture set;
-- the 16 accepted target evidence files and their hashes;
+- the 17 accepted target evidence files and their hashes;
 - `capability-index.json`;
 - `capability-index-report.json`;
 - the final evidence self-ref using the repository's canonical null-placeholder
@@ -278,7 +287,7 @@ host-derived fields as `null`, `status: "pass"`, and
 
 `npm run check:capability-index:ci` runs the required upstream target gates,
 materializes and proves the capability index, checks tracked drift, and rejects
-untracked capability-index files. The phase-only gate may run after the 16
+untracked capability-index files. The phase-only gate may run after the 17
 indexed target proof jobs have already passed.
 
 CI must also prove that `npm run status` leaves the worktree unchanged. The
@@ -288,7 +297,7 @@ read-only verifier cannot hide stale output by regenerating it.
 
 The target is accepted only when:
 
-- the index contains exactly the 16 implemented targets listed above;
+- the index contains exactly the 17 implemented targets listed above;
 - every implemented row points to present, passing, hash-matching target
   evidence;
 - every proof status and promotion status matches the target evidence;

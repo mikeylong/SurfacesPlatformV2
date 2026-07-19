@@ -70,6 +70,15 @@ relation only. It does not establish arbitrary identities, alias registries,
 semantic inference, broader component coverage, live connection, or self-serve
 support.
 
+The Spectrum Checkbox catalog proof adds one bounded real-source component
+outside P2. A separate immutable addendum lock binds the exact Checkbox byte to
+the pinned package tarball, while accepted P2 evidence supplies the existing
+catalog, component registry, and one desktop token record. The emitted catalog
+preserves every P2 component and token record and adds only Checkbox plus that
+token. The proof covers selection precedence, state normalization,
+accessibility facts, source refs, ambiguous token mode, and owner-routed review.
+It does not expand P2 or establish full Spectrum support.
+
 Astryx has no current repo-defined proof target. It should remain a candidate
 source-family or target-conformance subject until a later proof defines schemas,
 fixtures, diagnostics, command behavior, generated reports or artifacts, evidence
@@ -106,6 +115,11 @@ and final evidence.
 Spectrum expansion should remain bounded by component subset, package version,
 declared package paths, mapping files, policy refs, and evidence. It must not be
 described as full Spectrum support until each claimed slice has passing evidence.
+
+The implemented Checkbox target is the first example of that bounded pattern.
+Future components should use a separately reviewed immutable source boundary or
+an explicitly reviewed P2 expansion, preserve accepted catalog facts, and add
+only the authority the selected source can support.
 
 ### Astryx Candidate
 Astryx should start as a local git or npm snapshot source family, not as live
@@ -232,8 +246,8 @@ the relevant target-specific evidence exists and passes.
 - How future component identities or terminology mappings should be proved
   beyond the one fixed `TeamButton` to accepted P2 `Button` relation; the current
   target does not define an alias registry or inference model.
-- Whether the next proof candidate should expand Spectrum component coverage
-  first or prove an Astryx source-family eligibility slice first.
+- Whether the next proof candidate should add another bounded Spectrum
+  component after Checkbox or prove an Astryx source-family eligibility slice.
 - Whether Astryx should be modeled initially as source-family eligibility,
   React/web conformance, or both.
 - How to encode typed source anchors for TypeScript, JSX, MDX, CLI output, MCP

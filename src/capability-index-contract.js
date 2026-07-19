@@ -191,6 +191,50 @@ const IMPLEMENTED_CAPABILITIES = [
     dependencies: { evidence: ["p2-spectrum-ingestion", "p4-review-judgment"], phaseGate: [], compatibility: ["p5-protocol-static"] }
   }),
   implemented({
+    capabilityId: "spectrum-checkbox-catalog",
+    displayName: "Spectrum Checkbox catalog authority",
+    roadmapPhase: "Target",
+    proofMode: "bounded-local",
+    userValue: "Adds one common selection control to a governed real-source catalog with checked state, policy, and token authority.",
+    scopeStatement: "Consumes accepted P2 evidence and one separately locked Checkbox source byte to emit a distinct governed catalog containing Button, Checkbox, and InLineAlert.",
+    authorityRole: "declared-source-catalog-expansion",
+    nonCapabilities: [
+      "in-place P2 expansion",
+      "full Spectrum support",
+      "live source connectors",
+      "self-serve connection UI",
+      "runtime accessibility compliance",
+      "production adapters",
+      "SurfaceOps expansion",
+      "JudgmentKit invocation",
+      "A2UI"
+    ],
+    lifecycleRoles: ["connect-authority", "govern-change"],
+    proofCommand: "interfacectl surfaces spectrum-checkbox-catalog proof",
+    packageProofScript: "proof:spectrum-checkbox-catalog",
+    ciGate: "npm run check:spectrum-checkbox-catalog:ci",
+    evidencePath: "artifacts/spectrum-checkbox-catalog/evidence.json",
+    evidenceSchemaId: "spectrum-checkbox-catalog-evidence.v0",
+    expectedPromotionStatus: "review_required",
+    inputPaths: [
+      "artifacts/p2/evidence.json",
+      "artifacts/p2/governed-catalog.json",
+      "sources/spectrum-checkbox-catalog",
+      "fixtures/spectrum-checkbox-catalog"
+    ],
+    outputPaths: [
+      "artifacts/spectrum-checkbox-catalog/source-inventory.json",
+      "artifacts/spectrum-checkbox-catalog/source-mapping.json",
+      "artifacts/spectrum-checkbox-catalog/governed-catalog.json",
+      "artifacts/spectrum-checkbox-catalog/spectrum-checkbox-catalog-report.json",
+      "artifacts/spectrum-checkbox-catalog/evidence.json"
+    ],
+    diagnosticSchemaPath: "schemas/spectrum-checkbox-catalog-diagnostics.v0.schema.json",
+    reportPaths: ["artifacts/spectrum-checkbox-catalog/spectrum-checkbox-catalog-report.json"],
+    documentationRefs: ["VISION.md", "PLAN.md", "plans/spectrum-checkbox-catalog.md"],
+    dependencies: { evidence: ["p2-spectrum-ingestion"], phaseGate: [], compatibility: [] }
+  }),
+  implemented({
     capabilityId: "declared-source-conformance",
     displayName: "Reusable declared-source conformance",
     roadmapPhase: "Target",
