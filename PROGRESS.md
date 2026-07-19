@@ -5,7 +5,7 @@ roadmap. It is subordinate to `VISION.md`, `PLAN.md`, the phase plans, and
 passing evidence. It does not create proof authority or broaden an implemented
 target.
 
-Last updated: 2026-07-17
+Last updated: 2026-07-18
 Current focus: **Connect Authority**
 
 ## Status Semantics
@@ -43,7 +43,7 @@ boundary.
 
 Completion record:
 
-- [x] One schema-validated capability index covers all 16 implemented proof
+- [x] One schema-validated capability index covers all 17 implemented proof
   targets other than the capability-index target.
 - [x] Each implemented row exposes its identity, scope, authority boundary,
   non-capabilities, dependencies, commands, CI gate, inputs, outputs,
@@ -77,7 +77,7 @@ Proof and evidence:
 - Read-only verification: `interfacectl surfaces capabilities verify --index artifacts/capability-index/capability-index.json --evidence artifacts/capability-index/evidence.json`
 - Proof-bearing gate: `npm run check:capability-index:ci`
 
-The index intentionally covers the 16 other implemented targets rather than
+The index intentionally covers the 17 other implemented targets rather than
 indexing itself. Its evidence proves the index contract without creating a
 circular authority chain. The index is a derived discovery surface. It does
 not replace target evidence or turn demos and plans into proof.
@@ -162,6 +162,19 @@ unchanged compiler runs. Passing evidence preserves and re-verifies all eight
 inner artifacts with exact equality to the fixed-namespace baseline and records
 `promotionStatus: "review_required"`.
 
+The Spectrum Checkbox catalog slice adds the first new real-source component
+authority since P2 without changing P2 itself. A separately reviewed addendum
+lock binds the exact `components/checkbox.json` byte from
+`@adobe/spectrum-design-data@0.7.0`; ordinary materialization checks that
+one-file tree and never rewrites either source lock. The target consumes intact
+P2 evidence, reuses the locked component registry and one desktop token record,
+and emits a distinct governed catalog containing Button, Checkbox, and
+InLineAlert. The catalog adds seven Checkbox props, three interaction states,
+structured indeterminate precedence, one desktop token, and two owner-bound
+non-executable review rows. Every accepted P2 component and token record keeps
+the same JCS hash. Passing evidence records all 24 fixture results and
+`promotionStatus: "review_required"`.
+
 Complete when a team can declare its authoritative sources, precedence,
 policies, and review ownership without repo-specific implementation changes,
 then compile a traceable governed catalog with actionable conflict and
@@ -170,16 +183,17 @@ instances of one fixed source-family package ABI plus one fixed alternate
 physical layout mapped onto that same ABI and one fixed alternate source-ref
 prefix normalized onto its canonical namespace, plus one explicit team-owned
 declaration for the exact fixture-local `TeamButton` to accepted P2 `Button`
-identity relation. Arbitrary additional source layouts, namespace pairs,
-component identities or alias registries, broader component coverage, live
+identity relation, plus one separately locked Checkbox catalog expansion.
+Arbitrary additional source layouts, namespace pairs, component identities or
+alias registries, component coverage beyond Checkbox, live
 connectors, and a self-serve connection path remain open and require separate
 proof.
 
-What's next: use the passing fixed component-identity proof as the new Connect
-Authority baseline, then select one bounded next proof slice from the remaining
-milestone gaps. Current evidence does not authorize arbitrary additional
+What's next: use the passing Checkbox catalog evidence as the Connect Authority
+baseline, then choose between another bounded real-source component slice and a
+separately proven source-family eligibility slice. Current evidence does not authorize arbitrary additional
 layouts, namespace pairs, component identities, alias registries, or semantic
-mappings; broader P2 coverage; live connectors; self-serve UI; runtime
+mappings; an in-place P2 expansion or broader Spectrum coverage; live connectors; self-serve UI; runtime
 accessibility claims; production adapters; SurfaceOps expansion; or JudgmentKit
 use.
 

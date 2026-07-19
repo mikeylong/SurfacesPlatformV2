@@ -58,6 +58,24 @@ validation.
 | Hand off only proven target output | Only hash-bound protocol, native static, or bounded target-specific adapter outputs backed by their own evidence are handoff candidates. | `artifacts/p5/protocol/evidence.json`; `artifacts/p5/protocol/protocol-envelope.button.json`; `artifacts/p5/native/evidence.json`; `artifacts/p5/native/surfaces-native-packet.button.json`; `artifacts/surfaceops-kanban-live/evidence.json` |
 | Govern changes over time | Any source, policy, review, or target change requires regeneration and fresh evidence before downstream trust. | `npm run check:designer-workflow-trace:ci`; current `artifacts/**/evidence.json` paths |
 
+## Checkbox Authority Walkthrough
+
+The Checkbox target gives designers a second catalog-authority scenario without
+claiming a second end-to-end trace. The source inventory shows the separately
+locked real-source byte and reused P2 registry/token facts. The mapping artifact
+shows the seven props, three state mappings, structured indeterminate
+precedence, one desktop token, and two non-executable review rows. The expanded
+catalog makes those facts available while preserving every accepted P2
+component and token record. Designers can compare valid, blocked, and
+`review_required` cases in `fixtures/spectrum-checkbox-catalog` and inspect the
+result in `artifacts/spectrum-checkbox-catalog/spectrum-checkbox-catalog-report.json`.
+
+The Checkbox evidence is adjacent authority evidence. The current Button trace,
+protocol, native, and SurfaceOps targets do not consume the expanded Checkbox
+catalog. A downstream Checkbox workflow remains unimplemented until a target
+adds its own schemas, fixtures, diagnostics, report or artifacts, evidence, and
+passing gate.
+
 ## Designer Workflow Trace
 A designer workflow trace makes the evidence walkthrough easier to inspect by consolidating refs into one deterministic report. The current repo implements the first proof-only trace target for one Button scenario over accepted P2, source-conformance, P3, P4, protocol, and native evidence.
 
@@ -99,4 +117,4 @@ Deprioritize work that creates apparent designer value while bypassing the proof
 ## Current Scope
 The repo currently demonstrates this workflow as proof infrastructure. It is suitable for evidence-backed walkthroughs and design-partner discovery, not production adoption or self-serve product use.
 
-Implemented proof slices cover bounded source ingestion, reusable compilation across two compatible instances of one fixed source-family package, governed catalog output, deterministic diagnostics, inert review and judgment artifacts, static protocol/native handoff targets, the first report/evidence-only designer workflow trace index, and a bounded local-loopback SurfaceOps kanban live adapter proof. Broader trace scenarios, arbitrary source-family shapes, broader component coverage, production SurfaceOps workflow, production adapters, APIs, SDKs, live runtimes, live JudgmentKit, A2UI, and production-facing designer experiences remain future target-specific work until they add their own proof shape and passing evidence.
+Implemented proof slices cover bounded source ingestion, one separately locked Checkbox catalog expansion, reusable compilation across two compatible instances of one fixed source-family package, governed catalog output, deterministic diagnostics, inert review and judgment artifacts, static protocol/native handoff targets, the first report/evidence-only designer workflow trace index, and a bounded local-loopback SurfaceOps kanban live adapter proof. Broader trace scenarios, arbitrary source-family shapes, component coverage beyond Checkbox, production SurfaceOps workflow, production adapters, APIs, SDKs, live runtimes, live JudgmentKit, A2UI, and production-facing designer experiences remain future target-specific work until they add their own proof shape and passing evidence.

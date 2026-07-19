@@ -57,7 +57,7 @@ test("capability proof is deterministic and emits exactly three artifacts", asyn
   });
   assert.equal(first.status, "pass");
   assert.equal(first.promotionStatus, "allowed");
-  assert.equal(first.implementedCount, 16);
+  assert.equal(first.implementedCount, 17);
   const firstBytes = await artifactBytes();
   const second = await runCapabilityIndexProof({
     cwd: root,
@@ -287,15 +287,41 @@ test("capability index exposes structured accessibility reconciliation without p
   assert.deepEqual(row.dependencies.evidence, ["p2-spectrum-ingestion", "declared-source-conformance"]);
 });
 
+test("capability index exposes the bounded Spectrum Checkbox authority target", async () => {
+  const index = await readJson(indexPath);
+  const row = index.implementedCapabilities.find((candidate) => candidate.capabilityId === "spectrum-checkbox-catalog");
+  assert.equal(row.canAddAuthority, false);
+  assert.equal(row.implementationStatus, "implemented");
+  assert.equal(row.roadmapPhase, "Target");
+  assert.equal(row.proofMode, "bounded-local");
+  assert.equal(row.proofCommand, "interfacectl surfaces spectrum-checkbox-catalog proof");
+  assert.equal(row.packageProofScript, "proof:spectrum-checkbox-catalog");
+  assert.equal(row.ciGate, "npm run check:spectrum-checkbox-catalog:ci");
+  assert.equal(row.evidencePath, "artifacts/spectrum-checkbox-catalog/evidence.json");
+  assert.equal(row.evidenceSchemaId, "spectrum-checkbox-catalog-evidence.v0");
+  assert.equal(row.expectedPromotionStatus, "review_required");
+  assert.equal(row.promotionStatus, "review_required");
+  assert.deepEqual(row.dependencies.evidence, ["p2-spectrum-ingestion"]);
+  assert.deepEqual(row.outputPaths, [
+    "artifacts/spectrum-checkbox-catalog/evidence.json",
+    "artifacts/spectrum-checkbox-catalog/governed-catalog.json",
+    "artifacts/spectrum-checkbox-catalog/source-inventory.json",
+    "artifacts/spectrum-checkbox-catalog/source-mapping.json",
+    "artifacts/spectrum-checkbox-catalog/spectrum-checkbox-catalog-report.json"
+  ]);
+  assert.equal(row.nonCapabilities.includes("full Spectrum support"), true);
+  assert.equal(row.nonCapabilities.includes("JudgmentKit invocation"), true);
+});
+
 test("read-only verification preserves every repository byte, type, size, and mtime", async () => {
   const before = await workspaceSnapshot(root);
   const result = await verifyCapabilityIndex({ cwd: root, indexPath, evidencePath });
-  assert.equal(result.implemented.length, 16);
+  assert.equal(result.implemented.length, 17);
   assert.deepEqual(await workspaceSnapshot(root), before);
 
   const cli = await invoke(["verify", "--index", indexPath, "--evidence", evidencePath]);
   assert.equal(cli.exitCode, 0);
-  assert.match(cli.stdout, /implemented: 16\/16 verified/);
+  assert.match(cli.stdout, /implemented: 17\/17 verified/);
   assert.match(cli.stdout, /planned:/);
   assert.equal(cli.stderr, "");
   assert.deepEqual(await workspaceSnapshot(root), before);
@@ -355,6 +381,22 @@ test("verifier rechecks component-identity authority, mapping, and package bindi
     await withRestoredFiles([boundPath], async () => {
       const bytes = await fs.readFile(path.join(root, boundPath));
       await fs.writeFile(path.join(root, boundPath), Buffer.concat([bytes, Buffer.from("\n")]));
+      await assertDiagnostic("CAPABILITY_EVIDENCE_HASH_MISMATCH");
+    });
+  }
+});
+
+test("verifier rechecks Checkbox source, mapping, and implementation closures", async () => {
+  const targetEvidence = await readJson("artifacts/spectrum-checkbox-catalog/evidence.json");
+  const paths = [
+    targetEvidence.sourceFileRefs.find((ref) => ref.path.endsWith("components/checkbox.json")).path,
+    targetEvidence.sourceFileRefs.find((ref) => ref.path.endsWith("mappings/component-map.json")).path,
+    targetEvidence.implementationRefs.find((ref) => ref.path === "src/spectrum-checkbox-catalog-proof.js").path
+  ];
+  for (const boundPath of paths) {
+    await withRestoredFiles([boundPath], async () => {
+      const bytes = await fs.readFile(path.join(root, boundPath));
+      await fs.writeFile(path.join(root, boundPath), Buffer.concat([bytes, Buffer.from("\n")]), { flag: "w" });
       await assertDiagnostic("CAPABILITY_EVIDENCE_HASH_MISMATCH");
     });
   }
