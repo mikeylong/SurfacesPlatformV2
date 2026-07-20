@@ -10,6 +10,13 @@ The command verifies the tracked capability index and evidence, then prints the
 current implemented and planned scope without regenerating artifacts. Run
 `npm ci` first when dependencies are not installed.
 
+The current tracked index covers 18 implemented proof targets and seven planned
+capability groups while excluding the capability-index target itself. The
+latest bounded Connect Authority slice is the separately locked
+[`spectrum-switch-catalog`](plans/spectrum-switch-catalog.md) proof downstream
+of passing P2 and Checkbox evidence; it is not a claim of full Spectrum or
+production support.
+
 SurfacesPlatformV2 is a proof-contract repository for compiling design-system
 source material into governed UI contracts, deterministic diagnostics,
 artifacts, and evidence.

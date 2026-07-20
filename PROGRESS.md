@@ -43,7 +43,7 @@ boundary.
 
 Completion record:
 
-- [x] One schema-validated capability index covers all 17 implemented proof
+- [x] One schema-validated capability index covers all 18 implemented proof
   targets other than the capability-index target.
 - [x] Each implemented row exposes its identity, scope, authority boundary,
   non-capabilities, dependencies, commands, CI gate, inputs, outputs,
@@ -77,7 +77,7 @@ Proof and evidence:
 - Read-only verification: `interfacectl surfaces capabilities verify --index artifacts/capability-index/capability-index.json --evidence artifacts/capability-index/evidence.json`
 - Proof-bearing gate: `npm run check:capability-index:ci`
 
-The index intentionally covers the 17 other implemented targets rather than
+The index intentionally covers the 18 other implemented targets rather than
 indexing itself. Its evidence proves the index contract without creating a
 circular authority chain. The index is a derived discovery surface. It does
 not replace target evidence or turn demos and plans into proof.
@@ -175,6 +175,18 @@ non-executable review rows. Every accepted P2 component and token record keeps
 the same JCS hash. Passing evidence records all 25 fixture results and
 `promotionStatus: "review_required"`.
 
+The Spectrum Switch catalog slice extends that accepted authority chain without
+changing P2 or Checkbox. A Switch-specific immutable addendum lock binds the
+exact `components/switch.json` byte and ordinary materialization remains offline
+and fail-closed. Passing P2 and Checkbox evidence plus the Checkbox governed
+catalog are three explicit upstream boundaries. The new catalog preserves all
+36 Checkbox-baseline records by JCS hash, adds exactly Switch with six props,
+three states, one purpose example, one `26px` desktop token, 13 accepted
+mappings, and two owner-bound non-executable review rows. It adds no actions,
+events, slots, data bindings, runtime key bindings, toggle or read-only runtime
+behavior, or runtime accessibility claim. Passing evidence records all 42
+fixture results with `promotionStatus: "review_required"`.
+
 Complete when a team can declare its authoritative sources, precedence,
 policies, and review ownership without repo-specific implementation changes,
 then compile a traceable governed catalog with actionable conflict and
@@ -183,15 +195,17 @@ instances of one fixed source-family package ABI plus one fixed alternate
 physical layout mapped onto that same ABI and one fixed alternate source-ref
 prefix normalized onto its canonical namespace, plus one explicit team-owned
 declaration for the exact fixture-local `TeamButton` to accepted P2 `Button`
-identity relation, plus one separately locked Checkbox catalog expansion.
+identity relation, plus separately locked Checkbox and Switch catalog
+expansions.
 Arbitrary additional source layouts, namespace pairs, component identities or
-alias registries, component coverage beyond Checkbox, live
+alias registries, component coverage beyond Switch, live
 connectors, and a self-serve connection path remain open and require separate
 proof.
 
-What's next: use the passing Checkbox catalog evidence as the Connect Authority
-baseline, then choose between another bounded real-source component slice and a
-separately proven source-family eligibility slice. Current evidence does not authorize arbitrary additional
+What's next: use the passing Switch evidence and its unchanged Checkbox
+baseline to decide whether the next bounded learning target should add another
+source-justified component or test a separate source-family eligibility slice.
+Current evidence does not authorize arbitrary additional
 layouts, namespace pairs, component identities, alias registries, or semantic
 mappings; an in-place P2 expansion or broader Spectrum coverage; live connectors; self-serve UI; runtime
 accessibility claims; production adapters; SurfaceOps expansion; or JudgmentKit

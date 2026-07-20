@@ -79,6 +79,16 @@ token. The proof covers selection precedence, state normalization,
 accessibility facts, source refs, ambiguous token mode, and owner-routed review.
 It does not expand P2 or establish full Spectrum support.
 
+The Spectrum Switch catalog proof is the second bounded example and uses the
+passing Checkbox catalog as its immediate baseline. Its separate immutable
+one-file lock binds the exact Switch byte, while P2 supplies the checked
+registry and one `26px` desktop token record. The emitted catalog preserves 36
+Checkbox-baseline records by JCS hash and adds only Switch plus that token.
+Declared props, states, accessibility metadata, mappings, and owner-routed
+review come from checked source; runtime toggle/read-only behavior and runtime
+accessibility compliance remain explicitly unproved. It does not expand P2 or
+Checkbox or establish full Spectrum support.
+
 Astryx has no current repo-defined proof target. It should remain a candidate
 source-family or target-conformance subject until a later proof defines schemas,
 fixtures, diagnostics, command behavior, generated reports or artifacts, evidence
@@ -116,7 +126,8 @@ Spectrum expansion should remain bounded by component subset, package version,
 declared package paths, mapping files, policy refs, and evidence. It must not be
 described as full Spectrum support until each claimed slice has passing evidence.
 
-The implemented Checkbox target is the first example of that bounded pattern.
+The implemented Checkbox and downstream Switch targets are the first two
+examples of that bounded pattern.
 Future components should use a separately reviewed immutable source boundary or
 an explicitly reviewed P2 expansion, preserve accepted catalog facts, and add
 only the authority the selected source can support.
@@ -247,7 +258,7 @@ the relevant target-specific evidence exists and passes.
   beyond the one fixed `TeamButton` to accepted P2 `Button` relation; the current
   target does not define an alias registry or inference model.
 - Whether the next proof candidate should add another bounded Spectrum
-  component after Checkbox or prove an Astryx source-family eligibility slice.
+  component after Switch or prove an Astryx source-family eligibility slice.
 - Whether Astryx should be modeled initially as source-family eligibility,
   React/web conformance, or both.
 - How to encode typed source anchors for TypeScript, JSX, MDX, CLI output, MCP

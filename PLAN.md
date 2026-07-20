@@ -51,8 +51,17 @@ distinct governed catalog with Checkbox plus one desktop token. Passing
 `artifacts/spectrum-checkbox-catalog/evidence.json` proves this one component
 addition only; it does not expand P2 or establish broader Spectrum support.
 
+[Spectrum Switch Catalog Proof Plan](plans/spectrum-switch-catalog.md) records
+the implemented bounded Connect Authority proof for one separately locked
+`components/switch.json` byte downstream of passing Checkbox evidence. It
+preserves all 36 Checkbox-baseline records by JCS hash and emits a distinct
+catalog with Switch plus one desktop token. Passing
+`artifacts/spectrum-switch-catalog/evidence.json` proves this one component
+addition only; it does not change P2 or Checkbox or establish broader Spectrum
+support.
+
 [Capability Index Proof Target](plans/capability-index.md) records the
-implemented non-numbered proof for discovering and read-only verifying the 17
+implemented non-numbered proof for discovering and read-only verifying the 18
 implemented proof targets other than itself. Its seven planned groups are
 roadmap visibility only. The index does not replace target evidence, broaden
 target authority, or index itself.
@@ -812,6 +821,54 @@ The target does not implement an in-place P2 expansion, full Spectrum support,
 live connectors, self-serve UI, action execution, runtime accessibility
 compliance, production adapters, SurfaceOps expansion, JudgmentKit, or A2UI.
 
+## Spectrum Switch Catalog Target
+
+The `spectrum-switch-catalog` proof is a non-numbered authority target
+downstream of passing P2 and Checkbox evidence. The accepted Checkbox governed
+catalog is its immediate baseline. A Switch-specific immutable one-file lock
+binds the exact `components/switch.json` byte to the reviewed npm SRI, tarball
+SHA-256, and selected-file SHA-256; ordinary materialization is offline and
+never rewrites any P2, Checkbox, or Switch lock.
+
+The proof path is:
+
+```text
+artifacts/p2/evidence.json
+artifacts/spectrum-checkbox-catalog/evidence.json
+artifacts/spectrum-checkbox-catalog/governed-catalog.json
+sources/spectrum-switch-catalog/source-addendum.lock.json
+sources/spectrum-switch-catalog/manifest.json
+sources/spectrum-switch-catalog/mappings/*.json
+sources/spectrum-switch-catalog/npm/@adobe/spectrum-design-data/0.7.0/package/components/switch.json
+fixtures/spectrum-switch-catalog/**
+  -> artifacts/spectrum-switch-catalog/source-inventory.json
+  -> artifacts/spectrum-switch-catalog/source-mapping.json
+  -> artifacts/spectrum-switch-catalog/governed-catalog.json
+  -> artifacts/spectrum-switch-catalog/spectrum-switch-catalog-report.json
+  -> artifacts/spectrum-switch-catalog/evidence.json
+```
+
+Implemented command:
+
+```bash
+interfacectl surfaces spectrum-switch-catalog proof --source sources/spectrum-switch-catalog --ingestion-evidence artifacts/p2/evidence.json --checkbox-evidence artifacts/spectrum-checkbox-catalog/evidence.json --catalog artifacts/spectrum-checkbox-catalog/governed-catalog.json --fixture fixtures/spectrum-switch-catalog --out artifacts/spectrum-switch-catalog
+```
+
+The command invokes the P2 and Checkbox deep integrity inspectors before it
+accepts Switch input. It verifies the exact source tree, one-file lock, pointer
+allowlist, reused registry/token bytes, manifest, mappings, schemas, fixtures,
+implementation closure, generated artifacts, report, and self-hashed evidence.
+It adds exactly six Switch props, three states, one purpose example, one `26px`
+desktop token, 13 accepted mappings, and two owner-bound non-executable review
+rows. The report preserves 36 Checkbox-baseline records by JCS hash. All 42
+valid, review, invalid, and causal-mutation expectations must match canonical
+diagnostics. Passing evidence records `promotionStatus: "review_required"`.
+
+The target does not claim full Spectrum support, live connectors, self-serve
+connection, runtime behavior, accessibility compliance, production adapters,
+public APIs or SDKs, SurfaceOps expansion, JudgmentKit use, A2UI, or production
+readiness.
+
 ## Designer Workflow Trace Target
 The designer-workflow-trace proof is a non-numbered, cross-cutting proof-only target that consumes accepted P2, source-conformance, P3, P4, protocol, and native evidence. It emits one deterministic Button scenario index from design authority through governed catalog, diagnostics/review-required status, review/evaluation refs, static target handoff artifacts, and evidence status.
 
@@ -855,7 +912,7 @@ The proof currently has no generated demo. Use `designer-workflow-trace-report.j
 ## Capability Index Target
 
 The capability-index proof is a non-numbered, cross-cutting target. It
-materializes a machine-readable discovery index and report over exactly the 17
+materializes a machine-readable discovery index and report over exactly the 18
 implemented proof targets other than itself. It also records seven
 separate planned capability groups without giving them proof commands,
 evidence, or implemented status.
@@ -865,7 +922,7 @@ The proof path is:
 ```text
 fixtures/capability-index/capabilities.fixture.json
 fixtures/capability-index/expectations.manifest.json
-17 accepted target evidence files
+18 accepted target evidence files
   -> validate fixtures/capability-index/valid/*.json,
      review/*.json, invalid/*.json, and mutations/*.json
   -> artifacts/capability-index/capability-index.json
@@ -1017,13 +1074,21 @@ It does not modify P2, establish full Spectrum support, or authorize live
 connectors, self-serve UI, runtime accessibility compliance, production
 adapters, SurfaceOps expansion, JudgmentKit, or A2UI.
 
+The Spectrum Switch catalog subplan defines the separately locked addition of
+Switch to a distinct catalog downstream of passing Checkbox evidence. It
+preserves every Checkbox-baseline record by JCS hash and adds only one component
+and one token. It does not modify P2 or Checkbox, infer runtime behavior or
+accessibility compliance, or authorize broader Spectrum support, live
+connectors, self-serve UI, production adapters, SurfaceOps expansion,
+JudgmentKit, A2UI, or production readiness.
+
 The capability-index subplan defines discovery and read-only verification over
-the 17 implemented proof targets other than itself. The index does not prove those
+the 18 implemented proof targets other than itself. The index does not prove those
 targets, self-index, or turn planned capability groups into implemented work.
 
 ## Capability Index Decisions
 
-- Indexed implemented target count: exactly 17 proof targets other than the index itself.
+- Indexed implemented target count: exactly 18 proof targets other than the index itself.
 - Self-indexing: forbidden; capability-index evidence proves the index target.
 - Planned scope: seven capability groups for roadmap visibility only.
 - Status model: implementation status, evidence status, and governance
