@@ -1,0 +1,35 @@
+{
+  "schemaId": "spectrum-switch-source-addendum-lock.v0",
+  "version": "0.0.0",
+  "packageName": "@adobe/spectrum-design-data",
+  "packageVersion": "0.7.0",
+  "packageTarball": "https://registry.npmjs.org/@adobe/spectrum-design-data/-/spectrum-design-data-0.7.0.tgz",
+  "packageIntegrity": "sha512-mSdmQn6fNEzKVo6W5xS4gO1EXCpC4ojiEm3GqTlSjhh26lC9siMgQSWi33ODvWe8ssfrxXX0unzVnL5VBt4+CA==",
+  "tarballHashAlgorithm": "sha256",
+  "tarballSha256": "12db4dd64e7ad0c0c6cadec7c2f8e24a8d819d1f3badb7d871fbfbfc99ffdff0",
+  "packageRoot": "npm/@adobe/spectrum-design-data/0.7.0/package",
+  "selectedFiles": [
+    {
+      "packagePath": "components/switch.json",
+      "hashAlgorithm": "sha256",
+      "sha256": "f71fca208251775638f52f9b6dfefc19104b17119512f6c3ae491da3c684b512"
+    }
+  ],
+  "reviewVerification": {
+    "method": "review-time-tarball-verification",
+    "verifiedAt": "2026-07-19T00:00:00.000Z",
+    "checks": [
+      "npm-sha512-sri",
+      "tarball-sha256",
+      "selected-file-raw-sha256"
+    ],
+    "ordinaryMaterialization": "local-lock-conformance-only"
+  },
+  "provenance": {
+    "generator": "surfaces-spectrum-switch-source-addendum-review",
+    "sourceRefs": [
+      "https://registry.npmjs.org/@adobe/spectrum-design-data/-/spectrum-design-data-0.7.0.tgz",
+      "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/switch.json#"
+    ]
+  }
+}
