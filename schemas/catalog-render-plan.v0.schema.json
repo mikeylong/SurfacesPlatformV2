@@ -1,0 +1,153 @@
+{
+  "$id": "https://surfaces.dev/schemas/design-system-compiler/catalog-render-plan.v0.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "catalog-render-plan.v0",
+  "schemaId": "catalog-render-plan.v0",
+  "version": "0.0.0",
+  "$defs": {
+    "relativePath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?!.*\\\\)(?!.*(?:^|/)\\.{1,2}(?:/|$))(?!.*//).+$"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "identifier": {
+      "type": "string",
+      "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+    },
+    "sourceRef": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[a-z][a-z0-9+.-]*://[^\\s]+$"
+    },
+    "scalar": {
+      "type": ["string", "boolean", "number", "null"]
+    },
+    "fixtureRef": {
+      "allOf": [
+        {
+          "$ref": "https://surfaces.dev/schemas/design-system-compiler/catalog-boundary-receipt.v0.schema.json#/$defs/ref"
+        },
+        {
+          "properties": { "schemaId": { "const": "catalog-consumer-fixture.v0" } },
+          "required": ["schemaId"]
+        }
+      ]
+    },
+    "projectionRef": {
+      "allOf": [
+        {
+          "$ref": "https://surfaces.dev/schemas/design-system-compiler/catalog-boundary-receipt.v0.schema.json#/$defs/ref"
+        },
+        {
+          "properties": { "schemaId": { "const": "catalog-runtime-projection.v0" } },
+          "required": ["schemaId"]
+        }
+      ]
+    }
+  },
+  "type": "object",
+  "required": [
+    "schemaId",
+    "version",
+    "adapter",
+    "adapterId",
+    "fixtureRef",
+    "projectionRef",
+    "promotionStatus",
+    "tree",
+    "sideEffects",
+    "executed",
+    "diagnostics",
+    "provenance"
+  ],
+  "properties": {
+    "schemaId": { "const": "catalog-render-plan.v0" },
+    "version": { "const": "0.0.0" },
+    "adapter": { "const": "web-static-portable" },
+    "adapterId": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$"
+    },
+    "fixtureRef": { "$ref": "#/$defs/fixtureRef" },
+    "projectionRef": { "$ref": "#/$defs/projectionRef" },
+    "promotionStatus": { "const": "allowed" },
+    "tree": {
+      "type": "object",
+      "required": ["component", "props", "variants", "state", "role", "sourceRef"],
+      "properties": {
+        "component": { "$ref": "#/$defs/identifier" },
+        "props": {
+          "type": "object",
+          "propertyNames": { "$ref": "#/$defs/identifier" },
+          "additionalProperties": { "$ref": "#/$defs/scalar" }
+        },
+        "variants": {
+          "type": "object",
+          "propertyNames": { "$ref": "#/$defs/identifier" },
+          "additionalProperties": { "type": "string", "minLength": 1 }
+        },
+        "state": {
+          "oneOf": [
+            { "$ref": "#/$defs/identifier" },
+            { "type": "null" }
+          ]
+        },
+        "role": {
+          "oneOf": [
+            { "type": "string", "minLength": 1 },
+            { "type": "null" }
+          ]
+        },
+        "sourceRef": { "$ref": "#/$defs/sourceRef" }
+      },
+      "additionalProperties": false
+    },
+    "sideEffects": {
+      "type": "array",
+      "maxItems": 0
+    },
+    "executed": { "const": false },
+    "diagnostics": {
+      "allOf": [
+        {
+          "$ref": "https://surfaces.dev/schemas/design-system-compiler/design-system-compiler-diagnostics.v0.schema.json"
+        },
+        { "maxItems": 0 }
+      ]
+    },
+    "provenance": {
+      "type": "object",
+      "required": [
+        "sourceUri",
+        "sourceHash",
+        "sourceRef",
+        "generator",
+        "generatedAt",
+        "host"
+      ],
+      "properties": {
+        "sourceUri": { "$ref": "#/$defs/relativePath" },
+        "sourceHash": { "$ref": "#/$defs/sha256" },
+        "sourceRef": { "$ref": "#/$defs/sourceRef" },
+        "generator": {
+          "type": "object",
+          "required": ["name", "version", "adapter"],
+          "properties": {
+            "name": { "const": "surfaces-portable-catalog-consumer" },
+            "version": { "const": "0.0.0" },
+            "adapter": { "const": "web-static-portable" }
+          },
+          "additionalProperties": false
+        },
+        "generatedAt": { "const": "1970-01-01T00:00:00.000Z" },
+        "host": { "type": "null" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

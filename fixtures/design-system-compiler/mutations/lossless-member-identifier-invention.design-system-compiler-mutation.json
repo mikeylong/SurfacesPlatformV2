@@ -1,0 +1,12 @@
+{
+  "schemaId": "design-system-compiler-mutation.v0",
+  "version": "0.0.0",
+  "mutationId": "lossless-member-identifier-invention",
+  "adapterId": "spectrum-switch",
+  "operation": "rename-mapped-member",
+  "componentIndex": 0,
+  "memberGroup": "props",
+  "memberId": "isDisabled",
+  "replacementMemberId": "inventedProp",
+  "expectedCode": "MAPPING_AUTHORITY_UNJUSTIFIED"
+}

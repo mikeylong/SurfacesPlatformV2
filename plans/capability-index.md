@@ -35,7 +35,7 @@ capability-index target:
 | P1 `web-static` runtime projection | `artifacts/p1/evidence.json` | `npm run check:p1:ci` |
 | P2 bounded Spectrum ingestion | `artifacts/p2/evidence.json` | `npm run check:p2:ci` |
 | Spectrum Checkbox catalog authority | `artifacts/spectrum-checkbox-catalog/evidence.json` | `npm run check:spectrum-checkbox-catalog:ci` |
-| Spectrum Switch catalog authority | `artifacts/spectrum-switch-catalog/evidence.json` | `npm run check:spectrum-switch-catalog:ci` |
+| Source-independent design-system compiler and portable consumer | `artifacts/design-system-compiler/evidence.json` | `npm run check:design-system-compiler:ci` |
 | P3 inert agent orchestration | `artifacts/p3/evidence.json` | `npm run check:p3:ci` |
 | P4 deterministic review and judgment | `artifacts/p4/evidence.json` | `npm run check:p4:ci` |
 | P5 `surfaces-protocol-static` | `artifacts/p5/protocol/evidence.json` | `npm run check:p5:protocol:ci` |
@@ -105,14 +105,16 @@ governed catalog. Full Spectrum support, live connectors, self-serve UI,
 runtime accessibility compliance, production adapters, SurfaceOps expansion,
 JudgmentKit, and A2UI remain non-capabilities.
 
-The Spectrum Switch catalog row points to the downstream real-source expansion
-that requires passing P2 and Checkbox evidence plus the accepted Checkbox
-catalog. It records `promotionStatus: "review_required"`, preserves 36 baseline
-records by JCS hash, and adds only Switch plus one desktop token to a new
-catalog identity. Runtime behavior, accessibility compliance, full Spectrum
-support, live connectors, self-serve connection, production adapters/APIs/SDKs,
-SurfaceOps expansion, JudgmentKit, A2UI, and production readiness remain
-non-capabilities.
+The design-system-compiler row points to the source-independent proof for
+separately locked Spectrum Switch and official Astryx core Button adapters.
+Both execute one shared ingestion kernel and one shared inert portable consumer
+with no source-specific implementation modules. It records
+`promotionStatus: "review_required"` and closes allowed, blocked, and
+review-required consumer outcomes through hash-bound catalog receipts. The row
+does not make P2, Checkbox, or legacy P3-P5 consumers portable. Broad Spectrum
+or Astryx support, runtime accessibility compliance, live connectors,
+self-serve connection, production adapters/APIs/SDKs, SurfaceOps expansion,
+JudgmentKit, A2UI, and production readiness remain non-capabilities.
 
 The capability-index target does not index itself. Adding it as a nineteenth
 row would create a circular self-evidence boundary. Its own final evidence is

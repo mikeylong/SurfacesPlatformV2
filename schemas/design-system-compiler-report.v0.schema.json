@@ -1,0 +1,393 @@
+{
+  "$id": "https://surfaces.dev/schemas/design-system-compiler/design-system-compiler-report.v0.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "design-system-compiler-report.v0",
+  "schemaId": "design-system-compiler-report.v0",
+  "version": "0.0.0",
+  "$defs": {
+    "relativePath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?!.*\\\\)(?!.*(?:^|/)\\.{1,2}(?:/|$))(?!.*//).+$"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "kebabIdentifier": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$"
+    },
+    "componentIdentifier": {
+      "type": "string",
+      "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+    },
+    "packageIdentity": {
+      "type": "string",
+      "pattern": "^(?:@[a-z0-9][a-z0-9._-]*/)?[a-z0-9][a-z0-9._-]*@[0-9]+\\.[0-9]+\\.[0-9]+(?:[-+][0-9A-Za-z.-]+)?$"
+    },
+    "designSystemIdentity": {
+      "type": "string",
+      "pattern": "^(?:@[a-z0-9][a-z0-9._-]*/)?[a-z0-9][a-z0-9._-]*\\|https://[^\\s]+$"
+    },
+    "artifactRef": {
+      "$ref": "https://surfaces.dev/schemas/design-system-compiler/catalog-boundary-receipt.v0.schema.json#/$defs/ref"
+    },
+    "typedArtifactRef": {
+      "type": "object",
+      "required": ["path", "schemaId", "hashAlgorithm", "hash"],
+      "properties": {
+        "path": { "$ref": "#/$defs/relativePath" },
+        "schemaId": {
+          "enum": [
+            "portable-design-source-lock.v0",
+            "design-system-adapter.v0",
+            "extract.v0",
+            "runtime-catalog.v0",
+            "catalog-boundary-receipt.v0",
+            "catalog-runtime-projection.v0",
+            "catalog-render-plan.v0",
+            "catalog-consumer-report.v0"
+          ]
+        },
+        "hashAlgorithm": { "const": "sha256" },
+        "hash": { "$ref": "#/$defs/sha256" }
+      },
+      "additionalProperties": false
+    },
+    "kernel": {
+      "type": "object",
+      "required": ["name", "version", "implementationHash"],
+      "properties": {
+        "name": { "const": "surfaces-design-system-ingestion-kernel" },
+        "version": { "const": "0.0.0" },
+        "implementationHash": { "$ref": "#/$defs/sha256" }
+      },
+      "additionalProperties": false
+    },
+    "consumer": {
+      "type": "object",
+      "required": ["name", "version", "adapter", "implementationHash"],
+      "properties": {
+        "name": { "const": "surfaces-portable-catalog-consumer" },
+        "version": { "const": "0.0.0" },
+        "adapter": { "const": "web-static-portable" },
+        "implementationHash": { "$ref": "#/$defs/sha256" }
+      },
+      "additionalProperties": false
+    },
+    "adapterRun": {
+      "type": "object",
+      "required": [
+        "adapterId",
+        "sourceId",
+        "sourceFamily",
+        "packageIdentity",
+        "upstreamRepository",
+        "componentIds",
+        "status",
+        "promotionStatus",
+        "sourceLockRef",
+        "adapterRef",
+        "extractRef",
+        "catalogRef",
+        "governedCatalogRef",
+        "receiptRef",
+        "projectionRef",
+        "consumerReportRef",
+        "renderPlanRefs",
+        "kernelImplementationHash",
+        "consumerImplementationHash",
+        "consumerResults",
+        "matchedConsumerResults"
+      ],
+      "properties": {
+        "adapterId": { "$ref": "#/$defs/kebabIdentifier" },
+        "sourceId": { "$ref": "#/$defs/kebabIdentifier" },
+        "sourceFamily": { "type": "string", "minLength": 1 },
+        "packageIdentity": { "$ref": "#/$defs/packageIdentity" },
+        "upstreamRepository": {
+          "type": "string",
+          "pattern": "^https://[^\\s]+$"
+        },
+        "componentIds": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/componentIdentifier" }
+        },
+        "status": { "const": "pass" },
+        "promotionStatus": { "const": "review_required" },
+        "sourceLockRef": {
+          "allOf": [
+            { "$ref": "#/$defs/typedArtifactRef" },
+            { "properties": { "schemaId": { "const": "portable-design-source-lock.v0" } }, "required": ["schemaId"] }
+          ]
+        },
+        "adapterRef": {
+          "allOf": [
+            { "$ref": "#/$defs/typedArtifactRef" },
+            { "properties": { "schemaId": { "const": "design-system-adapter.v0" } }, "required": ["schemaId"] }
+          ]
+        },
+        "extractRef": {
+          "allOf": [
+            { "$ref": "#/$defs/typedArtifactRef" },
+            { "properties": { "schemaId": { "const": "extract.v0" } }, "required": ["schemaId"] }
+          ]
+        },
+        "catalogRef": {
+          "allOf": [
+            { "$ref": "#/$defs/typedArtifactRef" },
+            { "properties": { "schemaId": { "const": "runtime-catalog.v0" } }, "required": ["schemaId"] }
+          ]
+        },
+        "governedCatalogRef": {
+          "allOf": [
+            { "$ref": "#/$defs/typedArtifactRef" },
+            { "properties": { "schemaId": { "const": "runtime-catalog.v0" } }, "required": ["schemaId"] }
+          ]
+        },
+        "receiptRef": {
+          "allOf": [
+            { "$ref": "#/$defs/typedArtifactRef" },
+            { "properties": { "schemaId": { "const": "catalog-boundary-receipt.v0" } }, "required": ["schemaId"] }
+          ]
+        },
+        "projectionRef": {
+          "allOf": [
+            { "$ref": "#/$defs/typedArtifactRef" },
+            { "properties": { "schemaId": { "const": "catalog-runtime-projection.v0" } }, "required": ["schemaId"] }
+          ]
+        },
+        "consumerReportRef": {
+          "allOf": [
+            { "$ref": "#/$defs/typedArtifactRef" },
+            { "properties": { "schemaId": { "const": "catalog-consumer-report.v0" } }, "required": ["schemaId"] }
+          ]
+        },
+        "renderPlanRefs": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "items": {
+            "allOf": [
+              { "$ref": "#/$defs/typedArtifactRef" },
+              { "properties": { "schemaId": { "const": "catalog-render-plan.v0" } }, "required": ["schemaId"] }
+            ]
+          }
+        },
+        "kernelImplementationHash": { "$ref": "#/$defs/sha256" },
+        "consumerImplementationHash": { "$ref": "#/$defs/sha256" },
+        "consumerResults": { "const": 3 },
+        "matchedConsumerResults": { "const": 3 }
+      },
+      "additionalProperties": false
+    },
+    "mutationResult": {
+      "type": "object",
+      "required": [
+        "mutationPath",
+        "mutationId",
+        "expectedCode",
+        "actualCode",
+        "matched"
+      ],
+      "properties": {
+        "mutationPath": { "$ref": "#/$defs/relativePath" },
+        "mutationId": { "$ref": "#/$defs/kebabIdentifier" },
+        "expectedCode": {
+          "enum": [
+            "MAPPING_COVERAGE_INCOMPLETE",
+            "MAPPING_AUTHORITY_UNJUSTIFIED",
+            "CATALOG_BOUNDARY_INVALID"
+          ]
+        },
+        "actualCode": {
+          "enum": [
+            "MAPPING_COVERAGE_INCOMPLETE",
+            "MAPPING_AUTHORITY_UNJUSTIFIED",
+            "CATALOG_BOUNDARY_INVALID"
+          ]
+        },
+        "matched": { "const": true }
+      },
+      "additionalProperties": false
+    },
+    "environment": {
+      "type": "object",
+      "required": [
+        "golden",
+        "timestampMode",
+        "timestampOverride",
+        "timezone",
+        "locale",
+        "pathStyle",
+        "jsonCanonicalization",
+        "numberSerialization",
+        "schemaOutputFormat",
+        "host"
+      ],
+      "properties": {
+        "golden": { "const": true },
+        "timestampMode": { "const": "normalized" },
+        "timestampOverride": { "type": "null" },
+        "timezone": { "const": "UTC" },
+        "locale": { "const": "en-US-POSIX" },
+        "pathStyle": { "const": "posix-relative" },
+        "jsonCanonicalization": { "const": "rfc8785" },
+        "numberSerialization": { "const": "rfc8785" },
+        "schemaOutputFormat": { "const": "basic" },
+        "host": { "type": "null" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "type": "object",
+  "required": [
+    "schemaId",
+    "version",
+    "contractId",
+    "runId",
+    "status",
+    "promotionStatus",
+    "manifestPath",
+    "kernel",
+    "consumer",
+    "adapterRuns",
+    "mutationResults",
+    "reuseProof",
+    "diagnostics",
+    "provenance"
+  ],
+  "properties": {
+    "schemaId": { "const": "design-system-compiler-report.v0" },
+    "version": { "const": "0.0.0" },
+    "contractId": { "const": "surfaces-design-system-compiler-proof" },
+    "runId": {
+      "type": "string",
+      "pattern": "^design-system-compiler-[a-f0-9]{16}$"
+    },
+    "status": { "const": "pass" },
+    "promotionStatus": { "const": "review_required" },
+    "manifestPath": { "const": "fixtures/design-system-compiler/targets.manifest.json" },
+    "kernel": { "$ref": "#/$defs/kernel" },
+    "consumer": { "$ref": "#/$defs/consumer" },
+    "adapterRuns": {
+      "type": "array",
+      "minItems": 2,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/adapterRun" }
+    },
+    "mutationResults": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/mutationResult" }
+    },
+    "reuseProof": {
+      "type": "object",
+      "required": [
+        "adapterCount",
+        "sourceIds",
+        "sourceFamilies",
+        "packageIdentities",
+        "designSystemIdentities",
+        "componentIds",
+        "kernelImplementationHashes",
+        "consumerImplementationHashes",
+        "sharedKernel",
+        "sharedConsumer",
+        "sourceSpecificImplementationModules"
+      ],
+      "properties": {
+        "adapterCount": { "type": "integer", "minimum": 2 },
+        "sourceIds": {
+          "type": "array",
+          "minItems": 2,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/kebabIdentifier" }
+        },
+        "sourceFamilies": {
+          "type": "array",
+          "minItems": 2,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "packageIdentities": {
+          "type": "array",
+          "minItems": 2,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/packageIdentity" }
+        },
+        "designSystemIdentities": {
+          "type": "array",
+          "minItems": 2,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/designSystemIdentity" }
+        },
+        "componentIds": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "$ref": "#/$defs/componentIdentifier" }
+        },
+        "kernelImplementationHashes": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "$ref": "#/$defs/sha256" }
+        },
+        "consumerImplementationHashes": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "$ref": "#/$defs/sha256" }
+        },
+        "sharedKernel": { "const": true },
+        "sharedConsumer": { "const": true },
+        "sourceSpecificImplementationModules": {
+          "type": "array",
+          "maxItems": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "diagnostics": {
+      "$ref": "https://surfaces.dev/schemas/design-system-compiler/design-system-compiler-diagnostics.v0.schema.json"
+    },
+    "provenance": {
+      "type": "object",
+      "required": [
+        "generator",
+        "generatedAt",
+        "sourceRefs",
+        "command",
+        "args",
+        "environment"
+      ],
+      "properties": {
+        "generator": {
+          "type": "object",
+          "required": ["name", "version"],
+          "properties": {
+            "name": { "const": "interfacectl-design-system-compiler-report" },
+            "version": { "const": "0.0.0" }
+          },
+          "additionalProperties": false
+        },
+        "generatedAt": { "const": "1970-01-01T00:00:00.000Z" },
+        "sourceRefs": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/relativePath" }
+        },
+        "command": { "type": "null" },
+        "args": { "type": "null" },
+        "environment": { "$ref": "#/$defs/environment" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

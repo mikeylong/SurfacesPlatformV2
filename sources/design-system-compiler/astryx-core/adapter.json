@@ -1,0 +1,180 @@
+{
+  "schemaId": "design-system-adapter.v0",
+  "version": "0.0.0",
+  "adapterId": "astryx-core-button",
+  "sourceFamily": "Astryx component documentation and StyleX tokens",
+  "sourceLockPath": "sources/design-system-compiler/astryx-core/source.lock.json",
+  "catalogId": "surfaces-astryx-core-button-portable",
+  "sourceRefPrefix": "astryx-docs://npm/@astryxdesign/core@0.1.2/package/",
+  "anchors": {
+    "actionIntent": {
+      "sourceRef": "astryx-docs://npm/@astryxdesign/core@0.1.2/package/src/Button/Button.doc.mjs#anchor=actionIntent",
+      "path": "src/Button/Button.doc.mjs",
+      "selector": {
+        "kind": "text-anchor",
+        "startText": "    {\n      name: 'clickAction',\n      type: '(e: MouseEvent) => void | Promise<void>',\n      description:\n        'Async click handler. Shows loading state while the returned promise is pending.',",
+        "endText": "    },\n  ],\n  playground: {",
+        "contains": ["clickAction", "Promise<void>", "Shows loading state"]
+      }
+    },
+    "componentName": {
+      "sourceRef": "astryx-docs://npm/@astryxdesign/core@0.1.2/package/src/Button/Button.doc.mjs#anchor=componentName",
+      "path": "src/Button/Button.doc.mjs",
+      "selector": {
+        "kind": "text-anchor",
+        "startText": "export const docs = {\n  name: 'Button',",
+        "endText": "  category: 'Action',",
+        "contains": ["name: 'Button'", "displayName: 'Button'", "group: 'Button'", "category: 'Action'"]
+      }
+    },
+    "examplePurpose": {
+      "sourceRef": "astryx-docs://npm/@astryxdesign/core@0.1.2/package/src/Button/Button.doc.mjs#anchor=examplePurpose",
+      "path": "src/Button/Button.doc.mjs",
+      "selector": {
+        "kind": "text-anchor",
+        "startText": "export const docs = {",
+        "endText": "  props: [\n    {\n      name: 'label',",
+        "contains": ["Button triggers an action when clicked. Use it for form submissions, confirmations, navigation, or any interaction that needs a clear call to action."]
+      }
+    },
+    "propIsDisabled": {
+      "sourceRef": "astryx-docs://npm/@astryxdesign/core@0.1.2/package/src/Button/Button.doc.mjs#anchor=propIsDisabled",
+      "path": "src/Button/Button.doc.mjs",
+      "selector": {
+        "kind": "text-anchor",
+        "startText": "    {\n      name: 'isDisabled',\n      type: 'boolean',\n      description: 'Disables the button. When a tooltip is present, uses aria-disabled instead of native disabled so the button stays focusable.',",
+        "endText": "      default: 'false',\n    },\n    {\n      name: 'icon',",
+        "contains": ["name: 'isDisabled'", "type: 'boolean'", "default: 'false'", "aria-disabled"]
+      }
+    },
+    "propIsLoading": {
+      "sourceRef": "astryx-docs://npm/@astryxdesign/core@0.1.2/package/src/Button/Button.doc.mjs#anchor=propIsLoading",
+      "path": "src/Button/Button.doc.mjs",
+      "selector": {
+        "kind": "text-anchor",
+        "startText": "    {\n      name: 'isLoading',\n      type: 'boolean',",
+        "endText": "      default: 'false',\n    },\n    {\n      name: 'isInterruptible',",
+        "contains": ["name: 'isLoading'", "Shows a loading spinner and disables interaction.", "default: 'false'"]
+      }
+    },
+    "propLabel": {
+      "sourceRef": "astryx-docs://npm/@astryxdesign/core@0.1.2/package/src/Button/Button.doc.mjs#anchor=propLabel",
+      "path": "src/Button/Button.doc.mjs",
+      "selector": {
+        "kind": "text-anchor",
+        "startText": "    {\n      name: 'label',\n      type: 'string',\n      description:\n        'Accessible label. Rendered as visible text by default; used as aria-label when isIconOnly is true.',",
+        "endText": "      required: true,\n    },\n    {\n      name: 'variant',",
+        "contains": ["name: 'label'", "type: 'string'", "Accessible label", "required: true"]
+      }
+    },
+    "propSize": {
+      "sourceRef": "astryx-docs://npm/@astryxdesign/core@0.1.2/package/src/Button/Button.doc.mjs#anchor=propSize",
+      "path": "src/Button/Button.doc.mjs",
+      "selector": {
+        "kind": "text-anchor",
+        "startText": "    {\n      name: 'size',\n      type: \"'sm' | 'md' | 'lg'\",\n      description: 'Size variant.',",
+        "endText": "      default: \"'md'\",\n    },\n    {\n      name: 'type',",
+        "contains": ["'sm' | 'md' | 'lg'", "default: \"'md'\""]
+      }
+    },
+    "propVariant": {
+      "sourceRef": "astryx-docs://npm/@astryxdesign/core@0.1.2/package/src/Button/Button.doc.mjs#anchor=propVariant",
+      "path": "src/Button/Button.doc.mjs",
+      "selector": {
+        "kind": "text-anchor",
+        "startText": "    {\n      name: 'variant',\n      type: \"'primary' | 'secondary' | 'ghost' | 'destructive'\",\n      description: 'Visual style variant.',",
+        "endText": "      default: \"'secondary'\",\n    },\n    {\n      name: 'size',",
+        "contains": ["'primary' | 'secondary' | 'ghost' | 'destructive'", "default: \"'secondary'\""]
+      }
+    },
+    "tokenSizeElementMd": {
+      "sourceRef": "astryx-docs://npm/@astryxdesign/core@0.1.2/package/src/theme/tokens.stylex.ts#anchor=tokenSizeElementMd",
+      "path": "src/theme/tokens.stylex.ts",
+      "selector": {
+        "kind": "text-anchor",
+        "startText": "export const sizeDefaults = {",
+        "endText": "export const sizeVars = stylex.defineVars(sizeDefaults);",
+        "contains": ["'--size-element-md': '32px'"]
+      }
+    }
+  },
+  "normalizedExtract": {
+    "fixtureId": "astryx-core-button-portable",
+    "sourceUri": "sources/design-system-compiler/astryx-core/adapter.json",
+    "tokens": {
+      "size-element-md": {
+        "$type": "dimension",
+        "$value": "32px",
+        "sourceRef": "astryx-docs://npm/@astryxdesign/core@0.1.2/package/src/theme/tokens.stylex.ts#anchor=tokenSizeElementMd"
+      }
+    },
+    "components": [
+      {
+        "id": "Button",
+        "sourceRef": "astryx-docs://npm/@astryxdesign/core@0.1.2/package/src/Button/Button.doc.mjs#anchor=componentName",
+        "props": {
+          "isDisabled": {"id": "isDisabled", "type": "boolean", "required": false, "default": false, "allowedValues": [], "tokenRefs": [], "sourceRef": "astryx-docs://npm/@astryxdesign/core@0.1.2/package/src/Button/Button.doc.mjs#anchor=propIsDisabled", "diagnostics": [], "minLength": null, "maxLength": null, "allowMarkup": false},
+          "isLoading": {"id": "isLoading", "type": "boolean", "required": false, "default": false, "allowedValues": [], "tokenRefs": [], "sourceRef": "astryx-docs://npm/@astryxdesign/core@0.1.2/package/src/Button/Button.doc.mjs#anchor=propIsLoading", "diagnostics": [], "minLength": null, "maxLength": null, "allowMarkup": false},
+          "label": {"id": "label", "type": "string", "required": true, "default": null, "allowedValues": [], "tokenRefs": [], "sourceRef": "astryx-docs://npm/@astryxdesign/core@0.1.2/package/src/Button/Button.doc.mjs#anchor=propLabel", "diagnostics": [], "minLength": 1, "maxLength": null, "allowMarkup": false},
+          "size": {"id": "size", "type": "string", "required": false, "default": "md", "allowedValues": ["sm", "md", "lg"], "tokenRefs": ["size-element-md"], "sourceRef": "astryx-docs://npm/@astryxdesign/core@0.1.2/package/src/Button/Button.doc.mjs#anchor=propSize", "diagnostics": [], "minLength": null, "maxLength": null, "allowMarkup": false},
+          "variant": {"id": "variant", "type": "string", "required": false, "default": "secondary", "allowedValues": ["primary", "secondary", "ghost", "destructive"], "tokenRefs": [], "sourceRef": "astryx-docs://npm/@astryxdesign/core@0.1.2/package/src/Button/Button.doc.mjs#anchor=propVariant", "diagnostics": [], "minLength": null, "maxLength": null, "allowMarkup": false}
+        },
+        "variants": {
+          "variant": {"id": "variant", "allowedValues": ["primary", "secondary", "ghost", "destructive"], "requiredProps": ["label"], "stateConstraints": [], "sourceRef": "astryx-docs://npm/@astryxdesign/core@0.1.2/package/src/Button/Button.doc.mjs#anchor=propVariant"}
+        },
+        "states": {
+          "disabled": {"id": "disabled", "allowedProps": ["isDisabled", "isLoading", "label", "size", "variant"], "accessibilityExpectations": {"usesAriaDisabledWhenTooltipPresent": true}, "sourceRef": "astryx-docs://npm/@astryxdesign/core@0.1.2/package/src/Button/Button.doc.mjs#anchor=propIsDisabled"}
+        },
+        "slots": {},
+        "actions": {},
+        "events": {},
+        "dataBindings": {},
+        "tokenRefs": {"size-element-md": "size-element-md"},
+        "accessibility": {"nameFrom": "label", "iconOnlyNameFrom": "label", "runtimeAccessibilityCompliance": "not-proven", "sourceRef": "astryx-docs://npm/@astryxdesign/core@0.1.2/package/src/Button/Button.doc.mjs#anchor=propLabel"},
+        "examples": [{"id": "purpose", "type": "purpose", "content": "Button triggers an action when clicked. Use it for form submissions, confirmations, navigation, or any interaction that needs a clear call to action.", "sourceRef": "astryx-docs://npm/@astryxdesign/core@0.1.2/package/src/Button/Button.doc.mjs#anchor=examplePurpose"}]
+      }
+    ],
+    "sourceRefs": {
+      "component": "astryx-docs://npm/@astryxdesign/core@0.1.2/package/src/Button/Button.doc.mjs#anchor=componentName",
+      "documentation": "astryx-docs://npm/@astryxdesign/core@0.1.2/package/src/Button/Button.doc.mjs#anchor=examplePurpose",
+      "tokens": "astryx-docs://npm/@astryxdesign/core@0.1.2/package/src/theme/tokens.stylex.ts#anchor=tokenSizeElementMd"
+    },
+    "provenance": {"adapterKind": "declarative-text-anchor", "upstreamCodeExecuted": false}
+  },
+  "policyContract": {
+    "authority": "narrowing-only",
+    "runtimeCapabilitiesMode": "inert-derived-only",
+    "governanceMode": "owner-review-required"
+  },
+  "runtimeCapabilities": {
+    "actionExecution": "disabled",
+    "adapterTarget": "web-static-inert",
+    "runtimeProjection": "catalog-derived"
+  },
+  "governance": {
+    "rules": {
+      "clickActionRequiresReview": {"executable": false, "sourceRef": "astryx-docs://npm/@astryxdesign/core@0.1.2/package/src/Button/Button.doc.mjs#anchor=actionIntent"}
+    },
+    "results": {"reviewRequiredMappings": ["clickAction"]},
+    "promotionStatus": "review_required"
+  },
+  "mappings": [
+    {"mappingId": "astryx-core-button-00-accessibility", "targetPointer": "/components/0/accessibility", "sourceRefs": ["astryx-docs://npm/@astryxdesign/core@0.1.2/package/src/Button/Button.doc.mjs#anchor=propLabel"], "sourceValue": ["Accessible label", "used as aria-label when isIconOnly is true"], "targetValue": {"nameFrom": "label", "iconOnlyNameFrom": "label", "runtimeAccessibilityCompliance": "not-proven", "sourceRef": "astryx-docs://npm/@astryxdesign/core@0.1.2/package/src/Button/Button.doc.mjs#anchor=propLabel"}, "transform": "structured-normalization", "authorityMode": "lossless", "reviewStatus": "accepted"},
+    {"mappingId": "astryx-core-button-01-example", "targetPointer": "/components/0/examples/0", "sourceRefs": ["astryx-docs://npm/@astryxdesign/core@0.1.2/package/src/Button/Button.doc.mjs#anchor=examplePurpose"], "sourceValue": "Button triggers an action when clicked. Use it for form submissions, confirmations, navigation, or any interaction that needs a clear call to action.", "targetValue": {"id": "purpose", "type": "purpose", "content": "Button triggers an action when clicked. Use it for form submissions, confirmations, navigation, or any interaction that needs a clear call to action.", "sourceRef": "astryx-docs://npm/@astryxdesign/core@0.1.2/package/src/Button/Button.doc.mjs#anchor=examplePurpose"}, "transform": "structured-normalization", "authorityMode": "reviewed-inference", "reviewStatus": "review_required"},
+    {"mappingId": "astryx-core-button-02-id", "targetPointer": "/components/0/id", "sourceRefs": ["astryx-docs://npm/@astryxdesign/core@0.1.2/package/src/Button/Button.doc.mjs#anchor=componentName"], "sourceValue": "Button", "targetValue": "Button", "transform": "identity", "authorityMode": "lossless", "reviewStatus": "accepted"},
+    {"mappingId": "astryx-core-button-03-prop-is-disabled", "targetPointer": "/components/0/props/isDisabled", "sourceRefs": ["astryx-docs://npm/@astryxdesign/core@0.1.2/package/src/Button/Button.doc.mjs#anchor=propIsDisabled"], "sourceValue": ["name: 'isDisabled'", "type: 'boolean'", "default: 'false'"], "targetValue": {"id": "isDisabled", "type": "boolean", "required": false, "default": false, "allowedValues": [], "tokenRefs": [], "sourceRef": "astryx-docs://npm/@astryxdesign/core@0.1.2/package/src/Button/Button.doc.mjs#anchor=propIsDisabled", "diagnostics": [], "minLength": null, "maxLength": null, "allowMarkup": false}, "transform": "structured-normalization", "authorityMode": "lossless", "reviewStatus": "accepted"},
+    {"mappingId": "astryx-core-button-04-prop-is-loading", "targetPointer": "/components/0/props/isLoading", "sourceRefs": ["astryx-docs://npm/@astryxdesign/core@0.1.2/package/src/Button/Button.doc.mjs#anchor=propIsLoading"], "sourceValue": ["name: 'isLoading'", "type: 'boolean'", "default: 'false'"], "targetValue": {"id": "isLoading", "type": "boolean", "required": false, "default": false, "allowedValues": [], "tokenRefs": [], "sourceRef": "astryx-docs://npm/@astryxdesign/core@0.1.2/package/src/Button/Button.doc.mjs#anchor=propIsLoading", "diagnostics": [], "minLength": null, "maxLength": null, "allowMarkup": false}, "transform": "structured-normalization", "authorityMode": "lossless", "reviewStatus": "accepted"},
+    {"mappingId": "astryx-core-button-05-prop-label", "targetPointer": "/components/0/props/label", "sourceRefs": ["astryx-docs://npm/@astryxdesign/core@0.1.2/package/src/Button/Button.doc.mjs#anchor=propLabel"], "sourceValue": ["name: 'label'", "type: 'string'", "required: true"], "targetValue": {"id": "label", "type": "string", "required": true, "default": null, "allowedValues": [], "tokenRefs": [], "sourceRef": "astryx-docs://npm/@astryxdesign/core@0.1.2/package/src/Button/Button.doc.mjs#anchor=propLabel", "diagnostics": [], "minLength": 1, "maxLength": null, "allowMarkup": false}, "transform": "structured-normalization", "authorityMode": "lossless", "reviewStatus": "accepted"},
+    {"mappingId": "astryx-core-button-06-prop-size", "targetPointer": "/components/0/props/size", "sourceRefs": ["astryx-docs://npm/@astryxdesign/core@0.1.2/package/src/Button/Button.doc.mjs#anchor=propSize", "astryx-docs://npm/@astryxdesign/core@0.1.2/package/src/theme/tokens.stylex.ts#anchor=tokenSizeElementMd"], "sourceValue": ["'sm' | 'md' | 'lg'", "default: \"'md'\"", "'--size-element-md': '32px'"], "targetValue": {"id": "size", "type": "string", "required": false, "default": "md", "allowedValues": ["sm", "md", "lg"], "tokenRefs": ["size-element-md"], "sourceRef": "astryx-docs://npm/@astryxdesign/core@0.1.2/package/src/Button/Button.doc.mjs#anchor=propSize", "diagnostics": [], "minLength": null, "maxLength": null, "allowMarkup": false}, "transform": "structured-normalization", "authorityMode": "lossless", "reviewStatus": "accepted"},
+    {"mappingId": "astryx-core-button-07-prop-variant", "targetPointer": "/components/0/props/variant", "sourceRefs": ["astryx-docs://npm/@astryxdesign/core@0.1.2/package/src/Button/Button.doc.mjs#anchor=propVariant"], "sourceValue": ["'primary' | 'secondary' | 'ghost' | 'destructive'", "default: \"'secondary'\""], "targetValue": {"id": "variant", "type": "string", "required": false, "default": "secondary", "allowedValues": ["primary", "secondary", "ghost", "destructive"], "tokenRefs": [], "sourceRef": "astryx-docs://npm/@astryxdesign/core@0.1.2/package/src/Button/Button.doc.mjs#anchor=propVariant", "diagnostics": [], "minLength": null, "maxLength": null, "allowMarkup": false}, "transform": "structured-normalization", "authorityMode": "lossless", "reviewStatus": "accepted"},
+    {"mappingId": "astryx-core-button-08-state-disabled", "targetPointer": "/components/0/states/disabled", "sourceRefs": ["astryx-docs://npm/@astryxdesign/core@0.1.2/package/src/Button/Button.doc.mjs#anchor=propIsDisabled"], "sourceValue": ["name: 'isDisabled'", "Disables the button", "aria-disabled"], "targetValue": {"id": "disabled", "allowedProps": ["isDisabled", "isLoading", "label", "size", "variant"], "accessibilityExpectations": {"usesAriaDisabledWhenTooltipPresent": true}, "sourceRef": "astryx-docs://npm/@astryxdesign/core@0.1.2/package/src/Button/Button.doc.mjs#anchor=propIsDisabled"}, "transform": "structured-normalization", "authorityMode": "reviewed-inference", "reviewStatus": "review_required"},
+    {"mappingId": "astryx-core-button-09-token-ref-size-element-md", "targetPointer": "/components/0/tokenRefs/size-element-md", "sourceRefs": ["astryx-docs://npm/@astryxdesign/core@0.1.2/package/src/theme/tokens.stylex.ts#anchor=tokenSizeElementMd"], "sourceValue": "--size-element-md", "targetValue": "size-element-md", "transform": "strip-css-custom-property-prefix", "authorityMode": "lossless", "reviewStatus": "accepted"},
+    {"mappingId": "astryx-core-button-10-variant", "targetPointer": "/components/0/variants/variant", "sourceRefs": ["astryx-docs://npm/@astryxdesign/core@0.1.2/package/src/Button/Button.doc.mjs#anchor=propVariant", "astryx-docs://npm/@astryxdesign/core@0.1.2/package/src/Button/Button.doc.mjs#anchor=propLabel"], "sourceValue": ["'primary' | 'secondary' | 'ghost' | 'destructive'", "name: 'variant'", "name: 'label'", "required: true"], "targetValue": {"id": "variant", "allowedValues": ["primary", "secondary", "ghost", "destructive"], "requiredProps": ["label"], "stateConstraints": [], "sourceRef": "astryx-docs://npm/@astryxdesign/core@0.1.2/package/src/Button/Button.doc.mjs#anchor=propVariant"}, "transform": "structured-normalization", "authorityMode": "lossless", "reviewStatus": "accepted"},
+    {"mappingId": "astryx-core-button-11-token-size-element-md", "targetPointer": "/tokens/size-element-md", "sourceRefs": ["astryx-docs://npm/@astryxdesign/core@0.1.2/package/src/theme/tokens.stylex.ts#anchor=tokenSizeElementMd"], "sourceValue": "'--size-element-md': '32px'", "targetValue": {"$type": "dimension", "$value": "32px", "sourceRef": "astryx-docs://npm/@astryxdesign/core@0.1.2/package/src/theme/tokens.stylex.ts#anchor=tokenSizeElementMd"}, "transform": "structured-normalization", "authorityMode": "lossless", "reviewStatus": "accepted"}
+  ],
+  "consumerFixtures": {
+    "allowed": "fixtures/design-system-compiler/astryx-core/allowed-render.catalog-consumer-fixture.json",
+    "blocked": "fixtures/design-system-compiler/astryx-core/blocked-unknown-member.catalog-consumer-fixture.json",
+    "review": "fixtures/design-system-compiler/astryx-core/review-promotion.catalog-consumer-fixture.json"
+  }
+}

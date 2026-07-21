@@ -2,9 +2,9 @@
 
 ## Status
 This is a planning-only document for deciding when Surfaces Platform can test or
-support additional agent-friendly design systems such as broader Adobe Spectrum
-coverage or Astryx. It is subordinate to [VISION.md](../VISION.md), [PLAN.md](../PLAN.md),
-and passing proof evidence.
+support additional agent-friendly design-system slices beyond the current
+bounded adapters. It is subordinate to [VISION.md](../VISION.md),
+[PLAN.md](../PLAN.md), and passing proof evidence.
 
 This file does not create proof authority, implemented support, a runnable proof
 command, schemas, fixtures, artifacts, evidence, CI gates, live ingestion,
@@ -28,10 +28,11 @@ This plan separates readiness to test from readiness to support.
   any claimed target-specific handoff.
 
 ## Current Baseline
-The current repo can claim deterministic local ingestion only for the implemented
-P2 Spectrum slice: Adobe Spectrum Design Data, pinned to
-`@adobe/spectrum-design-data@0.7.0`, scoped to `button` and `in-line-alert`.
-That is not full Spectrum support.
+The numbered P2 baseline remains the bounded Adobe Spectrum Design Data slice,
+pinned to `@adobe/spectrum-design-data@0.7.0` and scoped to `button` and
+`in-line-alert`. The separate design-system compiler target now proves local
+ingestion and inert consumer reuse for its bounded Spectrum Switch and Astryx
+core Button adapters. Neither result is full design-system support.
 
 The current source-conformance proof now implements a bounded readiness slice.
 Checked Button and InLineAlert facts plus team-owned authority profiles compile
@@ -79,20 +80,18 @@ token. The proof covers selection precedence, state normalization,
 accessibility facts, source refs, ambiguous token mode, and owner-routed review.
 It does not expand P2 or establish full Spectrum support.
 
-The Spectrum Switch catalog proof is the second bounded example and uses the
-passing Checkbox catalog as its immediate baseline. Its separate immutable
-one-file lock binds the exact Switch byte, while P2 supplies the checked
-registry and one `26px` desktop token record. The emitted catalog preserves 36
-Checkbox-baseline records by JCS hash and adds only Switch plus that token.
-Declared props, states, accessibility metadata, mappings, and owner-routed
-review come from checked source; runtime toggle/read-only behavior and runtime
-accessibility compliance remain explicitly unproved. It does not expand P2 or
-Checkbox or establish full Spectrum support.
+The source-independent design-system compiler proof replaces the bespoke Switch
+extension path. Separately locked Spectrum Switch and official Astryx core
+Button adapters declare exact typed locators, normalized facts, complete mappings, and
+governance as data. Both execute one shared ingestion kernel and one shared
+inert portable consumer. Passing evidence requires matching implementation
+hashes, no source-specific modules, an allowed render plan, an unknown-member
+block, a non-promoted review request, and causal unmapped-authority,
+invented-member-identifier, mapped-default, and boundary-receipt failures.
 
-Astryx has no current repo-defined proof target. It should remain a candidate
-source-family or target-conformance subject until a later proof defines schemas,
-fixtures, diagnostics, command behavior, generated reports or artifacts, evidence
-path, CI gate, and passing evidence.
+The compiler target proves those two bounded adapter slices only. It does not
+expand P2 or Checkbox, make legacy P3-P5 consumers portable, establish broad
+Spectrum or Astryx support, or prove production behavior.
 
 ## Readiness Checklist
 A design-system candidate is ready for proof-shaped testing only when the plan
@@ -126,50 +125,61 @@ Spectrum expansion should remain bounded by component subset, package version,
 declared package paths, mapping files, policy refs, and evidence. It must not be
 described as full Spectrum support until each claimed slice has passing evidence.
 
-The implemented Checkbox and downstream Switch targets are the first two
-examples of that bounded pattern.
-Future components should use a separately reviewed immutable source boundary or
-an explicitly reviewed P2 expansion, preserve accepted catalog facts, and add
-only the authority the selected source can support.
+The implemented Checkbox target remains a separate P2-adjacent proof. The
+Spectrum Switch adapter is the first Spectrum input to the source-independent
+compiler. Future components should use a separately reviewed immutable source
+boundary and the shared adapter contract, kernel, and consumer. A new component
+must add only declarative source, mapping, and fixture data unless a separately
+reviewed contract change is required.
 
-### Astryx Candidate
-Astryx should start as a local git or npm snapshot source family, not as live
-CLI, MCP, template, docs, or swizzle authority. Candidate source refs should be
-explicit and version-bound, for example:
+### Astryx Expansion
+The implemented Astryx slice is the official `@astryxdesign/core@0.1.2` Button
+documentation-and-StyleX adapter. It is a local, immutable selected-file
+snapshot, not live CLI, MCP, template, docs, or swizzle authority. Future Astryx
+source refs should remain explicit and version-bound, for example:
 
 ```text
 astryx://git/facebook/astryx@<commit>/<path>#<typed-anchor>
 astryx://npm/@astryxdesign/<package>@<version>/<path>#<typed-anchor>
 ```
 
-If Astryx CLI, MCP, docs, templates, themes, or swizzle output are considered,
-the snapshot must record the tool or command id, version, arguments or request,
-response material, source refs, and hashes. Live tool output is not authority.
+If additional Astryx CLI, MCP, docs, templates, themes, or swizzle output is
+considered, the snapshot must record the tool or command id, version, arguments
+or request, response material, source refs, and hashes. Live tool output is not
+authority. Passing Button evidence does not establish family-wide support.
 
 ## Implemented Slice And Remaining Proof Shape
-The scoped source-conformance extension now includes the authority profiles,
-fact coverage, policy maps, review queues, connection reports, diagnostics,
+The scoped source-conformance extension includes authority profiles, fact
+coverage, policy maps, review queues, connection reports, diagnostics,
 fixtures, aggregate package evidence, and CI shape for two checked local bundle
-instances. The fixed layout, namespace, and component-identity targets add three
-separate bounded connection proofs without broadening P2: one physical layout,
-one prefix pair, and one explicitly declared `TeamButton` to accepted P2
-`Button` relation. Future design-system-readiness work must reuse those
-boundaries while adding separately proven candidate source shapes or coverage:
+instances. The fixed layout, namespace, and component-identity targets add
+three separate bounded connection proofs without broadening P2: one physical
+layout, one prefix pair, and one explicitly declared `TeamButton` to accepted
+P2 `Button` relation.
 
-- schemas for a candidate source manifest, source-material inventory, source
-  authority matrix, fact coverage report, policy map, review queue or review
-  rows, readiness report, readiness evidence, expectations, diagnostics, and
-  preflight mutations;
-- fixtures for valid, invalid, review-required, and mutation cases under a
-  candidate-specific root;
-- deterministic diagnostics for undeclared source, source hash mismatch, missing
-  source refs, ambiguous mapping, unsupported facts, guidance-only policy gaps,
-  live material overclaim, review promotion, stale review metadata, stale
-  upstream evidence, and report or evidence hash mismatch;
-- generated artifacts for source inventory, authority map, fact coverage, policy
-  mapping, review queue, readiness report, and final evidence;
-- package scripts and CI gates following the existing `proof:*`, `check:*`,
-  `check:*:ci`, `check:*:ci:phase`, and `check:*:untracked` conventions.
+The design-system compiler now supplies the reusable source-family boundary for
+new bounded adapters. A qualifying third adapter should require:
+
+- one immutable selected-file source lock under
+  `sources/design-system-compiler/<source-id>/`;
+- one data-only adapter with exact typed locators, normalized facts, complete mappings,
+  runtime-capability limits, and governance;
+- allowed, blocked, and review-required consumer fixtures under
+  `fixtures/design-system-compiler/<source-id>/`;
+- one manifest row that drives the unchanged ingestion kernel and portable
+  consumer; and
+- passing aggregate evidence that keeps the shared implementation hashes equal
+  and `sourceSpecificImplementationModules` empty.
+
+The manifest also derives adapter/report/evidence cardinality and the complete
+per-adapter artifact closure; the capability index names the aggregate output
+root. A qualifying third adapter therefore does not require a schema or
+capability-registry change.
+
+A candidate that requires source-family code, a component branch, or a separate
+consumer is not evidence of declining marginal cost. A contract extension may
+be valid, but it must be reviewed as a platform-contract change rather than
+hidden inside an adapter.
 
 ## Minimum Fixture Matrix
 | Fixture class | Required coverage |
@@ -248,7 +258,7 @@ then applies that exact relation through a derived, non-authoritative mapping.
 Do not shorten this to semantic equivalence, alias support, arbitrary component
 identity support, or broader design-system readiness.
 
-Do not claim broad Spectrum support, Astryx support, live ingestion, production
+Do not claim broad Spectrum support, broad Astryx support, live ingestion, production
 adapters, APIs, SDKs, A2UI, live SurfaceOps, live JudgmentKit, live MCP/CLI
 authority, template authority, swizzle authority, or production adoption until
 the relevant target-specific evidence exists and passes.
@@ -257,11 +267,12 @@ the relevant target-specific evidence exists and passes.
 - How future component identities or terminology mappings should be proved
   beyond the one fixed `TeamButton` to accepted P2 `Button` relation; the current
   target does not define an alias registry or inference model.
-- Whether the next proof candidate should add another bounded Spectrum
-  component after Switch or prove an Astryx source-family eligibility slice.
-- Whether Astryx should be modeled initially as source-family eligibility,
-  React/web conformance, or both.
-- How to encode typed source anchors for TypeScript, JSX, MDX, CLI output, MCP
-  output, templates, themes, and swizzle or eject artifacts.
-- Which minimal component family, token or theme slice, accessibility behavior,
-  and policy fact should anchor the first Astryx candidate fixture.
+- Which third source family best tests the current typed JSON Pointer and exact
+  text-range anchor contract without adding implementation code.
+- Which evidence should quantify adapter-only marginal cost as the compiler
+  expands.
+- Whether future TypeScript, JSX, MDX, CLI output, MCP output, templates,
+  themes, or swizzle artifacts need new declarative anchor types.
+- Which additional Astryx component, token, accessibility behavior, or policy
+  fact is small enough to test adapter reuse without implying family-wide
+  support.

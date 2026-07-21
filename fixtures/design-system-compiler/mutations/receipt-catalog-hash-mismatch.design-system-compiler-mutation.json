@@ -1,0 +1,8 @@
+{
+  "schemaId": "design-system-compiler-mutation.v0",
+  "version": "0.0.0",
+  "mutationId": "receipt-catalog-hash-mismatch",
+  "adapterId": "spectrum-switch",
+  "operation": "receipt-catalog-hash-mismatch",
+  "expectedCode": "CATALOG_BOUNDARY_INVALID"
+}

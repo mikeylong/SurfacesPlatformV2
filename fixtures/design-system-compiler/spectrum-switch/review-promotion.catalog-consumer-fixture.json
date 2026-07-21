@@ -1,0 +1,13 @@
+{
+  "schemaId": "catalog-consumer-fixture.v0",
+  "version": "0.0.0",
+  "fixtureId": "spectrum-switch-review-promotion",
+  "expectedOutcome": "review_required",
+  "expectedDiagnosticCodes": ["CONSUMER_REVIEW_REQUIRED"],
+  "intent": "promote",
+  "component": "switch",
+  "props": {"isSelected": false, "label": "Wi-Fi", "size": "m"},
+  "variants": {},
+  "state": null,
+  "sourceRef": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/switch.json#/accessibility"
+}

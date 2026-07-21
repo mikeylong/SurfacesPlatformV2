@@ -1,0 +1,196 @@
+{
+  "$id": "https://surfaces.dev/schemas/design-system-compiler/design-system-compiler-evidence.v0.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "design-system-compiler-evidence.v0",
+  "schemaId": "design-system-compiler-evidence.v0",
+  "version": "0.0.0",
+  "$defs": {
+    "relativePath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?!.*\\\\)(?!.*(?:^|/)\\.{1,2}(?:/|$))(?!.*//).+$"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "artifactRef": {
+      "type": "object",
+      "required": ["path", "schemaId", "hashAlgorithm", "hash"],
+      "properties": {
+        "path": { "$ref": "#/$defs/relativePath" },
+        "schemaId": {
+          "enum": [
+            "extract.v0",
+            "runtime-catalog.v0",
+            "catalog-boundary-receipt.v0",
+            "catalog-runtime-projection.v0",
+            "catalog-render-plan.v0",
+            "catalog-consumer-report.v0",
+            "design-system-compiler-report.v0",
+            "design-system-compiler-evidence.v0"
+          ]
+        },
+        "hashAlgorithm": { "const": "sha256" },
+        "hash": { "$ref": "#/$defs/sha256" }
+      },
+      "additionalProperties": false
+    },
+    "reportRef": {
+      "allOf": [
+        { "$ref": "#/$defs/artifactRef" },
+        {
+          "properties": { "schemaId": { "const": "design-system-compiler-report.v0" } },
+          "required": ["schemaId"]
+        }
+      ]
+    },
+    "rawRef": {
+      "type": "object",
+      "required": ["path", "hashAlgorithm", "hashMode", "hash"],
+      "properties": {
+        "path": { "$ref": "#/$defs/relativePath" },
+        "hashAlgorithm": { "const": "sha256" },
+        "hashMode": { "const": "raw-bytes" },
+        "hash": { "$ref": "#/$defs/sha256" }
+      },
+      "additionalProperties": false
+    },
+    "environment": {
+      "type": "object",
+      "required": [
+        "golden",
+        "timestampMode",
+        "timestampOverride",
+        "timezone",
+        "locale",
+        "pathStyle",
+        "jsonCanonicalization",
+        "numberSerialization",
+        "schemaOutputFormat",
+        "host"
+      ],
+      "properties": {
+        "golden": { "const": true },
+        "timestampMode": { "const": "normalized" },
+        "timestampOverride": { "type": "null" },
+        "timezone": { "const": "UTC" },
+        "locale": { "const": "en-US-POSIX" },
+        "pathStyle": { "const": "posix-relative" },
+        "jsonCanonicalization": { "const": "rfc8785" },
+        "numberSerialization": { "const": "rfc8785" },
+        "schemaOutputFormat": { "const": "basic" },
+        "host": { "type": "null" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "type": "object",
+  "required": [
+    "schemaId",
+    "version",
+    "contractId",
+    "runId",
+    "command",
+    "args",
+    "status",
+    "promotionStatus",
+    "reportRef",
+    "artifacts",
+    "implementationRefs",
+    "sourceRefs",
+    "diagnostics",
+    "provenance"
+  ],
+  "properties": {
+    "schemaId": { "const": "design-system-compiler-evidence.v0" },
+    "version": { "const": "0.0.0" },
+    "contractId": { "const": "surfaces-design-system-compiler-proof" },
+    "runId": {
+      "type": "string",
+      "pattern": "^design-system-compiler-[a-f0-9]{16}$"
+    },
+    "command": { "const": "interfacectl surfaces design-system-compiler proof" },
+    "args": {
+      "type": "array",
+      "prefixItems": [
+        { "const": "--manifest" },
+        { "const": "fixtures/design-system-compiler/targets.manifest.json" },
+        { "const": "--out" },
+        { "const": "artifacts/design-system-compiler" }
+      ],
+      "minItems": 4,
+      "maxItems": 4
+    },
+    "status": { "const": "pass" },
+    "promotionStatus": { "const": "review_required" },
+    "reportRef": { "$ref": "#/$defs/reportRef" },
+    "artifacts": {
+      "type": "array",
+      "minItems": 16,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/artifactRef" }
+    },
+    "implementationRefs": {
+      "type": "array",
+      "minItems": 38,
+      "maxItems": 38,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/rawRef" }
+    },
+    "sourceRefs": {
+      "type": "array",
+      "minItems": 2,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/rawRef" }
+    },
+    "diagnostics": {
+      "$ref": "https://surfaces.dev/schemas/design-system-compiler/design-system-compiler-diagnostics.v0.schema.json"
+    },
+    "provenance": {
+      "type": "object",
+      "required": [
+        "generator",
+        "generatedAt",
+        "sourceRefs",
+        "command",
+        "args",
+        "environment"
+      ],
+      "properties": {
+        "generator": {
+          "type": "object",
+          "required": ["name", "version"],
+          "properties": {
+            "name": { "const": "interfacectl-design-system-compiler-evidence" },
+            "version": { "const": "0.0.0" }
+          },
+          "additionalProperties": false
+        },
+        "generatedAt": { "const": "1970-01-01T00:00:00.000Z" },
+        "sourceRefs": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/relativePath" }
+        },
+        "command": { "const": "interfacectl surfaces design-system-compiler proof" },
+        "args": {
+          "type": "array",
+          "prefixItems": [
+            { "const": "--manifest" },
+            { "const": "fixtures/design-system-compiler/targets.manifest.json" },
+            { "const": "--out" },
+            { "const": "artifacts/design-system-compiler" }
+          ],
+          "minItems": 4,
+          "maxItems": 4
+        },
+        "environment": { "$ref": "#/$defs/environment" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

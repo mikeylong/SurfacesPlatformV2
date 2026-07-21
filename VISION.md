@@ -86,7 +86,7 @@ Surfaces becomes a usable platform per target when a team can complete an eviden
 Generated demos, review queues, protocol envelopes, workflow cards, or adapter-facing outputs can help demonstrate usability, but they are not the signal by themselves. The signal is the closed evidence loop for a declared target.
 
 ## Current Roadmap Proof Snapshot
-The current roadmap evidence is P0-P5, with P5 implemented only for the `surfaces-protocol-static` and `surfaces-native-static` proof-only slices. This repo also implements target-specific declared-source conformance, structured accessibility policy reconciliation, fixed source-family layout mapping, fixed source-family namespace mapping, fixed source-family component-identity mapping, Spectrum Checkbox and Switch catalog authority, designer-workflow-trace, `surfaceops-kanban-static`, `surfaceops-kanban-live`, `surfaceops-designer-review-ui`, and capability-index proofs; none is a new numbered phase. The capability index covers exactly the 18 implemented proof targets other than itself. Its separate planned capability groups provide roadmap visibility only. `surfaceops-kanban-live` and `surfaceops-designer-review-ui` are bounded local-loopback live proofs, not production SurfaceOps or production `kanban.cards` claims. A row counts as implemented only when the named evidence file records `status: "pass"`. `promotionStatus` records governance outcome, not whether the proof command failed.
+The current roadmap evidence is P0-P5, with P5 implemented only for the `surfaces-protocol-static` and `surfaces-native-static` proof-only slices. This repo also implements target-specific declared-source conformance, structured accessibility policy reconciliation, fixed source-family layout mapping, fixed source-family namespace mapping, fixed source-family component-identity mapping, Spectrum Checkbox catalog authority, a source-independent design-system compiler with a portable proof-only consumer, designer-workflow-trace, `surfaceops-kanban-static`, `surfaceops-kanban-live`, `surfaceops-designer-review-ui`, and capability-index proofs; none is a new numbered phase. The capability index covers exactly the 18 implemented proof targets other than itself. Its separate planned capability groups provide roadmap visibility only. `surfaceops-kanban-live` and `surfaceops-designer-review-ui` are bounded local-loopback live proofs, not production SurfaceOps or production `kanban.cards` claims. A row counts as implemented only when the named evidence file records `status: "pass"`. `promotionStatus` records governance outcome, not whether the proof command failed.
 
 | Phase | Implemented slice | Lifecycle value | Evidence | Current status | Current promotion status | CI gate | Demo |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -99,7 +99,7 @@ The current roadmap evidence is P0-P5, with P5 implemented only for the `surface
 | Target | Fixed source-family namespace mapping | One alternate source-ref prefix normalizes at 78 checked JSON pointers onto the canonical namespace, refreshes 11 manifest hashes, and reproduces the exact accepted 12-file compiler result | `artifacts/source-family-namespace-mapping/evidence.json` | `pass` | `review_required` | `npm run check:source-family-namespace-mapping:ci` | none; report/evidence only |
 | Target | Fixed source-family component-identity mapping | One explicit team-owned authority declaration authorizes the exact `TeamButton` to accepted P2 `Button` identity relation for one checked 12-file bundle before a derived 22-substitution mapping feeds the existing namespace normalizer and unchanged compiler | `artifacts/source-family-component-identity-mapping/evidence.json` | `pass` | `review_required` | `npm run check:source-family-component-identity-mapping:ci` | none; report/evidence only |
 | Target | Spectrum Checkbox catalog authority | One separately locked real-source Checkbox byte expands a distinct governed catalog while every accepted P2 component and token record stays unchanged | `artifacts/spectrum-checkbox-catalog/evidence.json` | `pass` | `review_required` | `npm run check:spectrum-checkbox-catalog:ci` | none; report/evidence only |
-| Target | Spectrum Switch catalog authority | One separately locked real-source Switch byte expands the accepted Checkbox catalog while all 36 baseline records remain JCS-identical | `artifacts/spectrum-switch-catalog/evidence.json` | `pass` | `review_required` | `npm run check:spectrum-switch-catalog:ci` | none; report/evidence only |
+| Target | Source-independent design-system compiler and portable consumer | Data-only Spectrum Switch and Astryx core Button adapters run through one shared ingestion kernel and one shared inert consumer with no source-specific implementation modules | `artifacts/design-system-compiler/evidence.json` | `pass` | `review_required` | `npm run check:design-system-compiler:ci` | none; report/evidence only |
 | Target | Designer workflow trace proof | Index over accepted evidence from design authority through governed catalog, review/evaluation refs, static target handoff, and evidence status | `artifacts/designer-workflow-trace/evidence.json` | `pass` | `blocked` | `npm run check:designer-workflow-trace:ci` | none; report/evidence only |
 | Target | `surfaceops-kanban-static` proof | Static SurfaceOps-owned board projection over accepted P3/P4 review evidence and a hash-bound local `kanban.cards` substrate contract | `artifacts/surfaceops-kanban-static/evidence.json` | `pass` | `review_required` | `npm run check:surfaceops-kanban-static:ci` | none; inert board artifacts only |
 | Target | `surfaceops-kanban-live` proof | Local-loopback live `kanban.cards` API/browser proof for SurfaceOps approvals over accepted P3/P4 evidence and a hash-bound API manifest | `artifacts/surfaceops-kanban-live/evidence.json` | `pass` | `review_required` | `npm run check:surfaceops-kanban-live:ci` | none; browser runtime evidence under `output/playwright/surfaceops-kanban-live/` |
@@ -148,17 +148,21 @@ the catalog contract; no action or runtime accessibility authority is inferred.
 The target does not change P2 or prove full Spectrum support, live connectors,
 self-serve UI, production adapters, SurfaceOps expansion, JudgmentKit, or A2UI.
 
-The `spectrum-switch-catalog` target consumes passing P2 and Checkbox evidence,
-uses the Checkbox governed catalog as its immediate baseline, and verifies one
-separately locked Switch source byte from the pinned package. It adds exactly
-Switch and one `26px` desktop token to a new catalog identity while preserving
-36 baseline records by JCS hash. Six props, three states, structured source
-accessibility metadata, 13 accepted mappings, and two owner-bound review rows
-are source-backed. Actions, events, slots, data bindings, runtime key bindings,
-toggle or read-only runtime behavior, and runtime accessibility compliance are
-not inferred. The target does not change P2 or Checkbox authority or prove full
-Spectrum support, live connectors, self-serve UI, production adapters,
-SurfaceOps expansion, JudgmentKit, A2UI, or production readiness.
+The `design-system-compiler` target proves a source-independent ingestion and
+consumer boundary without changing P2 or Checkbox. Separately locked Spectrum
+Switch and official Astryx core Button adapters declare exact typed locators,
+normalized facts, complete mappings, and a narrowing-only policy contract as
+data. One unchanged kernel requires lossless mapped facts to remain
+source-justified, keeps inferences review-required, and emits
+an extract, catalog, governed catalog, and hash-bound boundary receipt. One
+unchanged `web-static-portable` consumer accepts that receipt, emits an inert
+render plan for an allowed fixture, blocks an unknown member, and preserves
+review-required governance for a promotion request. Passing evidence requires shared kernel
+and consumer hashes plus an empty source-specific implementation-module list.
+The target does not make legacy P2, P3, P4, or P5 portable and does not prove
+broad Spectrum or Astryx support, live connectors, self-serve UI, runtime
+accessibility compliance, production adapters, SurfaceOps expansion,
+JudgmentKit, A2UI, or production readiness.
 
 The designer-workflow-trace proof consumes accepted P2, source-conformance, P3, P4, protocol, and native evidence, then emits a deterministic trace selection, report, and evidence index for one Button scenario. The trace report is an index over accepted evidence, not catalog authority, upstream proof authority, product workflow implementation, customer validation, production adoption, live SurfaceOps, live JudgmentKit, production adapter, API, SDK, runtime, A2UI, P6, or P7.
 
@@ -283,8 +287,8 @@ If a product surface consumes evidence, it may explain, evaluate, route, or disp
 
 ## Open Decisions
 - Broader real design-system source families beyond the P2 local source bundle remain open. P2 does not settle Figma, Storybook, Code Connect, docs crawler, production HTML, or multi-source authority policy.
-- Broader Spectrum coverage remains open. The implemented P2 target is Adobe Spectrum Design Data, pinned to `@adobe/spectrum-design-data@0.7.0`, scoped to `button` and `in-line-alert`. Separate Checkbox and Switch targets each add one bounded component to a distinct governed catalog without expanding P2 or rewriting the preceding catalog. These targets are not claims of full Spectrum support, live ingestion, or Adobe endorsement.
-- Broader declared-source conformance remains open beyond the two checked fixed-layout package instances, one fixed alternate physical layout, one fixed alternate source-ref prefix, one explicit team-owned declaration for the exact fixture-local `TeamButton` to accepted P2 `Button` identity relation, and the separately locked Checkbox and Switch catalog additions. Arbitrary layouts, namespace pairs, component identities, alias registries, semantic mappings, component coverage beyond Switch, live connectors, self-serve connection, and production-facing conformance still require separate proof shapes and passing evidence.
+- Broader Spectrum coverage remains open. The implemented P2 target is Adobe Spectrum Design Data, pinned to `@adobe/spectrum-design-data@0.7.0`, scoped to `button` and `in-line-alert`. The separate Checkbox target adds one bounded component to a distinct governed catalog. The design-system compiler proves one bounded Spectrum Switch adapter through the shared kernel and portable consumer without expanding P2 or Checkbox. These targets are not claims of full Spectrum support, live ingestion, or Adobe endorsement.
+- Broader declared-source conformance remains open beyond the two checked fixed-layout package instances, one fixed alternate physical layout, one fixed alternate source-ref prefix, one explicit team-owned declaration for the exact fixture-local `TeamButton` to accepted P2 `Button` identity relation, the separately locked Checkbox catalog addition, and the two bounded design-system compiler adapters. Arbitrary layouts, namespace pairs, component identities, alias registries, semantic mappings, additional source families or components, legacy P2-P5 portability, live connectors, self-serve connection, and production-facing conformance still require separate proof shapes and passing evidence.
 - Broader accessibility policy coverage remains open beyond the structured Button and InLineAlert declaration set. The implemented reconciliation target proves deterministic policy-to-catalog comparison and non-executable review routing; it does not infer behavior from free-form text, add missing P2 facts, or establish runtime accessibility compliance.
 - Broader designer workflow trace coverage remains open beyond the first Button trace over accepted P2, source-conformance, P3, P4, protocol, and native evidence. Additional scenarios, targets, components, or partner-facing workflows require their own trace fixture coverage, diagnostics, report/evidence paths, and passing evidence.
 - Broader JudgmentKit execution or live integration beyond the implemented P4 deterministic `judgmentkit-evaluation-report.v0` remains open.

@@ -1,0 +1,94 @@
+{
+  "$id": "https://surfaces.dev/schemas/design-system-compiler/catalog-consumer-fixture.v0.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "catalog-consumer-fixture.v0",
+  "schemaId": "catalog-consumer-fixture.v0",
+  "version": "0.0.0",
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+    },
+    "scalar": {
+      "type": ["string", "boolean", "number", "null"]
+    },
+    "sourceRef": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[a-z][a-z0-9+.-]*://[^\\s]+$"
+    }
+  },
+  "type": "object",
+  "required": [
+    "schemaId",
+    "version",
+    "fixtureId",
+    "intent",
+    "expectedOutcome",
+    "expectedDiagnosticCodes",
+    "component",
+    "props",
+    "variants",
+    "state",
+    "sourceRef"
+  ],
+  "properties": {
+    "schemaId": { "const": "catalog-consumer-fixture.v0" },
+    "version": { "const": "0.0.0" },
+    "fixtureId": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$"
+    },
+    "intent": { "enum": ["render", "promote"] },
+    "expectedOutcome": { "enum": ["allowed", "blocked", "review_required"] },
+    "expectedDiagnosticCodes": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "CATALOG_BOUNDARY_INVALID",
+          "CONSUMER_UNKNOWN_COMPONENT",
+          "CONSUMER_UNKNOWN_MEMBER",
+          "CONSUMER_INVALID_VALUE",
+          "CONSUMER_REVIEW_REQUIRED",
+          "CONSUMER_SOURCE_REF_UNRESOLVED",
+          "CONSUMER_CONSTRAINT_VIOLATION"
+        ]
+      }
+    },
+    "component": { "$ref": "#/$defs/identifier" },
+    "props": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": { "$ref": "#/$defs/identifier" },
+      "additionalProperties": { "$ref": "#/$defs/scalar" }
+    },
+    "variants": {
+      "type": "object",
+      "propertyNames": { "$ref": "#/$defs/identifier" },
+      "additionalProperties": { "type": "string", "minLength": 1 }
+    },
+    "state": {
+      "oneOf": [
+        { "$ref": "#/$defs/identifier" },
+        { "type": "null" }
+      ]
+    },
+    "sourceRef": { "$ref": "#/$defs/sourceRef" }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": { "expectedOutcome": { "const": "allowed" } },
+        "required": ["expectedOutcome"]
+      },
+      "then": {
+        "properties": { "expectedDiagnosticCodes": { "maxItems": 0 } }
+      },
+      "else": {
+        "properties": { "expectedDiagnosticCodes": { "minItems": 1 } }
+      }
+    }
+  ],
+  "additionalProperties": false
+}

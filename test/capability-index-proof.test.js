@@ -313,30 +313,29 @@ test("capability index exposes the bounded Spectrum Checkbox authority target", 
   assert.equal(row.nonCapabilities.includes("JudgmentKit invocation"), true);
 });
 
-test("capability index exposes Switch downstream of passing Checkbox evidence", async () => {
+test("capability index exposes the source-independent compiler after the P2 phase gate", async () => {
   const index = await readJson(indexPath);
-  const row = index.implementedCapabilities.find((candidate) => candidate.capabilityId === "spectrum-switch-catalog");
+  const row = index.implementedCapabilities.find((candidate) => candidate.capabilityId === "design-system-compiler");
   assert.equal(row.canAddAuthority, false);
   assert.equal(row.implementationStatus, "implemented");
   assert.equal(row.roadmapPhase, "Target");
   assert.equal(row.proofMode, "bounded-local");
-  assert.equal(row.proofCommand, "interfacectl surfaces spectrum-switch-catalog proof");
-  assert.equal(row.packageProofScript, "proof:spectrum-switch-catalog");
-  assert.equal(row.ciGate, "npm run check:spectrum-switch-catalog:ci");
-  assert.equal(row.evidencePath, "artifacts/spectrum-switch-catalog/evidence.json");
-  assert.equal(row.evidenceSchemaId, "spectrum-switch-catalog-evidence.v0");
+  assert.equal(row.proofCommand, "interfacectl surfaces design-system-compiler proof");
+  assert.equal(row.packageProofScript, "proof:design-system-compiler");
+  assert.equal(row.ciGate, "npm run check:design-system-compiler:ci");
+  assert.equal(row.evidencePath, "artifacts/design-system-compiler/evidence.json");
+  assert.equal(row.evidenceSchemaId, "design-system-compiler-evidence.v0");
   assert.equal(row.expectedPromotionStatus, "review_required");
   assert.equal(row.promotionStatus, "review_required");
-  assert.deepEqual(row.dependencies.evidence, ["p2-spectrum-ingestion", "spectrum-checkbox-catalog"]);
-  assert.deepEqual(row.outputPaths, [
-    "artifacts/spectrum-switch-catalog/evidence.json",
-    "artifacts/spectrum-switch-catalog/governed-catalog.json",
-    "artifacts/spectrum-switch-catalog/source-inventory.json",
-    "artifacts/spectrum-switch-catalog/source-mapping.json",
-    "artifacts/spectrum-switch-catalog/spectrum-switch-catalog-report.json"
-  ]);
-  assert.equal(row.nonCapabilities.includes("full Spectrum support"), true);
-  assert.equal(row.nonCapabilities.includes("runtime toggle behavior"), true);
+  assert.deepEqual(row.dependencies.evidence, []);
+  assert.deepEqual(row.dependencies.phaseGate, ["p2-spectrum-ingestion"]);
+  assert.deepEqual(row.outputPaths, ["artifacts/design-system-compiler"]);
+  assert.match(row.userValue, /manifest-declared design-system sources/);
+  assert.match(row.scopeStatement, /at least two independent/);
+  for (const familyName of ["Spectrum", "Astryx", "Switch", "Button"]) {
+    assert.equal(`${row.userValue} ${row.scopeStatement} ${row.nonCapabilities.join(" ")}`.includes(familyName), false);
+  }
+  assert.equal(row.nonCapabilities.includes("family-wide design-system support"), true);
   assert.equal(row.nonCapabilities.includes("JudgmentKit invocation"), true);
 });
 
@@ -429,12 +428,13 @@ test("verifier rechecks Checkbox source, mapping, and implementation closures", 
   }
 });
 
-test("verifier runs the Switch target-specific deep integrity inspector", async () => {
-  const targetEvidence = await readJson("artifacts/spectrum-switch-catalog/evidence.json");
+test("verifier runs the generic compiler deep integrity inspector", async () => {
+  const targetEvidence = await readJson("artifacts/design-system-compiler/evidence.json");
   const paths = [
-    targetEvidence.sourceFileRefs.find((ref) => ref.path.endsWith("components/switch.json")).path,
-    targetEvidence.sourceFileRefs.find((ref) => ref.path.endsWith("mappings/component-map.json")).path,
-    targetEvidence.implementationRefs.find((ref) => ref.path === "src/spectrum-switch-catalog-proof.js").path
+    targetEvidence.sourceRefs.find((ref) => ref.path.endsWith("components/switch.json")).path,
+    targetEvidence.sourceRefs.find((ref) => ref.path.endsWith("Button.doc.mjs")).path,
+    targetEvidence.implementationRefs.find((ref) => ref.path === "src/design-system-ingestion-kernel.js").path,
+    targetEvidence.implementationRefs.find((ref) => ref.path === "src/catalog-consumer-kernel.js").path
   ];
   for (const boundPath of paths) {
     await withRestoredFiles([boundPath], async () => {

@@ -1,0 +1,52 @@
+{
+  "schemaId": "portable-design-source-lock.v0",
+  "version": "0.0.0",
+  "sourceId": "astryx-core",
+  "rootPath": "sources/design-system-compiler/astryx-core/npm/@astryxdesign/core/0.1.2/package",
+  "acquisition": {
+    "kind": "npm-package-selected-files",
+    "packageName": "@astryxdesign/core",
+    "packageVersion": "0.1.2",
+    "registryTarball": "https://registry.npmjs.org/@astryxdesign/core/-/core-0.1.2.tgz",
+    "packageIntegrity": "sha512-SJOEXUaRvcVgGbdPwV5UL5aYMbwIl09H2yQb3hPh4NNGWqmLTHE05IFTNRi37Mk9ywoo01+UM2ZrewmJe39f0A==",
+    "tarballSha256": "9c35a4d56053457d55f4388d3fb28b46f95dd707df099dd439cfe0d5c94f9c2a",
+    "reviewedAt": "2026-07-20T00:00:00.000Z",
+    "ordinaryMaterialization": "local-lock-conformance-only",
+    "upstreamRepository": "https://github.com/facebook/astryx",
+    "upstreamCommit": "6c533c70674cf32c38a2ef85a3d4a648df91eb4b",
+    "license": {
+      "spdx": "MIT",
+      "path": "LICENSE",
+      "sourceUrl": "https://github.com/facebook/astryx/blob/6c533c70674cf32c38a2ef85a3d4a648df91eb4b/LICENSE",
+      "sha256": "a6855be541fc8f446acd1bc4f2f8efce1ace6dce71dba32fcd8da553ee54b473"
+    }
+  },
+  "files": [
+    {
+      "path": "LICENSE",
+      "bytes": 1077,
+      "sha256": "a6855be541fc8f446acd1bc4f2f8efce1ace6dce71dba32fcd8da553ee54b473",
+      "origin": "upstream-repository"
+    },
+    {
+      "path": "src/Button/Button.doc.mjs",
+      "bytes": 14359,
+      "sha256": "fda24e50a206d4e1061a548b62eee3ced10bde354159386b7ddc43dbe79e7ad6",
+      "origin": "npm-tarball"
+    },
+    {
+      "path": "src/theme/tokens.stylex.ts",
+      "bytes": 19455,
+      "sha256": "b9a5274e60c502c396794a0b396c0d7e3e9969f0c7205db12f120b98d60c166d",
+      "origin": "npm-tarball"
+    }
+  ],
+  "provenance": {
+    "reviewMethod": "review-time-tarball-verification",
+    "sourceRefs": [
+      "https://registry.npmjs.org/@astryxdesign/core/-/core-0.1.2.tgz",
+      "https://github.com/facebook/astryx/commit/6c533c70674cf32c38a2ef85a3d4a648df91eb4b",
+      "https://github.com/facebook/astryx/blob/6c533c70674cf32c38a2ef85a3d4a648df91eb4b/LICENSE"
+    ]
+  }
+}

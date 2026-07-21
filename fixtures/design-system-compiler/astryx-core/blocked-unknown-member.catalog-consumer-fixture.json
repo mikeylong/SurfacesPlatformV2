@@ -1,0 +1,13 @@
+{
+  "schemaId": "catalog-consumer-fixture.v0",
+  "version": "0.0.0",
+  "fixtureId": "astryx-button-blocked-unknown-member",
+  "expectedOutcome": "blocked",
+  "expectedDiagnosticCodes": ["CONSUMER_UNKNOWN_MEMBER"],
+  "intent": "render",
+  "component": "Button",
+  "props": {"label": "Save changes", "tone": "quiet"},
+  "variants": {},
+  "state": null,
+  "sourceRef": "astryx-docs://npm/@astryxdesign/core@0.1.2/package/src/Button/Button.doc.mjs#anchor=componentName"
+}

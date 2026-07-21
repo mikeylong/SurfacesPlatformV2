@@ -1,0 +1,10 @@
+{
+  "schemaId": "design-system-compiler-mutation.v0",
+  "version": "0.0.0",
+  "mutationId": "lossless-target-inversion",
+  "adapterId": "spectrum-switch",
+  "operation": "replace-mapped-target-value",
+  "targetPointer": "/components/0/props/isDisabled/default",
+  "replacementValue": true,
+  "expectedCode": "MAPPING_AUTHORITY_UNJUSTIFIED"
+}

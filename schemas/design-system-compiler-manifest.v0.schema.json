@@ -1,0 +1,113 @@
+{
+  "$id": "https://surfaces.dev/schemas/design-system-compiler/design-system-compiler-manifest.v0.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "design-system-compiler-manifest.v0",
+  "schemaId": "design-system-compiler-manifest.v0",
+  "version": "0.0.0",
+  "$defs": {
+    "relativePath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?!.*\\\\)(?!.*(?:^|/)\\.{1,2}(?:/|$))(?!.*//).+$"
+    },
+    "kebabIdentifier": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$"
+    },
+    "componentIdentifier": {
+      "type": "string",
+      "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+    },
+    "diagnosticCode": {
+      "enum": [
+        "SOURCE_LOCK_MISMATCH",
+        "SOURCE_IDENTITY_REUSED",
+        "SOURCE_REF_UNRESOLVED",
+        "MAPPING_SOURCE_MISMATCH",
+        "MAPPING_TARGET_MISMATCH",
+        "MAPPING_COVERAGE_INCOMPLETE",
+        "MAPPING_AUTHORITY_UNJUSTIFIED",
+        "COMPILER_AUTHORITY_ESCALATION",
+        "CATALOG_BOUNDARY_INVALID",
+        "CONSUMER_UNKNOWN_COMPONENT",
+        "CONSUMER_UNKNOWN_MEMBER",
+        "CONSUMER_INVALID_VALUE",
+        "CONSUMER_REVIEW_REQUIRED",
+        "CONSUMER_SOURCE_REF_UNRESOLVED",
+        "CONSUMER_CONSTRAINT_VIOLATION",
+        "EVIDENCE_HASH_MISMATCH"
+      ]
+    }
+  },
+  "type": "object",
+  "required": [
+    "schemaId",
+    "version",
+    "artifactRoot",
+    "adapters",
+    "mutationFixtures",
+    "expectedRun"
+  ],
+  "properties": {
+    "schemaId": { "const": "design-system-compiler-manifest.v0" },
+    "version": { "const": "0.0.0" },
+    "artifactRoot": { "const": "artifacts/design-system-compiler" },
+    "adapters": {
+      "type": "array",
+      "minItems": 2,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "required": [
+          "adapterPath",
+          "sourceRoot",
+          "outputKey",
+          "expectedComponentIds"
+        ],
+        "properties": {
+          "adapterPath": { "$ref": "#/$defs/relativePath" },
+          "sourceRoot": { "$ref": "#/$defs/relativePath" },
+          "outputKey": { "$ref": "#/$defs/kebabIdentifier" },
+          "expectedComponentIds": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": { "$ref": "#/$defs/componentIdentifier" }
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "mutationFixtures": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/relativePath" }
+    },
+    "expectedRun": {
+      "type": "object",
+      "required": [
+        "adapterCount",
+        "status",
+        "promotionStatus",
+        "consumerResultsPerAdapter",
+        "diagnosticCodes"
+      ],
+      "properties": {
+        "adapterCount": { "type": "integer", "minimum": 2 },
+        "status": { "const": "pass" },
+        "promotionStatus": { "const": "review_required" },
+        "consumerResultsPerAdapter": { "const": 3 },
+        "diagnosticCodes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/diagnosticCode" }
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

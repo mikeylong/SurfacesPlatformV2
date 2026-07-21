@@ -1,0 +1,45 @@
+{
+  "schemaId": "portable-design-source-lock.v0",
+  "version": "0.0.0",
+  "sourceId": "spectrum-switch",
+  "rootPath": "sources/design-system-compiler/spectrum-switch/npm/@adobe/spectrum-design-data/0.7.0/package",
+  "acquisition": {
+    "kind": "npm-package-selected-files",
+    "packageName": "@adobe/spectrum-design-data",
+    "packageVersion": "0.7.0",
+    "registryTarball": "https://registry.npmjs.org/@adobe/spectrum-design-data/-/spectrum-design-data-0.7.0.tgz",
+    "packageIntegrity": "sha512-mSdmQn6fNEzKVo6W5xS4gO1EXCpC4ojiEm3GqTlSjhh26lC9siMgQSWi33ODvWe8ssfrxXX0unzVnL5VBt4+CA==",
+    "tarballSha256": "12db4dd64e7ad0c0c6cadec7c2f8e24a8d819d1f3badb7d871fbfbfc99ffdff0",
+    "reviewedAt": "2026-07-19T00:00:00.000Z",
+    "ordinaryMaterialization": "local-lock-conformance-only",
+    "upstreamRepository": "https://github.com/adobe/spectrum-design-data",
+    "upstreamCommit": null,
+    "license": {
+      "spdx": "Apache-2.0",
+      "path": "LICENSE",
+      "sourceUrl": "https://registry.npmjs.org/@adobe/spectrum-design-data/-/spectrum-design-data-0.7.0.tgz",
+      "sha256": "981250df8283f951cb49f9cdcaa405d49e0313b0d4f3cd174d25f709f802cfba"
+    }
+  },
+  "files": [
+    {
+      "path": "LICENSE",
+      "bytes": 10233,
+      "sha256": "981250df8283f951cb49f9cdcaa405d49e0313b0d4f3cd174d25f709f802cfba",
+      "origin": "npm-tarball"
+    },
+    {
+      "path": "components/switch.json",
+      "bytes": 11440,
+      "sha256": "f71fca208251775638f52f9b6dfefc19104b17119512f6c3ae491da3c684b512",
+      "origin": "npm-tarball"
+    }
+  ],
+  "provenance": {
+    "reviewMethod": "review-time-tarball-verification",
+    "sourceRefs": [
+      "https://registry.npmjs.org/@adobe/spectrum-design-data/-/spectrum-design-data-0.7.0.tgz",
+      "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/switch.json#"
+    ]
+  }
+}

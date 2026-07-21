@@ -848,9 +848,9 @@ async function verifyEvidenceClosure({ cwd, evidence, evidencePath }) {
       throw diagnosticError("CAPABILITY_EVIDENCE_HASH_MISMATCH", evidencePath);
     }
   }
-  if (evidence.contractId === "surfaces-spectrum-switch-catalog-proof") {
-    const { spectrumSwitchCatalogInternals } = await import("./spectrum-switch-catalog-proof.js");
-    if (await spectrumSwitchCatalogInternals.firstEvidenceIntegrityFailureCode(cwd, evidence) !== null) {
+  if (evidence.contractId === "surfaces-design-system-compiler-proof") {
+    const { designSystemCompilerInternals } = await import("./design-system-compiler-proof.js");
+    if (await designSystemCompilerInternals.firstEvidenceIntegrityFailureCode(cwd, evidence) !== null) {
       throw diagnosticError("CAPABILITY_EVIDENCE_HASH_MISMATCH", evidencePath);
     }
   }

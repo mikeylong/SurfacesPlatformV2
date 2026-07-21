@@ -1,0 +1,160 @@
+{
+  "$id": "https://surfaces.dev/schemas/design-system-compiler/design-system-compiler-mutation.v0.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "design-system-compiler-mutation.v0",
+  "schemaId": "design-system-compiler-mutation.v0",
+  "version": "0.0.0",
+  "$defs": {
+    "kebabIdentifier": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$"
+    },
+    "memberIdentifier": {
+      "type": "string",
+      "pattern": "^[A-Za-z_][A-Za-z0-9_-]*$"
+    },
+    "jsonValue": {
+      "oneOf": [
+        { "type": "null" },
+        { "type": "boolean" },
+        { "type": "number" },
+        { "type": "string" },
+        {
+          "type": "array",
+          "items": { "$ref": "#/$defs/jsonValue" }
+        },
+        {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/jsonValue" }
+        }
+      ]
+    }
+  },
+  "oneOf": [
+    {
+      "type": "object",
+      "required": [
+        "schemaId",
+        "version",
+        "mutationId",
+        "adapterId",
+        "operation",
+        "expectedCode",
+        "componentIndex",
+        "memberGroup",
+        "memberId",
+        "memberValue"
+      ],
+      "properties": {
+        "schemaId": { "const": "design-system-compiler-mutation.v0" },
+        "version": { "const": "0.0.0" },
+        "mutationId": { "$ref": "#/$defs/kebabIdentifier" },
+        "adapterId": { "$ref": "#/$defs/kebabIdentifier" },
+        "operation": { "const": "add-authority-without-mapping" },
+        "expectedCode": { "const": "MAPPING_COVERAGE_INCOMPLETE" },
+        "componentIndex": { "type": "integer", "minimum": 0 },
+        "memberGroup": {
+          "enum": [
+            "props",
+            "variants",
+            "states",
+            "slots",
+            "actions",
+            "events",
+            "dataBindings",
+            "tokenRefs"
+          ]
+        },
+        "memberId": { "$ref": "#/$defs/memberIdentifier" },
+        "memberValue": { "$ref": "#/$defs/jsonValue" }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "schemaId",
+        "version",
+        "mutationId",
+        "adapterId",
+        "operation",
+        "expectedCode"
+      ],
+      "properties": {
+        "schemaId": { "const": "design-system-compiler-mutation.v0" },
+        "version": { "const": "0.0.0" },
+        "mutationId": { "$ref": "#/$defs/kebabIdentifier" },
+        "adapterId": { "$ref": "#/$defs/kebabIdentifier" },
+        "operation": { "const": "receipt-catalog-hash-mismatch" },
+        "expectedCode": { "const": "CATALOG_BOUNDARY_INVALID" }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "schemaId",
+        "version",
+        "mutationId",
+        "adapterId",
+        "operation",
+        "expectedCode",
+        "targetPointer",
+        "replacementValue"
+      ],
+      "properties": {
+        "schemaId": { "const": "design-system-compiler-mutation.v0" },
+        "version": { "const": "0.0.0" },
+        "mutationId": { "$ref": "#/$defs/kebabIdentifier" },
+        "adapterId": { "$ref": "#/$defs/kebabIdentifier" },
+        "operation": { "const": "replace-mapped-target-value" },
+        "expectedCode": { "const": "MAPPING_AUTHORITY_UNJUSTIFIED" },
+        "targetPointer": {
+          "type": "string",
+          "pattern": "^/components/(?:0|[1-9][0-9]*)(?:/([^/~]|~0|~1)+)+$"
+        },
+        "replacementValue": { "$ref": "#/$defs/jsonValue" }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "schemaId",
+        "version",
+        "mutationId",
+        "adapterId",
+        "operation",
+        "expectedCode",
+        "componentIndex",
+        "memberGroup",
+        "memberId",
+        "replacementMemberId"
+      ],
+      "properties": {
+        "schemaId": { "const": "design-system-compiler-mutation.v0" },
+        "version": { "const": "0.0.0" },
+        "mutationId": { "$ref": "#/$defs/kebabIdentifier" },
+        "adapterId": { "$ref": "#/$defs/kebabIdentifier" },
+        "operation": { "const": "rename-mapped-member" },
+        "expectedCode": { "const": "MAPPING_AUTHORITY_UNJUSTIFIED" },
+        "componentIndex": { "type": "integer", "minimum": 0 },
+        "memberGroup": {
+          "enum": [
+            "props",
+            "variants",
+            "states",
+            "slots",
+            "actions",
+            "events",
+            "dataBindings",
+            "tokenRefs"
+          ]
+        },
+        "memberId": { "$ref": "#/$defs/memberIdentifier" },
+        "replacementMemberId": { "$ref": "#/$defs/memberIdentifier" }
+      },
+      "additionalProperties": false
+    }
+  ]
+}

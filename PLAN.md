@@ -10,9 +10,9 @@ Cross-cutting product and value documentation lives in [Product Portfolio Bounda
 
 [Design-System Readiness Plan](plans/design-system-readiness.md) records the
 planning-only checklist for testing or supporting additional agent-friendly
-design-system candidates such as broader Spectrum slices or Astryx. It does not
-create implementation support, a proof command, schemas, fixtures, artifacts,
-evidence, CI gates, or product adoption claims.
+design-system candidates beyond the current bounded compiler adapters. It does
+not create implementation support, a proof command, schemas, fixtures,
+artifacts, evidence, CI gates, or product adoption claims.
 
 [Source Family Layout Mapping Proof Plan](plans/source-family-layout-mapping.md)
 records the implemented bounded Connect Authority proof for byte-preserving
@@ -51,14 +51,15 @@ distinct governed catalog with Checkbox plus one desktop token. Passing
 `artifacts/spectrum-checkbox-catalog/evidence.json` proves this one component
 addition only; it does not expand P2 or establish broader Spectrum support.
 
-[Spectrum Switch Catalog Proof Plan](plans/spectrum-switch-catalog.md) records
-the implemented bounded Connect Authority proof for one separately locked
-`components/switch.json` byte downstream of passing Checkbox evidence. It
-preserves all 36 Checkbox-baseline records by JCS hash and emits a distinct
-catalog with Switch plus one desktop token. Passing
-`artifacts/spectrum-switch-catalog/evidence.json` proves this one component
-addition only; it does not change P2 or Checkbox or establish broader Spectrum
-support.
+[Source-Independent Design-System Compiler Proof Plan](plans/design-system-compiler.md)
+records the implemented bounded Connect Authority proof for data-only Spectrum
+Switch and official Astryx core Button adapters. Both execute one shared
+ingestion kernel and one shared inert portable consumer without source-family
+or component branches. Passing
+`artifacts/design-system-compiler/evidence.json` proves these two bounded
+adapter runs and their closed consumer loops only; it does not change P2 or
+Checkbox, make legacy P3-P5 consumers portable, or establish broad Spectrum or
+Astryx support.
 
 [Capability Index Proof Target](plans/capability-index.md) records the
 implemented non-numbered proof for discovering and read-only verifying the 18
@@ -821,53 +822,62 @@ The target does not implement an in-place P2 expansion, full Spectrum support,
 live connectors, self-serve UI, action execution, runtime accessibility
 compliance, production adapters, SurfaceOps expansion, JudgmentKit, or A2UI.
 
-## Spectrum Switch Catalog Target
+## Source-Independent Design-System Compiler Target
 
-The `spectrum-switch-catalog` proof is a non-numbered authority target
-downstream of passing P2 and Checkbox evidence. The accepted Checkbox governed
-catalog is its immediate baseline. A Switch-specific immutable one-file lock
-binds the exact `components/switch.json` byte to the reviewed npm SRI, tarball
-SHA-256, and selected-file SHA-256; ordinary materialization is offline and
-never rewrites any P2, Checkbox, or Switch lock.
+The `design-system-compiler` proof is a non-numbered Connect Authority target.
+It replaces the bespoke Switch extension with one source-independent ingestion
+contract and one portable, proof-only downstream consumer. Separately locked
+Spectrum Switch and official Astryx core Button adapters declare source
+anchors, normalized facts, mappings, runtime-capability limits, and governance
+as checked data. Neither shared implementation contains a source-family or
+component branch.
 
 The proof path is:
 
 ```text
-artifacts/p2/evidence.json
-artifacts/spectrum-checkbox-catalog/evidence.json
-artifacts/spectrum-checkbox-catalog/governed-catalog.json
-sources/spectrum-switch-catalog/source-addendum.lock.json
-sources/spectrum-switch-catalog/manifest.json
-sources/spectrum-switch-catalog/mappings/*.json
-sources/spectrum-switch-catalog/npm/@adobe/spectrum-design-data/0.7.0/package/components/switch.json
-fixtures/spectrum-switch-catalog/**
-  -> artifacts/spectrum-switch-catalog/source-inventory.json
-  -> artifacts/spectrum-switch-catalog/source-mapping.json
-  -> artifacts/spectrum-switch-catalog/governed-catalog.json
-  -> artifacts/spectrum-switch-catalog/spectrum-switch-catalog-report.json
-  -> artifacts/spectrum-switch-catalog/evidence.json
+sources/design-system-compiler/*/source.lock.json
+sources/design-system-compiler/*/adapter.json
+sources/design-system-compiler/*/npm/**
+fixtures/design-system-compiler/**
+src/design-system-ingestion-kernel.js
+src/catalog-consumer-kernel.js
+  -> artifacts/design-system-compiler/<outputKey>/extract.json
+  -> artifacts/design-system-compiler/<outputKey>/catalog.json
+  -> artifacts/design-system-compiler/<outputKey>/governed-catalog.json
+  -> artifacts/design-system-compiler/<outputKey>/boundary-receipt.json
+  -> artifacts/design-system-compiler/<outputKey>/runtime-projection.json
+  -> artifacts/design-system-compiler/<outputKey>/render-plan.json
+  -> artifacts/design-system-compiler/<outputKey>/consumer-report.json
+  -> artifacts/design-system-compiler/design-system-compiler-report.json
+  -> artifacts/design-system-compiler/evidence.json
 ```
 
 Implemented command:
 
 ```bash
-interfacectl surfaces spectrum-switch-catalog proof --source sources/spectrum-switch-catalog --ingestion-evidence artifacts/p2/evidence.json --checkbox-evidence artifacts/spectrum-checkbox-catalog/evidence.json --catalog artifacts/spectrum-checkbox-catalog/governed-catalog.json --fixture fixtures/spectrum-switch-catalog --out artifacts/spectrum-switch-catalog
+interfacectl surfaces design-system-compiler proof --manifest fixtures/design-system-compiler/targets.manifest.json --out artifacts/design-system-compiler
 ```
 
-The command invokes the P2 and Checkbox deep integrity inspectors before it
-accepts Switch input. It verifies the exact source tree, one-file lock, pointer
-allowlist, reused registry/token bytes, manifest, mappings, schemas, fixtures,
-implementation closure, generated artifacts, report, and self-hashed evidence.
-It adds exactly six Switch props, three states, one purpose example, one `26px`
-desktop token, 13 accepted mappings, and two owner-bound non-executable review
-rows. The report preserves 36 Checkbox-baseline records by JCS hash. All 42
-valid, review, invalid, and causal-mutation expectations must match canonical
-diagnostics. Passing evidence records `promotionStatus: "review_required"`.
+The command verifies exact selected-file locks, exact typed locators,
+source-ref closure, complete mapping coverage, lossless mapped-leaf and member
+identifier justification, review-required inference, and the narrowing-only
+policy contract before
+compiling each adapter. A hash-bound boundary receipt feeds the same
+`web-static-portable` consumer for each catalog. The consumer emits one inert
+allowed render plan, blocks an unknown member, and keeps promotion requests
+`review_required`. Causal mutations prove that an unmapped authority addition,
+an invented lossless member key/identifier, a mapped boolean-default inversion,
+and a stale receipt fail closed. Final evidence requires one kernel hash and one
+consumer hash across both runs plus an empty source-specific implementation
+module list. Adapter/report/evidence cardinality and per-adapter artifact paths
+are derived from the manifest, so a qualifying third source remains a data-only
+addition.
 
-The target does not claim full Spectrum support, live connectors, self-serve
-connection, runtime behavior, accessibility compliance, production adapters,
-public APIs or SDKs, SurfaceOps expansion, JudgmentKit use, A2UI, or production
-readiness.
+Passing evidence records `promotionStatus: "review_required"`. The target does
+not change P2 or Checkbox; make P2, P3, P4, or P5 portable; claim broad Spectrum
+or Astryx support; infer runtime accessibility compliance; or authorize live
+connectors, self-serve connection, production adapters, public APIs or SDKs,
+SurfaceOps expansion, JudgmentKit, A2UI, or production readiness.
 
 ## Designer Workflow Trace Target
 The designer-workflow-trace proof is a non-numbered, cross-cutting proof-only target that consumes accepted P2, source-conformance, P3, P4, protocol, and native evidence. It emits one deterministic Button scenario index from design authority through governed catalog, diagnostics/review-required status, review/evaluation refs, static target handoff artifacts, and evidence status.
@@ -1074,13 +1084,15 @@ It does not modify P2, establish full Spectrum support, or authorize live
 connectors, self-serve UI, runtime accessibility compliance, production
 adapters, SurfaceOps expansion, JudgmentKit, or A2UI.
 
-The Spectrum Switch catalog subplan defines the separately locked addition of
-Switch to a distinct catalog downstream of passing Checkbox evidence. It
-preserves every Checkbox-baseline record by JCS hash and adds only one component
-and one token. It does not modify P2 or Checkbox, infer runtime behavior or
-accessibility compliance, or authorize broader Spectrum support, live
-connectors, self-serve UI, production adapters, SurfaceOps expansion,
-JudgmentKit, A2UI, or production readiness.
+The source-independent design-system compiler subplan defines two separately
+locked data-only adapters, one shared ingestion kernel, and one shared inert
+portable consumer. Spectrum Switch and official Astryx core Button each
+produce a governed catalog and a closed allowed, blocked, and review-required
+consumer loop without source-specific implementation modules. The target does
+not modify P2 or Checkbox, make legacy P3-P5 consumers portable, infer runtime
+behavior or accessibility compliance, or authorize broad Spectrum or Astryx
+support, live connectors, self-serve UI, production adapters, SurfaceOps
+expansion, JudgmentKit, A2UI, or production readiness.
 
 The capability-index subplan defines discovery and read-only verification over
 the 18 implemented proof targets other than itself. The index does not prove those

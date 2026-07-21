@@ -5,7 +5,7 @@ roadmap. It is subordinate to `VISION.md`, `PLAN.md`, the phase plans, and
 passing evidence. It does not create proof authority or broaden an implemented
 target.
 
-Last updated: 2026-07-18
+Last updated: 2026-07-20
 Current focus: **Connect Authority**
 
 ## Status Semantics
@@ -175,17 +175,22 @@ non-executable review rows. Every accepted P2 component and token record keeps
 the same JCS hash. Passing evidence records all 25 fixture results and
 `promotionStatus: "review_required"`.
 
-The Spectrum Switch catalog slice extends that accepted authority chain without
-changing P2 or Checkbox. A Switch-specific immutable addendum lock binds the
-exact `components/switch.json` byte and ordinary materialization remains offline
-and fail-closed. Passing P2 and Checkbox evidence plus the Checkbox governed
-catalog are three explicit upstream boundaries. The new catalog preserves all
-36 Checkbox-baseline records by JCS hash, adds exactly Switch with six props,
-three states, one purpose example, one `26px` desktop token, 13 accepted
-mappings, and two owner-bound non-executable review rows. It adds no actions,
-events, slots, data bindings, runtime key bindings, toggle or read-only runtime
-behavior, or runtime accessibility claim. Passing evidence records all 42
-fixture results with `promotionStatus: "review_required"`.
+The source-independent design-system compiler slice replaces the bespoke
+Switch extension path. Separately locked, data-only adapters normalize bounded
+Spectrum Switch and official Astryx core Button facts through one shared
+ingestion kernel. Both runs use the same source preflight, typed-anchor,
+mapping-coverage, authority-ceiling, catalog, report, and evidence code. The
+implementation contains no Spectrum, Astryx, Switch, or Button branch.
+
+The same target closes the first portable downstream loop for both adapters. A
+hash-bound catalog receipt feeds one unchanged `web-static-portable` consumer,
+which emits an inert render plan for the allowed fixture, blocks an unknown
+member, and keeps promotion requests `review_required`. The compiler evidence
+requires shared kernel and consumer hashes, an empty source-specific module
+list, causal unmapped-authority, invented-member-identifier,
+mapped-default-inversion, and stale-receipt mutations, and complete
+manifest-derived artifact closure.
+Passing evidence records `promotionStatus: "review_required"`.
 
 Complete when a team can declare its authoritative sources, precedence,
 policies, and review ownership without repo-specific implementation changes,
@@ -195,19 +200,19 @@ instances of one fixed source-family package ABI plus one fixed alternate
 physical layout mapped onto that same ABI and one fixed alternate source-ref
 prefix normalized onto its canonical namespace, plus one explicit team-owned
 declaration for the exact fixture-local `TeamButton` to accepted P2 `Button`
-identity relation, plus separately locked Checkbox and Switch catalog
-expansions.
+identity relation, plus the separately locked Checkbox catalog and two bounded
+data-only adapters through the source-independent design-system compiler.
 Arbitrary additional source layouts, namespace pairs, component identities or
-alias registries, component coverage beyond Switch, live
-connectors, and a self-serve connection path remain open and require separate
-proof.
+alias registries, design-system families beyond the two compiler adapters,
+broader component coverage, live connectors, and a self-serve connection path
+remain open and require separate proof.
 
-What's next: use the passing Switch evidence and its unchanged Checkbox
-baseline to decide whether the next bounded learning target should add another
-source-justified component or test a separate source-family eligibility slice.
+What's next: use the shared compiler and consumer evidence to measure the next
+adapter's data-only cost before accepting another component or source family.
 Current evidence does not authorize arbitrary additional
 layouts, namespace pairs, component identities, alias registries, or semantic
-mappings; an in-place P2 expansion or broader Spectrum coverage; live connectors; self-serve UI; runtime
+mappings; an in-place P2 expansion; broad Spectrum or Astryx support; legacy
+P3, P4, or P5 portability; live connectors; self-serve UI; runtime
 accessibility claims; production adapters; SurfaceOps expansion; or JudgmentKit
 use.
 

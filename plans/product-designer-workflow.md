@@ -76,21 +76,25 @@ catalog. A downstream Checkbox workflow remains unimplemented until a target
 adds its own schemas, fixtures, diagnostics, report or artifacts, evidence, and
 passing gate.
 
-## Switch Authority Walkthrough
+## Portable Compiler And Consumer Walkthrough
 
-The Switch target demonstrates one more governed catalog step without turning
-source prose into runtime behavior. Its source inventory binds the independently
-locked Switch byte plus reused P2 registry/token facts. The mapping shows six
-props, three state mappings, one `26px` token, 13 accepted rows, and two
-owner-bound review rows. The report makes all 36 Checkbox-baseline preservation
-hashes inspectable alongside valid, review, invalid, and causal mutation cases.
+The design-system compiler target lets designers compare two bounded source
+families without changing compiler or consumer code. Separately locked Spectrum
+Switch and official Astryx core Button adapters expose their exact locators,
+normalized facts, complete mappings, and review requirements as data. The
+per-adapter extract, catalog, and governed catalog show what each source can
+authorize. Shared implementation hashes and an empty source-specific module
+list show that the compiler path did not branch for either source.
 
-Designers can use this slice to distinguish declared `isReadOnly` and
-accessibility metadata from unproved read-only interaction, toggle execution,
-or runtime accessibility compliance. The current Button trace, protocol,
-native, and SurfaceOps targets do not consume the Switch catalog. A downstream
-Switch workflow remains unimplemented until a target adds its own complete
-proof shape and passing evidence.
+Each governed catalog then crosses a hash-bound receipt into the same inert
+`web-static-portable` consumer. Designers can inspect the allowed render plan,
+the blocked unknown-member result, and the non-promoted review request under
+`artifacts/design-system-compiler/<outputKey>/`, with aggregate closure in
+`artifacts/design-system-compiler/design-system-compiler-report.json` and
+`artifacts/design-system-compiler/evidence.json`. The walkthrough proves this
+bounded compiler-to-consumer loop only. The existing Button trace, P3, P4, P5,
+and SurfaceOps targets do not consume these catalogs and gain no portability or
+authority from this target.
 
 ## Designer Workflow Trace
 A designer workflow trace makes the evidence walkthrough easier to inspect by consolidating refs into one deterministic report. The current repo implements the first proof-only trace target for one Button scenario over accepted P2, source-conformance, P3, P4, protocol, and native evidence.
@@ -133,4 +137,4 @@ Deprioritize work that creates apparent designer value while bypassing the proof
 ## Current Scope
 The repo currently demonstrates this workflow as proof infrastructure. It is suitable for evidence-backed walkthroughs and design-partner discovery, not production adoption or self-serve product use.
 
-Implemented proof slices cover bounded source ingestion, separately locked Checkbox and Switch catalog expansions, reusable compilation across two compatible instances of one fixed source-family package, governed catalog output, deterministic diagnostics, inert review and judgment artifacts, static protocol/native handoff targets, the first report/evidence-only designer workflow trace index, and a bounded local-loopback SurfaceOps kanban live adapter proof. Broader trace scenarios, arbitrary source-family shapes, component coverage beyond Switch, production SurfaceOps workflow, production adapters, APIs, SDKs, live runtimes, live JudgmentKit, A2UI, and production-facing designer experiences remain future target-specific work until they add their own proof shape and passing evidence.
+Implemented proof slices cover bounded source ingestion, the separately locked Checkbox catalog expansion, a source-independent compiler and inert portable consumer for bounded Spectrum Switch and Astryx core Button adapters, reusable compilation across two compatible instances of one fixed source-family package, governed catalog output, deterministic diagnostics, inert review and judgment artifacts, static protocol/native handoff targets, the first report/evidence-only designer workflow trace index, and a bounded local-loopback SurfaceOps kanban live adapter proof. Broader trace scenarios, arbitrary source-family shapes, additional compiler adapters, legacy P3-P5 portability, production SurfaceOps workflow, production adapters, APIs, SDKs, live runtimes, live JudgmentKit, A2UI, and production-facing designer experiences remain future target-specific work until they add their own proof shape and passing evidence.
