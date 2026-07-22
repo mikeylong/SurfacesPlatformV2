@@ -1,0 +1,12 @@
+{
+  "schemaId": "platform-architecture-mutation.v0",
+  "mutationId": "identity-regex",
+  "edits": [
+    {
+      "kind": "append-file",
+      "path": "src/design-system-ingestion-kernel.js",
+      "content": "\nexport function regexIdentityBranch(adapter) { return /^spe.*rum$/i.test(adapter.sourceFamily); }\n"
+    }
+  ],
+  "expectedCode": "IDENTITY_CONTROL_FLOW"
+}

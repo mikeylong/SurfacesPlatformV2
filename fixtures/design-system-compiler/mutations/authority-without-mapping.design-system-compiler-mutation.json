@@ -1,0 +1,21 @@
+{
+  "schemaId": "design-system-compiler-mutation.v0",
+  "version": "0.0.0",
+  "mutationId": "authority-without-mapping",
+  "adapterId": "astryx-core-button",
+  "operation": "add-authority-without-mapping",
+  "expectedCode": "MAPPING_COVERAGE_INCOMPLETE",
+  "componentIndex": 0,
+  "memberGroup": "actions",
+  "memberId": "execute",
+  "memberValue": {
+    "id": "execute",
+    "kind": "runtime",
+    "allowedTargets": [],
+    "destructive": false,
+    "requiresReview": false,
+    "disabledUntilImplemented": false,
+    "dataBindingConstraints": {},
+    "sourceRef": "astryx-docs://npm/@astryxdesign/core@0.1.2/package/src/Button/Button.doc.mjs#anchor=click-action"
+  }
+}

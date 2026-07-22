@@ -1,0 +1,13 @@
+{
+  "schemaId": "platform-architecture-mutation.v0",
+  "mutationId": "adapter-path-traversal",
+  "comparisonMode": "bootstrap",
+  "edits": [
+    {
+      "kind": "write-file",
+      "path": "fixtures/design-system-compiler/targets.manifest.json",
+      "content": "{\"schemaId\":\"design-system-compiler-manifest.v0\",\"version\":\"0.0.0\",\"artifactRoot\":\"artifacts/design-system-compiler\",\"adapters\":[{\"adapterPath\":\"sources/design-system-compiler/../side-path/adapter.json\",\"sourceRoot\":\"sources/design-system-compiler/astryx-core/npm/@astryxdesign/core/0.1.2/package\",\"outputKey\":\"astryx-core-button\",\"expectedComponentIds\":[\"Button\"]},{\"adapterPath\":\"sources/design-system-compiler/spectrum-switch/adapter.json\",\"sourceRoot\":\"sources/design-system-compiler/spectrum-switch/npm/@adobe/spectrum-design-data/0.7.0/package\",\"outputKey\":\"spectrum-switch\",\"expectedComponentIds\":[\"switch\"]}],\"mutationFixtures\":[\"fixtures/design-system-compiler/mutations/authority-without-mapping.design-system-compiler-mutation.json\",\"fixtures/design-system-compiler/mutations/lossless-member-identifier-invention.design-system-compiler-mutation.json\",\"fixtures/design-system-compiler/mutations/lossless-target-inversion.design-system-compiler-mutation.json\",\"fixtures/design-system-compiler/mutations/receipt-catalog-hash-mismatch.design-system-compiler-mutation.json\"],\"expectedRun\":{\"adapterCount\":2,\"status\":\"pass\",\"promotionStatus\":\"review_required\",\"consumerResultsPerAdapter\":3,\"diagnosticCodes\":[\"CONSUMER_REVIEW_REQUIRED\",\"CONSUMER_UNKNOWN_MEMBER\"]}}\n"
+    }
+  ],
+  "expectedCode": "ADAPTER_MANIFEST_INVALID"
+}

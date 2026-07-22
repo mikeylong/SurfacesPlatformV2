@@ -1,0 +1,199 @@
+{
+  "$id": "https://surfaces.dev/schemas/design-system-compiler/catalog-boundary-receipt.v0.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "catalog-boundary-receipt.v0",
+  "schemaId": "catalog-boundary-receipt.v0",
+  "version": "0.0.0",
+  "$defs": {
+    "relativePath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?!.*\\\\)(?!.*(?:^|/)\\.{1,2}(?:/|$))(?!.*//).+$"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "ref": {
+      "type": "object",
+      "required": ["path", "schemaId", "hashAlgorithm", "hash"],
+      "properties": {
+        "path": { "$ref": "#/$defs/relativePath" },
+        "schemaId": {
+          "enum": [
+            "portable-design-source-lock.v0",
+            "design-system-adapter.v0",
+            "extract.v0",
+            "runtime-catalog.v0",
+            "catalog-consumer-fixture.v0",
+            "catalog-boundary-receipt.v0",
+            "catalog-runtime-projection.v0",
+            "catalog-render-plan.v0",
+            "catalog-consumer-report.v0",
+            "design-system-compiler-report.v0",
+            "design-system-compiler-evidence.v0"
+          ]
+        },
+        "hashAlgorithm": { "const": "sha256" },
+        "hash": { "$ref": "#/$defs/sha256" }
+      },
+      "additionalProperties": false
+    },
+    "environment": {
+      "type": "object",
+      "required": [
+        "golden",
+        "timestampMode",
+        "timestampOverride",
+        "timezone",
+        "locale",
+        "pathStyle",
+        "jsonCanonicalization",
+        "numberSerialization",
+        "schemaOutputFormat",
+        "host"
+      ],
+      "properties": {
+        "golden": { "const": true },
+        "timestampMode": { "const": "normalized" },
+        "timestampOverride": { "type": "null" },
+        "timezone": { "const": "UTC" },
+        "locale": { "const": "en-US-POSIX" },
+        "pathStyle": { "const": "posix-relative" },
+        "jsonCanonicalization": { "const": "rfc8785" },
+        "numberSerialization": { "const": "rfc8785" },
+        "schemaOutputFormat": { "const": "basic" },
+        "host": { "type": "null" }
+      },
+      "additionalProperties": false
+    },
+    "provenance": {
+      "type": "object",
+      "required": [
+        "generator",
+        "generatedAt",
+        "sourceRefs",
+        "command",
+        "args",
+        "environment"
+      ],
+      "properties": {
+        "generator": {
+          "type": "object",
+          "required": ["name", "version"],
+          "properties": {
+            "name": { "const": "interfacectl-design-system-catalog-boundary" },
+            "version": { "const": "0.0.0" }
+          },
+          "additionalProperties": false
+        },
+        "generatedAt": { "const": "1970-01-01T00:00:00.000Z" },
+        "sourceRefs": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/relativePath" }
+        },
+        "command": { "type": "null" },
+        "args": { "type": "null" },
+        "environment": { "$ref": "#/$defs/environment" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "type": "object",
+  "required": [
+    "schemaId",
+    "version",
+    "adapterId",
+    "status",
+    "promotionStatus",
+    "sourceLockRef",
+    "adapterRef",
+    "extractRef",
+    "catalogRef",
+    "governedCatalogRef",
+    "compiler",
+    "diagnostics",
+    "provenance"
+  ],
+  "properties": {
+    "schemaId": { "const": "catalog-boundary-receipt.v0" },
+    "version": { "const": "0.0.0" },
+    "adapterId": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$"
+    },
+    "status": { "const": "pass" },
+    "promotionStatus": { "const": "review_required" },
+    "sourceLockRef": {
+      "allOf": [
+        { "$ref": "#/$defs/ref" },
+        {
+          "properties": { "schemaId": { "const": "portable-design-source-lock.v0" } },
+          "required": ["schemaId"]
+        }
+      ]
+    },
+    "adapterRef": {
+      "allOf": [
+        { "$ref": "#/$defs/ref" },
+        {
+          "properties": { "schemaId": { "const": "design-system-adapter.v0" } },
+          "required": ["schemaId"]
+        }
+      ]
+    },
+    "extractRef": {
+      "allOf": [
+        { "$ref": "#/$defs/ref" },
+        {
+          "properties": { "schemaId": { "const": "extract.v0" } },
+          "required": ["schemaId"]
+        }
+      ]
+    },
+    "catalogRef": {
+      "allOf": [
+        { "$ref": "#/$defs/ref" },
+        {
+          "properties": { "schemaId": { "const": "runtime-catalog.v0" } },
+          "required": ["schemaId"]
+        }
+      ]
+    },
+    "governedCatalogRef": {
+      "allOf": [
+        { "$ref": "#/$defs/ref" },
+        {
+          "properties": { "schemaId": { "const": "runtime-catalog.v0" } },
+          "required": ["schemaId"]
+        }
+      ]
+    },
+    "compiler": {
+      "type": "object",
+      "required": ["name", "version", "implementationHash"],
+      "properties": {
+        "name": { "const": "surfaces-design-system-ingestion-kernel" },
+        "version": { "const": "0.0.0" },
+        "implementationHash": {
+          "$ref": "#/$defs/sha256",
+          "description": "SHA-256 of the JCS-ordered transitive local implementation closure, including shared runtime and authority modules."
+        }
+      },
+      "additionalProperties": false
+    },
+    "diagnostics": {
+      "allOf": [
+        {
+          "$ref": "https://surfaces.dev/schemas/design-system-compiler/design-system-compiler-diagnostics.v0.schema.json"
+        },
+        { "maxItems": 0 }
+      ]
+    },
+    "provenance": { "$ref": "#/$defs/provenance" }
+  },
+  "additionalProperties": false
+}

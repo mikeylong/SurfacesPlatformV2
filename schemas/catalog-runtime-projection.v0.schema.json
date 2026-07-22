@@ -1,0 +1,124 @@
+{
+  "$id": "https://surfaces.dev/schemas/design-system-compiler/catalog-runtime-projection.v0.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "catalog-runtime-projection.v0",
+  "schemaId": "catalog-runtime-projection.v0",
+  "version": "0.0.0",
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "relativePath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?!.*\\\\)(?!.*(?:^|/)\\.{1,2}(?:/|$))(?!.*//).+$"
+    },
+    "receiptRef": {
+      "allOf": [
+        {
+          "$ref": "https://surfaces.dev/schemas/design-system-compiler/catalog-boundary-receipt.v0.schema.json#/$defs/ref"
+        },
+        {
+          "properties": { "schemaId": { "const": "catalog-boundary-receipt.v0" } },
+          "required": ["schemaId"]
+        }
+      ]
+    },
+    "catalogRef": {
+      "allOf": [
+        {
+          "$ref": "https://surfaces.dev/schemas/design-system-compiler/catalog-boundary-receipt.v0.schema.json#/$defs/ref"
+        },
+        {
+          "properties": { "schemaId": { "const": "runtime-catalog.v0" } },
+          "required": ["schemaId"]
+        }
+      ]
+    }
+  },
+  "type": "object",
+  "required": [
+    "schemaId",
+    "version",
+    "adapter",
+    "adapterId",
+    "receiptRef",
+    "catalogRef",
+    "components",
+    "tokens",
+    "runtimeCapabilities",
+    "governance",
+    "diagnostics",
+    "provenance"
+  ],
+  "properties": {
+    "schemaId": { "const": "catalog-runtime-projection.v0" },
+    "version": { "const": "0.0.0" },
+    "adapter": { "const": "web-static-portable" },
+    "adapterId": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$"
+    },
+    "receiptRef": { "$ref": "#/$defs/receiptRef" },
+    "catalogRef": { "$ref": "#/$defs/catalogRef" },
+    "components": {
+      "$ref": "https://surfaces.dev/schemas/p0/runtime-catalog.v0.schema.json#/properties/components"
+    },
+    "tokens": {
+      "$ref": "https://surfaces.dev/schemas/p0/runtime-catalog.v0.schema.json#/$defs/tokenTree"
+    },
+    "runtimeCapabilities": {
+      "$ref": "https://surfaces.dev/schemas/p0/runtime-catalog.v0.schema.json#/properties/runtimeCapabilities"
+    },
+    "governance": {
+      "allOf": [
+        {
+          "$ref": "https://surfaces.dev/schemas/p0/runtime-catalog.v0.schema.json#/properties/governance"
+        },
+        {
+          "properties": { "promotionStatus": { "const": "review_required" } },
+          "required": ["promotionStatus"]
+        }
+      ]
+    },
+    "diagnostics": {
+      "allOf": [
+        {
+          "$ref": "https://surfaces.dev/schemas/design-system-compiler/design-system-compiler-diagnostics.v0.schema.json"
+        },
+        { "maxItems": 0 }
+      ]
+    },
+    "provenance": {
+      "type": "object",
+      "required": [
+        "sourceUri",
+        "sourceHash",
+        "generator",
+        "implementationHash",
+        "generatedAt",
+        "host"
+      ],
+      "properties": {
+        "sourceUri": { "$ref": "#/$defs/relativePath" },
+        "sourceHash": { "$ref": "#/$defs/sha256" },
+        "generator": {
+          "type": "object",
+          "required": ["name", "version", "adapter"],
+          "properties": {
+            "name": { "const": "surfaces-portable-catalog-consumer" },
+            "version": { "const": "0.0.0" },
+            "adapter": { "const": "web-static-portable" }
+          },
+          "additionalProperties": false
+        },
+        "implementationHash": { "$ref": "#/$defs/sha256" },
+        "generatedAt": { "const": "1970-01-01T00:00:00.000Z" },
+        "host": { "type": "null" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

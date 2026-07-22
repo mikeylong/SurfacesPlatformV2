@@ -444,7 +444,7 @@ check:source-family-component-identity-mapping:untracked
 
 The `source-family-component-identity-mapping-proof` GitHub job depends on
 `source-family-namespace-mapping-proof`. The capability-index proof depends on
-passing component-identity evidence and covers 17 implemented targets other than
+passing component-identity evidence and covers 18 implemented targets other than
 itself. No designer-workflow-trace, SurfaceOps, JudgmentKit, runtime, adapter, or
 other consumer gains authority or a new dependency merely because this target
 passes.

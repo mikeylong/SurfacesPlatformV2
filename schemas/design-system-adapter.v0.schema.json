@@ -1,0 +1,370 @@
+{
+  "$id": "https://surfaces.dev/schemas/design-system-compiler/design-system-adapter.v0.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "design-system-adapter.v0",
+  "schemaId": "design-system-adapter.v0",
+  "version": "0.0.0",
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+    },
+    "kebabIdentifier": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$"
+    },
+    "relativePath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?!.*\\\\)(?!.*(?:^|/)\\.{1,2}(?:/|$))(?!.*//).+$"
+    },
+    "sourceRef": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[a-z][a-z0-9+.-]*://[^\\s]+$"
+    },
+    "jsonValue": {
+      "oneOf": [
+        { "type": "null" },
+        { "type": "boolean" },
+        { "type": "number" },
+        { "type": "string" },
+        {
+          "type": "array",
+          "items": { "$ref": "#/$defs/jsonValue" }
+        },
+        {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/jsonValue" }
+        }
+      ]
+    },
+    "anchor": {
+      "type": "object",
+      "required": ["sourceRef", "path", "selector"],
+      "properties": {
+        "sourceRef": { "$ref": "#/$defs/sourceRef" },
+        "path": { "$ref": "#/$defs/relativePath" },
+        "selector": {
+          "oneOf": [
+            {
+              "type": "object",
+              "required": ["kind", "pointer", "expected"],
+              "properties": {
+                "kind": { "const": "json-pointer" },
+                "pointer": {
+                  "type": "string",
+                  "pattern": "^(/([^/~]|~0|~1)*)*$"
+                },
+                "expected": { "$ref": "#/$defs/jsonValue" }
+              },
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "required": ["kind", "startText", "endText", "contains"],
+              "properties": {
+                "kind": { "const": "text-anchor" },
+                "startText": { "type": "string", "minLength": 1 },
+                "endText": { "type": "string", "minLength": 1 },
+                "contains": {
+                  "type": "array",
+                  "minItems": 1,
+                  "uniqueItems": true,
+                  "items": { "type": "string", "minLength": 1 }
+                }
+              },
+              "additionalProperties": false
+            }
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "normalizedComponent": {
+      "type": "object",
+      "required": [
+        "id",
+        "sourceRef",
+        "props",
+        "variants",
+        "states",
+        "slots",
+        "actions",
+        "events",
+        "dataBindings",
+        "tokenRefs",
+        "accessibility",
+        "examples"
+      ],
+      "properties": {
+        "id": { "$ref": "#/$defs/identifier" },
+        "sourceRef": { "$ref": "#/$defs/sourceRef" },
+        "props": {
+          "$ref": "https://surfaces.dev/schemas/p0/runtime-catalog.v0.schema.json#/properties/components/additionalProperties/properties/props"
+        },
+        "variants": {
+          "$ref": "https://surfaces.dev/schemas/p0/runtime-catalog.v0.schema.json#/properties/components/additionalProperties/properties/variants"
+        },
+        "states": {
+          "$ref": "https://surfaces.dev/schemas/p0/runtime-catalog.v0.schema.json#/properties/components/additionalProperties/properties/states"
+        },
+        "slots": {
+          "$ref": "https://surfaces.dev/schemas/p0/runtime-catalog.v0.schema.json#/properties/components/additionalProperties/properties/slots"
+        },
+        "actions": {
+          "$ref": "https://surfaces.dev/schemas/p0/runtime-catalog.v0.schema.json#/properties/components/additionalProperties/properties/actions"
+        },
+        "events": {
+          "$ref": "https://surfaces.dev/schemas/p0/runtime-catalog.v0.schema.json#/properties/components/additionalProperties/properties/events"
+        },
+        "dataBindings": {
+          "$ref": "https://surfaces.dev/schemas/p0/runtime-catalog.v0.schema.json#/properties/components/additionalProperties/properties/dataBindings"
+        },
+        "tokenRefs": {
+          "$ref": "https://surfaces.dev/schemas/p0/runtime-catalog.v0.schema.json#/properties/components/additionalProperties/properties/tokenRefs"
+        },
+        "accessibility": {
+          "$ref": "https://surfaces.dev/schemas/p0/runtime-catalog.v0.schema.json#/properties/components/additionalProperties/properties/accessibility"
+        },
+        "examples": {
+          "$ref": "https://surfaces.dev/schemas/p0/runtime-catalog.v0.schema.json#/properties/components/additionalProperties/properties/examples"
+        }
+      },
+      "additionalProperties": false
+    },
+    "governanceRule": {
+      "type": "object",
+      "required": ["executable", "sourceRef"],
+      "properties": {
+        "executable": { "const": false },
+        "sourceRef": { "$ref": "#/$defs/sourceRef" }
+      },
+      "additionalProperties": false
+    },
+    "mapping": {
+      "type": "object",
+      "required": [
+        "mappingId",
+        "targetPointer",
+        "sourceRefs",
+        "sourceValue",
+        "targetValue",
+        "transform",
+        "authorityMode",
+        "reviewStatus"
+      ],
+      "properties": {
+        "mappingId": { "$ref": "#/$defs/kebabIdentifier" },
+        "targetPointer": {
+          "type": "string",
+          "pattern": "^/([^/~]|~0|~1)+(?:/([^/~]|~0|~1)+)*$"
+        },
+        "sourceRefs": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/sourceRef" }
+        },
+        "sourceValue": { "$ref": "#/$defs/jsonValue" },
+        "targetValue": { "$ref": "#/$defs/jsonValue" },
+        "transform": {
+          "enum": [
+            "identity",
+            "rename",
+            "strip-css-custom-property-prefix",
+            "structured-normalization"
+          ]
+        },
+        "authorityMode": {
+          "enum": ["lossless", "reviewed-inference"]
+        },
+        "reviewStatus": { "enum": ["accepted", "review_required"] }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "transform": { "const": "rename" } },
+            "required": ["transform"]
+          },
+          "then": {
+            "properties": {
+              "sourceValue": { "type": "string", "minLength": 1 },
+              "targetValue": { "type": "string", "minLength": 1 },
+              "authorityMode": { "const": "reviewed-inference" }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": { "transform": { "const": "strip-css-custom-property-prefix" } },
+            "required": ["transform"]
+          },
+          "then": {
+            "properties": {
+              "sourceValue": { "type": "string", "pattern": "^--.+" },
+              "targetValue": { "type": "string", "minLength": 1 }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": { "authorityMode": { "const": "reviewed-inference" } },
+            "required": ["authorityMode"]
+          },
+          "then": {
+            "properties": {
+              "reviewStatus": { "const": "review_required" }
+            }
+          }
+        }
+      ],
+      "additionalProperties": false
+    }
+  },
+  "type": "object",
+  "required": [
+    "schemaId",
+    "version",
+    "adapterId",
+    "sourceFamily",
+    "sourceLockPath",
+    "catalogId",
+    "sourceRefPrefix",
+    "policyContract",
+    "anchors",
+    "normalizedExtract",
+    "runtimeCapabilities",
+    "governance",
+    "mappings",
+    "consumerFixtures"
+  ],
+  "properties": {
+    "schemaId": { "const": "design-system-adapter.v0" },
+    "version": { "const": "0.0.0" },
+    "adapterId": { "$ref": "#/$defs/kebabIdentifier" },
+    "sourceFamily": { "type": "string", "minLength": 1 },
+    "sourceLockPath": { "$ref": "#/$defs/relativePath" },
+    "catalogId": { "$ref": "#/$defs/kebabIdentifier" },
+    "sourceRefPrefix": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9+.-]*://[^\\s]+/$"
+    },
+    "policyContract": {
+      "type": "object",
+      "required": ["authority", "runtimeCapabilitiesMode", "governanceMode"],
+      "properties": {
+        "authority": { "const": "narrowing-only" },
+        "runtimeCapabilitiesMode": { "const": "inert-derived-only" },
+        "governanceMode": { "const": "owner-review-required" }
+      },
+      "additionalProperties": false
+    },
+    "anchors": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": { "$ref": "#/$defs/identifier" },
+      "additionalProperties": { "$ref": "#/$defs/anchor" }
+    },
+    "normalizedExtract": {
+      "type": "object",
+      "required": [
+        "fixtureId",
+        "sourceUri",
+        "tokens",
+        "components",
+        "sourceRefs",
+        "provenance"
+      ],
+      "properties": {
+        "fixtureId": { "$ref": "#/$defs/kebabIdentifier" },
+        "sourceUri": { "$ref": "#/$defs/relativePath" },
+        "tokens": {
+          "$ref": "https://surfaces.dev/schemas/p0/runtime-catalog.v0.schema.json#/$defs/tokenTree"
+        },
+        "components": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/normalizedComponent" }
+        },
+        "sourceRefs": {
+          "type": "object",
+          "minProperties": 1,
+          "propertyNames": { "$ref": "#/$defs/identifier" },
+          "additionalProperties": { "$ref": "#/$defs/sourceRef" }
+        },
+        "provenance": {
+          "type": "object",
+          "required": ["adapterKind", "upstreamCodeExecuted"],
+          "properties": {
+            "adapterKind": {
+              "enum": [
+                "declarative-json-pointer",
+                "declarative-text-anchor",
+                "declarative-mixed-anchor"
+              ]
+            },
+            "upstreamCodeExecuted": { "const": false }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "runtimeCapabilities": {
+      "type": "object",
+      "required": ["actionExecution", "adapterTarget", "runtimeProjection"],
+      "properties": {
+        "actionExecution": { "const": "disabled" },
+        "adapterTarget": { "const": "web-static-inert" },
+        "runtimeProjection": { "const": "catalog-derived" }
+      },
+      "additionalProperties": false
+    },
+    "governance": {
+      "type": "object",
+      "required": ["rules", "results", "promotionStatus"],
+      "properties": {
+        "rules": {
+          "type": "object",
+          "minProperties": 1,
+          "propertyNames": { "$ref": "#/$defs/identifier" },
+          "additionalProperties": { "$ref": "#/$defs/governanceRule" }
+        },
+        "results": {
+          "type": "object",
+          "required": ["reviewRequiredMappings"],
+          "properties": {
+            "reviewRequiredMappings": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": { "type": "string", "minLength": 1 }
+            }
+          },
+          "additionalProperties": false
+        },
+        "promotionStatus": { "const": "review_required" }
+      },
+      "additionalProperties": false
+    },
+    "mappings": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/mapping" }
+    },
+    "consumerFixtures": {
+      "type": "object",
+      "required": ["allowed", "blocked", "review"],
+      "properties": {
+        "allowed": { "$ref": "#/$defs/relativePath" },
+        "blocked": { "$ref": "#/$defs/relativePath" },
+        "review": { "$ref": "#/$defs/relativePath" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

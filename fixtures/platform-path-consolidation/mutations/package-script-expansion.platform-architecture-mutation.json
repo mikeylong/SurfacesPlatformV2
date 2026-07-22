@@ -1,0 +1,12 @@
+{
+  "schemaId": "platform-architecture-mutation.v0",
+  "mutationId": "package-script-expansion",
+  "edits": [
+    {
+      "kind": "append-file",
+      "path": "package.json",
+      "content": "\n"
+    }
+  ],
+  "expectedCode": "FROZEN_ARCHITECTURE_FILE_DRIFT"
+}

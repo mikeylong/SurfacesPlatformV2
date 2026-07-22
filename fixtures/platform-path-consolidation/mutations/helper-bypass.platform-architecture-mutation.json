@@ -1,0 +1,17 @@
+{
+  "schemaId": "platform-architecture-mutation.v0",
+  "mutationId": "helper-bypass",
+  "edits": [
+    {
+      "kind": "write-file",
+      "path": "src/neutral-helper.js",
+      "content": "export function sourceSpecific(value) { return value; }\n"
+    },
+    {
+      "kind": "append-file",
+      "path": "src/catalog-authority.js",
+      "content": "\nimport { sourceSpecific } from \"./neutral-helper.js\";\nexport const helperBypass = sourceSpecific;\n"
+    }
+  ],
+  "expectedCode": "PROTECTED_DEPENDENCY_UNPROTECTED"
+}

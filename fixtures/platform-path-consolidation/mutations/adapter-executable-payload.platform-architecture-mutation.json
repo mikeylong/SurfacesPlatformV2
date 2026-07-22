@@ -1,0 +1,13 @@
+{
+  "schemaId": "platform-architecture-mutation.v0",
+  "mutationId": "adapter-executable-payload",
+  "comparisonMode": "bootstrap",
+  "edits": [
+    {
+      "kind": "write-file",
+      "path": "fixtures/design-system-compiler/source-side-path.js",
+      "content": "export const sourceSidePath = true;\n"
+    }
+  ],
+  "expectedCode": "ADAPTER_NOT_DATA_ONLY"
+}

@@ -1,0 +1,287 @@
+{
+  "$id": "https://surfaces.dev/schemas/design-system-compiler/design-system-compiler-diagnostics.v0.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "design-system-compiler-diagnostics.v0",
+  "schemaId": "design-system-compiler-diagnostics.v0",
+  "version": "0.0.0",
+  "$defs": {
+    "relativePath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?!.*\\\\)(?!.*(?:^|/)\\.{1,2}(?:/|$))(?!.*//).+$"
+    },
+    "sourceLocator": {
+      "oneOf": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9+.-]*://[^\\s]+$"
+        },
+        { "$ref": "#/$defs/relativePath" },
+        { "type": "null" }
+      ]
+    },
+    "kernelAction": {
+      "const": "Reject the run and correct the checked source, adapter mapping, or compiler output before promotion."
+    },
+    "consumerBlockAction": {
+      "const": "Reject the request without rendering, executing actions, or producing side effects."
+    },
+    "consumerReviewAction": {
+      "const": "Preserve owner review and do not emit a promoted render plan."
+    },
+    "diagnostic": {
+      "type": "object",
+      "required": [
+        "code",
+        "severity",
+        "message",
+        "stage",
+        "path",
+        "sourceRef",
+        "artifactPath",
+        "promotionStatus",
+        "suggestedAction"
+      ],
+      "properties": {
+        "code": {
+          "enum": [
+            "SOURCE_LOCK_MISMATCH",
+            "SOURCE_IDENTITY_REUSED",
+            "SOURCE_REF_UNRESOLVED",
+            "MAPPING_SOURCE_MISMATCH",
+            "MAPPING_TARGET_MISMATCH",
+            "MAPPING_COVERAGE_INCOMPLETE",
+            "MAPPING_AUTHORITY_UNJUSTIFIED",
+            "COMPILER_AUTHORITY_ESCALATION",
+            "CATALOG_BOUNDARY_INVALID",
+            "CONSUMER_UNKNOWN_COMPONENT",
+            "CONSUMER_UNKNOWN_MEMBER",
+            "CONSUMER_INVALID_VALUE",
+            "CONSUMER_REVIEW_REQUIRED",
+            "CONSUMER_SOURCE_REF_UNRESOLVED",
+            "CONSUMER_CONSTRAINT_VIOLATION",
+            "EVIDENCE_HASH_MISMATCH"
+          ]
+        },
+        "severity": { "enum": ["review", "error"] },
+        "message": { "type": "string", "minLength": 1 },
+        "stage": {
+          "enum": [
+            "source-preflight",
+            "adapter",
+            "compile",
+            "catalog-boundary",
+            "consumer",
+            "evidence"
+          ]
+        },
+        "path": {
+          "type": "string",
+          "pattern": "^(/([^/~]|~0|~1)*)*$"
+        },
+        "sourceRef": { "$ref": "#/$defs/sourceLocator" },
+        "artifactPath": { "$ref": "#/$defs/relativePath" },
+        "promotionStatus": { "enum": ["review_required", "blocked"] },
+        "suggestedAction": { "type": "string", "minLength": 1 }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "code": { "const": "SOURCE_LOCK_MISMATCH" } }, "required": ["code"] },
+          "then": {
+            "properties": {
+              "severity": { "const": "error" },
+              "message": { "const": "The local source tree does not match its immutable reviewed lock." },
+              "stage": { "const": "source-preflight" },
+              "promotionStatus": { "const": "blocked" },
+              "suggestedAction": { "$ref": "#/$defs/kernelAction" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "code": { "const": "SOURCE_IDENTITY_REUSED" } }, "required": ["code"] },
+          "then": {
+            "properties": {
+              "severity": { "const": "error" },
+              "message": { "const": "The reuse proof repeats an adapter, source, or design-system package identity." },
+              "stage": { "const": "adapter" },
+              "promotionStatus": { "const": "blocked" },
+              "suggestedAction": { "$ref": "#/$defs/kernelAction" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "code": { "const": "SOURCE_REF_UNRESOLVED" } }, "required": ["code"] },
+          "then": {
+            "properties": {
+              "severity": { "const": "error" },
+              "message": { "const": "A normalized fact references source evidence outside the verified adapter closure." },
+              "stage": { "const": "adapter" },
+              "promotionStatus": { "const": "blocked" },
+              "suggestedAction": { "$ref": "#/$defs/kernelAction" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "code": { "const": "MAPPING_SOURCE_MISMATCH" } }, "required": ["code"] },
+          "then": {
+            "properties": {
+              "severity": { "const": "error" },
+              "message": { "const": "A declarative mapping does not match the verified source anchor." },
+              "stage": { "const": "adapter" },
+              "promotionStatus": { "const": "blocked" },
+              "suggestedAction": { "$ref": "#/$defs/kernelAction" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "code": { "const": "MAPPING_TARGET_MISMATCH" } }, "required": ["code"] },
+          "then": {
+            "properties": {
+              "severity": { "const": "error" },
+              "message": { "const": "A declarative mapping does not match the normalized target fact." },
+              "stage": { "enum": ["adapter", "compile"] },
+              "promotionStatus": { "const": "blocked" },
+              "suggestedAction": { "$ref": "#/$defs/kernelAction" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "code": { "const": "MAPPING_COVERAGE_INCOMPLETE" } }, "required": ["code"] },
+          "then": {
+            "properties": {
+              "severity": { "const": "error" },
+              "message": { "const": "The adapter mapping set does not cover the complete normalized authority surface." },
+              "stage": { "const": "adapter" },
+              "promotionStatus": { "const": "blocked" },
+              "suggestedAction": { "$ref": "#/$defs/kernelAction" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "code": { "const": "MAPPING_AUTHORITY_UNJUSTIFIED" } }, "required": ["code"] },
+          "then": {
+            "properties": {
+              "severity": { "const": "error" },
+              "message": { "const": "A normalized target fact is not justified by the verified source or a conservative platform default." },
+              "stage": { "const": "adapter" },
+              "promotionStatus": { "const": "blocked" },
+              "suggestedAction": { "$ref": "#/$defs/kernelAction" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "code": { "const": "COMPILER_AUTHORITY_ESCALATION" } }, "required": ["code"] },
+          "then": {
+            "properties": {
+              "severity": { "const": "error" },
+              "message": { "const": "The compiler output grants authority absent from the normalized adapter input." },
+              "stage": { "const": "compile" },
+              "promotionStatus": { "const": "blocked" },
+              "suggestedAction": { "$ref": "#/$defs/kernelAction" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "code": { "const": "CATALOG_BOUNDARY_INVALID" } }, "required": ["code"] },
+          "then": {
+            "properties": {
+              "severity": { "const": "error" },
+              "message": { "const": "The catalog boundary receipt is missing, stale, nonpassing, or hash-drifted." },
+              "stage": { "const": "catalog-boundary" },
+              "promotionStatus": { "const": "blocked" },
+              "suggestedAction": { "$ref": "#/$defs/consumerBlockAction" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "code": { "const": "CONSUMER_UNKNOWN_COMPONENT" } }, "required": ["code"] },
+          "then": {
+            "properties": {
+              "severity": { "const": "error" },
+              "message": { "const": "The consumer fixture references a component absent from the governed catalog." },
+              "stage": { "const": "consumer" },
+              "promotionStatus": { "const": "blocked" },
+              "suggestedAction": { "$ref": "#/$defs/consumerBlockAction" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "code": { "const": "CONSUMER_UNKNOWN_MEMBER" } }, "required": ["code"] },
+          "then": {
+            "properties": {
+              "severity": { "const": "error" },
+              "message": { "const": "The consumer fixture references component authority absent from the governed catalog." },
+              "stage": { "const": "consumer" },
+              "promotionStatus": { "const": "blocked" },
+              "suggestedAction": { "$ref": "#/$defs/consumerBlockAction" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "code": { "const": "CONSUMER_INVALID_VALUE" } }, "required": ["code"] },
+          "then": {
+            "properties": {
+              "severity": { "const": "error" },
+              "message": { "const": "The consumer fixture supplies a value outside the governed catalog contract." },
+              "stage": { "const": "consumer" },
+              "promotionStatus": { "const": "blocked" },
+              "suggestedAction": { "$ref": "#/$defs/consumerBlockAction" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "code": { "const": "CONSUMER_REVIEW_REQUIRED" } }, "required": ["code"] },
+          "then": {
+            "properties": {
+              "severity": { "const": "review" },
+              "message": { "const": "The requested catalog promotion remains owner-review required." },
+              "stage": { "const": "consumer" },
+              "promotionStatus": { "const": "review_required" },
+              "suggestedAction": { "$ref": "#/$defs/consumerReviewAction" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "code": { "const": "CONSUMER_SOURCE_REF_UNRESOLVED" } }, "required": ["code"] },
+          "then": {
+            "properties": {
+              "severity": { "const": "error" },
+              "message": { "const": "The consumer fixture source reference is outside the governed catalog closure." },
+              "stage": { "const": "consumer" },
+              "promotionStatus": { "const": "blocked" },
+              "suggestedAction": { "$ref": "#/$defs/consumerBlockAction" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "code": { "const": "CONSUMER_CONSTRAINT_VIOLATION" } }, "required": ["code"] },
+          "then": {
+            "properties": {
+              "severity": { "const": "error" },
+              "message": { "const": "The consumer fixture violates a governed component, variant, or state constraint." },
+              "stage": { "const": "consumer" },
+              "promotionStatus": { "const": "blocked" },
+              "suggestedAction": { "$ref": "#/$defs/consumerBlockAction" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "code": { "const": "EVIDENCE_HASH_MISMATCH" } }, "required": ["code"] },
+          "then": {
+            "properties": {
+              "severity": { "const": "error" },
+              "message": { "const": "The evidence closure contains a missing, stale, or hash-drifted reference." },
+              "stage": { "const": "evidence" },
+              "promotionStatus": { "const": "blocked" },
+              "suggestedAction": { "const": "Reject the evidence and regenerate the complete deterministic proof closure." }
+            }
+          }
+        }
+      ],
+      "additionalProperties": false
+    }
+  },
+  "type": "array",
+  "items": { "$ref": "#/$defs/diagnostic" }
+}

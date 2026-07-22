@@ -1,0 +1,357 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://surfaces.dev/schemas/platform-architecture-policy.v0.schema.json",
+  "title": "platform-architecture-policy.v0",
+  "type": "object",
+  "required": [
+    "schemaId",
+    "version",
+    "scanRoots",
+    "bootstrapChangeBoundary",
+    "adapterManifestPath",
+    "adapterDataRoot",
+    "migrationBaseline",
+    "protectedModules",
+    "allowedProtectedEdges",
+    "protectedDependencyExceptions",
+    "branchFreeModules",
+    "identityControlFlowAllowances",
+    "mutationFixtures",
+    "catalogAuthority",
+    "platformRoles",
+    "frozenFileHashes",
+    "legacy",
+    "changeSet",
+    "diagnosticCodes"
+  ],
+  "properties": {
+    "schemaId": { "const": "platform-architecture-policy.v0" },
+    "version": { "const": "0.0.0" },
+    "scanRoots": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/repoPath" }
+    },
+    "bootstrapChangeBoundary": {
+      "type": "object",
+      "required": ["baseCommit", "admittedPolicySha256", "policySchemaSha256", "adapterManifestSha256"],
+      "properties": {
+        "baseCommit": { "const": "32543bfb7c5701c054f9c8c157a4f7cf0504fcbf" },
+        "admittedPolicySha256": {
+          "const": "2c8b25a7680bd9eb433d48b9369aac869fc7fd4f4b288e07c50a8051d0ce55a0"
+        },
+        "policySchemaSha256": {
+          "const": "1e83158351aea11f56490b49087e33dbddfe24ac7955b799f105aee981c0b272"
+        },
+        "adapterManifestSha256": {
+          "const": "76d9060d20197ca524bc0087bf426b600c7a6e4a44db595b6bb4a374c2f864bb"
+        }
+      },
+      "additionalProperties": false
+    },
+    "adapterManifestPath": { "const": "fixtures/design-system-compiler/targets.manifest.json" },
+    "adapterDataRoot": { "const": "sources/design-system-compiler" },
+    "migrationBaseline": {
+      "type": "object",
+      "required": [
+        "path",
+        "sha256",
+        "admittedEvidenceSelfHashes",
+        "admittedCatalogReportClosureHashes",
+        "inventoryExcludedPrefixes",
+        "postBaselinePaths"
+      ],
+      "properties": {
+        "path": { "const": "fixtures/platform-path-consolidation/baseline.manifest.json" },
+        "sha256": { "const": "be51419b5b3f3eb43bdfae4b6a6d27e98f2b2336c18c9f5c7fb395663d6da71c" },
+        "admittedEvidenceSelfHashes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/fileHash" }
+        },
+        "admittedCatalogReportClosureHashes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/fileHash" }
+        },
+        "inventoryExcludedPrefixes": {
+          "const": [
+            "artifacts/capability-index",
+            "artifacts/design-system-compiler",
+            "fixtures/design-system-compiler",
+            "sources/design-system-compiler"
+          ]
+        },
+        "postBaselinePaths": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/repoPath" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "protectedModules": {
+      "type": "array",
+      "minItems": 6,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/executablePath" },
+      "contains": { "const": "src/catalog-authority.js" }
+    },
+    "allowedProtectedEdges": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/edge" }
+    },
+    "protectedDependencyExceptions": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/edge" }
+    },
+    "branchFreeModules": {
+      "type": "array",
+      "minItems": 4,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/executablePath" }
+    },
+    "identityControlFlowAllowances": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/identityAllowance" }
+    },
+    "mutationFixtures": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "allOf": [
+          { "$ref": "#/$defs/repoPath" },
+          { "pattern": "^fixtures/platform-path-consolidation/mutations/.+\\.platform-architecture-mutation\\.json$" }
+        ]
+      }
+    },
+    "catalogAuthority": {
+      "type": "object",
+      "required": ["executableBasenameTerms", "registeredExecutablePaths", "registeredRoutes"],
+      "properties": {
+        "executableBasenameTerms": {
+          "type": "array",
+          "minItems": 3,
+          "uniqueItems": true,
+          "items": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" }
+        },
+        "registeredExecutablePaths": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "object",
+            "required": ["path", "classification"],
+            "properties": {
+              "path": { "$ref": "#/$defs/executablePath" },
+              "classification": { "enum": ["canonical", "legacy", "neutral"] }
+            },
+            "additionalProperties": false
+          }
+        },
+        "registeredRoutes": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/classifiedLiteral" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "platformRoles": {
+      "type": "array",
+      "minItems": 6,
+      "maxItems": 6,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "required": ["role", "ownerPath"],
+        "properties": {
+          "role": {
+            "enum": [
+              "catalog-authority",
+              "catalog-composition",
+              "catalog-consumer",
+              "catalog-release-compatibility",
+              "compiler-orchestration",
+              "source-ingestion"
+            ]
+          },
+          "ownerPath": {
+            "oneOf": [
+              { "$ref": "#/$defs/executablePath" },
+              { "type": "null" }
+            ]
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "frozenFileHashes": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/fileHash" }
+    },
+    "legacy": {
+      "type": "object",
+      "required": [
+        "importTargets",
+        "importExceptions",
+        "directP2AuthorityPaths",
+        "directP2ConsumerExceptions",
+        "executableHashes"
+      ],
+      "properties": {
+        "importTargets": {
+          "const": ["src/p0.js", "src/p2-contract.js", "src/p2-proof.js"]
+        },
+        "importExceptions": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/edge" }
+        },
+        "directP2AuthorityPaths": {
+          "const": ["artifacts/p2/evidence.json", "artifacts/p2/governed-catalog.json"]
+        },
+        "directP2ConsumerExceptions": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/literalException" }
+        },
+        "executableHashes": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/fileHash" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "changeSet": {
+      "type": "object",
+      "required": ["adapterDataPrefixes", "adapterAllowedCochangePrefixes", "protectedContractPaths"],
+      "properties": {
+        "adapterDataPrefixes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/repoPath" }
+        },
+        "adapterAllowedCochangePrefixes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/repoPath" }
+        },
+        "protectedContractPaths": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/repoPath" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "diagnosticCodes": {
+      "const": [
+        "ADAPTER_MANIFEST_INVALID",
+        "ADAPTER_MANIFEST_UNREACHABLE",
+        "ADAPTER_NOT_DATA_ONLY",
+        "CATALOG_AUTHORITY_PATH_UNREGISTERED",
+        "CATALOG_AUTHORITY_ROUTE_UNREGISTERED",
+        "CHANGESET_BOUNDARY_CROSSED",
+        "CLI_ROUTE_STALE",
+        "CLI_ROUTE_UNREGISTERED",
+        "COMPUTED_MODULE_LOAD",
+        "DIRECT_P2_CONSUMER",
+        "DIRECT_P2_EXCEPTION_STALE",
+        "EXECUTABLE_PATH_STALE",
+        "EXECUTABLE_PATH_UNREGISTERED",
+        "FROZEN_ARCHITECTURE_FILE_DRIFT",
+        "IDENTITY_CONTROL_FLOW",
+        "LEGACY_EXCEPTION_ADDED",
+        "LEGACY_IMPLEMENTATION_DRIFT",
+        "LEGACY_IMPORT_STALE",
+        "LEGACY_IMPORT_UNDECLARED",
+        "LOCAL_IMPORT_UNRESOLVED",
+        "MIGRATION_BASELINE_DRIFT",
+        "MUTATION_NOT_CAUSAL",
+        "POLICY_ORDER_INVALID",
+        "POLICY_SCHEMA_INVALID",
+        "POLICY_WEAKENING",
+        "PROTECTED_DEPENDENCY_UNPROTECTED",
+        "PROTECTED_EDGE_STALE",
+        "PROTECTED_EDGE_UNDECLARED",
+        "PROTECTED_MODULE_MISSING",
+        "SOURCE_IDENTITY_BRANCH"
+      ]
+    }
+  },
+  "$defs": {
+    "repoPath": {
+      "type": "string",
+      "pattern": "^(?!/)(?!.*(?:^|/)\\.{1,2}(?:/|$))(?!.*//)[A-Za-z0-9._@+-]+(?:/[A-Za-z0-9._@+-]+)*$"
+    },
+    "executablePath": {
+      "allOf": [
+        { "$ref": "#/$defs/repoPath" },
+        { "pattern": "^(?:src|scripts|bin)/" }
+      ]
+    },
+    "edge": {
+      "type": "object",
+      "required": ["from", "to"],
+      "properties": {
+        "from": { "$ref": "#/$defs/executablePath" },
+        "to": { "$ref": "#/$defs/executablePath" }
+      },
+      "additionalProperties": false
+    },
+    "literalException": {
+      "type": "object",
+      "required": ["path", "value"],
+      "properties": {
+        "path": { "$ref": "#/$defs/executablePath" },
+        "value": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "classifiedLiteral": {
+      "type": "object",
+      "required": ["path", "value", "classification"],
+      "properties": {
+        "path": { "$ref": "#/$defs/executablePath" },
+        "value": { "type": "string", "minLength": 1 },
+        "classification": { "enum": ["canonical", "legacy", "neutral"] }
+      },
+      "additionalProperties": false
+    },
+    "identityAllowance": {
+      "type": "object",
+      "required": ["path", "signature", "count"],
+      "properties": {
+        "path": { "$ref": "#/$defs/executablePath" },
+        "signature": { "type": "string", "pattern": "^(?:comparison|concatenation|conditional|regex):[A-Za-z][A-Za-z0-9]*:[a-f0-9]{16}$" },
+        "count": { "type": "integer", "minimum": 1 }
+      },
+      "additionalProperties": false
+    },
+    "fileHash": {
+      "type": "object",
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": { "$ref": "#/$defs/repoPath" },
+        "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

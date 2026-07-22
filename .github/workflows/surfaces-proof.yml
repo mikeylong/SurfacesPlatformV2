@@ -7,6 +7,36 @@ on:
       - main
 
 jobs:
+  platform-architecture:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Run platform architecture gate against the pull-request base
+        if: github.event_name == 'pull_request'
+        run: npm run check:platform-architecture -- --base "${{ github.event.pull_request.base.sha }}"
+
+      - name: Run platform architecture gate against the pushed main base
+        if: github.event_name == 'push' && github.event.before != '0000000000000000000000000000000000000000'
+        run: npm run check:platform-architecture -- --base "${{ github.event.before }}"
+
+      - name: Run platform architecture gate for an initial push
+        if: github.event_name == 'push' && github.event.before == '0000000000000000000000000000000000000000'
+        run: npm run check:platform-architecture
+
   p0-proof:
     runs-on: ubuntu-latest
 
@@ -21,7 +51,7 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
 
       - name: Run P0 contract gate
         run: npm run check:p0:ci
@@ -40,7 +70,7 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
 
       - name: Run P1 contract gate
         run: npm run check:p1:ci
@@ -59,7 +89,7 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
 
       - name: Run P2 contract gate
         run: npm run check:p2:ci
@@ -79,7 +109,7 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
 
       - name: Run P3 contract gate
         run: npm run check:p3:ci:phase
@@ -99,10 +129,30 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
 
       - name: Run Spectrum Checkbox catalog contract gate
         run: npm run check:spectrum-checkbox-catalog:ci:phase
+
+  design-system-compiler-proof:
+    runs-on: ubuntu-latest
+    needs: p2-proof
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Run source-independent design-system compiler gate
+        run: npm run check:design-system-compiler:ci:phase
 
   source-conformance-proof:
     runs-on: ubuntu-latest
@@ -119,7 +169,7 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
 
       - name: Run source conformance contract gate
         run: npm run check:source-conformance:ci:phase
@@ -139,7 +189,7 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
 
       - name: Run source-family packaging contract gate
         run: npm run check:source-family-packaging:ci:phase
@@ -159,7 +209,7 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
 
       - name: Run source-family layout-mapping contract gate
         run: npm run check:source-family-layout-mapping:ci:phase
@@ -179,7 +229,7 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
 
       - name: Run source-family namespace-mapping contract gate
         run: npm run check:source-family-namespace-mapping:ci:phase
@@ -199,7 +249,7 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
 
       - name: Run source-family component-identity-mapping contract gate
         run: npm run check:source-family-component-identity-mapping:ci:phase
@@ -219,7 +269,7 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
 
       - name: Run source accessibility policy contract gate
         run: npm run check:source-accessibility-policy:ci:phase
@@ -239,7 +289,7 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
 
       - name: Run P4 contract gate
         run: npm run check:p4:ci:phase
@@ -259,7 +309,7 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
 
       - name: Run P5 protocol contract gate
         run: npm run check:p5:protocol:ci:phase
@@ -279,7 +329,7 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
 
       - name: Run SurfaceOps kanban static contract gate
         run: npm run check:surfaceops-kanban-static:ci:phase
@@ -299,7 +349,7 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
 
       - name: Install Chromium for browser functional proof
         run: npx playwright install --with-deps chromium
@@ -329,7 +379,7 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
 
       - name: Run SurfaceOps kanban live contract gate
         run: npm run check:surfaceops-kanban-live:ci:phase
@@ -362,10 +412,10 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
 
       - name: Install kanban.cards dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
         working-directory: kanban.cards
 
       - name: Build kanban.cards browser bundle
@@ -402,7 +452,7 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
 
       - name: Run P5 native contract gate
         run: npm run check:p5:native:ci:phase
@@ -424,7 +474,7 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
 
       - name: Run designer workflow trace contract gate
         run: npm run check:designer-workflow-trace:ci:phase
@@ -446,7 +496,7 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
 
       - name: Run SurfaceOps designer review UI contract gate
         run: npm run check:surfaceops-designer-review-ui:ci:phase
@@ -454,12 +504,13 @@ jobs:
   capability-index-proof:
     runs-on: ubuntu-latest
     needs:
+      - platform-architecture
       - designer-workflow-trace-proof
       - source-family-layout-mapping-proof
       - source-family-namespace-mapping-proof
       - source-family-component-identity-mapping-proof
       - source-accessibility-policy-proof
-      - spectrum-checkbox-catalog-proof
+      - design-system-compiler-proof
       - surfaceops-kanban-static-proof
       - surfaceops-designer-review-ui-proof
 
@@ -474,7 +525,7 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
 
       - name: Run capability index contract gate
         run: npm run check:capability-index:ci:phase
@@ -507,10 +558,10 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
 
       - name: Install kanban.cards dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
         working-directory: kanban.cards
 
       - name: Build kanban.cards browser bundle

@@ -55,6 +55,115 @@ Important phase constraints:
 
 Do not revive older P2-as-agent-orchestration wording. Current docs place real design-system ingestion in `plans/p2/` and agent orchestration in `plans/p3/`.
 
+## Platform Architecture Guardrails
+
+`VISION.md#platform-architecture-invariants` is canonical. The checked policy at
+`fixtures/platform-path-consolidation/architecture-policy.json` makes its
+machine-checkable subset executable.
+
+- Run `npm run check:platform-architecture` before adding or changing a source
+  adapter, component proof, catalog path, shared kernel, or downstream catalog
+  consumer. When reviewing a branch, run
+  `npm run check:platform-architecture -- --base <git-sha>` so change-boundary
+  rules compare the branch with its base.
+- Treat a new source or component as a data addition. Adapter changes may touch
+  only the six policy-listed cochange entries: the four data and derived-output
+  prefixes
+  `sources/design-system-compiler`, `fixtures/design-system-compiler`,
+  `artifacts/design-system-compiler`, and `artifacts/capability-index`, plus the
+  required instruction surfaces `plans/design-system-compiler.md` and
+  `plans/surfaces-dev.md`. Code, commands, schemas, runtime paths, and other docs
+  are outside the adapter change boundary.
+- Adapter manifests, adapter contracts, and portable source locks must satisfy
+  their canonical schemas. Fixture and derived-output roots are JSON-only;
+  source snapshots may contain executable-looking upstream files only when the
+  exact regular-file closure, byte counts, and SHA-256 values match the inert
+  source lock. Base-aware admission preserves every existing adapter row and
+  closure, freezes the four generic compiler mutation fixtures, and permits
+  exactly one new sorted manifest row under a unique direct-child adapter key.
+  Its three consumer fixtures must be regular JSON files rooted under that
+  key's unshared fixture directory. Symlinks,
+  noncanonical paths, artifact-as-input fixture refs, replacement adapters,
+  and unowned adapter data are prohibited.
+- If an adapter exposes a missing generic capability, implement and prove the
+  shared capability first with source-neutral contract fixtures and parity for
+  existing adapters. Do not combine that platform change with the source or
+  component addition that needs it.
+- Keep shared platform modules source-identity-branch-free: do not dispatch on
+  a concrete source family, package, component, adapter key, or output key.
+  Generic identity validation is permitted only by an exact row in the frozen,
+  non-growing 113-row allowance registry. Express supported variation through
+  closed schemas and checked data.
+- Keep every dependency imported by protected shared code inside the protected,
+  source-identity-branch-free closure. The v0 scanner closes 83 executable
+  paths under `bin/`, `scripts/`, and `src/` and 241 local dependency edges.
+  Every canonical and neutral executable is byte-frozen in v0; legacy
+  executables retain their separate exact hash locks. Every current test and
+  GitHub execution file, the dependency lock, all four generic compiler mutation
+  fixtures, each admitted adapter closure, and the complete 15-schema compiler
+  runtime contract closure are also byte-frozen. The repo-wide
+  tracked-path inventory rejects a new root tool, workflow, action, test, or
+  other side path outside the four inert adapter/output roots. Frozen paths
+  must remain regular files; do not introduce symbolic links at the repository
+  root or under executable, test, or workflow roots. Computed
+  `import()` and `require()` targets are prohibited.
+- Do not add an executable registration or CLI route. v0 prohibits new
+  canonical, neutral, and legacy executables, freezes every route, and freezes
+  the exclusive role owners for source ingestion, compiler orchestration,
+  catalog authority, release compatibility, and catalog consumption. Catalog
+  composition has no owner and remains planned.
+- Do not add a source-specific compiler, catalog merger, receipt validator,
+  proof kernel, or consumer. Catalog creation uses its registered shared
+  authority function. Do not claim or introduce composition until its separate
+  generic proof exists.
+- Treat `catalog-boundary-receipt.v0` and
+  `src/catalog-release-boundary.js` as the single-adapter design-system-compiler
+  compatibility envelope only. They are not a source-neutral platform release
+  receipt or a generic composition boundary.
+- Do not import P0, P2, target-specific modules, source-specific modules, or
+  their internal exports from shared platform code. Dependency direction is
+  phase or target to shared platform code.
+- Do not add a new consumer that reads P2 catalog/evidence directly, imports a
+  producer's internals, or clones and expands an accepted catalog.
+- Do not add or broaden a legacy exception. Existing exceptions in the
+  architecture policy are a migration queue. Their implementation bytes remain
+  frozen while present. They may shrink only when the corresponding legacy
+  implementation is actually deleted; that deletion may remove its exact
+  registration, frozen hash, and exception.
+- Do not rewrite the migration baseline. The policy binds
+  `fixtures/platform-path-consolidation/baseline.manifest.json` to raw SHA-256
+  `be51419b5b3f3eb43bdfae4b6a6d27e98f2b2336c18c9f5c7fb395663d6da71c`.
+  Its scoped inventory contains 1,117 paths. The policy-declared root exclusions
+  are the four adapter and derived-output roots listed above. The changed
+  evidence rows use exact admitted post-extraction self and closure hashes, not
+  permanent drift allowances.
+- Do not change the one-time architecture bootstrap checkpoint at
+  `32543bfb7c5701c054f9c8c157a4f7cf0504fcbf`, its admitted-policy SHA-256
+  `2c8b25a7680bd9eb433d48b9369aac869fc7fd4f4b288e07c50a8051d0ce55a0`, or
+  its normalized policy-schema SHA-256
+  `1e83158351aea11f56490b49087e33dbddfe24ac7955b799f105aee981c0b272`.
+  The bootstrap also binds the initial adapter manifest hash recorded in the
+  machine policy.
+  The first base-aware run enforces change-set separation only from that
+  checkpoint to `HEAD`; it does not claim that the supplied base-to-checkpoint
+  range was reviewed or conformed.
+- Every architecture run schema-validates the candidate policy and verifies
+  the normalized policy-schema hash. Bootstrap runs also verify the admitted
+  initial policy hash. When a comparison base contains the contract, the gate
+  loads and validates that base policy, schema, and adapter manifest before
+  enforcing closed evolution. The trusted `pull_request_target` job must run
+  the base branch's verifier over the candidate checkout without executing
+  candidate lifecycle or architecture code; require its status and an
+  up-to-date head before merge after bootstrap.
+- Do not edit the 177 frozen v0 implementation, test, adapter, dependency,
+  guard, control, schema, mutation, workflow, or baseline-protection files in
+  place. A machine-enforced rule change requires a separately reviewed,
+  versioned successor contract and corresponding schemas, fixtures, tests,
+  `plans/platform-path-consolidation.md`, and `plans/surfaces-dev.md` updates.
+
+The architecture command is a read-only internal conformance gate. It writes no
+artifacts and creates no implemented capability or retirement claim.
+
 ## Repository Shape
 
 - `bin/interfacectl.js` and `bin/interfacectl`: CLI entrypoints.
@@ -105,6 +214,7 @@ Use `npm ci` when dependencies need installation.
 Verification is selected by change scope. These are the available command sets, not a requirement to run every command for every change:
 
 ```bash
+npm run check:platform-architecture
 npm test
 npm run check:p0:ci
 npm run check:p1:ci
@@ -119,6 +229,9 @@ npm run check:p5:native:ci
 Minimum expectations:
 
 - Docs-only changes: run `git diff --check`.
+- Architecture, adapter, shared-kernel, catalog-authority, or catalog-consumer
+  changes: run `npm run check:platform-architecture`; use `--base <git-sha>`
+  when the change boundary must be reviewed against a branch base.
 - P0-only contract or implementation changes: run `npm run check:p0:ci`.
 - P1-only, CLI, package, generated artifact, broad proof, or cross-phase changes: run the highest relevant proof gate, at minimum `npm run check:p1:ci`.
 - P2 ingestion changes: run `npm run check:p2:ci`.
@@ -128,6 +241,11 @@ Minimum expectations:
 - P5 protocol changes: run `npm run check:p5:protocol:ci`.
 - P5 native or broad post-P5 changes: run `npm run check:p5:native:ci`.
 - Focused code changes can use `npm test` during iteration, but finish with the relevant proof gate.
+
+`npm test` runs `check:platform-architecture` first through `pretest`. The
+dedicated CI job supplies the pull-request base SHA or the pre-push main SHA so
+rules about newly introduced paths, policy weakening, and cross-boundary
+changes cannot rely on the checked-out head alone.
 
 Before mutation-heavy gates such as `npm test`, `npm run check:p0:ci`, `npm run check:p1:ci`, `npm run check:p2:ci`, `npm run check:p3:ci`, `npm run check:p4:ci`, `npm run check:p4:ci:phase`, `npm run check:p5:protocol:ci`, or `npm run check:p5:native:ci`, run `git status --short` and confirm the worktree is quiescent: no unexpected files, no in-progress generated-output edits, and no parallel agent or process writing into the repo. If a gate must run with intentional source edits present, make that scope explicit before starting.
 

@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://surfaces.dev/schemas/platform-architecture-mutation.v0.schema.json",
+  "title": "platform-architecture-mutation.v0",
+  "type": "object",
+  "required": ["schemaId", "mutationId", "edits", "expectedCode"],
+  "properties": {
+    "schemaId": { "const": "platform-architecture-mutation.v0" },
+    "mutationId": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+    "comparisonMode": { "enum": ["none", "admitted-base", "bootstrap"] },
+    "edits": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": ["kind", "path", "content"],
+            "properties": {
+              "kind": { "enum": ["write-file", "append-file"] },
+              "path": { "$ref": "https://surfaces.dev/schemas/platform-architecture-policy.v0.schema.json#/$defs/repoPath" },
+              "content": { "type": "string", "minLength": 1 }
+            },
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "required": ["kind", "path", "from", "to"],
+            "properties": {
+              "kind": { "const": "replace-text" },
+              "path": { "$ref": "https://surfaces.dev/schemas/platform-architecture-policy.v0.schema.json#/$defs/repoPath" },
+              "from": { "type": "string", "minLength": 1 },
+              "to": { "type": "string", "minLength": 1 }
+            },
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "required": ["kind", "collection", "value"],
+            "properties": {
+              "kind": { "const": "append-policy-row" },
+              "collection": {
+                "enum": [
+                  "branchFreeModules",
+                  "catalogAuthority.registeredExecutablePaths",
+                  "catalogAuthority.registeredRoutes",
+                  "changeSet.protectedContractPaths",
+                  "legacy.importExceptions",
+                  "legacy.directP2ConsumerExceptions",
+                  "protectedModules"
+                ]
+              },
+              "value": {}
+            },
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "required": ["kind", "collection", "value"],
+            "properties": {
+              "kind": { "const": "remove-policy-row" },
+              "collection": {
+                "enum": [
+                  "scanRoots",
+                  "protectedModules",
+                  "branchFreeModules",
+                  "changeSet.adapterDataPrefixes",
+                  "changeSet.protectedContractPaths",
+                  "catalogAuthority.registeredExecutablePaths",
+                  "catalogAuthority.registeredRoutes"
+                ]
+              },
+              "value": {}
+            },
+            "additionalProperties": false
+          }
+        ]
+      }
+    },
+    "expectedCode": { "$ref": "https://surfaces.dev/schemas/platform-architecture-diagnostics.v0.schema.json#/$defs/code" }
+  },
+  "additionalProperties": false
+}

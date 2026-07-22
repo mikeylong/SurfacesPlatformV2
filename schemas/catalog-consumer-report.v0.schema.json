@@ -1,0 +1,252 @@
+{
+  "$id": "https://surfaces.dev/schemas/design-system-compiler/catalog-consumer-report.v0.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "catalog-consumer-report.v0",
+  "schemaId": "catalog-consumer-report.v0",
+  "version": "0.0.0",
+  "$defs": {
+    "relativePath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?!.*\\\\)(?!.*(?:^|/)\\.{1,2}(?:/|$))(?!.*//).+$"
+    },
+    "typedRef": {
+      "allOf": [
+        {
+          "$ref": "https://surfaces.dev/schemas/design-system-compiler/catalog-boundary-receipt.v0.schema.json#/$defs/ref"
+        }
+      ]
+    },
+    "receiptRef": {
+      "allOf": [
+        { "$ref": "#/$defs/typedRef" },
+        {
+          "properties": { "schemaId": { "const": "catalog-boundary-receipt.v0" } },
+          "required": ["schemaId"]
+        }
+      ]
+    },
+    "projectionRef": {
+      "allOf": [
+        { "$ref": "#/$defs/typedRef" },
+        {
+          "properties": { "schemaId": { "const": "catalog-runtime-projection.v0" } },
+          "required": ["schemaId"]
+        }
+      ]
+    },
+    "renderPlanRef": {
+      "allOf": [
+        { "$ref": "#/$defs/typedRef" },
+        {
+          "properties": { "schemaId": { "const": "catalog-render-plan.v0" } },
+          "required": ["schemaId"]
+        }
+      ]
+    },
+    "environment": {
+      "type": "object",
+      "required": [
+        "golden",
+        "timestampMode",
+        "timestampOverride",
+        "timezone",
+        "locale",
+        "pathStyle",
+        "jsonCanonicalization",
+        "numberSerialization",
+        "schemaOutputFormat",
+        "host"
+      ],
+      "properties": {
+        "golden": { "const": true },
+        "timestampMode": { "const": "normalized" },
+        "timestampOverride": { "type": "null" },
+        "timezone": { "const": "UTC" },
+        "locale": { "const": "en-US-POSIX" },
+        "pathStyle": { "const": "posix-relative" },
+        "jsonCanonicalization": { "const": "rfc8785" },
+        "numberSerialization": { "const": "rfc8785" },
+        "schemaOutputFormat": { "const": "basic" },
+        "host": { "type": "null" }
+      },
+      "additionalProperties": false
+    },
+    "result": {
+      "type": "object",
+      "required": [
+        "fixturePath",
+        "intent",
+        "expectedOutcome",
+        "actualOutcome",
+        "expectedDiagnosticCodes",
+        "actualDiagnosticCodes",
+        "matched",
+        "renderPlanPath",
+        "diagnostics"
+      ],
+      "properties": {
+        "fixturePath": { "$ref": "#/$defs/relativePath" },
+        "intent": { "enum": ["render", "promote"] },
+        "expectedOutcome": { "enum": ["allowed", "review_required", "blocked"] },
+        "actualOutcome": { "enum": ["allowed", "review_required", "blocked"] },
+        "expectedDiagnosticCodes": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "https://surfaces.dev/schemas/design-system-compiler/design-system-compiler-manifest.v0.schema.json#/$defs/diagnosticCode"
+          }
+        },
+        "actualDiagnosticCodes": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "https://surfaces.dev/schemas/design-system-compiler/design-system-compiler-manifest.v0.schema.json#/$defs/diagnosticCode"
+          }
+        },
+        "matched": { "const": true },
+        "renderPlanPath": {
+          "oneOf": [
+            { "$ref": "#/$defs/relativePath" },
+            { "type": "null" }
+          ]
+        },
+        "diagnostics": {
+          "$ref": "https://surfaces.dev/schemas/design-system-compiler/design-system-compiler-diagnostics.v0.schema.json"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "actualOutcome": { "const": "allowed" } },
+            "required": ["actualOutcome"]
+          },
+          "then": {
+            "properties": {
+              "renderPlanPath": { "$ref": "#/$defs/relativePath" },
+              "expectedDiagnosticCodes": { "maxItems": 0 },
+              "actualDiagnosticCodes": { "maxItems": 0 },
+              "diagnostics": { "maxItems": 0 }
+            }
+          },
+          "else": {
+            "properties": {
+              "renderPlanPath": { "type": "null" },
+              "expectedDiagnosticCodes": { "minItems": 1 },
+              "actualDiagnosticCodes": { "minItems": 1 },
+              "diagnostics": { "minItems": 1, "maxItems": 1 }
+            }
+          }
+        }
+      ],
+      "additionalProperties": false
+    }
+  },
+  "type": "object",
+  "required": [
+    "schemaId",
+    "version",
+    "adapterId",
+    "status",
+    "promotionStatus",
+    "receiptRef",
+    "projectionRef",
+    "results",
+    "renderPlans",
+    "diagnostics",
+    "provenance"
+  ],
+  "properties": {
+    "schemaId": { "const": "catalog-consumer-report.v0" },
+    "version": { "const": "0.0.0" },
+    "adapterId": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$"
+    },
+    "status": { "const": "pass" },
+    "promotionStatus": { "const": "review_required" },
+    "receiptRef": { "$ref": "#/$defs/receiptRef" },
+    "projectionRef": { "$ref": "#/$defs/projectionRef" },
+    "results": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": { "$ref": "#/$defs/result" },
+      "allOf": [
+        {
+          "contains": {
+            "properties": { "actualOutcome": { "const": "allowed" } },
+            "required": ["actualOutcome"]
+          },
+          "minContains": 1,
+          "maxContains": 1
+        },
+        {
+          "contains": {
+            "properties": { "actualOutcome": { "const": "blocked" } },
+            "required": ["actualOutcome"]
+          },
+          "minContains": 1,
+          "maxContains": 1
+        },
+        {
+          "contains": {
+            "properties": { "actualOutcome": { "const": "review_required" } },
+            "required": ["actualOutcome"]
+          },
+          "minContains": 1,
+          "maxContains": 1
+        }
+      ]
+    },
+    "renderPlans": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 1,
+      "items": { "$ref": "#/$defs/renderPlanRef" }
+    },
+    "diagnostics": {
+      "allOf": [
+        {
+          "$ref": "https://surfaces.dev/schemas/design-system-compiler/design-system-compiler-diagnostics.v0.schema.json"
+        },
+        { "minItems": 2, "maxItems": 2 }
+      ]
+    },
+    "provenance": {
+      "type": "object",
+      "required": [
+        "generator",
+        "generatedAt",
+        "sourceRefs",
+        "command",
+        "args",
+        "environment"
+      ],
+      "properties": {
+        "generator": {
+          "type": "object",
+          "required": ["name", "version"],
+          "properties": {
+            "name": { "const": "interfacectl-portable-catalog-consumer" },
+            "version": { "const": "0.0.0" }
+          },
+          "additionalProperties": false
+        },
+        "generatedAt": { "const": "1970-01-01T00:00:00.000Z" },
+        "sourceRefs": {
+          "type": "array",
+          "minItems": 5,
+          "maxItems": 5,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/relativePath" }
+        },
+        "command": { "type": "null" },
+        "args": { "type": "null" },
+        "environment": { "$ref": "#/$defs/environment" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

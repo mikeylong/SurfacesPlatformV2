@@ -1,0 +1,174 @@
+{
+  "schemaId": "design-system-adapter.v0",
+  "version": "0.0.0",
+  "adapterId": "spectrum-switch",
+  "sourceFamily": "Adobe Spectrum design data JSON",
+  "sourceLockPath": "sources/design-system-compiler/spectrum-switch/source.lock.json",
+  "catalogId": "surfaces-adobe-spectrum-switch-portable",
+  "sourceRefPrefix": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/",
+  "anchors": {
+    "accessibility": {
+      "sourceRef": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/switch.json#/accessibility",
+      "path": "components/switch.json",
+      "selector": {
+        "kind": "json-pointer",
+        "pointer": "/accessibility",
+        "expected": {
+          "role": "switch",
+          "intents": ["choose"],
+          "focusable": true,
+          "keyboardIntents": ["activate"],
+          "wcag": [
+            {"criterion": "2.1.1", "level": "A", "title": "Keyboard"},
+            {"criterion": "4.1.2", "level": "A", "title": "Name, Role, Value"}
+          ]
+        }
+      }
+    },
+    "componentName": {
+      "sourceRef": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/switch.json#/name",
+      "path": "components/switch.json",
+      "selector": {"kind": "json-pointer", "pointer": "/name", "expected": "switch"}
+    },
+    "examplePurpose": {
+      "sourceRef": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/switch.json#/documentBlocks/0",
+      "path": "components/switch.json",
+      "selector": {
+        "kind": "json-pointer",
+        "pointer": "/documentBlocks/0",
+        "expected": {
+          "type": "purpose",
+          "content": "Switches allow users to turn an individual option on or off. They are usually used to activate or deactivate a specific setting."
+        }
+      }
+    },
+    "propIsDisabled": {
+      "sourceRef": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/switch.json#/options/isDisabled",
+      "path": "components/switch.json",
+      "selector": {"kind": "json-pointer", "pointer": "/options/isDisabled", "expected": {"type": "boolean", "default": false}}
+    },
+    "propIsEmphasized": {
+      "sourceRef": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/switch.json#/options/isEmphasized",
+      "path": "components/switch.json",
+      "selector": {"kind": "json-pointer", "pointer": "/options/isEmphasized", "expected": {"type": "boolean", "default": false}}
+    },
+    "propIsReadOnly": {
+      "sourceRef": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/switch.json#/options/isReadOnly",
+      "path": "components/switch.json",
+      "selector": {"kind": "json-pointer", "pointer": "/options/isReadOnly", "expected": {"type": "boolean", "default": false}}
+    },
+    "propIsSelected": {
+      "sourceRef": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/switch.json#/options/isSelected",
+      "path": "components/switch.json",
+      "selector": {"kind": "json-pointer", "pointer": "/options/isSelected", "expected": {"type": "boolean", "default": false}}
+    },
+    "propLabel": {
+      "sourceRef": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/switch.json#/options/label",
+      "path": "components/switch.json",
+      "selector": {"kind": "json-pointer", "pointer": "/options/label", "expected": {"type": "string"}}
+    },
+    "propSize": {
+      "sourceRef": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/switch.json#/options/size",
+      "path": "components/switch.json",
+      "selector": {
+        "kind": "json-pointer",
+        "pointer": "/options/size",
+        "expected": {
+          "type": "string",
+          "default": "m",
+          "values": [{"value": "s"}, {"value": "m"}, {"value": "l"}, {"value": "xl"}]
+        }
+      }
+    },
+    "stateDown": {
+      "sourceRef": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/switch.json#/states/1",
+      "path": "components/switch.json",
+      "selector": {"kind": "json-pointer", "pointer": "/states/1", "expected": {"name": "down", "trigger": "interaction"}}
+    },
+    "stateHover": {
+      "sourceRef": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/switch.json#/states/0",
+      "path": "components/switch.json",
+      "selector": {"kind": "json-pointer", "pointer": "/states/0", "expected": {"name": "hover", "trigger": "interaction"}}
+    },
+    "stateKeyboardFocus": {
+      "sourceRef": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/switch.json#/states/2",
+      "path": "components/switch.json",
+      "selector": {"kind": "json-pointer", "pointer": "/states/2", "expected": {"name": "keyboard-focus", "trigger": "interaction"}}
+    }
+  },
+  "normalizedExtract": {
+    "fixtureId": "adobe-spectrum-switch-portable",
+    "sourceUri": "sources/design-system-compiler/spectrum-switch/adapter.json",
+    "tokens": {},
+    "components": [
+      {
+        "id": "switch",
+        "sourceRef": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/switch.json#/name",
+        "props": {
+          "isDisabled": {"id": "isDisabled", "type": "boolean", "required": false, "default": false, "allowedValues": [], "tokenRefs": [], "sourceRef": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/switch.json#/options/isDisabled", "diagnostics": [], "minLength": null, "maxLength": null, "allowMarkup": false},
+          "isEmphasized": {"id": "isEmphasized", "type": "boolean", "required": false, "default": false, "allowedValues": [], "tokenRefs": [], "sourceRef": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/switch.json#/options/isEmphasized", "diagnostics": [], "minLength": null, "maxLength": null, "allowMarkup": false},
+          "isReadOnly": {"id": "isReadOnly", "type": "boolean", "required": false, "default": false, "allowedValues": [], "tokenRefs": [], "sourceRef": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/switch.json#/options/isReadOnly", "diagnostics": [], "minLength": null, "maxLength": null, "allowMarkup": false},
+          "isSelected": {"id": "isSelected", "type": "boolean", "required": false, "default": false, "allowedValues": [], "tokenRefs": [], "sourceRef": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/switch.json#/options/isSelected", "diagnostics": [], "minLength": null, "maxLength": null, "allowMarkup": false},
+          "label": {"id": "label", "type": "string", "required": false, "default": null, "allowedValues": [], "tokenRefs": [], "sourceRef": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/switch.json#/options/label", "diagnostics": [], "minLength": null, "maxLength": null, "allowMarkup": false},
+          "size": {"id": "size", "type": "string", "required": false, "default": "m", "allowedValues": ["s", "m", "l", "xl"], "tokenRefs": [], "sourceRef": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/switch.json#/options/size", "diagnostics": [], "minLength": null, "maxLength": null, "allowMarkup": false}
+        },
+        "variants": {},
+        "states": {
+          "down": {"id": "down", "allowedProps": ["isDisabled", "isEmphasized", "isReadOnly", "isSelected", "label", "size"], "accessibilityExpectations": {}, "sourceRef": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/switch.json#/states/1"},
+          "hover": {"id": "hover", "allowedProps": ["isDisabled", "isEmphasized", "isReadOnly", "isSelected", "label", "size"], "accessibilityExpectations": {}, "sourceRef": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/switch.json#/states/0"},
+          "keyboardFocus": {"id": "keyboardFocus", "allowedProps": ["isDisabled", "isEmphasized", "isReadOnly", "isSelected", "label", "size"], "accessibilityExpectations": {}, "sourceRef": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/switch.json#/states/2"}
+        },
+        "slots": {},
+        "actions": {},
+        "events": {},
+        "dataBindings": {},
+        "tokenRefs": {},
+        "accessibility": {"role": "switch", "intents": ["choose"], "focusable": true, "keyboardIntents": ["activate"], "wcag": [{"criterion": "2.1.1", "level": "A", "title": "Keyboard"}, {"criterion": "4.1.2", "level": "A", "title": "Name, Role, Value"}], "runtimeAccessibilityCompliance": "not-proven", "sourceRef": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/switch.json#/accessibility"},
+        "examples": [{"id": "purpose", "type": "purpose", "content": "Switches allow users to turn an individual option on or off. They are usually used to activate or deactivate a specific setting.", "sourceRef": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/switch.json#/documentBlocks/0"}]
+      }
+    ],
+    "sourceRefs": {
+      "component": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/switch.json#/name",
+      "accessibility": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/switch.json#/accessibility",
+      "example": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/switch.json#/documentBlocks/0"
+    },
+    "provenance": {"adapterKind": "declarative-json-pointer", "upstreamCodeExecuted": false}
+  },
+  "policyContract": {
+    "authority": "narrowing-only",
+    "runtimeCapabilitiesMode": "inert-derived-only",
+    "governanceMode": "owner-review-required"
+  },
+  "runtimeCapabilities": {
+    "actionExecution": "disabled",
+    "adapterTarget": "web-static-inert",
+    "runtimeProjection": "catalog-derived"
+  },
+  "governance": {
+    "rules": {
+      "activationIntentRequiresReview": {"executable": false, "sourceRef": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/switch.json#/accessibility"},
+      "standaloneLabelRequiresReview": {"executable": false, "sourceRef": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/switch.json#/options/label"}
+    },
+    "results": {"reviewRequiredMappings": ["activation-intent", "standalone-label"]},
+    "promotionStatus": "review_required"
+  },
+  "mappings": [
+    {"mappingId": "adobe-spectrum-switch-00-accessibility", "targetPointer": "/components/0/accessibility", "sourceRefs": ["spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/switch.json#/accessibility"], "sourceValue": {"role": "switch", "intents": ["choose"], "focusable": true, "keyboardIntents": ["activate"], "wcag": [{"criterion": "2.1.1", "level": "A", "title": "Keyboard"}, {"criterion": "4.1.2", "level": "A", "title": "Name, Role, Value"}]}, "targetValue": {"role": "switch", "intents": ["choose"], "focusable": true, "keyboardIntents": ["activate"], "wcag": [{"criterion": "2.1.1", "level": "A", "title": "Keyboard"}, {"criterion": "4.1.2", "level": "A", "title": "Name, Role, Value"}], "runtimeAccessibilityCompliance": "not-proven", "sourceRef": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/switch.json#/accessibility"}, "transform": "structured-normalization", "authorityMode": "lossless", "reviewStatus": "accepted"},
+    {"mappingId": "adobe-spectrum-switch-01-example", "targetPointer": "/components/0/examples/0", "sourceRefs": ["spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/switch.json#/documentBlocks/0"], "sourceValue": {"type": "purpose", "content": "Switches allow users to turn an individual option on or off. They are usually used to activate or deactivate a specific setting."}, "targetValue": {"id": "purpose", "type": "purpose", "content": "Switches allow users to turn an individual option on or off. They are usually used to activate or deactivate a specific setting.", "sourceRef": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/switch.json#/documentBlocks/0"}, "transform": "structured-normalization", "authorityMode": "lossless", "reviewStatus": "accepted"},
+    {"mappingId": "adobe-spectrum-switch-02-id", "targetPointer": "/components/0/id", "sourceRefs": ["spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/switch.json#/name"], "sourceValue": "switch", "targetValue": "switch", "transform": "identity", "authorityMode": "lossless", "reviewStatus": "accepted"},
+    {"mappingId": "adobe-spectrum-switch-03-prop-is-disabled", "targetPointer": "/components/0/props/isDisabled", "sourceRefs": ["spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/switch.json#/options/isDisabled"], "sourceValue": {"type": "boolean", "default": false}, "targetValue": {"id": "isDisabled", "type": "boolean", "required": false, "default": false, "allowedValues": [], "tokenRefs": [], "sourceRef": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/switch.json#/options/isDisabled", "diagnostics": [], "minLength": null, "maxLength": null, "allowMarkup": false}, "transform": "structured-normalization", "authorityMode": "lossless", "reviewStatus": "accepted"},
+    {"mappingId": "adobe-spectrum-switch-04-prop-is-emphasized", "targetPointer": "/components/0/props/isEmphasized", "sourceRefs": ["spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/switch.json#/options/isEmphasized"], "sourceValue": {"type": "boolean", "default": false}, "targetValue": {"id": "isEmphasized", "type": "boolean", "required": false, "default": false, "allowedValues": [], "tokenRefs": [], "sourceRef": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/switch.json#/options/isEmphasized", "diagnostics": [], "minLength": null, "maxLength": null, "allowMarkup": false}, "transform": "structured-normalization", "authorityMode": "lossless", "reviewStatus": "accepted"},
+    {"mappingId": "adobe-spectrum-switch-05-prop-is-read-only", "targetPointer": "/components/0/props/isReadOnly", "sourceRefs": ["spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/switch.json#/options/isReadOnly"], "sourceValue": {"type": "boolean", "default": false}, "targetValue": {"id": "isReadOnly", "type": "boolean", "required": false, "default": false, "allowedValues": [], "tokenRefs": [], "sourceRef": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/switch.json#/options/isReadOnly", "diagnostics": [], "minLength": null, "maxLength": null, "allowMarkup": false}, "transform": "structured-normalization", "authorityMode": "lossless", "reviewStatus": "accepted"},
+    {"mappingId": "adobe-spectrum-switch-06-prop-is-selected", "targetPointer": "/components/0/props/isSelected", "sourceRefs": ["spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/switch.json#/options/isSelected"], "sourceValue": {"type": "boolean", "default": false}, "targetValue": {"id": "isSelected", "type": "boolean", "required": false, "default": false, "allowedValues": [], "tokenRefs": [], "sourceRef": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/switch.json#/options/isSelected", "diagnostics": [], "minLength": null, "maxLength": null, "allowMarkup": false}, "transform": "structured-normalization", "authorityMode": "lossless", "reviewStatus": "accepted"},
+    {"mappingId": "adobe-spectrum-switch-07-prop-label", "targetPointer": "/components/0/props/label", "sourceRefs": ["spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/switch.json#/options/label"], "sourceValue": {"type": "string"}, "targetValue": {"id": "label", "type": "string", "required": false, "default": null, "allowedValues": [], "tokenRefs": [], "sourceRef": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/switch.json#/options/label", "diagnostics": [], "minLength": null, "maxLength": null, "allowMarkup": false}, "transform": "structured-normalization", "authorityMode": "lossless", "reviewStatus": "accepted"},
+    {"mappingId": "adobe-spectrum-switch-08-prop-size", "targetPointer": "/components/0/props/size", "sourceRefs": ["spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/switch.json#/options/size"], "sourceValue": {"type": "string", "default": "m", "values": [{"value": "s"}, {"value": "m"}, {"value": "l"}, {"value": "xl"}]}, "targetValue": {"id": "size", "type": "string", "required": false, "default": "m", "allowedValues": ["s", "m", "l", "xl"], "tokenRefs": [], "sourceRef": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/switch.json#/options/size", "diagnostics": [], "minLength": null, "maxLength": null, "allowMarkup": false}, "transform": "structured-normalization", "authorityMode": "lossless", "reviewStatus": "accepted"},
+    {"mappingId": "adobe-spectrum-switch-09-state-down", "targetPointer": "/components/0/states/down", "sourceRefs": ["spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/switch.json#/states/1"], "sourceValue": {"name": "down", "trigger": "interaction"}, "targetValue": {"id": "down", "allowedProps": ["isDisabled", "isEmphasized", "isReadOnly", "isSelected", "label", "size"], "accessibilityExpectations": {}, "sourceRef": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/switch.json#/states/1"}, "transform": "structured-normalization", "authorityMode": "reviewed-inference", "reviewStatus": "review_required"},
+    {"mappingId": "adobe-spectrum-switch-10-state-hover", "targetPointer": "/components/0/states/hover", "sourceRefs": ["spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/switch.json#/states/0"], "sourceValue": {"name": "hover", "trigger": "interaction"}, "targetValue": {"id": "hover", "allowedProps": ["isDisabled", "isEmphasized", "isReadOnly", "isSelected", "label", "size"], "accessibilityExpectations": {}, "sourceRef": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/switch.json#/states/0"}, "transform": "structured-normalization", "authorityMode": "reviewed-inference", "reviewStatus": "review_required"},
+    {"mappingId": "adobe-spectrum-switch-11-state-keyboard-focus", "targetPointer": "/components/0/states/keyboardFocus", "sourceRefs": ["spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/switch.json#/states/2"], "sourceValue": {"name": "keyboard-focus", "trigger": "interaction"}, "targetValue": {"id": "keyboardFocus", "allowedProps": ["isDisabled", "isEmphasized", "isReadOnly", "isSelected", "label", "size"], "accessibilityExpectations": {}, "sourceRef": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/switch.json#/states/2"}, "transform": "structured-normalization", "authorityMode": "reviewed-inference", "reviewStatus": "review_required"}
+  ],
+  "consumerFixtures": {
+    "allowed": "fixtures/design-system-compiler/spectrum-switch/allowed-render.catalog-consumer-fixture.json",
+    "blocked": "fixtures/design-system-compiler/spectrum-switch/blocked-unknown-prop.catalog-consumer-fixture.json",
+    "review": "fixtures/design-system-compiler/spectrum-switch/review-promotion.catalog-consumer-fixture.json"
+  }
+}

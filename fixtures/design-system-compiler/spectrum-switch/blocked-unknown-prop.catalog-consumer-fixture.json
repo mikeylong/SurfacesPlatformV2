@@ -1,0 +1,13 @@
+{
+  "schemaId": "catalog-consumer-fixture.v0",
+  "version": "0.0.0",
+  "fixtureId": "spectrum-switch-blocked-unknown-prop",
+  "expectedOutcome": "blocked",
+  "expectedDiagnosticCodes": ["CONSUMER_UNKNOWN_MEMBER"],
+  "intent": "render",
+  "component": "switch",
+  "props": {"ariaLabel": "Wi-Fi", "isSelected": true},
+  "variants": {},
+  "state": null,
+  "sourceRef": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/switch.json#/name"
+}

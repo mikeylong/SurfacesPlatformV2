@@ -1,0 +1,12 @@
+{
+  "schemaId": "platform-architecture-mutation.v0",
+  "mutationId": "cjs-require",
+  "edits": [
+    {
+      "kind": "write-file",
+      "path": "src/cjs-bypass.cjs",
+      "content": "const { canonicalJson } = require(\"./p0.js\");\nmodule.exports = { canonicalJson };\n"
+    }
+  ],
+  "expectedCode": "LEGACY_IMPORT_UNDECLARED"
+}

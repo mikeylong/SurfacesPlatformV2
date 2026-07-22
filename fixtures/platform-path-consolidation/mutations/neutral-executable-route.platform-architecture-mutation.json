@@ -1,0 +1,17 @@
+{
+  "schemaId": "platform-architecture-mutation.v0",
+  "mutationId": "neutral-executable-route",
+  "edits": [
+    {
+      "kind": "write-file",
+      "path": "src/worker-node.js",
+      "content": "export function transform(value) { return value; }\n"
+    },
+    {
+      "kind": "append-file",
+      "path": "src/p0.js",
+      "content": "\nexport function neutralRoute(argv) { return argv[1] === \"route-omega\"; }\n"
+    }
+  ],
+  "expectedCode": "EXECUTABLE_PATH_UNREGISTERED"
+}

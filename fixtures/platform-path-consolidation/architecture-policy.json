@@ -1,0 +1,3230 @@
+{
+  "schemaId": "platform-architecture-policy.v0",
+  "version": "0.0.0",
+  "scanRoots": [
+    "bin",
+    "scripts",
+    "src"
+  ],
+  "bootstrapChangeBoundary": {
+    "baseCommit": "32543bfb7c5701c054f9c8c157a4f7cf0504fcbf",
+    "admittedPolicySha256": "2c8b25a7680bd9eb433d48b9369aac869fc7fd4f4b288e07c50a8051d0ce55a0",
+    "policySchemaSha256": "1e83158351aea11f56490b49087e33dbddfe24ac7955b799f105aee981c0b272",
+    "adapterManifestSha256": "76d9060d20197ca524bc0087bf426b600c7a6e4a44db595b6bb4a374c2f864bb"
+  },
+  "adapterManifestPath": "fixtures/design-system-compiler/targets.manifest.json",
+  "adapterDataRoot": "sources/design-system-compiler",
+  "migrationBaseline": {
+    "path": "fixtures/platform-path-consolidation/baseline.manifest.json",
+    "sha256": "be51419b5b3f3eb43bdfae4b6a6d27e98f2b2336c18c9f5c7fb395663d6da71c",
+    "admittedEvidenceSelfHashes": [
+      {"path":"artifacts/capability-index/evidence.json","sha256":"cb1f77022dde4d9507a07cad73e87a36e2684691108d684bcb7b7c9fb35b8549"},
+      {"path":"artifacts/design-system-compiler/evidence.json","sha256":"c12af6fdc35fb863053b9931aee8769c6eea62751b94589cdea130eb47d95dc2"},
+      {"path":"artifacts/source-accessibility-policy/evidence.json","sha256":"2b67b1c29bb8f0584c95688b73ce0ae1ea93a8c69f7f032d413f5fd3f6918f7b"},
+      {"path":"artifacts/source-family-component-identity-mapping/evidence.json","sha256":"86a110d8a8e2c4f9d8c9396f29de4693531475256f0ce483eae724e38f88e6e5"},
+      {"path":"artifacts/source-family-layout-mapping/evidence.json","sha256":"0c98ced6279a682705c687cee3378ff77656e263bff63830a9ac43f09cd5162b"},
+      {"path":"artifacts/source-family-namespace-mapping/evidence.json","sha256":"2b67275fdcf858cf4624d2561d6b1cd9b2a3ddebe9581095931f9f776ad7c9e5"},
+      {"path":"artifacts/source-family-packaging/evidence.json","sha256":"374e515d807b6876b889771488ea0b502f0aaa429e919e69660d877506d841bb"},
+      {"path":"artifacts/spectrum-checkbox-catalog/evidence.json","sha256":"68ee450316bb6e3ad0c8b0dd2b44ed20f8765965be93e4f69eace343d5f1ad45"}
+    ],
+    "admittedCatalogReportClosureHashes": [
+      {"path":"artifacts/capability-index/evidence.json","sha256":"ab242919ddc1d3d8cb91c81d2e5e0a0ad4b8ae3fe75a3f6692f7f1df4e7b34dc"},
+      {"path":"artifacts/design-system-compiler/evidence.json","sha256":"04d752e26dfc5c995c69cbd6b44b273852acb735580ad451f6a1545aa0d71532"},
+      {"path":"artifacts/source-accessibility-policy/evidence.json","sha256":"5d37a9ffc8dc19d7202f24c62d41ee051cbea456cdcb42784e358b820083eb54"},
+      {"path":"artifacts/source-family-component-identity-mapping/evidence.json","sha256":"a8dec4b40a13453e021ca7099239340e3e76ed31c3ab1447c663c02ecc6387ee"},
+      {"path":"artifacts/source-family-layout-mapping/evidence.json","sha256":"4ae35a0efc0a19c67a9464f856e54a44f11df6e384164bee252f3bf97464be4b"},
+      {"path":"artifacts/source-family-namespace-mapping/evidence.json","sha256":"5e5c77375117c64a74fa509c52094a8b5e0123b329f2c1af5961c48fd5cfcb37"},
+      {"path":"artifacts/source-family-packaging/evidence.json","sha256":"8d725dcc3b82fa41e25afaa566513e0b984e3a7c641fe5992abb8d0412f55920"}
+    ],
+    "inventoryExcludedPrefixes": [
+      "artifacts/capability-index",
+      "artifacts/design-system-compiler",
+      "fixtures/design-system-compiler",
+      "sources/design-system-compiler"
+    ],
+    "postBaselinePaths": [
+      ".github/workflows/platform-architecture-trusted.yml",
+      ".gitignore",
+      "AGENTS.md",
+      "PLAN.md",
+      "PROGRESS.md",
+      "README.md",
+      "VISION.md",
+      "fixtures/platform-path-consolidation/architecture-policy.json",
+      "fixtures/platform-path-consolidation/mutations/adapter-consumer-fixture-escape.platform-architecture-mutation.json",
+      "fixtures/platform-path-consolidation/mutations/adapter-executable-payload.platform-architecture-mutation.json",
+      "fixtures/platform-path-consolidation/mutations/adapter-existing-closure-rewrite.platform-architecture-mutation.json",
+      "fixtures/platform-path-consolidation/mutations/adapter-fixture-root-reuse.platform-architecture-mutation.json",
+      "fixtures/platform-path-consolidation/mutations/adapter-path-traversal.platform-architecture-mutation.json",
+      "fixtures/platform-path-consolidation/mutations/adapter-roster-rewrite.platform-architecture-mutation.json",
+      "fixtures/platform-path-consolidation/mutations/added-legacy-exception.platform-architecture-mutation.json",
+      "fixtures/platform-path-consolidation/mutations/bespoke-compiler-path.platform-architecture-mutation.json",
+      "fixtures/platform-path-consolidation/mutations/cjs-require.platform-architecture-mutation.json",
+      "fixtures/platform-path-consolidation/mutations/computed-loader.platform-architecture-mutation.json",
+      "fixtures/platform-path-consolidation/mutations/direct-p2-read.platform-architecture-mutation.json",
+      "fixtures/platform-path-consolidation/mutations/duplicate-canonical-owner.platform-architecture-mutation.json",
+      "fixtures/platform-path-consolidation/mutations/existing-neutral-executable-drift.platform-architecture-mutation.json",
+      "fixtures/platform-path-consolidation/mutations/existing-test-executable-drift.platform-architecture-mutation.json",
+      "fixtures/platform-path-consolidation/mutations/generic-compiler-mutation-drift.platform-architecture-mutation.json",
+      "fixtures/platform-path-consolidation/mutations/helper-bypass.platform-architecture-mutation.json",
+      "fixtures/platform-path-consolidation/mutations/identity-concat.platform-architecture-mutation.json",
+      "fixtures/platform-path-consolidation/mutations/identity-regex.platform-architecture-mutation.json",
+      "fixtures/platform-path-consolidation/mutations/legacy-implementation-expansion.platform-architecture-mutation.json",
+      "fixtures/platform-path-consolidation/mutations/migration-baseline-rewrite.platform-architecture-mutation.json",
+      "fixtures/platform-path-consolidation/mutations/neutral-executable-route.platform-architecture-mutation.json",
+      "fixtures/platform-path-consolidation/mutations/new-root-executable.platform-architecture-mutation.json",
+      "fixtures/platform-path-consolidation/mutations/new-test-executable.platform-architecture-mutation.json",
+      "fixtures/platform-path-consolidation/mutations/new-workflow-executable.platform-architecture-mutation.json",
+      "fixtures/platform-path-consolidation/mutations/package-alias-import.platform-architecture-mutation.json",
+      "fixtures/platform-path-consolidation/mutations/package-lock-drift.platform-architecture-mutation.json",
+      "fixtures/platform-path-consolidation/mutations/package-script-expansion.platform-architecture-mutation.json",
+      "fixtures/platform-path-consolidation/mutations/phase-import.platform-architecture-mutation.json",
+      "fixtures/platform-path-consolidation/mutations/policy-weakening.platform-architecture-mutation.json",
+      "fixtures/platform-path-consolidation/mutations/registered-neutral-bypass.platform-architecture-mutation.json",
+      "fixtures/platform-path-consolidation/mutations/registered-route-bypass.platform-architecture-mutation.json",
+      "fixtures/platform-path-consolidation/mutations/shebang-executable.platform-architecture-mutation.json",
+      "fixtures/platform-path-consolidation/mutations/source-identity-branch.platform-architecture-mutation.json",
+      "fixtures/platform-path-consolidation/mutations/typescript-import.platform-architecture-mutation.json",
+      "schemas/platform-architecture-diagnostics.v0.schema.json",
+      "schemas/platform-architecture-mutation.v0.schema.json",
+      "schemas/platform-architecture-policy.v0.schema.json",
+      "scripts/check-platform-architecture.mjs",
+      "src/catalog-authority.js",
+      "src/catalog-release-boundary.js",
+      "src/javascript-module-scanner.js",
+      "src/platform-architecture.js",
+      "src/proof-runtime.js",
+      "test/catalog-release-boundary.test.js",
+      "test/platform-architecture-policy.test.js"
+    ]
+  },
+  "protectedModules": [
+    "src/catalog-authority.js",
+    "src/catalog-consumer-kernel.js",
+    "src/catalog-release-boundary.js",
+    "src/design-system-compiler-proof.js",
+    "src/design-system-ingestion-kernel.js",
+    "src/javascript-module-scanner.js",
+    "src/platform-architecture.js",
+    "src/proof-runtime.js"
+  ],
+  "allowedProtectedEdges": [
+    {
+      "from": "scripts/check-platform-architecture.mjs",
+      "to": "src/platform-architecture.js"
+    },
+    {
+      "from": "src/capability-index-proof.js",
+      "to": "src/design-system-compiler-proof.js"
+    },
+    {
+      "from": "src/catalog-authority.js",
+      "to": "src/proof-runtime.js"
+    },
+    {
+      "from": "src/catalog-consumer-kernel.js",
+      "to": "src/catalog-authority.js"
+    },
+    {
+      "from": "src/catalog-consumer-kernel.js",
+      "to": "src/catalog-release-boundary.js"
+    },
+    {
+      "from": "src/catalog-consumer-kernel.js",
+      "to": "src/proof-runtime.js"
+    },
+    {
+      "from": "src/catalog-release-boundary.js",
+      "to": "src/proof-runtime.js"
+    },
+    {
+      "from": "src/design-system-compiler-proof.js",
+      "to": "src/catalog-consumer-kernel.js"
+    },
+    {
+      "from": "src/design-system-compiler-proof.js",
+      "to": "src/design-system-ingestion-kernel.js"
+    },
+    {
+      "from": "src/design-system-compiler-proof.js",
+      "to": "src/javascript-module-scanner.js"
+    },
+    {
+      "from": "src/design-system-compiler-proof.js",
+      "to": "src/proof-runtime.js"
+    },
+    {
+      "from": "src/design-system-ingestion-kernel.js",
+      "to": "src/catalog-authority.js"
+    },
+    {
+      "from": "src/design-system-ingestion-kernel.js",
+      "to": "src/proof-runtime.js"
+    },
+    {
+      "from": "src/p0.js",
+      "to": "src/design-system-compiler-proof.js"
+    },
+    {
+      "from": "src/platform-architecture.js",
+      "to": "src/javascript-module-scanner.js"
+    }
+  ],
+  "protectedDependencyExceptions": [],
+  "branchFreeModules": [
+    "src/catalog-authority.js",
+    "src/catalog-consumer-kernel.js",
+    "src/catalog-release-boundary.js",
+    "src/design-system-compiler-proof.js",
+    "src/design-system-ingestion-kernel.js",
+    "src/javascript-module-scanner.js",
+    "src/platform-architecture.js",
+    "src/proof-runtime.js"
+  ],
+  "identityControlFlowAllowances": [
+    {
+      "path": "src/catalog-consumer-kernel.js",
+      "signature": "conditional:adapterId:029b1670da70ecf2",
+      "count": 1
+    },
+    {
+      "path": "src/catalog-release-boundary.js",
+      "signature": "comparison:adapterId:0eac20824b4c1435",
+      "count": 1
+    },
+    {
+      "path": "src/catalog-release-boundary.js",
+      "signature": "comparison:adapterId:3545a74474fbc481",
+      "count": 1
+    },
+    {
+      "path": "src/catalog-release-boundary.js",
+      "signature": "comparison:adapterId:48512116459ee6db",
+      "count": 1
+    },
+    {
+      "path": "src/catalog-release-boundary.js",
+      "signature": "comparison:adapterId:b7f813700839e4d4",
+      "count": 1
+    },
+    {
+      "path": "src/catalog-release-boundary.js",
+      "signature": "comparison:adapterId:f2e80aca2a073ff3",
+      "count": 1
+    },
+    {
+      "path": "src/catalog-release-boundary.js",
+      "signature": "conditional:adapterId:0eac20824b4c1435",
+      "count": 1
+    },
+    {
+      "path": "src/catalog-release-boundary.js",
+      "signature": "conditional:adapterId:3545a74474fbc481",
+      "count": 1
+    },
+    {
+      "path": "src/catalog-release-boundary.js",
+      "signature": "conditional:adapterId:48512116459ee6db",
+      "count": 1
+    },
+    {
+      "path": "src/catalog-release-boundary.js",
+      "signature": "conditional:adapterId:b7f813700839e4d4",
+      "count": 1
+    },
+    {
+      "path": "src/catalog-release-boundary.js",
+      "signature": "conditional:adapterId:f2e80aca2a073ff3",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "signature": "comparison:adapterId:04ab0ba3edcd513c",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "signature": "comparison:adapterId:4263daaea0e484fb",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "signature": "comparison:adapterId:58bf2d33e9fc03db",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "signature": "comparison:adapterId:8664bd0645dbe68e",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "signature": "comparison:adapterId:907287006985e7af",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "signature": "comparison:adapterId:98b7a5bcf14dcdcb",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "signature": "comparison:adapterId:99a11bd9f8c0a502",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "signature": "comparison:adapterId:efd16e36f8a20830",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "signature": "comparison:adapterId:fb071529d4b6cb22",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "signature": "comparison:componentIds:aea2507bb0a66d70",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "signature": "comparison:componentIds:ddbbb5339a96d134",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "signature": "comparison:expectedComponentIds:01c6068af3570148",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "signature": "comparison:expectedComponentIds:a9b3062bcba0493d",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "signature": "comparison:outputKey:295582c3d43272c5",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "signature": "comparison:outputKey:5de0e1203a0cdb4f",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "signature": "comparison:packageIdentity:8031ac9be9acf588",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "signature": "comparison:packageIdentity:8b8b5d0381a4b338",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "signature": "comparison:packageIdentity:abb002958e260cba",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "signature": "comparison:packageName:9cf5a818208f8ddd",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "signature": "comparison:sourceFamily:03a0de1173e072d5",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "signature": "comparison:upstreamRepository:8bea02da6faa3183",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "signature": "concatenation:adapterId:859751879ffbdd2d",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "signature": "concatenation:outputKey:243492548d3e50cd",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "signature": "concatenation:outputKey:80ea522e5f37112b",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "signature": "concatenation:outputKey:c6f285f2a1aa4c65",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "signature": "concatenation:outputKey:d006cf7de0684ce8",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "signature": "concatenation:outputKey:d55d2417b444e9cd",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "signature": "concatenation:outputKey:faa20509b874725d",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "signature": "concatenation:outputKey:fbe61f77dcfcddd7",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "signature": "concatenation:outputKey:fca16fce7933f5f8",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "signature": "concatenation:packageIdentity:0ffc0f989eec7642",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "signature": "concatenation:packageIdentity:66b94784bfafc8d9",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "signature": "concatenation:packageName:0e0ae501ae5ec665",
+      "count": 2
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "signature": "concatenation:packageVersion:19028a2ff0cd40ae",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "signature": "concatenation:packageVersion:d71d3412114d3682",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "signature": "concatenation:upstreamRepository:74cf9252838acdb0",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "signature": "concatenation:upstreamRepository:fa82ca0392b55901",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "signature": "conditional:adapterId:04ab0ba3edcd513c",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "signature": "conditional:adapterId:3037500450065af0",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "signature": "conditional:adapterId:4263daaea0e484fb",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "signature": "conditional:adapterId:58bf2d33e9fc03db",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "signature": "conditional:adapterId:8664bd0645dbe68e",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "signature": "conditional:adapterId:907287006985e7af",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "signature": "conditional:adapterId:98b7a5bcf14dcdcb",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "signature": "conditional:adapterId:99a11bd9f8c0a502",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "signature": "conditional:adapterId:b62c22df057d79a5",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "signature": "conditional:adapterId:efd16e36f8a20830",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "signature": "conditional:adapterId:fb071529d4b6cb22",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "signature": "conditional:componentIds:a8805505c882be81",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "signature": "conditional:componentIds:aea2507bb0a66d70",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "signature": "conditional:componentIds:ddbbb5339a96d134",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "signature": "conditional:expectedComponentIds:01c6068af3570148",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "signature": "conditional:expectedComponentIds:8b6970a45d525d24",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "signature": "conditional:expectedComponentIds:a9b3062bcba0493d",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "signature": "conditional:outputKey:295582c3d43272c5",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "signature": "conditional:outputKey:5de0e1203a0cdb4f",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "signature": "conditional:outputKey:6bcffeef0a1eaea3",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "signature": "conditional:packageIdentity:0ffc0f989eec7642",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "signature": "conditional:packageIdentity:66b94784bfafc8d9",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "signature": "conditional:packageIdentity:8031ac9be9acf588",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "signature": "conditional:packageIdentity:8b8b5d0381a4b338",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "signature": "conditional:packageIdentity:abb002958e260cba",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "signature": "conditional:packageName:9916dc502358f00c",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "signature": "conditional:sourceFamily:03a0de1173e072d5",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "signature": "conditional:sourceId:a21a0393884df122",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "signature": "conditional:upstreamRepository:74cf9252838acdb0",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "signature": "conditional:upstreamRepository:8bea02da6faa3183",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "signature": "conditional:upstreamRepository:fa82ca0392b55901",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "signature": "regex:outputKey:6bcffeef0a1eaea3",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "signature": "regex:packageIdentity:0ffc0f989eec7642",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "signature": "regex:packageIdentity:66b94784bfafc8d9",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "signature": "regex:packageIdentity:8031ac9be9acf588",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "signature": "regex:packageIdentity:8b8b5d0381a4b338",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "signature": "regex:upstreamRepository:74cf9252838acdb0",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "signature": "regex:upstreamRepository:8bea02da6faa3183",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "signature": "regex:upstreamRepository:fa82ca0392b55901",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-ingestion-kernel.js",
+      "signature": "comparison:packageVersion:ac3102a04432b70a",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-ingestion-kernel.js",
+      "signature": "comparison:sourceRefPrefix:602eda38f5e47472",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-ingestion-kernel.js",
+      "signature": "comparison:sourceRefPrefix:9b37b985f692379e",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-ingestion-kernel.js",
+      "signature": "comparison:sourceRefPrefix:dfad3ef2dd0eeec6",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-ingestion-kernel.js",
+      "signature": "concatenation:packageName:80a77f69ca2d31b7",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-ingestion-kernel.js",
+      "signature": "concatenation:packageVersion:ac3102a04432b70a",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-ingestion-kernel.js",
+      "signature": "concatenation:sourceRefPrefix:602eda38f5e47472",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-ingestion-kernel.js",
+      "signature": "concatenation:sourceRefPrefix:9b37b985f692379e",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-ingestion-kernel.js",
+      "signature": "conditional:sourceRefPrefix:602eda38f5e47472",
+      "count": 1
+    },
+    {
+      "path": "src/design-system-ingestion-kernel.js",
+      "signature": "conditional:sourceRefPrefix:dfad3ef2dd0eeec6",
+      "count": 1
+    },
+    {
+      "path": "src/platform-architecture.js",
+      "signature": "comparison:adapterId:01a6182906874dd4",
+      "count": 1
+    },
+    {
+      "path": "src/platform-architecture.js",
+      "signature": "comparison:adapterId:37c5f9d9182a789f",
+      "count": 1
+    },
+    {
+      "path": "src/platform-architecture.js",
+      "signature": "comparison:adapterKey:4689e2154660180e",
+      "count": 1
+    },
+    {
+      "path": "src/platform-architecture.js",
+      "signature": "comparison:componentIds:cedffeb6bd2cd4aa",
+      "count": 1
+    },
+    {
+      "path": "src/platform-architecture.js",
+      "signature": "concatenation:adapterKey:3eb136594eaa7cb1",
+      "count": 1
+    },
+    {
+      "path": "src/platform-architecture.js",
+      "signature": "concatenation:adapterKey:4689e2154660180e",
+      "count": 1
+    },
+    {
+      "path": "src/platform-architecture.js",
+      "signature": "concatenation:adapterKey:cdc291753fb01548",
+      "count": 1
+    },
+    {
+      "path": "src/platform-architecture.js",
+      "signature": "concatenation:adapterKey:cecaf9e51146e230",
+      "count": 1
+    },
+    {
+      "path": "src/platform-architecture.js",
+      "signature": "concatenation:adapterKey:e340f36adf336068",
+      "count": 1
+    },
+    {
+      "path": "src/platform-architecture.js",
+      "signature": "conditional:adapterKey:4689e2154660180e",
+      "count": 1
+    },
+    {
+      "path": "src/platform-architecture.js",
+      "signature": "conditional:adapterKey:cdc291753fb01548",
+      "count": 1
+    },
+    {
+      "path": "src/platform-architecture.js",
+      "signature": "conditional:componentId:b0a04fe95f6f48ef",
+      "count": 1
+    },
+    {
+      "path": "src/platform-architecture.js",
+      "signature": "conditional:componentIds:6a5f359f66884602",
+      "count": 1
+    },
+    {
+      "path": "src/platform-architecture.js",
+      "signature": "conditional:componentIds:cedffeb6bd2cd4aa",
+      "count": 1
+    },
+    {
+      "path": "src/platform-architecture.js",
+      "signature": "conditional:componentIds:d0fc471d83fc4728",
+      "count": 1
+    },
+    {
+      "path": "src/platform-architecture.js",
+      "signature": "conditional:expectedComponentIds:f6d6939bdef63d04",
+      "count": 1
+    }
+  ],
+  "mutationFixtures": [
+    "fixtures/platform-path-consolidation/mutations/adapter-consumer-fixture-escape.platform-architecture-mutation.json",
+    "fixtures/platform-path-consolidation/mutations/adapter-executable-payload.platform-architecture-mutation.json",
+    "fixtures/platform-path-consolidation/mutations/adapter-existing-closure-rewrite.platform-architecture-mutation.json",
+    "fixtures/platform-path-consolidation/mutations/adapter-fixture-root-reuse.platform-architecture-mutation.json",
+    "fixtures/platform-path-consolidation/mutations/adapter-path-traversal.platform-architecture-mutation.json",
+    "fixtures/platform-path-consolidation/mutations/adapter-roster-rewrite.platform-architecture-mutation.json",
+    "fixtures/platform-path-consolidation/mutations/added-legacy-exception.platform-architecture-mutation.json",
+    "fixtures/platform-path-consolidation/mutations/bespoke-compiler-path.platform-architecture-mutation.json",
+    "fixtures/platform-path-consolidation/mutations/cjs-require.platform-architecture-mutation.json",
+    "fixtures/platform-path-consolidation/mutations/computed-loader.platform-architecture-mutation.json",
+    "fixtures/platform-path-consolidation/mutations/direct-p2-read.platform-architecture-mutation.json",
+    "fixtures/platform-path-consolidation/mutations/duplicate-canonical-owner.platform-architecture-mutation.json",
+    "fixtures/platform-path-consolidation/mutations/existing-neutral-executable-drift.platform-architecture-mutation.json",
+    "fixtures/platform-path-consolidation/mutations/existing-test-executable-drift.platform-architecture-mutation.json",
+    "fixtures/platform-path-consolidation/mutations/generic-compiler-mutation-drift.platform-architecture-mutation.json",
+    "fixtures/platform-path-consolidation/mutations/helper-bypass.platform-architecture-mutation.json",
+    "fixtures/platform-path-consolidation/mutations/identity-concat.platform-architecture-mutation.json",
+    "fixtures/platform-path-consolidation/mutations/identity-regex.platform-architecture-mutation.json",
+    "fixtures/platform-path-consolidation/mutations/legacy-implementation-expansion.platform-architecture-mutation.json",
+    "fixtures/platform-path-consolidation/mutations/migration-baseline-rewrite.platform-architecture-mutation.json",
+    "fixtures/platform-path-consolidation/mutations/neutral-executable-route.platform-architecture-mutation.json",
+    "fixtures/platform-path-consolidation/mutations/new-root-executable.platform-architecture-mutation.json",
+    "fixtures/platform-path-consolidation/mutations/new-test-executable.platform-architecture-mutation.json",
+    "fixtures/platform-path-consolidation/mutations/new-workflow-executable.platform-architecture-mutation.json",
+    "fixtures/platform-path-consolidation/mutations/package-alias-import.platform-architecture-mutation.json",
+    "fixtures/platform-path-consolidation/mutations/package-lock-drift.platform-architecture-mutation.json",
+    "fixtures/platform-path-consolidation/mutations/package-script-expansion.platform-architecture-mutation.json",
+    "fixtures/platform-path-consolidation/mutations/phase-import.platform-architecture-mutation.json",
+    "fixtures/platform-path-consolidation/mutations/policy-weakening.platform-architecture-mutation.json",
+    "fixtures/platform-path-consolidation/mutations/registered-neutral-bypass.platform-architecture-mutation.json",
+    "fixtures/platform-path-consolidation/mutations/registered-route-bypass.platform-architecture-mutation.json",
+    "fixtures/platform-path-consolidation/mutations/shebang-executable.platform-architecture-mutation.json",
+    "fixtures/platform-path-consolidation/mutations/source-identity-branch.platform-architecture-mutation.json",
+    "fixtures/platform-path-consolidation/mutations/typescript-import.platform-architecture-mutation.json"
+  ],
+  "catalogAuthority": {
+    "executableBasenameTerms": [
+      "catalog",
+      "compiler",
+      "ingestion"
+    ],
+    "registeredExecutablePaths": [
+      {
+        "path": "bin/interfacectl",
+        "classification": "neutral"
+      },
+      {
+        "path": "bin/interfacectl.js",
+        "classification": "neutral"
+      },
+      {
+        "path": "scripts/build-p0-demo.mjs",
+        "classification": "neutral"
+      },
+      {
+        "path": "scripts/build-p1-demo.mjs",
+        "classification": "neutral"
+      },
+      {
+        "path": "scripts/build-p2-demo.mjs",
+        "classification": "neutral"
+      },
+      {
+        "path": "scripts/build-p3-demo.mjs",
+        "classification": "neutral"
+      },
+      {
+        "path": "scripts/build-p4-demo.mjs",
+        "classification": "neutral"
+      },
+      {
+        "path": "scripts/build-p5-native-demo.mjs",
+        "classification": "neutral"
+      },
+      {
+        "path": "scripts/build-p5-protocol-demo.mjs",
+        "classification": "neutral"
+      },
+      {
+        "path": "scripts/build-surfaceops-designer-review-ui-demo.mjs",
+        "classification": "neutral"
+      },
+      {
+        "path": "scripts/build-surfaceops-kanban-static-demo.mjs",
+        "classification": "neutral"
+      },
+      {
+        "path": "scripts/check-p2-planning.mjs",
+        "classification": "neutral"
+      },
+      {
+        "path": "scripts/check-platform-architecture.mjs",
+        "classification": "neutral"
+      },
+      {
+        "path": "scripts/materialize-capability-index.mjs",
+        "classification": "neutral"
+      },
+      {
+        "path": "scripts/materialize-designer-workflow-trace.mjs",
+        "classification": "neutral"
+      },
+      {
+        "path": "scripts/materialize-p0.mjs",
+        "classification": "neutral"
+      },
+      {
+        "path": "scripts/materialize-p1.mjs",
+        "classification": "neutral"
+      },
+      {
+        "path": "scripts/materialize-p2.mjs",
+        "classification": "neutral"
+      },
+      {
+        "path": "scripts/materialize-p3.mjs",
+        "classification": "neutral"
+      },
+      {
+        "path": "scripts/materialize-p4.mjs",
+        "classification": "neutral"
+      },
+      {
+        "path": "scripts/materialize-p5-native.mjs",
+        "classification": "neutral"
+      },
+      {
+        "path": "scripts/materialize-p5-protocol.mjs",
+        "classification": "neutral"
+      },
+      {
+        "path": "scripts/materialize-source-accessibility-policy.mjs",
+        "classification": "neutral"
+      },
+      {
+        "path": "scripts/materialize-source-conformance.mjs",
+        "classification": "neutral"
+      },
+      {
+        "path": "scripts/materialize-source-family-component-identity-mapping.mjs",
+        "classification": "neutral"
+      },
+      {
+        "path": "scripts/materialize-source-family-layout-mapping.mjs",
+        "classification": "neutral"
+      },
+      {
+        "path": "scripts/materialize-source-family-namespace-mapping.mjs",
+        "classification": "neutral"
+      },
+      {
+        "path": "scripts/materialize-source-family-packaging.mjs",
+        "classification": "neutral"
+      },
+      {
+        "path": "scripts/materialize-spectrum-checkbox-catalog.mjs",
+        "classification": "legacy"
+      },
+      {
+        "path": "scripts/materialize-surfaceops-designer-review-ui.mjs",
+        "classification": "neutral"
+      },
+      {
+        "path": "scripts/materialize-surfaceops-kanban-live.mjs",
+        "classification": "neutral"
+      },
+      {
+        "path": "scripts/materialize-surfaceops-kanban-static.mjs",
+        "classification": "neutral"
+      },
+      {
+        "path": "scripts/prove-surfaceops-designer-review-ui-browser.mjs",
+        "classification": "neutral"
+      },
+      {
+        "path": "scripts/prove-surfaceops-kanban-live-browser.mjs",
+        "classification": "neutral"
+      },
+      {
+        "path": "scripts/prove-surfaceops-kanban-static-browser.mjs",
+        "classification": "neutral"
+      },
+      {
+        "path": "scripts/verify-platform-path-baseline.mjs",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/capability-index-contract.js",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/capability-index-proof.js",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/catalog-authority.js",
+        "classification": "canonical"
+      },
+      {
+        "path": "src/catalog-consumer-kernel.js",
+        "classification": "canonical"
+      },
+      {
+        "path": "src/catalog-release-boundary.js",
+        "classification": "canonical"
+      },
+      {
+        "path": "src/design-system-compiler-proof.js",
+        "classification": "canonical"
+      },
+      {
+        "path": "src/design-system-ingestion-kernel.js",
+        "classification": "canonical"
+      },
+      {
+        "path": "src/designer-workflow-trace-contract.js",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/designer-workflow-trace-proof.js",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/javascript-module-scanner.js",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/p0.js",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/p1-contract.js",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/p1-proof.js",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/p2-contract.js",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/p2-proof.js",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/p3-contract.js",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/p3-proof.js",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/p4-contract.js",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/p4-proof.js",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/p5-native-contract.js",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/p5-native-proof.js",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/p5-protocol-contract.js",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/p5-protocol-proof.js",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/platform-architecture.js",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/proof-runtime.js",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/source-accessibility-policy-causal.js",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/source-accessibility-policy-contract.js",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/source-accessibility-policy-proof.js",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/source-conformance-contract.js",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/source-conformance-proof.js",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/source-family-component-identity-mapping-contract.js",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/source-family-component-identity-mapping-proof.js",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/source-family-layout-mapping-contract.js",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/source-family-layout-mapping-proof.js",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/source-family-namespace-mapping-contract.js",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/source-family-namespace-mapping-proof.js",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/source-family-packaging-contract.js",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/source-family-packaging-proof.js",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/spectrum-checkbox-catalog-contract.js",
+        "classification": "legacy"
+      },
+      {
+        "path": "src/spectrum-checkbox-catalog-proof.js",
+        "classification": "legacy"
+      },
+      {
+        "path": "src/surfaceops-designer-review-ui-contract.js",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/surfaceops-designer-review-ui-evidence.js",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/surfaceops-designer-review-ui-proof.js",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/surfaceops-kanban-live-contract.js",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/surfaceops-kanban-live-proof.js",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/surfaceops-kanban-static-contract.js",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/surfaceops-kanban-static-proof.js",
+        "classification": "neutral"
+      }
+    ],
+    "registeredRoutes": [
+      {
+        "path": "scripts/build-p1-demo.mjs",
+        "value": "--evidence",
+        "classification": "neutral"
+      },
+      {
+        "path": "scripts/build-p1-demo.mjs",
+        "value": "--help",
+        "classification": "neutral"
+      },
+      {
+        "path": "scripts/build-p1-demo.mjs",
+        "value": "--out",
+        "classification": "neutral"
+      },
+      {
+        "path": "scripts/build-p1-demo.mjs",
+        "value": "-h",
+        "classification": "neutral"
+      },
+      {
+        "path": "scripts/build-p2-demo.mjs",
+        "value": "--evidence",
+        "classification": "neutral"
+      },
+      {
+        "path": "scripts/build-p2-demo.mjs",
+        "value": "--help",
+        "classification": "neutral"
+      },
+      {
+        "path": "scripts/build-p2-demo.mjs",
+        "value": "--out",
+        "classification": "neutral"
+      },
+      {
+        "path": "scripts/build-p2-demo.mjs",
+        "value": "-h",
+        "classification": "neutral"
+      },
+      {
+        "path": "scripts/build-p3-demo.mjs",
+        "value": "--evidence",
+        "classification": "neutral"
+      },
+      {
+        "path": "scripts/build-p3-demo.mjs",
+        "value": "--help",
+        "classification": "neutral"
+      },
+      {
+        "path": "scripts/build-p3-demo.mjs",
+        "value": "--out",
+        "classification": "neutral"
+      },
+      {
+        "path": "scripts/build-p3-demo.mjs",
+        "value": "-h",
+        "classification": "neutral"
+      },
+      {
+        "path": "scripts/build-p4-demo.mjs",
+        "value": "--evidence",
+        "classification": "neutral"
+      },
+      {
+        "path": "scripts/build-p4-demo.mjs",
+        "value": "--help",
+        "classification": "neutral"
+      },
+      {
+        "path": "scripts/build-p4-demo.mjs",
+        "value": "--out",
+        "classification": "neutral"
+      },
+      {
+        "path": "scripts/build-p4-demo.mjs",
+        "value": "-h",
+        "classification": "neutral"
+      },
+      {
+        "path": "scripts/build-p5-native-demo.mjs",
+        "value": "--evidence",
+        "classification": "neutral"
+      },
+      {
+        "path": "scripts/build-p5-native-demo.mjs",
+        "value": "--help",
+        "classification": "neutral"
+      },
+      {
+        "path": "scripts/build-p5-native-demo.mjs",
+        "value": "--out",
+        "classification": "neutral"
+      },
+      {
+        "path": "scripts/build-p5-native-demo.mjs",
+        "value": "-h",
+        "classification": "neutral"
+      },
+      {
+        "path": "scripts/build-p5-protocol-demo.mjs",
+        "value": "--evidence",
+        "classification": "neutral"
+      },
+      {
+        "path": "scripts/build-p5-protocol-demo.mjs",
+        "value": "--help",
+        "classification": "neutral"
+      },
+      {
+        "path": "scripts/build-p5-protocol-demo.mjs",
+        "value": "--out",
+        "classification": "neutral"
+      },
+      {
+        "path": "scripts/build-p5-protocol-demo.mjs",
+        "value": "-h",
+        "classification": "neutral"
+      },
+      {
+        "path": "scripts/build-surfaceops-designer-review-ui-demo.mjs",
+        "value": "--evidence",
+        "classification": "neutral"
+      },
+      {
+        "path": "scripts/build-surfaceops-designer-review-ui-demo.mjs",
+        "value": "--help",
+        "classification": "neutral"
+      },
+      {
+        "path": "scripts/build-surfaceops-designer-review-ui-demo.mjs",
+        "value": "--out",
+        "classification": "neutral"
+      },
+      {
+        "path": "scripts/build-surfaceops-designer-review-ui-demo.mjs",
+        "value": "-h",
+        "classification": "neutral"
+      },
+      {
+        "path": "scripts/build-surfaceops-kanban-static-demo.mjs",
+        "value": "--evidence",
+        "classification": "neutral"
+      },
+      {
+        "path": "scripts/build-surfaceops-kanban-static-demo.mjs",
+        "value": "--help",
+        "classification": "neutral"
+      },
+      {
+        "path": "scripts/build-surfaceops-kanban-static-demo.mjs",
+        "value": "--out",
+        "classification": "neutral"
+      },
+      {
+        "path": "scripts/build-surfaceops-kanban-static-demo.mjs",
+        "value": "-h",
+        "classification": "neutral"
+      },
+      {
+        "path": "scripts/check-platform-architecture.mjs",
+        "value": "--base",
+        "classification": "neutral"
+      },
+      {
+        "path": "scripts/check-platform-architecture.mjs",
+        "value": "--policy",
+        "classification": "neutral"
+      },
+      {
+        "path": "scripts/prove-surfaceops-designer-review-ui-browser.mjs",
+        "value": "--kanban-root",
+        "classification": "neutral"
+      },
+      {
+        "path": "scripts/prove-surfaceops-designer-review-ui-browser.mjs",
+        "value": "--out",
+        "classification": "neutral"
+      },
+      {
+        "path": "scripts/prove-surfaceops-kanban-live-browser.mjs",
+        "value": "--kanban-root",
+        "classification": "neutral"
+      },
+      {
+        "path": "scripts/prove-surfaceops-kanban-live-browser.mjs",
+        "value": "--out",
+        "classification": "neutral"
+      },
+      {
+        "path": "scripts/prove-surfaceops-kanban-static-browser.mjs",
+        "value": "--demo",
+        "classification": "neutral"
+      },
+      {
+        "path": "scripts/prove-surfaceops-kanban-static-browser.mjs",
+        "value": "--help",
+        "classification": "neutral"
+      },
+      {
+        "path": "scripts/prove-surfaceops-kanban-static-browser.mjs",
+        "value": "--out",
+        "classification": "neutral"
+      },
+      {
+        "path": "scripts/prove-surfaceops-kanban-static-browser.mjs",
+        "value": "-h",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/capability-index-proof.js",
+        "value": "proof",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/capability-index-proof.js",
+        "value": "verify",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/design-system-compiler-proof.js",
+        "value": "--manifest",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/design-system-compiler-proof.js",
+        "value": "--out",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/designer-workflow-trace-proof.js",
+        "value": "--catalog",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/designer-workflow-trace-proof.js",
+        "value": "--decision-ledger",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/designer-workflow-trace-proof.js",
+        "value": "--evaluation-report",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/designer-workflow-trace-proof.js",
+        "value": "--fixture",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/designer-workflow-trace-proof.js",
+        "value": "--ingestion-evidence",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/designer-workflow-trace-proof.js",
+        "value": "--ingestion-report",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/designer-workflow-trace-proof.js",
+        "value": "--native-evidence",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/designer-workflow-trace-proof.js",
+        "value": "--orchestration-evidence",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/designer-workflow-trace-proof.js",
+        "value": "--out",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/designer-workflow-trace-proof.js",
+        "value": "--protocol-evidence",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/designer-workflow-trace-proof.js",
+        "value": "--review-evidence",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/designer-workflow-trace-proof.js",
+        "value": "--review-queue",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/designer-workflow-trace-proof.js",
+        "value": "--review-report",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/designer-workflow-trace-proof.js",
+        "value": "--source-authority-map",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/designer-workflow-trace-proof.js",
+        "value": "--source-conformance-evidence",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/designer-workflow-trace-proof.js",
+        "value": "--source-conformance-report",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/designer-workflow-trace-proof.js",
+        "value": "--source-review-queue",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/p0.js",
+        "value": "--fixture",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/p0.js",
+        "value": "--out",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/p0.js",
+        "value": "adapter",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/p0.js",
+        "value": "agents",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/p0.js",
+        "value": "capabilities",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/p0.js",
+        "value": "design-system-compiler",
+        "classification": "canonical"
+      },
+      {
+        "path": "src/p0.js",
+        "value": "designer-workflow-trace",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/p0.js",
+        "value": "ingest",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/p0.js",
+        "value": "native",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/p0.js",
+        "value": "proof",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/p0.js",
+        "value": "protocol",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/p0.js",
+        "value": "review",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/p0.js",
+        "value": "source-accessibility-policy",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/p0.js",
+        "value": "source-conformance",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/p0.js",
+        "value": "source-family-component-identity-mapping",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/p0.js",
+        "value": "source-family-layout-mapping",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/p0.js",
+        "value": "source-family-namespace-mapping",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/p0.js",
+        "value": "source-family-packaging",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/p0.js",
+        "value": "spectrum-checkbox-catalog",
+        "classification": "legacy"
+      },
+      {
+        "path": "src/p0.js",
+        "value": "surfaceops-designer-review-ui",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/p0.js",
+        "value": "surfaceops-kanban-live",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/p0.js",
+        "value": "surfaceops-kanban-static",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/p0.js",
+        "value": "surfaces",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/p1-proof.js",
+        "value": "--catalog",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/p1-proof.js",
+        "value": "--fixture",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/p1-proof.js",
+        "value": "--out",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/p2-proof.js",
+        "value": "--fixture",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/p2-proof.js",
+        "value": "--out",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/p2-proof.js",
+        "value": "--source",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/p3-proof.js",
+        "value": "--catalog",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/p3-proof.js",
+        "value": "--fixture",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/p3-proof.js",
+        "value": "--ingestion-evidence",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/p3-proof.js",
+        "value": "--out",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/p4-proof.js",
+        "value": "--fixture",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/p4-proof.js",
+        "value": "--orchestration-evidence",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/p4-proof.js",
+        "value": "--out",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/p4-proof.js",
+        "value": "--review-queue",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/p5-native-proof.js",
+        "value": "--catalog",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/p5-native-proof.js",
+        "value": "--decision-ledger",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/p5-native-proof.js",
+        "value": "--fixture",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/p5-native-proof.js",
+        "value": "--ingestion-evidence",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/p5-native-proof.js",
+        "value": "--out",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/p5-native-proof.js",
+        "value": "--protocol-evidence",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/p5-native-proof.js",
+        "value": "--review-evidence",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/p5-native-proof.js",
+        "value": "--review-report",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/p5-protocol-proof.js",
+        "value": "--catalog",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/p5-protocol-proof.js",
+        "value": "--decision-ledger",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/p5-protocol-proof.js",
+        "value": "--fixture",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/p5-protocol-proof.js",
+        "value": "--ingestion-evidence",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/p5-protocol-proof.js",
+        "value": "--out",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/p5-protocol-proof.js",
+        "value": "--review-evidence",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/p5-protocol-proof.js",
+        "value": "--review-report",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/source-conformance-proof.js",
+        "value": "--catalog",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/source-conformance-proof.js",
+        "value": "--fixture",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/source-conformance-proof.js",
+        "value": "--ingestion-evidence",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/source-conformance-proof.js",
+        "value": "--out",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/source-conformance-proof.js",
+        "value": "--source",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/surfaceops-designer-review-ui-proof.js",
+        "value": "--decision-ledger",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/surfaceops-designer-review-ui-proof.js",
+        "value": "--designer-evidence",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/surfaceops-designer-review-ui-proof.js",
+        "value": "--designer-report",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/surfaceops-designer-review-ui-proof.js",
+        "value": "--fixture",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/surfaceops-designer-review-ui-proof.js",
+        "value": "--kanban-live-evidence",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/surfaceops-designer-review-ui-proof.js",
+        "value": "--kanban-live-operation-plan",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/surfaceops-designer-review-ui-proof.js",
+        "value": "--out",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/surfaceops-designer-review-ui-proof.js",
+        "value": "--review-evidence",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/surfaceops-kanban-live-proof.js",
+        "value": "--decision-ledger",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/surfaceops-kanban-live-proof.js",
+        "value": "--evaluation-report",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/surfaceops-kanban-live-proof.js",
+        "value": "--fixture",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/surfaceops-kanban-live-proof.js",
+        "value": "--kanban-api-manifest",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/surfaceops-kanban-live-proof.js",
+        "value": "--orchestration-evidence",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/surfaceops-kanban-live-proof.js",
+        "value": "--orchestration-report",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/surfaceops-kanban-live-proof.js",
+        "value": "--out",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/surfaceops-kanban-live-proof.js",
+        "value": "--review-evidence",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/surfaceops-kanban-live-proof.js",
+        "value": "--review-queue",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/surfaceops-kanban-live-proof.js",
+        "value": "--review-report",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/surfaceops-kanban-static-proof.js",
+        "value": "--decision-ledger",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/surfaceops-kanban-static-proof.js",
+        "value": "--evaluation-report",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/surfaceops-kanban-static-proof.js",
+        "value": "--fixture",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/surfaceops-kanban-static-proof.js",
+        "value": "--kanban-substrate-manifest",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/surfaceops-kanban-static-proof.js",
+        "value": "--orchestration-evidence",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/surfaceops-kanban-static-proof.js",
+        "value": "--orchestration-report",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/surfaceops-kanban-static-proof.js",
+        "value": "--out",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/surfaceops-kanban-static-proof.js",
+        "value": "--review-evidence",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/surfaceops-kanban-static-proof.js",
+        "value": "--review-queue",
+        "classification": "neutral"
+      },
+      {
+        "path": "src/surfaceops-kanban-static-proof.js",
+        "value": "--review-report",
+        "classification": "neutral"
+      }
+    ]
+  },
+  "platformRoles": [
+    {
+      "role": "catalog-authority",
+      "ownerPath": "src/catalog-authority.js"
+    },
+    {
+      "role": "catalog-composition",
+      "ownerPath": null
+    },
+    {
+      "role": "catalog-consumer",
+      "ownerPath": "src/catalog-consumer-kernel.js"
+    },
+    {
+      "role": "catalog-release-compatibility",
+      "ownerPath": "src/catalog-release-boundary.js"
+    },
+    {
+      "role": "compiler-orchestration",
+      "ownerPath": "src/design-system-compiler-proof.js"
+    },
+    {
+      "role": "source-ingestion",
+      "ownerPath": "src/design-system-ingestion-kernel.js"
+    }
+  ],
+  "frozenFileHashes": [
+    {
+      "path": ".github/workflows/platform-architecture-trusted.yml",
+      "sha256": "a964c657b491ba7355d2c3c1018418f6c512bde4fe5e999dde3bfe5e5c7fb306"
+    },
+    {
+      "path": ".github/workflows/surfaces-proof.yml",
+      "sha256": "59aabff0a0a7697906976b1044d914af07f4f2d46a0499480de51c77fc1a9990"
+    },
+    {
+      "path": "bin/interfacectl",
+      "sha256": "bd22bdfc79e605024865753cf2b3fab456dc3942b76f26aceb731a6011623c82"
+    },
+    {
+      "path": "bin/interfacectl.js",
+      "sha256": "75de7d32eb1c399d6c0210351d629b80aae59078965416be80f2fb80c59a21a2"
+    },
+    {
+      "path": "fixtures/design-system-compiler/astryx-core/allowed-render.catalog-consumer-fixture.json",
+      "sha256": "748aa61ee7cf4b48cbf979cd519c793a6e3946f9c27b09f8ce113bb2d11f206f"
+    },
+    {
+      "path": "fixtures/design-system-compiler/astryx-core/blocked-unknown-member.catalog-consumer-fixture.json",
+      "sha256": "10e1a69232fea2e944177fdcbcd88ea9cde27c6317ceaa35244168d7d997461f"
+    },
+    {
+      "path": "fixtures/design-system-compiler/astryx-core/review-promotion.catalog-consumer-fixture.json",
+      "sha256": "9a8b62aa1eaac49198ae4f7be4b7a22d33be9dcf65faa8958e93aba21525f9fa"
+    },
+    {
+      "path": "fixtures/design-system-compiler/mutations/authority-without-mapping.design-system-compiler-mutation.json",
+      "sha256": "d20f9f50cff94453ab9a7f030be7da73ed2f9fd7091e09fa7c9b8ed9075397f2"
+    },
+    {
+      "path": "fixtures/design-system-compiler/mutations/lossless-member-identifier-invention.design-system-compiler-mutation.json",
+      "sha256": "edf907e90a1b68ab541b6524851f3241f14cbb2d184120985672a748f37631b4"
+    },
+    {
+      "path": "fixtures/design-system-compiler/mutations/lossless-target-inversion.design-system-compiler-mutation.json",
+      "sha256": "ad4ada50dba206c722ca9f393b166b0ecad37655d3f6c4c02e09c3b9faa261e0"
+    },
+    {
+      "path": "fixtures/design-system-compiler/mutations/receipt-catalog-hash-mismatch.design-system-compiler-mutation.json",
+      "sha256": "c042ecfab5e62e26b9eb8fbcae1fe0daaf7206ce28bfac44463acabaf317db85"
+    },
+    {
+      "path": "fixtures/design-system-compiler/spectrum-switch/allowed-render.catalog-consumer-fixture.json",
+      "sha256": "d6f4259508b62e9f5a77d2864986fa497cc86aa0e675beff6284cabcd086ccb8"
+    },
+    {
+      "path": "fixtures/design-system-compiler/spectrum-switch/blocked-unknown-prop.catalog-consumer-fixture.json",
+      "sha256": "f7294f9d98cf382939cc6fc0b12a023ccb386459b4cfea0da93781a7cdcbf22d"
+    },
+    {
+      "path": "fixtures/design-system-compiler/spectrum-switch/review-promotion.catalog-consumer-fixture.json",
+      "sha256": "33853c471ee1eb08d319e9bedbe09b89d5653b5b78a78eede1af95bc4b932953"
+    },
+    {
+      "path": "fixtures/platform-path-consolidation/mutations/adapter-consumer-fixture-escape.platform-architecture-mutation.json",
+      "sha256": "113edb1dc5564203cb09b7db167a6b793d69b4191d7fa944c840c570b4e4b985"
+    },
+    {
+      "path": "fixtures/platform-path-consolidation/mutations/adapter-executable-payload.platform-architecture-mutation.json",
+      "sha256": "3cf176f72413cb125b573f8d5ea2f0f63cdcecfc0d8afb96cafcbfd5e015505c"
+    },
+    {
+      "path": "fixtures/platform-path-consolidation/mutations/adapter-existing-closure-rewrite.platform-architecture-mutation.json",
+      "sha256": "eaf0c6ef47a3c8d7810cfc157ebd434ed6700986ddc7eb3d93b12cdf1ac39589"
+    },
+    {
+      "path": "fixtures/platform-path-consolidation/mutations/adapter-fixture-root-reuse.platform-architecture-mutation.json",
+      "sha256": "6756166120af6df0b5312a937e466db6b48d38f089ad5f8c73e565c3a7593654"
+    },
+    {
+      "path": "fixtures/platform-path-consolidation/mutations/adapter-path-traversal.platform-architecture-mutation.json",
+      "sha256": "ef9f9e17a94d41285e3aa2d36633280a17886619268a52c69aee5921c42b3b20"
+    },
+    {
+      "path": "fixtures/platform-path-consolidation/mutations/adapter-roster-rewrite.platform-architecture-mutation.json",
+      "sha256": "f04d01fac88ed2429c9181b41d15f24c6a82dfed9a132b5599dfa3f5b9dd36f7"
+    },
+    {
+      "path": "fixtures/platform-path-consolidation/mutations/added-legacy-exception.platform-architecture-mutation.json",
+      "sha256": "5101909b699fcc8e31d3b067712c9ac5cb34988963d165b8dd0a2f0d25e17eb5"
+    },
+    {
+      "path": "fixtures/platform-path-consolidation/mutations/bespoke-compiler-path.platform-architecture-mutation.json",
+      "sha256": "58d6fbd460e3fd7b33dfbc91a959546ef0c2d11b3958c255a961953651a078d9"
+    },
+    {
+      "path": "fixtures/platform-path-consolidation/mutations/cjs-require.platform-architecture-mutation.json",
+      "sha256": "22102731b584136ff8be8f217c7bc4a36229f04df49cfc08ebfc11c0f11e9f76"
+    },
+    {
+      "path": "fixtures/platform-path-consolidation/mutations/computed-loader.platform-architecture-mutation.json",
+      "sha256": "33d102b788b581599396a5fb4b1940ff7b4ca902388a0bc6eaa914d76d8befe1"
+    },
+    {
+      "path": "fixtures/platform-path-consolidation/mutations/direct-p2-read.platform-architecture-mutation.json",
+      "sha256": "e282761e3bdb371b3c5bb0a05a5eb8a26655dabc8690f62e3ef3b315a3f08bd4"
+    },
+    {
+      "path": "fixtures/platform-path-consolidation/mutations/duplicate-canonical-owner.platform-architecture-mutation.json",
+      "sha256": "2f8beef5a2d8107fad786626069c34ef22596134c7c50aee6597f56e52401a1c"
+    },
+    {
+      "path": "fixtures/platform-path-consolidation/mutations/existing-neutral-executable-drift.platform-architecture-mutation.json",
+      "sha256": "8efaae383e8f7bc24f4e22cfb61c86a3ed15ffb064b0e3b2cf20748ccf40b967"
+    },
+    {
+      "path": "fixtures/platform-path-consolidation/mutations/existing-test-executable-drift.platform-architecture-mutation.json",
+      "sha256": "0ed8d4bc168d3587d856c338eff67b67e1a11a286d7ebea3b8b62a6fc326d923"
+    },
+    {
+      "path": "fixtures/platform-path-consolidation/mutations/generic-compiler-mutation-drift.platform-architecture-mutation.json",
+      "sha256": "9395d22cd26967661d066ca58dc1e13396d33a6a2b869fad4970bee6a412b779"
+    },
+    {
+      "path": "fixtures/platform-path-consolidation/mutations/helper-bypass.platform-architecture-mutation.json",
+      "sha256": "0c78484171e0cc0b3d41e9fdfdf649a70741d1ad979f12894c4d7f7f945006a4"
+    },
+    {
+      "path": "fixtures/platform-path-consolidation/mutations/identity-concat.platform-architecture-mutation.json",
+      "sha256": "28fcdbe2dc6adeba32ee22a4c74bf13e361ccb64e7da3a6fb4b0673ec480fa9b"
+    },
+    {
+      "path": "fixtures/platform-path-consolidation/mutations/identity-regex.platform-architecture-mutation.json",
+      "sha256": "57518b74a5b3be036454fbfcd852b6c7e2bb8f53b79e9b6143bfc4b072d41436"
+    },
+    {
+      "path": "fixtures/platform-path-consolidation/mutations/legacy-implementation-expansion.platform-architecture-mutation.json",
+      "sha256": "18f8f8dbee44d12627c6e5af42c20b8607b5d51e520e0e46c2d9263f09edd966"
+    },
+    {
+      "path": "fixtures/platform-path-consolidation/mutations/migration-baseline-rewrite.platform-architecture-mutation.json",
+      "sha256": "98ea8181d17317a5c3486000920a0496ffd94b3fe9902c5ab70348a86acbe442"
+    },
+    {
+      "path": "fixtures/platform-path-consolidation/mutations/neutral-executable-route.platform-architecture-mutation.json",
+      "sha256": "dc337af3cea40ff12baac25a60ceef27ab1254a322ef349d1b5d9db13f35978d"
+    },
+    {
+      "path": "fixtures/platform-path-consolidation/mutations/new-root-executable.platform-architecture-mutation.json",
+      "sha256": "845a0f52c1a85388c6ba286f9dd247a3d189fad3e1cf6f639c922e78773aa6f2"
+    },
+    {
+      "path": "fixtures/platform-path-consolidation/mutations/new-test-executable.platform-architecture-mutation.json",
+      "sha256": "014bc8eebde97111006e17cee0bb24ed6dbc5444a87a052fa61a943de3895cdf"
+    },
+    {
+      "path": "fixtures/platform-path-consolidation/mutations/new-workflow-executable.platform-architecture-mutation.json",
+      "sha256": "740eb8151c9752bed059a96237bf83a15da489b6a14c47df213ee6267eec3f79"
+    },
+    {
+      "path": "fixtures/platform-path-consolidation/mutations/package-alias-import.platform-architecture-mutation.json",
+      "sha256": "bd57f981fc05befc6996e0897e132f9b73eda0145ef62ebf4359a7a7cd1ae82f"
+    },
+    {
+      "path": "fixtures/platform-path-consolidation/mutations/package-lock-drift.platform-architecture-mutation.json",
+      "sha256": "1d55b979bf0f74be680554ed28836cfe0c37edbadce6d9a482e5bc4a18d9ca02"
+    },
+    {
+      "path": "fixtures/platform-path-consolidation/mutations/package-script-expansion.platform-architecture-mutation.json",
+      "sha256": "267fe22cf5d7336bb665c69abc2ba357ae08d75994ec141996e3eccff6d2dba2"
+    },
+    {
+      "path": "fixtures/platform-path-consolidation/mutations/phase-import.platform-architecture-mutation.json",
+      "sha256": "81e0485bfd9db808424873459b4f3c0328e7b7766142508f95f62d932cbb72d2"
+    },
+    {
+      "path": "fixtures/platform-path-consolidation/mutations/policy-weakening.platform-architecture-mutation.json",
+      "sha256": "83adf4bdb74905c9486b9690039573c684dc368ae32dffbedddb028bb45490bd"
+    },
+    {
+      "path": "fixtures/platform-path-consolidation/mutations/registered-neutral-bypass.platform-architecture-mutation.json",
+      "sha256": "8b5443c219355aa7e74ef8700854de4951dbb64fab6b517f2bdcc4dca294da2f"
+    },
+    {
+      "path": "fixtures/platform-path-consolidation/mutations/registered-route-bypass.platform-architecture-mutation.json",
+      "sha256": "919a2fc2dd707c8faef82daad998ec8973052e1ccb500b82891fdaac7a3dd643"
+    },
+    {
+      "path": "fixtures/platform-path-consolidation/mutations/shebang-executable.platform-architecture-mutation.json",
+      "sha256": "c66d2fc23835280ad0e303f8f355559196569171797d74996aa77bcb9c0948bf"
+    },
+    {
+      "path": "fixtures/platform-path-consolidation/mutations/source-identity-branch.platform-architecture-mutation.json",
+      "sha256": "0d6fe97e9777e07e455405bf2f17669a15b37a975ab8001e873a9947e278bd81"
+    },
+    {
+      "path": "fixtures/platform-path-consolidation/mutations/typescript-import.platform-architecture-mutation.json",
+      "sha256": "aa708dd3bc2b2f20b8a98b24a145a4bdb8c1a5ea0fcbc1b6d7e23ef70bb7d697"
+    },
+    {
+      "path": "package-lock.json",
+      "sha256": "c2119af847941ee804365aa6642e097accdaec25fb769832f60b4bd90f2f4254"
+    },
+    {
+      "path": "package.json",
+      "sha256": "d3307142ed7769308b034599e638a4d99f83007f1d73f291a022bd71f31449a9"
+    },
+    {
+      "path": "schemas/catalog-boundary-receipt.v0.schema.json",
+      "sha256": "2064f8ecbcae729cf394e65a086ae6725626d13a9e3a684589a41ad648218c2d"
+    },
+    {
+      "path": "schemas/catalog-consumer-fixture.v0.schema.json",
+      "sha256": "1a9c6d103a2271b15a3e009c3e0add388b0939b840b37c97af9d6b5a16db16d6"
+    },
+    {
+      "path": "schemas/catalog-consumer-report.v0.schema.json",
+      "sha256": "b59bf1eb6a1d07df55fc365b482b81c87beb7cd252fb5f9ece3c333fe9ad3305"
+    },
+    {
+      "path": "schemas/catalog-render-plan.v0.schema.json",
+      "sha256": "5d1d95e4aa71a303a24ada43b78930414cf54f7e033beef7bb389415038d8867"
+    },
+    {
+      "path": "schemas/catalog-runtime-projection.v0.schema.json",
+      "sha256": "fdb962806e3656336d53a25bbae2400fe08aaf5577a58ae3246e89ba5b209411"
+    },
+    {
+      "path": "schemas/design-system-adapter.v0.schema.json",
+      "sha256": "bc9eb3f6fa19f5d087c2ad460ec6162889caa1f90b7e3fcb7715ce721d22ddf1"
+    },
+    {
+      "path": "schemas/design-system-compiler-diagnostics.v0.schema.json",
+      "sha256": "da7a5608610d5979a2fec2a476e2d9c502ee85ae621319e223db540a5be7839c"
+    },
+    {
+      "path": "schemas/design-system-compiler-evidence.v0.schema.json",
+      "sha256": "3303afe5057de82d77a4d7264145a2a9d1d2fec1772bc78cfcbc75f8c26fb706"
+    },
+    {
+      "path": "schemas/design-system-compiler-manifest.v0.schema.json",
+      "sha256": "0bec93b21b615a01c11e4f14e3a344397ae99066bafd20eb7c569e9fa3e0eccb"
+    },
+    {
+      "path": "schemas/design-system-compiler-mutation.v0.schema.json",
+      "sha256": "eced7d67b978ac171e01d1909f72580e2658cad5f2839b45b31cdf4a3ead5ba3"
+    },
+    {
+      "path": "schemas/design-system-compiler-report.v0.schema.json",
+      "sha256": "50c8d559bb672fac746f6e237f78e8c49ff726e7caa397f8a803e1bb276762f5"
+    },
+    {
+      "path": "schemas/diagnostics.v0.schema.json",
+      "sha256": "41fedac662b1af55cf29fd790b464314ad20c5254940cddc49b1e984ec5e7d32"
+    },
+    {
+      "path": "schemas/extract.v0.schema.json",
+      "sha256": "dba8d5d8cb04be6e22fbd3802433c18d02dc4369da01fb1a78406dd1565e9bcf"
+    },
+    {
+      "path": "schemas/platform-architecture-diagnostics.v0.schema.json",
+      "sha256": "b29364af1bc9993840d5ba3fbfdd098c441a42e388068741fa02a8594c5b0d15"
+    },
+    {
+      "path": "schemas/platform-architecture-mutation.v0.schema.json",
+      "sha256": "00b9e6301fce287f566d3b1be4851f0b5badc25d57ae0fc87ca112d3f83f2fd9"
+    },
+    {
+      "path": "schemas/platform-path-baseline.v0.schema.json",
+      "sha256": "cab987f2a2b55251f1873afa522335d09842c007772217ddd57d1dfbb9d1d0f6"
+    },
+    {
+      "path": "schemas/portable-design-source-lock.v0.schema.json",
+      "sha256": "19cdd5b95c09b15fb3fae9890fe02fb78865000eb95a3bdf8752f4ad46ad723c"
+    },
+    {
+      "path": "schemas/runtime-catalog.v0.schema.json",
+      "sha256": "b0881c1ff28a8d7718f6a9e40bf426abdc7b669e6563b89e830355ea84c91bbc"
+    },
+    {
+      "path": "scripts/build-p0-demo.mjs",
+      "sha256": "6f4f0e432f50f440dec71aa5fd18a79386a966297330ef91e82caa36ddd9d110"
+    },
+    {
+      "path": "scripts/build-p1-demo.mjs",
+      "sha256": "884afdced5ea7d0ffb63d9a1d42f8fb0a402ef1c02ac013e192920b3237138a0"
+    },
+    {
+      "path": "scripts/build-p2-demo.mjs",
+      "sha256": "09761dcf4359c184cff2d2d4c92a674b7bde4a394addbed66fd93f0efb3d23dd"
+    },
+    {
+      "path": "scripts/build-p3-demo.mjs",
+      "sha256": "11a00b62f7593052f9717b81c2e28ec8dc9855a29d2ceddd80fecbb840f62e49"
+    },
+    {
+      "path": "scripts/build-p4-demo.mjs",
+      "sha256": "eeb7b6dba7723286443975bd59a816d9a95adb3067935b6b8f109901a651f32d"
+    },
+    {
+      "path": "scripts/build-p5-native-demo.mjs",
+      "sha256": "da93025a6083111b8260a095a483c68bc8c4c1f59964ed4c2c4627e9782a4567"
+    },
+    {
+      "path": "scripts/build-p5-protocol-demo.mjs",
+      "sha256": "178649ec5713634a5f6a9277a9fae8bc8e5956edc8934ac40056c71eb0f01819"
+    },
+    {
+      "path": "scripts/build-surfaceops-designer-review-ui-demo.mjs",
+      "sha256": "52d2d2f734f96654c6672ca8b14dad7f811a3b70812862d65695fe5cd03060c2"
+    },
+    {
+      "path": "scripts/build-surfaceops-kanban-static-demo.mjs",
+      "sha256": "d69240607aa0fbf8e7aca28ea7e33e66647647e67aa08203e1bc368b70866ae8"
+    },
+    {
+      "path": "scripts/check-p2-planning.mjs",
+      "sha256": "0d8948e69cabb902511b542b47700cc9f4eb18273fd977924ae4586586ff1bbc"
+    },
+    {
+      "path": "scripts/check-platform-architecture.mjs",
+      "sha256": "a548d1da931dbe711777e9378928f1a8d28b08aa73e0740abd2eb3b05fad51f3"
+    },
+    {
+      "path": "scripts/materialize-capability-index.mjs",
+      "sha256": "c09ede94632f784a4d770aa70559ce19603ed25388835120153af2760f514a50"
+    },
+    {
+      "path": "scripts/materialize-designer-workflow-trace.mjs",
+      "sha256": "16941315b4cb0a6e3a14cbf0b977d303a858b1984b23ce9b3ae93a2ef7643d19"
+    },
+    {
+      "path": "scripts/materialize-p0.mjs",
+      "sha256": "df54398b621f60434e2a3a51428c067fe04559d9f90966063b544324bec683e7"
+    },
+    {
+      "path": "scripts/materialize-p1.mjs",
+      "sha256": "6395e2a0bc5ef5f6de754a7937e4c5b2c14352ca5be152d5178167ac2f64aa7f"
+    },
+    {
+      "path": "scripts/materialize-p2.mjs",
+      "sha256": "cddad037bf22c5260452768ccce95cae762e04858db5c826a81dae744e0df167"
+    },
+    {
+      "path": "scripts/materialize-p3.mjs",
+      "sha256": "2e9d64d9f80ee86c16fb8b5f8af386eaf04adc55a6bce1feaddc956ac9c11f22"
+    },
+    {
+      "path": "scripts/materialize-p4.mjs",
+      "sha256": "0bb36a727c5a46c9c02b5e10da774604005416d1a9d5d618cb81e02ffaea8854"
+    },
+    {
+      "path": "scripts/materialize-p5-native.mjs",
+      "sha256": "9554c06de94b5ea91b4bfe6db234c2de2a45bde021c53a8a3d11249a6571c0b0"
+    },
+    {
+      "path": "scripts/materialize-p5-protocol.mjs",
+      "sha256": "b4cf1d70dff3e7451bd7cf2af02a25586b21fc50f67d54e214ab79393dd75d5b"
+    },
+    {
+      "path": "scripts/materialize-source-accessibility-policy.mjs",
+      "sha256": "0dd7346fcd64ff1eb7bec2621372ec8eea8feb60a00c42449c2bab7f6c2b4e28"
+    },
+    {
+      "path": "scripts/materialize-source-conformance.mjs",
+      "sha256": "739197684d82cdbc8458a30df0347e8846a62d83c949987b67d060da6364e84e"
+    },
+    {
+      "path": "scripts/materialize-source-family-component-identity-mapping.mjs",
+      "sha256": "872e562e49448438dc85591184478ff89e05836c5bc0110e51f084eb3577dc6e"
+    },
+    {
+      "path": "scripts/materialize-source-family-layout-mapping.mjs",
+      "sha256": "f27f81f48d5179fc960646dcd5f58d8d5d155e6fb839338e710e759346039e49"
+    },
+    {
+      "path": "scripts/materialize-source-family-namespace-mapping.mjs",
+      "sha256": "c42a004aa131de7fb31a8169cc4377684c137256f8c3e27817035d77de12a100"
+    },
+    {
+      "path": "scripts/materialize-source-family-packaging.mjs",
+      "sha256": "22468a8ef028af8ca86aa000b555833d5645ba37779e3e891c370402534f67cb"
+    },
+    {
+      "path": "scripts/materialize-surfaceops-designer-review-ui.mjs",
+      "sha256": "0e35c431d7795fb1a5eefcbf92063c3e4b57a5843cf2b1f738415f8f14cd49f7"
+    },
+    {
+      "path": "scripts/materialize-surfaceops-kanban-live.mjs",
+      "sha256": "49116ab54f0234403d1c0733cf8b37447194e8a7df4ff479ddae222733481262"
+    },
+    {
+      "path": "scripts/materialize-surfaceops-kanban-static.mjs",
+      "sha256": "6a6401944666a29aa8fa7d420b763fb632aed825e26dd57358c43602f05a3224"
+    },
+    {
+      "path": "scripts/prove-surfaceops-designer-review-ui-browser.mjs",
+      "sha256": "f4f701b0721ae328235ee4b006c956dbc1b80d169b2ff423ca04348b03771070"
+    },
+    {
+      "path": "scripts/prove-surfaceops-kanban-live-browser.mjs",
+      "sha256": "5159e97a425e700289d6a06a8ff0de3552ccb025e03985b7403b16654227bdf5"
+    },
+    {
+      "path": "scripts/prove-surfaceops-kanban-static-browser.mjs",
+      "sha256": "7059cd784ab4dfb6f88cafc28ef02819b6227bf45272ef60644647a3caa068ee"
+    },
+    {
+      "path": "scripts/verify-platform-path-baseline.mjs",
+      "sha256": "f1dfbf22bef2e0b0018d9e72bf35a52beeae3689035924b202db7191a29eb78f"
+    },
+    {
+      "path": "sources/design-system-compiler/astryx-core/adapter.json",
+      "sha256": "8ad5cf07abb8126f5d8605da81c0739b38ed25579db6fb6a6a7746a7c74e094d"
+    },
+    {
+      "path": "sources/design-system-compiler/astryx-core/npm/@astryxdesign/core/0.1.2/package/LICENSE",
+      "sha256": "a6855be541fc8f446acd1bc4f2f8efce1ace6dce71dba32fcd8da553ee54b473"
+    },
+    {
+      "path": "sources/design-system-compiler/astryx-core/npm/@astryxdesign/core/0.1.2/package/src/Button/Button.doc.mjs",
+      "sha256": "fda24e50a206d4e1061a548b62eee3ced10bde354159386b7ddc43dbe79e7ad6"
+    },
+    {
+      "path": "sources/design-system-compiler/astryx-core/npm/@astryxdesign/core/0.1.2/package/src/theme/tokens.stylex.ts",
+      "sha256": "b9a5274e60c502c396794a0b396c0d7e3e9969f0c7205db12f120b98d60c166d"
+    },
+    {
+      "path": "sources/design-system-compiler/astryx-core/source.lock.json",
+      "sha256": "58741537bc18cd008d22ee41fefcd33600bced1a7fb7d32ce47175361965be73"
+    },
+    {
+      "path": "sources/design-system-compiler/spectrum-switch/adapter.json",
+      "sha256": "5fc634b8fc0690b879e102f359179fa8b4a6b1a0656e725ebe8bfc129c589307"
+    },
+    {
+      "path": "sources/design-system-compiler/spectrum-switch/npm/@adobe/spectrum-design-data/0.7.0/package/LICENSE",
+      "sha256": "981250df8283f951cb49f9cdcaa405d49e0313b0d4f3cd174d25f709f802cfba"
+    },
+    {
+      "path": "sources/design-system-compiler/spectrum-switch/npm/@adobe/spectrum-design-data/0.7.0/package/components/switch.json",
+      "sha256": "f71fca208251775638f52f9b6dfefc19104b17119512f6c3ae491da3c684b512"
+    },
+    {
+      "path": "sources/design-system-compiler/spectrum-switch/source.lock.json",
+      "sha256": "fc22ddefbabcb73e287fd769dde6652ee263dc75d0c16d57c8969f93cc2a2d6a"
+    },
+    {
+      "path": "src/capability-index-contract.js",
+      "sha256": "210d2a83aece9729d5e8a6244e9d0ec09c5253017b239610e96c37cc5f415e13"
+    },
+    {
+      "path": "src/capability-index-proof.js",
+      "sha256": "6eb6110a80fcc84d80975850fcdb0ba1fe20be92bd44ce7b5c1542e27583bc7d"
+    },
+    {
+      "path": "src/catalog-authority.js",
+      "sha256": "b9e63bf8da6a251e0ab05b1414e70e41ebfe35be85c0d48263c36f219792bce5"
+    },
+    {
+      "path": "src/catalog-consumer-kernel.js",
+      "sha256": "53bc519e88bdaf96e89e1e8774ec4f9d335f23bf43f906e270c07d9d3b7b437c"
+    },
+    {
+      "path": "src/catalog-release-boundary.js",
+      "sha256": "37a1859ae730f23edf7676373a574b5b4477ce4dc7609be6920cacda4829af7d"
+    },
+    {
+      "path": "src/design-system-compiler-proof.js",
+      "sha256": "013f8e238e31c0c40fb777337eb2f465621eee20c473f712dfe36bb90c72618a"
+    },
+    {
+      "path": "src/design-system-ingestion-kernel.js",
+      "sha256": "b67eaa6d7b1bf78ad40656219285230540938fe056e42386940000c2505d9dd4"
+    },
+    {
+      "path": "src/designer-workflow-trace-contract.js",
+      "sha256": "ee334ab4aeba5737cb5bc63522f2648a8ed9a776cead51e7d2734d1415543aef"
+    },
+    {
+      "path": "src/designer-workflow-trace-proof.js",
+      "sha256": "c61de3457405110405962afa5f6b5ce4f6b8d44ad24dc6622db133b65c8ec491"
+    },
+    {
+      "path": "src/javascript-module-scanner.js",
+      "sha256": "63d62a41d06f69c14582cb93b5cdd23ab3f09b728cb812ac751fcb9a970060d3"
+    },
+    {
+      "path": "src/p0.js",
+      "sha256": "d4aa239c0abf6a9374b7dbfd96f9d8bba999899fac1e59818ad64dc7bdc73e30"
+    },
+    {
+      "path": "src/p1-contract.js",
+      "sha256": "b8297e709043e286d40d35ef046fac3542b6245064b93aaf01dc74766fa579db"
+    },
+    {
+      "path": "src/p1-proof.js",
+      "sha256": "a1d8a37fc07fab9693f5455039507efae7598d10f29b6ad781eca391eb063ccd"
+    },
+    {
+      "path": "src/p2-contract.js",
+      "sha256": "2b28774a7b0340c572c9d82018cd44383a0b7f6a3c81fe3d23e618b0a1e3db90"
+    },
+    {
+      "path": "src/p2-proof.js",
+      "sha256": "4347228b392e8d2b6e0e9238530131f8291a492c9d6002168e1e8f378861c4f6"
+    },
+    {
+      "path": "src/p3-contract.js",
+      "sha256": "8517a9b366ea8746323f0da0f2454be0933466b522903c2094342d025a8a0ca2"
+    },
+    {
+      "path": "src/p3-proof.js",
+      "sha256": "f033ca64c591fed5a3cfa8d202bf373161650690f66b75f2b2789a13911cdf55"
+    },
+    {
+      "path": "src/p4-contract.js",
+      "sha256": "b7c1153bc7243dedba2a23ea6c91f4866e40833dcadaacd3ee9435a8251b8e78"
+    },
+    {
+      "path": "src/p4-proof.js",
+      "sha256": "6a3c99159e5de77fd7ef0146d2f482cd12a2d1347e2f3334787669a311e42e6a"
+    },
+    {
+      "path": "src/p5-native-contract.js",
+      "sha256": "691a9a9960ef4ad16b517a91ced22875359280a695e205ce618dd5af40feeb3a"
+    },
+    {
+      "path": "src/p5-native-proof.js",
+      "sha256": "c030d152cc8b147d9ad3798d9faeb42e34288b5f412fb93306fd302dfb7abbb6"
+    },
+    {
+      "path": "src/p5-protocol-contract.js",
+      "sha256": "a032bf6b95bf6ed8dc01df4b7aa1aaa9d6bbbb6e16d091cfa9d811e771fea970"
+    },
+    {
+      "path": "src/p5-protocol-proof.js",
+      "sha256": "d58e2155de402e1cc55eaef3eab4ffec579b6f87961f1d795c4f50978931e3b1"
+    },
+    {
+      "path": "src/platform-architecture.js",
+      "sha256": "8e9e032a4af1abaa3d8efcb49b98914be83bcb38fc9a471597764d4e1728d38e"
+    },
+    {
+      "path": "src/proof-runtime.js",
+      "sha256": "d0fb5afbf34c48ffc6255389d03e4edb81dae7c3357b8e192a52da0e6167d2ef"
+    },
+    {
+      "path": "src/source-accessibility-policy-causal.js",
+      "sha256": "4ef7e3bf63129c09565f10382bcfc3321ab7a55945cfd39508a74046e7ac1f15"
+    },
+    {
+      "path": "src/source-accessibility-policy-contract.js",
+      "sha256": "68eaf722709a7bf2d3a5fb9d5566259fb15dbaeb21e597e6d631af3b38951242"
+    },
+    {
+      "path": "src/source-accessibility-policy-proof.js",
+      "sha256": "7fc1bf6478aa1be6b40dcbef512b7af9e65268add80712b456cdc4525eae394b"
+    },
+    {
+      "path": "src/source-conformance-contract.js",
+      "sha256": "bc8ad29fc325a1700833febdb40a5fa94d4b08fac9b102e822c593763d86a78d"
+    },
+    {
+      "path": "src/source-conformance-proof.js",
+      "sha256": "c7c81bf6b46be01251653bb1f502ae3bb180815b64594d339d9325cea768c484"
+    },
+    {
+      "path": "src/source-family-component-identity-mapping-contract.js",
+      "sha256": "c2d28f121b86a4fa25417e05d5094d05a223df1a5ac541ad9011d9e079866019"
+    },
+    {
+      "path": "src/source-family-component-identity-mapping-proof.js",
+      "sha256": "3ea56975c4d200ee083b797361cac4de2bd9fe6ea53d5b5022a8955ce6e8f5ea"
+    },
+    {
+      "path": "src/source-family-layout-mapping-contract.js",
+      "sha256": "5ecc1f4377da71a8f7b5ebd7f2c7a64b118a23851f2870f17d04a4395feca2bd"
+    },
+    {
+      "path": "src/source-family-layout-mapping-proof.js",
+      "sha256": "c45625b97ba304bb1bffe3e6accbdbe11ca1fedfd69bb282b2d8d7f31566ec46"
+    },
+    {
+      "path": "src/source-family-namespace-mapping-contract.js",
+      "sha256": "24cf6fe3337409153421cac39d718d998bdef5e1ca145880253b4d3929ccdece"
+    },
+    {
+      "path": "src/source-family-namespace-mapping-proof.js",
+      "sha256": "ea073bad05c2430ec52a94679e9aa9d5a704d5e7c6cc750cd6fc9b7f9ac5e787"
+    },
+    {
+      "path": "src/source-family-packaging-contract.js",
+      "sha256": "fa83a5efb052322fda22e6194a8de18f59e6d3cd883ce8b35e04d2099bec4698"
+    },
+    {
+      "path": "src/source-family-packaging-proof.js",
+      "sha256": "799842bddc288f6517e90a447f16cfafa9ec6f3dbd70da49250c2d117dc22b46"
+    },
+    {
+      "path": "src/surfaceops-designer-review-ui-contract.js",
+      "sha256": "e6f12fc1ce96211fad2cc481b5a7288b2493645c39e8635197deaa00e93a7eaa"
+    },
+    {
+      "path": "src/surfaceops-designer-review-ui-evidence.js",
+      "sha256": "d7643e39c499539fa02f62a4d99d55814e71dc972ab3c948626a0a7cb0aff703"
+    },
+    {
+      "path": "src/surfaceops-designer-review-ui-proof.js",
+      "sha256": "2cc6e0316500269a4512d840536ba91046534a80f9d4347744b9ed4659e5cb1f"
+    },
+    {
+      "path": "src/surfaceops-kanban-live-contract.js",
+      "sha256": "d8f9a3c94775acc392ea9a10063336b372cde788ebe8be1aa384881fcbfe081d"
+    },
+    {
+      "path": "src/surfaceops-kanban-live-proof.js",
+      "sha256": "53240bf0eae9230532516ac0cec98306e859d2652d594daa95e701a0eac63846"
+    },
+    {
+      "path": "src/surfaceops-kanban-static-contract.js",
+      "sha256": "74bd1bd745397fd791136058c9c1c8eb333e5dbe4c48156f9f071ba7f01ae793"
+    },
+    {
+      "path": "src/surfaceops-kanban-static-proof.js",
+      "sha256": "460483b59ed86f39ddde058a00edf5f26ab5827fa752262613db1d2d6cb96c86"
+    },
+    {
+      "path": "test/capability-index-proof.test.js",
+      "sha256": "5f5153208ed984eda6bb86b0cb80b2830934dbcee5c9dae4a009de5ad056da79"
+    },
+    {
+      "path": "test/catalog-release-boundary.test.js",
+      "sha256": "5b528ddbb63d4144a3f60b4dc16dd5a335dc6a80dfff472d5b1fffa567c9d734"
+    },
+    {
+      "path": "test/design-system-compiler-proof.test.js",
+      "sha256": "1dd10d1d47f3294f75c050d86ebaae9722147430cad4fd3d500071afb927649b"
+    },
+    {
+      "path": "test/designer-workflow-trace-proof.test.js",
+      "sha256": "62017ab3ba131adfaf9a2b75766933814b913f6790f4df2c8d741afaf4b1ad24"
+    },
+    {
+      "path": "test/p0-proof.test.js",
+      "sha256": "b8322e5aef1923851d9467f5834f4f5056e31b20f9722a9e8dff6cd74055355b"
+    },
+    {
+      "path": "test/p1-proof.test.js",
+      "sha256": "352828e4ce114c893bb0eb61d9b9e853e822990858879e81d95458be4d69c6db"
+    },
+    {
+      "path": "test/p2-proof.test.js",
+      "sha256": "cbf19bc17440ff19545f7a30c0681743a39290adbb5e85502353c637a605b61b"
+    },
+    {
+      "path": "test/p3-proof.test.js",
+      "sha256": "050f1fcae1ca0f2b44660be595a86fffd2338dd00441f7c8b28fa6679830400d"
+    },
+    {
+      "path": "test/p4-proof.test.js",
+      "sha256": "d8f01879b897f3e6068c0cf275424b7baf5b11ab1fff46da40ad40aa9d6a8b46"
+    },
+    {
+      "path": "test/p5-native-proof.test.js",
+      "sha256": "a6e365c5f79407dd8590cc76df69d82bbe58efcfb6ec5b0e4dbf9e55856a439d"
+    },
+    {
+      "path": "test/p5-protocol-proof.test.js",
+      "sha256": "3eadfd5cd00e18816e45d0beb1c21eca27392c50dd22bda03cd75026d8c2fad7"
+    },
+    {
+      "path": "test/platform-architecture-policy.test.js",
+      "sha256": "0025c5ac513a37597e046a83f8c60dbdbc196e0b18830fbbc0c53224c0e0ee08"
+    },
+    {
+      "path": "test/source-accessibility-policy-proof.test.js",
+      "sha256": "f68c56337bfb387c8107d3918c72b044a75c4cd63373bf549485e5508574eb1f"
+    },
+    {
+      "path": "test/source-conformance-proof.test.js",
+      "sha256": "b4cc995b1ca313383b6884cafb055593edb064663699c3963d0b769e805b8811"
+    },
+    {
+      "path": "test/source-family-component-identity-mapping-proof.test.js",
+      "sha256": "bf5bed338b8f8be6a26f32b677ad839c4fbef8d28f9c75c021f7f1a856dc4abd"
+    },
+    {
+      "path": "test/source-family-layout-mapping-proof.test.js",
+      "sha256": "aef2006115f8092ac2f40f085a29df02f0205dad882e52f081cd547d67e3febe"
+    },
+    {
+      "path": "test/source-family-namespace-mapping-proof.test.js",
+      "sha256": "f345b151c01ebd0c62337e06068fbf26ea952558c4248a38905c67e2179f2efc"
+    },
+    {
+      "path": "test/source-family-packaging-proof.test.js",
+      "sha256": "78f0a8c95746fa54f9151367968926cdbfd74684e36215c850faa9caf70ca6af"
+    },
+    {
+      "path": "test/spectrum-checkbox-catalog-proof.test.js",
+      "sha256": "3261b4ab818f651500a646a72f8851110da4d26341a1e61d9f21a3eb99f23cc0"
+    },
+    {
+      "path": "test/surfaceops-designer-review-ui-proof.test.js",
+      "sha256": "47ed0f6c12da0604c8dfecf51da78e4d5865828f8446ed46297e7f055018549d"
+    },
+    {
+      "path": "test/surfaceops-kanban-live-proof.test.js",
+      "sha256": "1b1c2acee25c9fdabaf03d92277be153a815689289037a9b7c257a2d244e3bc7"
+    },
+    {
+      "path": "test/surfaceops-kanban-static-proof.test.js",
+      "sha256": "2ec2bb8bff5a91439acf786e165ef522387b7ce93834977f4b317556cd736c10"
+    }
+  ],
+  "legacy": {
+    "importTargets": [
+      "src/p0.js",
+      "src/p2-contract.js",
+      "src/p2-proof.js"
+    ],
+    "importExceptions": [
+      {
+        "from": "bin/interfacectl.js",
+        "to": "src/p0.js"
+      },
+      {
+        "from": "scripts/build-p2-demo.mjs",
+        "to": "src/p2-contract.js"
+      },
+      {
+        "from": "scripts/build-p2-demo.mjs",
+        "to": "src/p2-proof.js"
+      },
+      {
+        "from": "scripts/build-p3-demo.mjs",
+        "to": "src/p2-contract.js"
+      },
+      {
+        "from": "scripts/build-p4-demo.mjs",
+        "to": "src/p2-contract.js"
+      },
+      {
+        "from": "scripts/build-p5-native-demo.mjs",
+        "to": "src/p0.js"
+      },
+      {
+        "from": "scripts/build-p5-native-demo.mjs",
+        "to": "src/p2-contract.js"
+      },
+      {
+        "from": "scripts/build-p5-native-demo.mjs",
+        "to": "src/p2-proof.js"
+      },
+      {
+        "from": "scripts/build-p5-protocol-demo.mjs",
+        "to": "src/p0.js"
+      },
+      {
+        "from": "scripts/build-p5-protocol-demo.mjs",
+        "to": "src/p2-contract.js"
+      },
+      {
+        "from": "scripts/build-p5-protocol-demo.mjs",
+        "to": "src/p2-proof.js"
+      },
+      {
+        "from": "scripts/build-surfaceops-designer-review-ui-demo.mjs",
+        "to": "src/p2-contract.js"
+      },
+      {
+        "from": "scripts/build-surfaceops-kanban-static-demo.mjs",
+        "to": "src/p2-contract.js"
+      },
+      {
+        "from": "scripts/check-p2-planning.mjs",
+        "to": "src/p2-contract.js"
+      },
+      {
+        "from": "scripts/materialize-p0.mjs",
+        "to": "src/p0.js"
+      },
+      {
+        "from": "scripts/materialize-p2.mjs",
+        "to": "src/p2-contract.js"
+      },
+      {
+        "from": "scripts/prove-surfaceops-designer-review-ui-browser.mjs",
+        "to": "src/p0.js"
+      },
+      {
+        "from": "scripts/prove-surfaceops-designer-review-ui-browser.mjs",
+        "to": "src/p2-contract.js"
+      },
+      {
+        "from": "scripts/prove-surfaceops-kanban-live-browser.mjs",
+        "to": "src/p0.js"
+      },
+      {
+        "from": "scripts/prove-surfaceops-kanban-live-browser.mjs",
+        "to": "src/p2-contract.js"
+      },
+      {
+        "from": "scripts/prove-surfaceops-kanban-static-browser.mjs",
+        "to": "src/p0.js"
+      },
+      {
+        "from": "scripts/prove-surfaceops-kanban-static-browser.mjs",
+        "to": "src/p2-contract.js"
+      },
+      {
+        "from": "src/capability-index-contract.js",
+        "to": "src/p2-contract.js"
+      },
+      {
+        "from": "src/capability-index-proof.js",
+        "to": "src/p0.js"
+      },
+      {
+        "from": "src/capability-index-proof.js",
+        "to": "src/p2-contract.js"
+      },
+      {
+        "from": "src/capability-index-proof.js",
+        "to": "src/p2-proof.js"
+      },
+      {
+        "from": "src/designer-workflow-trace-contract.js",
+        "to": "src/p0.js"
+      },
+      {
+        "from": "src/designer-workflow-trace-contract.js",
+        "to": "src/p2-contract.js"
+      },
+      {
+        "from": "src/designer-workflow-trace-proof.js",
+        "to": "src/p0.js"
+      },
+      {
+        "from": "src/designer-workflow-trace-proof.js",
+        "to": "src/p2-contract.js"
+      },
+      {
+        "from": "src/designer-workflow-trace-proof.js",
+        "to": "src/p2-proof.js"
+      },
+      {
+        "from": "src/p0.js",
+        "to": "src/p2-proof.js"
+      },
+      {
+        "from": "src/p1-contract.js",
+        "to": "src/p0.js"
+      },
+      {
+        "from": "src/p1-proof.js",
+        "to": "src/p0.js"
+      },
+      {
+        "from": "src/p2-contract.js",
+        "to": "src/p0.js"
+      },
+      {
+        "from": "src/p2-proof.js",
+        "to": "src/p0.js"
+      },
+      {
+        "from": "src/p2-proof.js",
+        "to": "src/p2-contract.js"
+      },
+      {
+        "from": "src/p3-contract.js",
+        "to": "src/p2-contract.js"
+      },
+      {
+        "from": "src/p3-proof.js",
+        "to": "src/p0.js"
+      },
+      {
+        "from": "src/p3-proof.js",
+        "to": "src/p2-contract.js"
+      },
+      {
+        "from": "src/p3-proof.js",
+        "to": "src/p2-proof.js"
+      },
+      {
+        "from": "src/p4-contract.js",
+        "to": "src/p2-contract.js"
+      },
+      {
+        "from": "src/p4-proof.js",
+        "to": "src/p0.js"
+      },
+      {
+        "from": "src/p4-proof.js",
+        "to": "src/p2-contract.js"
+      },
+      {
+        "from": "src/p5-native-contract.js",
+        "to": "src/p0.js"
+      },
+      {
+        "from": "src/p5-native-contract.js",
+        "to": "src/p2-contract.js"
+      },
+      {
+        "from": "src/p5-native-proof.js",
+        "to": "src/p0.js"
+      },
+      {
+        "from": "src/p5-native-proof.js",
+        "to": "src/p2-contract.js"
+      },
+      {
+        "from": "src/p5-native-proof.js",
+        "to": "src/p2-proof.js"
+      },
+      {
+        "from": "src/p5-protocol-contract.js",
+        "to": "src/p0.js"
+      },
+      {
+        "from": "src/p5-protocol-contract.js",
+        "to": "src/p2-contract.js"
+      },
+      {
+        "from": "src/p5-protocol-proof.js",
+        "to": "src/p0.js"
+      },
+      {
+        "from": "src/p5-protocol-proof.js",
+        "to": "src/p2-contract.js"
+      },
+      {
+        "from": "src/p5-protocol-proof.js",
+        "to": "src/p2-proof.js"
+      },
+      {
+        "from": "src/source-accessibility-policy-causal.js",
+        "to": "src/p0.js"
+      },
+      {
+        "from": "src/source-accessibility-policy-contract.js",
+        "to": "src/p2-contract.js"
+      },
+      {
+        "from": "src/source-accessibility-policy-proof.js",
+        "to": "src/p0.js"
+      },
+      {
+        "from": "src/source-accessibility-policy-proof.js",
+        "to": "src/p2-contract.js"
+      },
+      {
+        "from": "src/source-accessibility-policy-proof.js",
+        "to": "src/p2-proof.js"
+      },
+      {
+        "from": "src/source-conformance-contract.js",
+        "to": "src/p2-contract.js"
+      },
+      {
+        "from": "src/source-conformance-proof.js",
+        "to": "src/p0.js"
+      },
+      {
+        "from": "src/source-conformance-proof.js",
+        "to": "src/p2-contract.js"
+      },
+      {
+        "from": "src/source-conformance-proof.js",
+        "to": "src/p2-proof.js"
+      },
+      {
+        "from": "src/source-family-component-identity-mapping-contract.js",
+        "to": "src/p0.js"
+      },
+      {
+        "from": "src/source-family-component-identity-mapping-contract.js",
+        "to": "src/p2-contract.js"
+      },
+      {
+        "from": "src/source-family-component-identity-mapping-proof.js",
+        "to": "src/p0.js"
+      },
+      {
+        "from": "src/source-family-component-identity-mapping-proof.js",
+        "to": "src/p2-contract.js"
+      },
+      {
+        "from": "src/source-family-component-identity-mapping-proof.js",
+        "to": "src/p2-proof.js"
+      },
+      {
+        "from": "src/source-family-layout-mapping-contract.js",
+        "to": "src/p0.js"
+      },
+      {
+        "from": "src/source-family-layout-mapping-contract.js",
+        "to": "src/p2-contract.js"
+      },
+      {
+        "from": "src/source-family-layout-mapping-proof.js",
+        "to": "src/p0.js"
+      },
+      {
+        "from": "src/source-family-layout-mapping-proof.js",
+        "to": "src/p2-contract.js"
+      },
+      {
+        "from": "src/source-family-layout-mapping-proof.js",
+        "to": "src/p2-proof.js"
+      },
+      {
+        "from": "src/source-family-namespace-mapping-contract.js",
+        "to": "src/p0.js"
+      },
+      {
+        "from": "src/source-family-namespace-mapping-contract.js",
+        "to": "src/p2-contract.js"
+      },
+      {
+        "from": "src/source-family-namespace-mapping-proof.js",
+        "to": "src/p0.js"
+      },
+      {
+        "from": "src/source-family-namespace-mapping-proof.js",
+        "to": "src/p2-contract.js"
+      },
+      {
+        "from": "src/source-family-namespace-mapping-proof.js",
+        "to": "src/p2-proof.js"
+      },
+      {
+        "from": "src/source-family-packaging-contract.js",
+        "to": "src/p2-contract.js"
+      },
+      {
+        "from": "src/source-family-packaging-proof.js",
+        "to": "src/p0.js"
+      },
+      {
+        "from": "src/source-family-packaging-proof.js",
+        "to": "src/p2-contract.js"
+      },
+      {
+        "from": "src/source-family-packaging-proof.js",
+        "to": "src/p2-proof.js"
+      },
+      {
+        "from": "src/spectrum-checkbox-catalog-contract.js",
+        "to": "src/p0.js"
+      },
+      {
+        "from": "src/spectrum-checkbox-catalog-contract.js",
+        "to": "src/p2-contract.js"
+      },
+      {
+        "from": "src/spectrum-checkbox-catalog-proof.js",
+        "to": "src/p0.js"
+      },
+      {
+        "from": "src/spectrum-checkbox-catalog-proof.js",
+        "to": "src/p2-contract.js"
+      },
+      {
+        "from": "src/spectrum-checkbox-catalog-proof.js",
+        "to": "src/p2-proof.js"
+      },
+      {
+        "from": "src/surfaceops-designer-review-ui-contract.js",
+        "to": "src/p0.js"
+      },
+      {
+        "from": "src/surfaceops-designer-review-ui-contract.js",
+        "to": "src/p2-contract.js"
+      },
+      {
+        "from": "src/surfaceops-designer-review-ui-evidence.js",
+        "to": "src/p0.js"
+      },
+      {
+        "from": "src/surfaceops-designer-review-ui-evidence.js",
+        "to": "src/p2-contract.js"
+      },
+      {
+        "from": "src/surfaceops-designer-review-ui-proof.js",
+        "to": "src/p0.js"
+      },
+      {
+        "from": "src/surfaceops-designer-review-ui-proof.js",
+        "to": "src/p2-contract.js"
+      },
+      {
+        "from": "src/surfaceops-kanban-live-contract.js",
+        "to": "src/p0.js"
+      },
+      {
+        "from": "src/surfaceops-kanban-live-contract.js",
+        "to": "src/p2-contract.js"
+      },
+      {
+        "from": "src/surfaceops-kanban-live-proof.js",
+        "to": "src/p0.js"
+      },
+      {
+        "from": "src/surfaceops-kanban-live-proof.js",
+        "to": "src/p2-contract.js"
+      },
+      {
+        "from": "src/surfaceops-kanban-static-contract.js",
+        "to": "src/p0.js"
+      },
+      {
+        "from": "src/surfaceops-kanban-static-contract.js",
+        "to": "src/p2-contract.js"
+      },
+      {
+        "from": "src/surfaceops-kanban-static-proof.js",
+        "to": "src/p0.js"
+      },
+      {
+        "from": "src/surfaceops-kanban-static-proof.js",
+        "to": "src/p2-contract.js"
+      }
+    ],
+    "directP2AuthorityPaths": [
+      "artifacts/p2/evidence.json",
+      "artifacts/p2/governed-catalog.json"
+    ],
+    "directP2ConsumerExceptions": [
+      {
+        "path": "scripts/build-p2-demo.mjs",
+        "value": "artifacts/p2/evidence.json"
+      },
+      {
+        "path": "scripts/build-p5-native-demo.mjs",
+        "value": "artifacts/p2/evidence.json"
+      },
+      {
+        "path": "scripts/build-p5-protocol-demo.mjs",
+        "value": "artifacts/p2/evidence.json"
+      },
+      {
+        "path": "scripts/check-p2-planning.mjs",
+        "value": "artifacts/p2/evidence.json"
+      },
+      {
+        "path": "scripts/check-p2-planning.mjs",
+        "value": "artifacts/p2/governed-catalog.json"
+      },
+      {
+        "path": "src/capability-index-contract.js",
+        "value": "artifacts/p2/evidence.json"
+      },
+      {
+        "path": "src/capability-index-contract.js",
+        "value": "artifacts/p2/governed-catalog.json"
+      },
+      {
+        "path": "src/designer-workflow-trace-contract.js",
+        "value": "artifacts/p2/evidence.json"
+      },
+      {
+        "path": "src/designer-workflow-trace-contract.js",
+        "value": "artifacts/p2/governed-catalog.json"
+      },
+      {
+        "path": "src/p3-contract.js",
+        "value": "artifacts/p2/evidence.json"
+      },
+      {
+        "path": "src/p3-contract.js",
+        "value": "artifacts/p2/governed-catalog.json"
+      },
+      {
+        "path": "src/p4-contract.js",
+        "value": "artifacts/p2/governed-catalog.json"
+      },
+      {
+        "path": "src/p5-native-contract.js",
+        "value": "artifacts/p2/evidence.json"
+      },
+      {
+        "path": "src/p5-native-contract.js",
+        "value": "artifacts/p2/governed-catalog.json"
+      },
+      {
+        "path": "src/p5-protocol-contract.js",
+        "value": "artifacts/p2/evidence.json"
+      },
+      {
+        "path": "src/p5-protocol-contract.js",
+        "value": "artifacts/p2/governed-catalog.json"
+      },
+      {
+        "path": "src/source-accessibility-policy-causal.js",
+        "value": "artifacts/p2/evidence.json"
+      },
+      {
+        "path": "src/source-accessibility-policy-causal.js",
+        "value": "artifacts/p2/governed-catalog.json"
+      },
+      {
+        "path": "src/source-accessibility-policy-contract.js",
+        "value": "artifacts/p2/evidence.json"
+      },
+      {
+        "path": "src/source-accessibility-policy-contract.js",
+        "value": "artifacts/p2/governed-catalog.json"
+      },
+      {
+        "path": "src/source-accessibility-policy-proof.js",
+        "value": "artifacts/p2/evidence.json"
+      },
+      {
+        "path": "src/source-conformance-contract.js",
+        "value": "artifacts/p2/evidence.json"
+      },
+      {
+        "path": "src/source-conformance-contract.js",
+        "value": "artifacts/p2/governed-catalog.json"
+      },
+      {
+        "path": "src/source-family-layout-mapping-contract.js",
+        "value": "artifacts/p2/evidence.json"
+      },
+      {
+        "path": "src/source-family-layout-mapping-contract.js",
+        "value": "artifacts/p2/governed-catalog.json"
+      },
+      {
+        "path": "src/source-family-namespace-mapping-contract.js",
+        "value": "artifacts/p2/evidence.json"
+      },
+      {
+        "path": "src/source-family-namespace-mapping-contract.js",
+        "value": "artifacts/p2/governed-catalog.json"
+      },
+      {
+        "path": "src/source-family-packaging-contract.js",
+        "value": "artifacts/p2/evidence.json"
+      },
+      {
+        "path": "src/source-family-packaging-contract.js",
+        "value": "artifacts/p2/governed-catalog.json"
+      },
+      {
+        "path": "src/spectrum-checkbox-catalog-contract.js",
+        "value": "artifacts/p2/evidence.json"
+      },
+      {
+        "path": "src/spectrum-checkbox-catalog-contract.js",
+        "value": "artifacts/p2/governed-catalog.json"
+      },
+      {
+        "path": "src/surfaceops-kanban-static-proof.js",
+        "value": "artifacts/p2/evidence.json"
+      },
+      {
+        "path": "src/surfaceops-kanban-static-proof.js",
+        "value": "artifacts/p2/governed-catalog.json"
+      }
+    ],
+    "executableHashes": [
+      {
+        "path": "scripts/materialize-spectrum-checkbox-catalog.mjs",
+        "sha256": "ac6d8d532b150ea0566b11db3be7b77e3574c548aed40fed8ff433d4f9bda302"
+      },
+      {
+        "path": "src/spectrum-checkbox-catalog-contract.js",
+        "sha256": "ac1f30c8573b17d933e97ae97164df6da944629c78baa5f0546ffccc5772b5ec"
+      },
+      {
+        "path": "src/spectrum-checkbox-catalog-proof.js",
+        "sha256": "909f0888336ab66970ffeb5bfb72b89919f871160de9e9f46e94cd99227dd8f7"
+      }
+    ]
+  },
+  "changeSet": {
+    "adapterDataPrefixes": [
+      "fixtures/design-system-compiler",
+      "sources/design-system-compiler"
+    ],
+    "adapterAllowedCochangePrefixes": [
+      "artifacts/capability-index",
+      "artifacts/design-system-compiler",
+      "fixtures/design-system-compiler",
+      "plans/design-system-compiler.md",
+      "plans/surfaces-dev.md",
+      "sources/design-system-compiler"
+    ],
+    "protectedContractPaths": [
+      "schemas/catalog-boundary-receipt.v0.schema.json",
+      "schemas/design-system-adapter.v0.schema.json",
+      "schemas/design-system-compiler-manifest.v0.schema.json",
+      "src/catalog-authority.js",
+      "src/catalog-consumer-kernel.js",
+      "src/catalog-release-boundary.js",
+      "src/design-system-compiler-proof.js",
+      "src/design-system-ingestion-kernel.js",
+      "src/javascript-module-scanner.js",
+      "src/platform-architecture.js",
+      "src/proof-runtime.js"
+    ]
+  },
+  "diagnosticCodes": [
+    "ADAPTER_MANIFEST_INVALID",
+    "ADAPTER_MANIFEST_UNREACHABLE",
+    "ADAPTER_NOT_DATA_ONLY",
+    "CATALOG_AUTHORITY_PATH_UNREGISTERED",
+    "CATALOG_AUTHORITY_ROUTE_UNREGISTERED",
+    "CHANGESET_BOUNDARY_CROSSED",
+    "CLI_ROUTE_STALE",
+    "CLI_ROUTE_UNREGISTERED",
+    "COMPUTED_MODULE_LOAD",
+    "DIRECT_P2_CONSUMER",
+    "DIRECT_P2_EXCEPTION_STALE",
+    "EXECUTABLE_PATH_STALE",
+    "EXECUTABLE_PATH_UNREGISTERED",
+    "FROZEN_ARCHITECTURE_FILE_DRIFT",
+    "IDENTITY_CONTROL_FLOW",
+    "LEGACY_EXCEPTION_ADDED",
+    "LEGACY_IMPLEMENTATION_DRIFT",
+    "LEGACY_IMPORT_STALE",
+    "LEGACY_IMPORT_UNDECLARED",
+    "LOCAL_IMPORT_UNRESOLVED",
+    "MIGRATION_BASELINE_DRIFT",
+    "MUTATION_NOT_CAUSAL",
+    "POLICY_ORDER_INVALID",
+    "POLICY_SCHEMA_INVALID",
+    "POLICY_WEAKENING",
+    "PROTECTED_DEPENDENCY_UNPROTECTED",
+    "PROTECTED_EDGE_STALE",
+    "PROTECTED_EDGE_UNDECLARED",
+    "PROTECTED_MODULE_MISSING",
+    "SOURCE_IDENTITY_BRANCH"
+  ]
+}

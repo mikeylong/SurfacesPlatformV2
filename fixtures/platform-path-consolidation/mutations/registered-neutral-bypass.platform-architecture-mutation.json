@@ -1,0 +1,21 @@
+{
+  "schemaId": "platform-architecture-mutation.v0",
+  "mutationId": "registered-neutral-bypass",
+  "comparisonMode": "bootstrap",
+  "edits": [
+    {
+      "kind": "write-file",
+      "path": "src/worker-node.js",
+      "content": "export function transform(value) { return value; }\n"
+    },
+    {
+      "kind": "append-policy-row",
+      "collection": "catalogAuthority.registeredExecutablePaths",
+      "value": {
+        "path": "src/worker-node.js",
+        "classification": "neutral"
+      }
+    }
+  ],
+  "expectedCode": "POLICY_WEAKENING"
+}

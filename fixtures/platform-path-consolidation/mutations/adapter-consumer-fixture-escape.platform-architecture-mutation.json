@@ -1,0 +1,13 @@
+{
+  "schemaId": "platform-architecture-mutation.v0",
+  "mutationId": "adapter-consumer-fixture-escape",
+  "edits": [
+    {
+      "kind": "replace-text",
+      "path": "sources/design-system-compiler/astryx-core/adapter.json",
+      "from": "fixtures/design-system-compiler/astryx-core/allowed-render.catalog-consumer-fixture.json",
+      "to": "artifacts/design-system-compiler/astryx-core-button/extract.json"
+    }
+  ],
+  "expectedCode": "ADAPTER_NOT_DATA_ONLY"
+}

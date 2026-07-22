@@ -1,0 +1,13 @@
+{
+  "schemaId": "catalog-consumer-fixture.v0",
+  "version": "0.0.0",
+  "fixtureId": "astryx-button-review-promotion",
+  "expectedOutcome": "review_required",
+  "expectedDiagnosticCodes": ["CONSUMER_REVIEW_REQUIRED"],
+  "intent": "promote",
+  "component": "Button",
+  "props": {"label": "Save changes", "variant": "secondary"},
+  "variants": {"variant": "secondary"},
+  "state": null,
+  "sourceRef": "astryx-docs://npm/@astryxdesign/core@0.1.2/package/src/Button/Button.doc.mjs#anchor=actionIntent"
+}

@@ -1,0 +1,12 @@
+{
+  "schemaId": "platform-architecture-mutation.v0",
+  "mutationId": "shebang-executable",
+  "edits": [
+    {
+      "kind": "write-file",
+      "path": "scripts/neutral-worker",
+      "content": "#!/usr/bin/env node\nexport function transform(value) { return value; }\n"
+    }
+  ],
+  "expectedCode": "EXECUTABLE_PATH_UNREGISTERED"
+}

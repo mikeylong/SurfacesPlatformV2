@@ -1,0 +1,12 @@
+{
+  "schemaId": "platform-architecture-mutation.v0",
+  "mutationId": "legacy-implementation-expansion",
+  "edits": [
+    {
+      "kind": "append-file",
+      "path": "src/spectrum-checkbox-catalog-proof.js",
+      "content": "\nexport const hiddenComponentCompiler = true;\n"
+    }
+  ],
+  "expectedCode": "LEGACY_IMPLEMENTATION_DRIFT"
+}

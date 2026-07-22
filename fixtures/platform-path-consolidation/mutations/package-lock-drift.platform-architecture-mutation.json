@@ -1,0 +1,12 @@
+{
+  "schemaId": "platform-architecture-mutation.v0",
+  "mutationId": "package-lock-drift",
+  "edits": [
+    {
+      "kind": "append-file",
+      "path": "package-lock.json",
+      "content": "\n"
+    }
+  ],
+  "expectedCode": "FROZEN_ARCHITECTURE_FILE_DRIFT"
+}

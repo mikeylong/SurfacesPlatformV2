@@ -5,7 +5,7 @@ roadmap. It is subordinate to `VISION.md`, `PLAN.md`, the phase plans, and
 passing evidence. It does not create proof authority or broaden an implemented
 target.
 
-Last updated: 2026-07-18
+Last updated: 2026-07-20
 Current focus: **Connect Authority**
 
 ## Status Semantics
@@ -43,7 +43,7 @@ boundary.
 
 Completion record:
 
-- [x] One schema-validated capability index covers all 17 implemented proof
+- [x] One schema-validated capability index covers all 18 implemented proof
   targets other than the capability-index target.
 - [x] Each implemented row exposes its identity, scope, authority boundary,
   non-capabilities, dependencies, commands, CI gate, inputs, outputs,
@@ -77,7 +77,7 @@ Proof and evidence:
 - Read-only verification: `interfacectl surfaces capabilities verify --index artifacts/capability-index/capability-index.json --evidence artifacts/capability-index/evidence.json`
 - Proof-bearing gate: `npm run check:capability-index:ci`
 
-The index intentionally covers the 17 other implemented targets rather than
+The index intentionally covers the 18 other implemented targets rather than
 indexing itself. Its evidence proves the index contract without creating a
 circular authority chain. The index is a derived discovery surface. It does
 not replace target evidence or turn demos and plans into proof.
@@ -175,6 +175,23 @@ non-executable review rows. Every accepted P2 component and token record keeps
 the same JCS hash. Passing evidence records all 25 fixture results and
 `promotionStatus: "review_required"`.
 
+The source-independent design-system compiler slice replaces the bespoke
+Switch extension path. Separately locked, data-only adapters normalize bounded
+Spectrum Switch and official Astryx core Button facts through one shared
+ingestion kernel. Both runs use the same source preflight, typed-anchor,
+mapping-coverage, authority-ceiling, catalog, report, and evidence code. The
+implementation contains no Spectrum, Astryx, Switch, or Button branch.
+
+The same target closes the first portable downstream loop for both adapters. A
+hash-bound catalog receipt feeds one unchanged `web-static-portable` consumer,
+which emits an inert render plan for the allowed fixture, blocks an unknown
+member, and keeps promotion requests `review_required`. The compiler evidence
+requires shared kernel and consumer hashes, an empty source-specific module
+list, causal unmapped-authority, invented-member-identifier,
+mapped-default-inversion, and stale-receipt mutations, and complete
+manifest-derived artifact closure.
+Passing evidence records `promotionStatus: "review_required"`.
+
 Complete when a team can declare its authoritative sources, precedence,
 policies, and review ownership without repo-specific implementation changes,
 then compile a traceable governed catalog with actionable conflict and
@@ -183,17 +200,19 @@ instances of one fixed source-family package ABI plus one fixed alternate
 physical layout mapped onto that same ABI and one fixed alternate source-ref
 prefix normalized onto its canonical namespace, plus one explicit team-owned
 declaration for the exact fixture-local `TeamButton` to accepted P2 `Button`
-identity relation, plus one separately locked Checkbox catalog expansion.
+identity relation, plus the separately locked Checkbox catalog and two bounded
+data-only adapters through the source-independent design-system compiler.
 Arbitrary additional source layouts, namespace pairs, component identities or
-alias registries, component coverage beyond Checkbox, live
-connectors, and a self-serve connection path remain open and require separate
-proof.
+alias registries, design-system families beyond the two compiler adapters,
+broader component coverage, live connectors, and a self-serve connection path
+remain open and require separate proof.
 
-What's next: use the passing Checkbox catalog evidence as the Connect Authority
-baseline, then choose between another bounded real-source component slice and a
-separately proven source-family eligibility slice. Current evidence does not authorize arbitrary additional
+What's next: use the shared compiler and consumer evidence to measure the next
+adapter's data-only cost before accepting another component or source family.
+Current evidence does not authorize arbitrary additional
 layouts, namespace pairs, component identities, alias registries, or semantic
-mappings; an in-place P2 expansion or broader Spectrum coverage; live connectors; self-serve UI; runtime
+mappings; an in-place P2 expansion; broad Spectrum or Astryx support; legacy
+P3, P4, or P5 portability; live connectors; self-serve UI; runtime
 accessibility claims; production adapters; SurfaceOps expansion; or JudgmentKit
 use.
 

@@ -1,0 +1,17 @@
+{
+  "schemaId": "platform-architecture-mutation.v0",
+  "mutationId": "bespoke-compiler-path",
+  "edits": [
+    {
+      "kind": "write-file",
+      "path": "src/spectrum-radio-compiler.js",
+      "content": "export function compileSpectrumRadio(value) { return value; }\n"
+    },
+    {
+      "kind": "append-file",
+      "path": "src/p0.js",
+      "content": "\nexport function bespokeCompilerRoute(argv) { return argv[1] === \"spectrum-radio-compiler\"; }\n"
+    }
+  ],
+  "expectedCode": "CATALOG_AUTHORITY_PATH_UNREGISTERED"
+}

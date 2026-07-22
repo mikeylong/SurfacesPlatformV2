@@ -1,0 +1,12 @@
+{
+  "schemaId": "platform-architecture-mutation.v0",
+  "mutationId": "typescript-import",
+  "edits": [
+    {
+      "kind": "write-file",
+      "path": "src/typescript-bypass.ts",
+      "content": "import { canonicalJson } from \"./p0.js\";\nexport const typed: (value: unknown) => string = canonicalJson;\n"
+    }
+  ],
+  "expectedCode": "LEGACY_IMPORT_UNDECLARED"
+}

@@ -28,6 +28,113 @@ The design system is the product authority. The Surfaces Catalog is the governed
 - Runtime projections, render plans, demos, review queues, docs, product surfaces, and evaluator findings are derived consumers. They cannot add authority.
 - Evidence makes every proof reproducible, reviewable, and safe to consume in CI, SurfaceOps, JudgmentKit, demos, and future adapters.
 
+## Platform Architecture Invariants
+
+The platform must get cheaper to extend as it accepts more design systems and
+components. A bounded source can prove the first contract, but its component
+model, package layout, naming, or proof mechanics cannot become the platform
+model.
+
+- One source-ingestion path: every new design-system source or component enters
+  through a manifest-declared, data-only adapter and the shared normalization,
+  ingestion, and catalog compiler. A new source-specific compiler, merger,
+  proof kernel, or consumer path is prohibited.
+- Declining marginal cost: a qualifying source or component addition changes
+  source locks or bytes, adapter data, manifest membership, fixtures, and
+  derived proof output. If shared implementation must change, land and prove
+  that reusable platform change separately with source-neutral contract
+  fixtures and existing-adapter parity before adding the adapter.
+- Source-identity-branch-free shared code: shared runtime, catalog-authority,
+  ingestion, release-compatibility, future composition, and consumer modules do
+  not dispatch on a concrete package, source family, component, adapter key, or
+  output key. Generic identity validation is allowed only through an exact
+  policy row; the v0 registry contains 113 non-growing allowances. Supported
+  variation is declared as schema-validated data.
+- One dependency direction: phase and target proofs may call shared platform
+  modules. Shared platform modules must not import P0, P2, target-specific
+  implementations, source-specific modules, or their internal exports. Every
+  local dependency of protected shared code remains inside the protected,
+  source-identity-branch-free closure.
+- One catalog-authority path: catalog creation, extension, governance, and
+  composition occur only through registered shared authority functions.
+  Downstream proofs must not clone an accepted catalog and add or rewrite
+  authority. The v0 policy freezes exclusive owners for source ingestion,
+  compiler orchestration, catalog authority, release compatibility, and catalog
+  consumption. Catalog composition has no v0 owner and remains planned.
+- One release boundary as an end state: every downstream consumer must
+  eventually accept a source-neutral, hash-bound catalog-release receipt and
+  perform one shared fail-closed preflight. The implemented
+  `catalog-boundary-receipt.v0` validator is narrower: it is the
+  design-system-compiler's single-adapter compatibility envelope, not the
+  generic platform release contract. Direct dependencies on P2 catalogs, P2
+  evidence, or producer internals remain legacy paths to remove, not patterns
+  to copy.
+- Generic composition remains planned: multiple adapters may combine only
+  after a shared deterministic composer proves collision rejection, source-ref
+  and provenance preservation, explicit reviewed policy, and
+  strictest-promotion propagation. No current compatibility receipt or consumer
+  output proves composition.
+- Closed adapter change boundary: a source or component addition may cochange
+  only the policy-declared adapter data, derived-output, and required
+  instruction-surface paths. v0 admits four roots under `sources/`, `fixtures/`,
+  and `artifacts/`, plus `plans/design-system-compiler.md` and
+  `plans/surfaces-dev.md`. It cannot carry a schema, shared implementation,
+  executable, route, runtime path, or other documentation change in the same
+  change set. Adapter manifests, adapter contracts, and source locks satisfy
+  their canonical schemas; fixture and derived-output roots are JSON-only;
+  source snapshots are inert exact regular-file closures with checked byte
+  counts and SHA-256 values. Base-aware admission preserves every existing
+  adapter row and closure, freezes the four generic compiler mutation fixtures,
+  and permits exactly one new sorted manifest row under a unique direct-child
+  adapter key, with fixtures rooted under that key's unshared fixture directory.
+  Symlinks, noncanonical paths, artifact-as-
+  input fixture refs, replacement adapters, and unowned adapter data are
+  rejected.
+- Preserved authority: adapters preserve source identity, source refs,
+  provenance, hashes, and lossless member identity. Any value absent from the
+  locked source requires an explicit mapping and keeps the result review-bound;
+  shared code must not infer missing product truth.
+- Shrinking exceptions: the architecture policy may name existing legacy paths
+  while consolidation is in progress. Legacy implementation bytes are frozen
+  while registered. Actual deletion may remove the matching legacy
+  registration, hash, and exception; rewriting, adding, broadening, renaming
+  around, or silently bypassing an exception is prohibited. The immutable
+  migration baseline cannot be rewritten to make drift disappear.
+- Closed execution surface: v0 registers the 83 implementation executables
+  discovered under `bin/`, `scripts/`, and `src/`, freezes every detected CLI
+  route, and freezes the exclusive non-null platform-role owners. It also
+  byte-locks every current test, workflow, local execution-control file,
+  dependency lock, admitted adapter closure, and the compiler's complete
+  15-schema runtime contract closure. The repo-wide tracked-path
+  inventory rejects a new root tool, workflow, action, test, or other side
+  path outside the four explicitly inert adapter/output roots. Frozen paths
+  must remain regular files; symbolic links are rejected at the repository
+  root and under executable, test, and workflow roots. No new
+  executable registration is permitted. Existing canonical and neutral
+  registrations cannot be removed or reclassified; legacy registrations may
+  shrink only through actual implementation deletion.
+
+Before another design-system source or component proof is added, the shared
+path must accept it without repo-specific implementation changes. The
+`check:platform-architecture` gate enforces the machine-checkable portion of
+these rules on every test run and against the pull-request or pre-push base in
+CI. The v0 guard checks the closed 83-path implementation executable inventory,
+241 local module edges, 113 exact identity-control allowances, 34 causal
+mutations, and 177 frozen implementation, test, adapter, dependency, guard,
+control, schema, mutation, workflow, and migration-protection files. Every run schema-validates the
+candidate policy and verifies its normalized policy-schema hash. Bootstrap
+runs also verify the admitted initial policy hash; base-aware runs load the
+base policy, schema, and adapter manifest and enforce the closed evolution
+rules. After this bootstrap PR merges, the trusted `pull_request_target`
+workflow runs the default branch's verifier against the candidate checkout
+without executing candidate lifecycle or architecture code. This bootstrap PR
+still requires review of its admitted hashes and candidate-owned base-aware CI.
+The gate
+emits no capability evidence and does not prove a generic catalog-release
+receipt, catalog composition, source migration, downstream rebinding, legacy
+retirement, or production readiness. Those claims still require their own proof
+contracts and passing evidence.
+
 ## Lifecycle Enforcement Model
 Surfaces governs generated UI at the points where unsupported behavior can enter, move through review, or reach a consumer.
 
@@ -86,7 +193,7 @@ Surfaces becomes a usable platform per target when a team can complete an eviden
 Generated demos, review queues, protocol envelopes, workflow cards, or adapter-facing outputs can help demonstrate usability, but they are not the signal by themselves. The signal is the closed evidence loop for a declared target.
 
 ## Current Roadmap Proof Snapshot
-The current roadmap evidence is P0-P5, with P5 implemented only for the `surfaces-protocol-static` and `surfaces-native-static` proof-only slices. This repo also implements target-specific declared-source conformance, structured accessibility policy reconciliation, fixed source-family layout mapping, fixed source-family namespace mapping, fixed source-family component-identity mapping, Spectrum Checkbox catalog authority, designer-workflow-trace, `surfaceops-kanban-static`, `surfaceops-kanban-live`, `surfaceops-designer-review-ui`, and capability-index proofs; none is a new numbered phase. The capability index covers exactly the 17 implemented proof targets other than itself. Its separate planned capability groups provide roadmap visibility only. `surfaceops-kanban-live` and `surfaceops-designer-review-ui` are bounded local-loopback live proofs, not production SurfaceOps or production `kanban.cards` claims. A row counts as implemented only when the named evidence file records `status: "pass"`. `promotionStatus` records governance outcome, not whether the proof command failed.
+The current roadmap evidence is P0-P5, with P5 implemented only for the `surfaces-protocol-static` and `surfaces-native-static` proof-only slices. This repo also implements target-specific declared-source conformance, structured accessibility policy reconciliation, fixed source-family layout mapping, fixed source-family namespace mapping, fixed source-family component-identity mapping, Spectrum Checkbox catalog authority, a source-independent design-system compiler with a portable proof-only consumer, designer-workflow-trace, `surfaceops-kanban-static`, `surfaceops-kanban-live`, `surfaceops-designer-review-ui`, and capability-index proofs; none is a new numbered phase. The capability index covers exactly the 18 implemented proof targets other than itself. Its separate planned capability groups provide roadmap visibility only. `surfaceops-kanban-live` and `surfaceops-designer-review-ui` are bounded local-loopback live proofs, not production SurfaceOps or production `kanban.cards` claims. A row counts as implemented only when the named evidence file records `status: "pass"`. `promotionStatus` records governance outcome, not whether the proof command failed.
 
 | Phase | Implemented slice | Lifecycle value | Evidence | Current status | Current promotion status | CI gate | Demo |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -99,6 +206,7 @@ The current roadmap evidence is P0-P5, with P5 implemented only for the `surface
 | Target | Fixed source-family namespace mapping | One alternate source-ref prefix normalizes at 78 checked JSON pointers onto the canonical namespace, refreshes 11 manifest hashes, and reproduces the exact accepted 12-file compiler result | `artifacts/source-family-namespace-mapping/evidence.json` | `pass` | `review_required` | `npm run check:source-family-namespace-mapping:ci` | none; report/evidence only |
 | Target | Fixed source-family component-identity mapping | One explicit team-owned authority declaration authorizes the exact `TeamButton` to accepted P2 `Button` identity relation for one checked 12-file bundle before a derived 22-substitution mapping feeds the existing namespace normalizer and unchanged compiler | `artifacts/source-family-component-identity-mapping/evidence.json` | `pass` | `review_required` | `npm run check:source-family-component-identity-mapping:ci` | none; report/evidence only |
 | Target | Spectrum Checkbox catalog authority | One separately locked real-source Checkbox byte expands a distinct governed catalog while every accepted P2 component and token record stays unchanged | `artifacts/spectrum-checkbox-catalog/evidence.json` | `pass` | `review_required` | `npm run check:spectrum-checkbox-catalog:ci` | none; report/evidence only |
+| Target | Source-independent design-system compiler and portable consumer | Data-only Spectrum Switch and Astryx core Button adapters run through one shared ingestion kernel and one shared inert consumer with no source-specific implementation modules | `artifacts/design-system-compiler/evidence.json` | `pass` | `review_required` | `npm run check:design-system-compiler:ci` | none; report/evidence only |
 | Target | Designer workflow trace proof | Index over accepted evidence from design authority through governed catalog, review/evaluation refs, static target handoff, and evidence status | `artifacts/designer-workflow-trace/evidence.json` | `pass` | `blocked` | `npm run check:designer-workflow-trace:ci` | none; report/evidence only |
 | Target | `surfaceops-kanban-static` proof | Static SurfaceOps-owned board projection over accepted P3/P4 review evidence and a hash-bound local `kanban.cards` substrate contract | `artifacts/surfaceops-kanban-static/evidence.json` | `pass` | `review_required` | `npm run check:surfaceops-kanban-static:ci` | none; inert board artifacts only |
 | Target | `surfaceops-kanban-live` proof | Local-loopback live `kanban.cards` API/browser proof for SurfaceOps approvals over accepted P3/P4 evidence and a hash-bound API manifest | `artifacts/surfaceops-kanban-live/evidence.json` | `pass` | `review_required` | `npm run check:surfaceops-kanban-live:ci` | none; browser runtime evidence under `output/playwright/surfaceops-kanban-live/` |
@@ -107,7 +215,7 @@ The current roadmap evidence is P0-P5, with P5 implemented only for the `surface
 | P4 | Deterministic review and judgment proof | SurfaceOps-shaped decisions and JudgmentKit-shaped findings without live persistence or invocation | `artifacts/p4/evidence.json` | `pass` | `blocked` | `npm run check:p4:ci` | `demo/p4/index.html` |
 | P5 | `surfaces-protocol-static` inert protocol-envelope proof | Protocol-boundary consumption of accepted P2/P4 evidence | `artifacts/p5/protocol/evidence.json` | `pass` | `review_required` | `npm run check:p5:protocol:ci` | `demo/p5/protocol/index.html` |
 | P5 | `surfaces-native-static` inert native-packet proof | Surfaces-native static projection with protocol compatibility preflight | `artifacts/p5/native/evidence.json` | `pass` | `review_required` | `npm run check:p5:native:ci` | `demo/p5/native/index.html` |
-| Target | Capability index and read-only verifier | Discovery and integrity verification across the 17 implemented proof targets other than itself, with planned groups kept separate from implementation claims | `artifacts/capability-index/evidence.json` | `pass` | `allowed` | `npm run check:capability-index:ci` | none; report/evidence only |
+| Target | Capability index and read-only verifier | Discovery and integrity verification across the 18 implemented proof targets other than itself, with planned groups kept separate from implementation claims | `artifacts/capability-index/evidence.json` | `pass` | `allowed` | `npm run check:capability-index:ci` | none; report/evidence only |
 
 P4's `blocked` promotion status is expected in current tracked evidence: it proves invalid or unsafe review outcomes are blocked while the proof itself still passes. The designer review UI also passes with blocked promotion because its accepted trace records `targetHandoffAllowed: false` and `SOURCE_REVIEW_EXPIRED`. Demos remain presentation output. They help humans inspect the proof, but evidence and the proof contract remain authoritative.
 
@@ -119,7 +227,7 @@ P1 proves the first runtime-facing surface. It derives a `web-static` runtime pr
 P2 implements the first bounded real design-system ingestion proof from a manifest-declared local source bundle: the pinned `@adobe/spectrum-design-data@0.7.0` snapshot scoped to `button` and `in-line-alert`. The immutable `package-snapshot.lock.json` is derived from the pinned npm tarball after SRI verification and hash-binds the checked-in package bytes independently from the generated source manifest. Normal materialization compares the local snapshot with this lock and never regenerates it. The former agent-orchestration draft has moved to `plans/p3/` and should run only after P2 ingestion evidence passes.
 
 The capability-index proof materializes one machine-readable index and report
-over exactly the 17 implemented proof targets other than itself. Its read-only
+over exactly the 18 implemented proof targets other than itself. Its read-only
 verifier checks the tracked index, capability-index evidence, and target
 evidence without regenerating artifacts. Implementation status, evidence
 status, and promotion status remain separate. Seven planned capability groups
@@ -146,6 +254,23 @@ hash. Structured selection precedence and review-required ambiguity stay in
 the catalog contract; no action or runtime accessibility authority is inferred.
 The target does not change P2 or prove full Spectrum support, live connectors,
 self-serve UI, production adapters, SurfaceOps expansion, JudgmentKit, or A2UI.
+
+The `design-system-compiler` target proves a source-independent ingestion and
+consumer boundary without changing P2 or Checkbox. Separately locked Spectrum
+Switch and official Astryx core Button adapters declare exact typed locators,
+normalized facts, complete mappings, and a narrowing-only policy contract as
+data. One unchanged kernel requires lossless mapped facts to remain
+source-justified, keeps inferences review-required, and emits
+an extract, catalog, governed catalog, and hash-bound boundary receipt. One
+unchanged `web-static-portable` consumer accepts that receipt, emits an inert
+render plan for an allowed fixture, blocks an unknown member, and preserves
+review-required governance for a promotion request. Passing evidence requires
+matching transitive local ingestion-kernel and consumer implementation-closure
+hashes plus an empty source-specific implementation-module list.
+The target does not make legacy P2, P3, P4, or P5 portable and does not prove
+broad Spectrum or Astryx support, live connectors, self-serve UI, runtime
+accessibility compliance, production adapters, SurfaceOps expansion,
+JudgmentKit, A2UI, or production readiness.
 
 The designer-workflow-trace proof consumes accepted P2, source-conformance, P3, P4, protocol, and native evidence, then emits a deterministic trace selection, report, and evidence index for one Button scenario. The trace report is an index over accepted evidence, not catalog authority, upstream proof authority, product workflow implementation, customer validation, production adoption, live SurfaceOps, live JudgmentKit, production adapter, API, SDK, runtime, A2UI, P6, or P7.
 
@@ -270,8 +395,8 @@ If a product surface consumes evidence, it may explain, evaluate, route, or disp
 
 ## Open Decisions
 - Broader real design-system source families beyond the P2 local source bundle remain open. P2 does not settle Figma, Storybook, Code Connect, docs crawler, production HTML, or multi-source authority policy.
-- Broader Spectrum coverage remains open. The implemented P2 target is Adobe Spectrum Design Data, pinned to `@adobe/spectrum-design-data@0.7.0`, scoped to `button` and `in-line-alert`. The separate Checkbox target adds one bounded component to a distinct governed catalog without expanding P2. Neither target is a claim of full Spectrum support, live ingestion, or Adobe endorsement.
-- Broader declared-source conformance remains open beyond the two checked fixed-layout package instances, one fixed alternate physical layout, one fixed alternate source-ref prefix, one explicit team-owned declaration for the exact fixture-local `TeamButton` to accepted P2 `Button` identity relation, and one separately locked Checkbox catalog addition. Arbitrary layouts, namespace pairs, component identities, alias registries, semantic mappings, component coverage beyond Checkbox, live connectors, self-serve connection, and production-facing conformance still require separate proof shapes and passing evidence.
+- Broader Spectrum coverage remains open. The implemented P2 target is Adobe Spectrum Design Data, pinned to `@adobe/spectrum-design-data@0.7.0`, scoped to `button` and `in-line-alert`. The separate Checkbox target adds one bounded component to a distinct governed catalog. The design-system compiler proves one bounded Spectrum Switch adapter through the shared kernel and portable consumer without expanding P2 or Checkbox. These targets are not claims of full Spectrum support, live ingestion, or Adobe endorsement.
+- Broader declared-source conformance remains open beyond the two checked fixed-layout package instances, one fixed alternate physical layout, one fixed alternate source-ref prefix, one explicit team-owned declaration for the exact fixture-local `TeamButton` to accepted P2 `Button` identity relation, the separately locked Checkbox catalog addition, and the two bounded design-system compiler adapters. Arbitrary layouts, namespace pairs, component identities, alias registries, semantic mappings, additional source families or components, legacy P2-P5 portability, live connectors, self-serve connection, and production-facing conformance still require separate proof shapes and passing evidence.
 - Broader accessibility policy coverage remains open beyond the structured Button and InLineAlert declaration set. The implemented reconciliation target proves deterministic policy-to-catalog comparison and non-executable review routing; it does not infer behavior from free-form text, add missing P2 facts, or establish runtime accessibility compliance.
 - Broader designer workflow trace coverage remains open beyond the first Button trace over accepted P2, source-conformance, P3, P4, protocol, and native evidence. Additional scenarios, targets, components, or partner-facing workflows require their own trace fixture coverage, diagnostics, report/evidence paths, and passing evidence.
 - Broader JudgmentKit execution or live integration beyond the implemented P4 deterministic `judgmentkit-evaluation-report.v0` remains open.

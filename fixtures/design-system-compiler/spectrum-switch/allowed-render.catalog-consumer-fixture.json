@@ -1,0 +1,13 @@
+{
+  "schemaId": "catalog-consumer-fixture.v0",
+  "version": "0.0.0",
+  "fixtureId": "spectrum-switch-allowed-render",
+  "expectedOutcome": "allowed",
+  "expectedDiagnosticCodes": [],
+  "intent": "render",
+  "component": "switch",
+  "props": {"isSelected": true, "label": "Wi-Fi", "size": "m"},
+  "variants": {},
+  "state": "hover",
+  "sourceRef": "spectrum-design-data://npm/@adobe/spectrum-design-data@0.7.0/package/components/switch.json#/name"
+}

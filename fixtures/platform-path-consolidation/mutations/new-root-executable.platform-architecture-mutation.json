@@ -1,0 +1,12 @@
+{
+  "schemaId": "platform-architecture-mutation.v0",
+  "mutationId": "new-root-executable",
+  "edits": [
+    {
+      "kind": "write-file",
+      "path": "bespoke-compiler.mjs",
+      "content": "export const compile = (value) => value;\n"
+    }
+  ],
+  "expectedCode": "EXECUTABLE_PATH_UNREGISTERED"
+}

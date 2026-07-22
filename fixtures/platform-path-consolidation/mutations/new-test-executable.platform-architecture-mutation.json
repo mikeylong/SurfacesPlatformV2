@@ -1,0 +1,12 @@
+{
+  "schemaId": "platform-architecture-mutation.v0",
+  "mutationId": "new-test-executable",
+  "edits": [
+    {
+      "kind": "write-file",
+      "path": "test/bespoke-compiler.test.js",
+      "content": "import test from \"node:test\";\ntest(\"bespoke compiler\", () => {});\n"
+    }
+  ],
+  "expectedCode": "EXECUTABLE_PATH_UNREGISTERED"
+}

@@ -1,5 +1,118 @@
 # Surfaces.dev Documentation Tracking
 
+## Platform path consolidation
+
+The consolidation instruction surface is
+`plans/platform-path-consolidation.md`. The immutable comparison input is
+`fixtures/platform-path-consolidation/baseline.manifest.json`, verified by
+`node scripts/verify-platform-path-baseline.mjs`. The policy binds its raw bytes
+to SHA-256
+`be51419b5b3f3eb43bdfae4b6a6d27e98f2b2336c18c9f5c7fb395663d6da71c`.
+The baseline records a scoped 1,117-path inventory whose four policy-declared
+root exclusions are `artifacts/capability-index`,
+`artifacts/design-system-compiler`, `fixtures/design-system-compiler`, and
+`sources/design-system-compiler`.
+
+Phase 2 extracts the neutral proof runtime and a fail-closed compatibility
+validator for the design-system compiler's single-adapter
+`catalog-boundary-receipt.v0` envelope.
+`src/catalog-authority.js` is the neutral owner of recursive catalog source-ref
+collection and non-expanding authority-escalation comparison shared by
+ingestion and consumers. It does not compose catalogs, resolve source
+precedence, interpret policy, or grant authority. The source-neutral platform
+release receipt, catalog composition, source migration, downstream rebinding,
+and retirement remain planned.
+
+The architecture policy lives at
+`fixtures/platform-path-consolidation/architecture-policy.json` under
+`schemas/platform-architecture-policy.v0.schema.json`; mutation fixtures use
+`schemas/platform-architecture-mutation.v0.schema.json`, and canonical
+diagnostics use `schemas/platform-architecture-diagnostics.v0.schema.json`. Run
+`npm run check:platform-architecture` for current-tree conformance or
+`npm run check:platform-architecture -- --base <git-sha>` for branch-boundary
+checks. The command validates the policy, exercises its architecture mutations,
+checks 83 executable paths discovered under `bin/`, `scripts/`, and `src/`,
+every detected CLI route, the 241-edge local module graph, computed module
+loads, data-only adapter reachability, catalog-authority registration, direct
+P2 consumers, legacy-exception growth, change-set separation, and the immutable
+baseline. Every current test and GitHub execution file, the dependency lock,
+all four generic compiler mutation fixtures, each admitted adapter closure, and
+the complete 15-schema compiler runtime contract closure are byte-frozen;
+the repo-wide tracked-path inventory rejects new side paths outside the four
+inert adapter/output roots. Frozen paths must remain regular files, and
+symbolic links fail under the repository root and executable, test, or workflow
+roots. It executes 34 schema-validated causal mutations
+and emits no artifacts or evidence.
+
+Source-identity-branch-free means protected shared code does not dispatch on a
+concrete package, source family, component, adapter key, or output key. Generic
+identity validation is admitted only by the exact, non-growing 113-row
+allowance registry. Adapter changes may cochange only
+`sources/design-system-compiler`, `fixtures/design-system-compiler`,
+`artifacts/design-system-compiler`, `artifacts/capability-index`,
+`plans/design-system-compiler.md`, and `plans/surfaces-dev.md`. Code, commands,
+schemas, runtime paths, and other docs remain outside that six-entry boundary.
+The manifest, adapter contracts, and portable source locks are validated
+against their canonical schemas. Fixture and derived-output roots are
+JSON-only. Upstream `.mjs`, `.ts`, and other source bytes remain inert and are
+admitted only when the exact regular-file closure, byte counts, and SHA-256
+values match the source lock; symlinks and noncanonical paths fail. Base-aware
+adapter evolution preserves existing rows and closures, freezes the four
+generic mutation fixtures, and permits exactly one new sorted row under a
+unique direct-child adapter key, with its three fixtures rooted under that
+key's unshared fixture directory.
+
+The first base-aware run verifies and uses immutable checkpoint
+`32543bfb7c5701c054f9c8c157a4f7cf0504fcbf`; the machine policy and schema bind
+the admitted-policy, normalized policy-schema, and initial adapter-manifest
+hashes.
+After validating the checkpoint relationship, it applies change-set separation
+only to checkpoint-to-`HEAD`. It does not establish that the supplied
+base-to-checkpoint range was reviewed or architecture-conformant.
+
+Every ordinary local and base-aware run schema-validates the candidate policy
+and verifies the normalized policy-schema hash. Bootstrap runs also verify the
+admitted initial policy hash. When the comparison base contains the contract,
+a base-aware run separately loads and validates the base policy, schema, and
+adapter manifest before comparison.
+After bootstrap, `.github/workflows/platform-architecture-trusted.yml` uses
+`pull_request_target` so the default branch's verifier inspects the candidate
+checkout without running candidate lifecycle or architecture code. Repository
+settings must require its `platform-architecture-trusted` status and an
+up-to-date head before merge. The workflow reruns on PR edits so a retargeted
+base cannot reuse an older result.
+
+The v0 policy freezes the exclusive non-null platform-role owners, all routes,
+and exact raw hashes for 177 implementation, test, adapter, dependency, guard,
+control, schema, mutation, workflow, and baseline-protection files. It permits
+no new canonical, neutral, or legacy executable registration.
+Canonical and neutral registrations cannot shrink and their executable bytes
+are frozen in v0; registered legacy
+implementation bytes remain frozen until actual deletion removes the matching
+registration, hash, and exception. A future machine rule requires a separately
+reviewed versioned successor, not an in-place v0 rewrite.
+
+Principal diagnostics are `POLICY_SCHEMA_INVALID`, `POLICY_WEAKENING`,
+`EXECUTABLE_PATH_UNREGISTERED`, `CLI_ROUTE_UNREGISTERED`,
+`COMPUTED_MODULE_LOAD`, `PROTECTED_DEPENDENCY_UNPROTECTED`,
+`PROTECTED_EDGE_UNDECLARED`, `SOURCE_IDENTITY_BRANCH`,
+`IDENTITY_CONTROL_FLOW`, `ADAPTER_MANIFEST_UNREACHABLE`,
+`ADAPTER_NOT_DATA_ONLY`, `LEGACY_EXCEPTION_ADDED`, `DIRECT_P2_CONSUMER`,
+`CHANGESET_BOUNDARY_CROSSED`, `FROZEN_ARCHITECTURE_FILE_DRIFT`,
+`LEGACY_IMPLEMENTATION_DRIFT`, `MIGRATION_BASELINE_DRIFT`, and
+`MUTATION_NOT_CAUSAL`. The diagnostics schema is the complete canonical
+registry.
+
+`npm test` invokes the architecture check through `pretest`. The focused
+design-system compiler gate invokes it before proof materialization. The
+dedicated `platform-architecture` GitHub Actions job checks out full history and
+passes the pull-request base SHA for pull requests and the pre-push SHA for
+main-branch pushes; only an initial all-zero push omits the comparison base. A
+pass is an internal conformance result. It is not the planned platform-path
+retirement proof and does not establish a generic catalog-release receipt,
+catalog composition, source migration, downstream rebinding, legacy deletion,
+a new capability-index row, or production readiness.
+
 ## Decision
 `surfaces.dev` is the developer and agent documentation surface for Surfaces Platform. This repo tracks its required phase updates here until a dedicated docs site or package exists.
 
@@ -27,10 +140,12 @@ Each phase update must include:
 | Phase | Documentation state | Required surfaces.dev update |
 | --- | --- | --- |
 | Cross-product | Product portfolio boundaries, product designer workflow, SurfaceOps Button variants journey planning, implemented designer workflow trace, SurfaceOps kanban proof targets, roadmap proof snapshot, usability/value evidence, and [curated design-partner testing](design-partner-testing.md) references tracked in proof docs | Explain the product surfaces, current evidence-backed targets, Button variants journey planning, SurfaceOps versus `kanban.cards` ownership, JudgmentKit's evaluation role, and the rule that implemented behavior is tied to passing evidence. Keep non-goal detail in the target-specific proof docs instead of repeating full caveat lists here. |
+| Platform architecture | Implemented as a read-only internal conformance gate with no proof artifact or capability claim | Document the 83-path implementation executable inventory under `bin/`, `scripts/`, and `src/`; 241 local module edges; 34 causal mutations; exact, non-growing 113-row generic identity allowance registry; exclusive v0 role owners with catalog composition still unowned; no new executable registration or CLI route; byte-frozen tests, workflows, dependency lock, generic compiler mutations, admitted adapter closures, and the complete 15-schema compiler runtime contract closure; repo-wide tracked-path admission outside four inert adapter/output roots; adapter cochanges restricted to four data and derived-output roots and the two required instruction docs; exactly-one-row additive adapter evolution with existing-row preservation, unique direct-child adapter keys, and unshared adapter-rooted fixtures; canonical schema validation, JSON-only fixture/output roots, and hash-closed inert source bytes; 177 frozen implementation, test, adapter, dependency, guard, control, schema, mutation, workflow, and baseline-protection files; separately frozen, actual-deletion-only legacy shrink; exact admitted post-extraction evidence and closure hashes; the baseline raw hash and 1,117-path inventory; bootstrap checkpoint plus admitted-policy, normalized policy-schema, and adapter-manifest hashes; base-aware evolution and post-checkpoint-only change separation; `check:platform-architecture`; optional `--base`; pretest and focused-compiler ordering; the candidate-owned bootstrap CI job; the post-bootstrap trusted-base `pull_request_target` job, edited-event reruns, required status, and up-to-date-head rule; and the boundary between conformance and the still-planned versioned successor, generic release receipt, composition, and retirement proofs. |
 | P0 | Implemented as deterministic synthetic catalog proof when `artifacts/p0/evidence.json` passes | Explain catalog proof, fixture-only extraction, schema-enforced DTCG-compatible token subset and normalized token projection boundary, diagnostics, evidence, and no real design-system ingestion claim |
 | P1 | Implemented as deterministic `web-static` runtime projection proof when `artifacts/p1/evidence.json` passes | Explain `web-static` runtime projection, render plans, generated demo, review-required behavior, exact ordered P1 evidence closure for upstream refs, boundary refs, render-plan refs, artifacts, required `boundaryRefs[].sourceArtifactHash`, generalized projection-versus-governed-catalog authority checks including top-level accessibility derived from component accessibility, evidence self-hash validation with the null placeholder limited to the final self ref, and no runtime authority expansion |
 | P2 | Implemented as deterministic local source-bundle ingestion for `@adobe/spectrum-design-data@0.7.0`, scoped to `button` and `in-line-alert` when `artifacts/p2/evidence.json` passes | Explain the local source bundle requirements, npm package integrity, review-controlled `design-source-package-snapshot-lock.v0` trust anchor seeded during a separate SRI and tarball verification, the limit that deterministic proof establishes local lock conformance rather than replaying that external ceremony, ordinary materialization that recursively compares the exact package tree but never regenerates `package-snapshot.lock.json`, manifest `packageSnapshotLock` binding, declared Spectrum subset authority set, source snapshot paths, source-ref grammar, mapping review, `INGEST_PACKAGE_SNAPSHOT_LOCK_MISMATCH`, causal package-byte tamper coverage, ingestion diagnostics, `design-system-ingestion-valid-fixture.v0`, exact invalid/review/mutation fixture coverage, valid Spectrum fixture coverage, consumed-schema and ordered lock/source/fixture/artifact evidence closure, deterministic provenance on exact ordered refs, full evidence-closure demo verification, `node bin/interfacectl.js` script/test invocation, `check:p2:planning:validate` guard scope, proof-bearing `check:p2:ci`, evidence authority, and the allowed-claims limit after proof evidence passes |
 | Spectrum Checkbox catalog | Implemented as a separate bounded authority target when `artifacts/spectrum-checkbox-catalog/evidence.json` passes; current promotion is `review_required` | Explain why the target is adjacent to P2, the immutable one-file addendum lock and review-time npm SRI/tarball verification, offline local-lock conformance, accepted P2 evidence self-hash, reused registry and token bytes, seven props, three states, structured indeterminate precedence, one desktop token, two owner-bound non-executable review rows, 25 valid/review/invalid/mutation fixtures, exact P2 catalog preservation, five generated artifacts, `interfacectl surfaces spectrum-checkbox-catalog proof`, proof-bearing `check:spectrum-checkbox-catalog:ci`, capability-index status, and the limits: no in-place P2 expansion, full Spectrum support, live connectors, self-serve UI, runtime accessibility compliance, production adapters, SurfaceOps expansion, JudgmentKit, or A2UI |
+| Source-independent design-system compiler | Implemented as a bounded Connect Authority target when `artifacts/design-system-compiler/evidence.json` passes; current promotion is `review_required` | Explain the data-only Spectrum Switch and official Astryx core Button adapters; immutable selected-file and license locks and review-time package identity; exact typed source locators; source-backed lossless member keys and identifiers versus review-required mappings; the fixed narrowing-only runtime/governance policy contract; one shared ingestion kernel and one shared inert `web-static-portable` consumer; the single-adapter compiler compatibility envelope, not a source-neutral platform release receipt or composition proof; manifest-derived adapter/report/evidence cardinality and per-adapter artifact closure; the aggregate capability-index output root; per-adapter extract, catalog, governed catalog, boundary receipt, runtime projection, render plan, and consumer report; aggregate report and self-hashed evidence; matching transitive local kernel and consumer implementation-closure hashes; distinct source/package identities; a transitive-compiler-closure-derived empty source-specific implementation-module list; allowed, exact blocked-diagnostic, and review-required consumer outcomes; causal unmapped-authority, invented-member-identifier, mapped-default-inversion, stale-receipt, and source-specific executable mutations; exact evidence reconstruction over the 43 checked proof implementation-and-instruction refs and all source inputs, without calling those refs the transitive closure; `interfacectl surfaces design-system-compiler proof`; proof-bearing `check:design-system-compiler:ci`; capability-index status; and the limits: no P2 or Checkbox change, legacy P3-P5 portability, broad Spectrum or Astryx support, live connectors, self-serve connection, runtime accessibility compliance, production adapters/APIs/SDKs, SurfaceOps expansion, JudgmentKit, A2UI, or production readiness |
 | Source conformance | Implemented as deterministic reusable profile-and-fact authority compilation when `artifacts/source-family-packaging/evidence.json` passes; `artifacts/source-conformance/evidence.json` remains the canonical first-run and designer-trace authority | Explain the 14 base source-conformance schemas plus `source-family-package.v0`, the five source-family packaging report/fixture/evidence schemas, both checked bundle roots, the fixed logical compiler layout, physical-versus-virtual source identity, `familySpecificModule: null`, the exact seven-file local JavaScript closure, Node 22 plus `package.json` and `package-lock.json` inputs, two separately executed accepted-bundle passes, one separately counted failing causal probe, isolated regular-file staging, complete candidate artifact capture, post-workspace logical-to-persisted remap verification with the unchanged inner verifier, source-byte preservation, referenced-route owner derivation, distinct team-owned bundle/profile/owner/source-family identities, six matching normalized fact tuples that bind primary and supporting logical fact refs to their JCS value hashes plus conflict, resolution, catalog hash, and status, nine immutable P2 catalog fields, the causal `expressive` expansion probe and `SOURCE_FACT_AUTHORITY_ESCALATION`, package diagnostics, the base `interfacectl surfaces source-conformance proof` invocation, aggregate `interfacectl surfaces source-family-packaging proof` invocation, `npm run proof:source-conformance`, proof-bearing `check:source-conformance:ci` and indexed `check:source-family-packaging:ci`, the two evidence authorities and designer-trace dependency boundary, report/evidence-only presentation, and the remaining limits: exactly two checked instances of the fixed ABI, Button and InLineAlert only, no arbitrary layout or connector, no broader P2 coverage or self-serve connection path, no live ingestion, production adapter, API/SDK, A2UI, native runtime, live SurfaceOps, live JudgmentKit, customer validation, pilot readiness, or action execution claim |
 | Source accessibility policy | Implemented as deterministic structured-only authority reconciliation when `artifacts/source-accessibility-policy/evidence.json` passes; current promotion is `review_required` | Explain the 11 target schemas, exact two-file structured source root, five Button/InLineAlert behavior declarations, opaque JCS policy requirement value hashes, closed `equals` and `exists` operators, accepted P2 catalog fact authority, the source-conformance catalog as integrity preflight only, source-family packaging preflight, three allowed and two owner-bound review-required baseline results, 4 valid/3 review/7 invalid/4 mutation fixtures, 13 canonical diagnostics, five report/evidence-only artifacts, `interfacectl surfaces source-accessibility-policy proof`, proof-bearing `check:source-accessibility-policy:ci`, evidence authority, `structuredDeclarationsOnly: true`, `catalogCapabilityAdded: false`, and the limits: no free-form policy interpretation, runtime accessibility or WCAG conformance claim, broader P2 coverage, catalog mutation, arbitrary packaging, live connector, self-serve UI, production adapter, live SurfaceOps, or JudgmentKit invocation |
 | Source family layout mapping | Implemented as one fixed byte-preserving alternate-layout proof when `artifacts/source-family-layout-mapping/evidence.json` passes; current promotion is `review_required` | Explain the nine target schemas, immutable layout-package trust anchor, closed 12-row descriptor, independent regular-file physical tree, exact raw-byte match with the accepted team-owned package, fixed logical `SC_SOURCE_FILES` ABI, unchanged source refs and compiler closure, mapping receipt, eight persisted inner artifacts, post-workspace `mappedEvidenceRemap` verification, six fact tuples, nine immutable P2 catalog fields, owner-bound non-executable review semantics, 20 causal fixture results, 19 target diagnostics, separate `SOURCE_FACT_AUTHORITY_ESCALATION` probe, `interfacectl surfaces source-family-layout-mapping proof`, proof-bearing `check:source-family-layout-mapping:ci`, report/evidence-only presentation, and the limits: exactly one fixed alternate layout, no arbitrary layouts or filenames, namespace mapping, broader P2 coverage, live connectors, self-serve UI, runtime accessibility claims, production adapters, SurfaceOps expansion, or JudgmentKit |
@@ -41,7 +156,7 @@ Each phase update must include:
 | P3 | Implemented as deterministic inert agent-orchestration proof when `artifacts/p3/evidence.json` passes | Explain `agent-capability-registry-fixture.v0`, `agent-preflight-mutation.v0`, `agent-task.v0`, capability registry, registry/task scope intersection, deterministic DAG validation, inert work orders, review queue, report, proof evidence, generated demo, acyclic generated-artifact refs, deterministic provenance on evidence refs, blocked `reviewPolicy` preservation, full evidence-closure demo verification, exact diagnostic fixture coverage, `node bin/interfacectl.js` script/test invocation, proof-bearing cumulative `check:p3:ci`, phase-only GitHub `check:p3:ci:phase` after `p2-proof`, evidence authority, and no live agent execution in P3; any later live execution requires a separate proof or explicit authorization |
 | P4 | Implemented as deterministic review and judgment proof when `artifacts/p4/evidence.json` passes | Explain the SurfaceOps decision ledger, committed-versus-coverage-only decision fixture behavior, duplicate committed decision diagnostics, JudgmentKit-shaped evaluation report, review/judgment report, P3 evidence and review queue inputs, accepted queue run-id and item binding for fixture `reviewItemRef`, exact diagnostic fixture coverage, deterministic provenance on P4 evidence boundary refs, evidence authority, second-review semantics, `node bin/interfacectl.js surfaces review proof` invocation, proof-bearing cumulative `check:p4:ci`, phase-only GitHub `check:p4:ci:phase` after `p3-proof`, SurfaceOps ownership of approve/reject/request-changes/defer decision coverage, JudgmentKit evaluation-only findings, and no live SurfaceOps console, live JudgmentKit invocation, work-order execution, production adapter, A2UI, or authority override in P4 |
 | P5 | Implemented as deterministic inert `surfaces-protocol-static` protocol-envelope proof when `artifacts/p5/protocol/evidence.json` passes, and deterministic inert `surfaces-native-static` native-packet proof when `artifacts/p5/native/evidence.json` passes | Explain `protocol-target-selection.v0`, `protocol-projection.v0`, `protocol-envelope.v0`, protocol adapter report, `surfaces-native-target-selection.v0`, `surfaces-native-projection.v0`, `surfaces-native-packet.v0`, native report, closed normalized token records requiring `type`, `value`, and `sourceRef`, manifest-backed token-record negative fixtures for projection/envelope/packet boundaries, accepted P2 catalog/evidence inputs, accepted P4 evidence/decision-ledger/review-report inputs, full ref tuple validation for path/schema id/hash algorithm/hash/source evidence hash where applicable, native `upstreamRefs[]` authority refs versus `compatibilityPreflightRefs[]` protocol compatibility preflight, exact valid/review/invalid/mutation fixture coverage for both targets, diagnostic registry rows, `node bin/interfacectl.js surfaces protocol proof` and `node bin/interfacectl.js surfaces native proof` invocations, generated demos, proof-bearing `check:p5:protocol:ci` and `check:p5:native:ci`, evidence authority, review-required non-execution, stale-output and untracked guards, and no production adapter/API/SDK/native SDK/live protocol/live native runtime/A2UI/live SurfaceOps/live JudgmentKit support in these P5 slices |
-| Capability index | Implemented as deterministic discovery and read-only verification over exactly 17 proof targets other than itself when `artifacts/capability-index/evidence.json` passes; current promotion is `allowed` | Explain the seven capability-index-owned schemas, `fixtures/capability-index`, the exact 17 implemented target rows, seven separately typed planned groups, the three generated artifacts, embedded diagnostic/report rows, implementation versus evidence versus promotion status, the non-self-indexing boundary, `interfacectl surfaces capabilities proof`, strict read-only `interfacectl surfaces capabilities verify`, `npm run status`, proof-bearing `check:capability-index:ci`, phase-only and untracked guards, report/evidence-only presentation, and the rule that index evidence proves discovery integrity rather than the indexed targets or planned work |
+| Capability index | Implemented as deterministic discovery and read-only verification over exactly 18 proof targets other than itself when `artifacts/capability-index/evidence.json` passes; current promotion is `allowed` | Explain the seven capability-index-owned schemas, `fixtures/capability-index`, the exact 18 implemented target rows, seven separately typed planned groups, the three generated artifacts, embedded diagnostic/report rows, implementation versus evidence versus promotion status, the non-self-indexing boundary, `interfacectl surfaces capabilities proof`, strict read-only `interfacectl surfaces capabilities verify`, `npm run status`, proof-bearing `check:capability-index:ci`, phase-only and untracked guards, report/evidence-only presentation, and the rule that index evidence proves discovery integrity rather than the indexed targets or planned work |
 
 ## Follow-Up Documentation Queue
 - Capability-index docs follow-up: expose `npm run status`, [Product Progress](../PROGRESS.md), and [Capability Index Proof Target](capability-index.md) from the future `surfaces.dev` entrypoint. Keep target evidence authoritative, keep the index outside its own rows, and present planned groups as roadmap visibility only.

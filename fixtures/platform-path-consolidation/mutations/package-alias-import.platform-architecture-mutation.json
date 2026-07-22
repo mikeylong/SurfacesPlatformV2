@@ -1,0 +1,12 @@
+{
+  "schemaId": "platform-architecture-mutation.v0",
+  "mutationId": "package-alias-import",
+  "edits": [
+    {
+      "kind": "append-file",
+      "path": "src/catalog-authority.js",
+      "content": "\nimport '#hidden-platform-path';\n"
+    }
+  ],
+  "expectedCode": "LOCAL_IMPORT_UNRESOLVED"
+}

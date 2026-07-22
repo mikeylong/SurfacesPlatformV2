@@ -235,6 +235,43 @@ const IMPLEMENTED_CAPABILITIES = [
     dependencies: { evidence: ["p2-spectrum-ingestion"], phaseGate: [], compatibility: [] }
   }),
   implemented({
+    capabilityId: "design-system-compiler",
+    displayName: "Source-independent design-system compiler",
+    roadmapPhase: "Target",
+    proofMode: "bounded-local",
+    userValue: "Compiles bounded manifest-declared design-system sources through one unchanged ingestion kernel and one unchanged web-static consumer.",
+    scopeStatement: "Loads at least two independent, data-only, hash-bound adapters into the same normalized extract, governed-catalog, boundary-receipt, projection, and inert render-plan loop without source-specific implementation modules.",
+    authorityRole: "portable-ingestion-and-derived-consumer-proof",
+    nonCapabilities: [
+      "migration of legacy P2, Checkbox, P3, P4, or P5 contracts",
+      "family-wide design-system support",
+      "live source connectors",
+      "self-serve connection UI",
+      "runtime behavior execution",
+      "runtime accessibility compliance",
+      "production adapters",
+      "SurfaceOps expansion",
+      "JudgmentKit invocation",
+      "A2UI"
+    ],
+    lifecycleRoles: ["connect-authority", "generate-within-bounds", "govern-change"],
+    proofCommand: "interfacectl surfaces design-system-compiler proof",
+    packageProofScript: "proof:design-system-compiler",
+    ciGate: "npm run check:design-system-compiler:ci",
+    evidencePath: "artifacts/design-system-compiler/evidence.json",
+    evidenceSchemaId: "design-system-compiler-evidence.v0",
+    expectedPromotionStatus: "review_required",
+    inputPaths: [
+      "fixtures/design-system-compiler",
+      "sources/design-system-compiler"
+    ],
+    outputPaths: ["artifacts/design-system-compiler"],
+    diagnosticSchemaPath: "schemas/design-system-compiler-diagnostics.v0.schema.json",
+    reportPaths: ["artifacts/design-system-compiler/design-system-compiler-report.json"],
+    documentationRefs: ["VISION.md", "PLAN.md", "plans/design-system-compiler.md"],
+    dependencies: { evidence: [], phaseGate: ["p2-spectrum-ingestion"], compatibility: [] }
+  }),
+  implemented({
     capabilityId: "declared-source-conformance",
     displayName: "Reusable declared-source conformance",
     roadmapPhase: "Target",
