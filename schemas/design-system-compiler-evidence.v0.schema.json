@@ -133,8 +133,8 @@
     },
     "implementationRefs": {
       "type": "array",
-      "minItems": 38,
-      "maxItems": 38,
+      "minItems": 43,
+      "maxItems": 43,
       "uniqueItems": true,
       "items": { "$ref": "#/$defs/rawRef" }
     },

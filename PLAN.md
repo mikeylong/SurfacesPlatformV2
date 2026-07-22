@@ -14,6 +14,13 @@ design-system candidates beyond the current bounded compiler adapters. It does
 not create implementation support, a proof command, schemas, fixtures,
 artifacts, evidence, CI gates, or product adoption claims.
 
+[Platform Path Consolidation](plans/platform-path-consolidation.md) controls the
+sequenced removal of duplicate ingestion, catalog-authority, release-boundary,
+and consumer mechanics. It defines the immutable comparison baseline, the
+shared target path, migration order, and retirement-proof requirements. The
+architecture gate described below keeps new work inside that direction while
+the migration is incomplete.
+
 [Source Family Layout Mapping Proof Plan](plans/source-family-layout-mapping.md)
 records the implemented bounded Connect Authority proof for byte-preserving
 physical-to-logical path mapping of one additional physical-layout instance of
@@ -108,6 +115,143 @@ the live mirror. It does not claim production SurfaceOps, production
 adapters, SDKs, A2UI, live JudgmentKit, work execution, or product adoption.
 
 Any implementation or roadmap-status claim should cite the phase proof command, evidence path, evidence `status`, promotion status, and relevant CI gate. Generated demos may help present the claim, but demos are not proof authority.
+
+## Platform Architecture Conformance
+
+The normative rules are
+[Platform Architecture Invariants](VISION.md#platform-architecture-invariants).
+The mechanical policy is:
+
+```text
+schemas/platform-architecture-policy.v0.schema.json
+schemas/platform-architecture-mutation.v0.schema.json
+schemas/platform-architecture-diagnostics.v0.schema.json
+fixtures/platform-path-consolidation/architecture-policy.json
+fixtures/platform-path-consolidation/mutations/**
+src/platform-architecture.js
+scripts/check-platform-architecture.mjs
+scripts/verify-platform-path-baseline.mjs
+test/platform-architecture-policy.test.js
+.github/workflows/platform-architecture-trusted.yml
+```
+
+The policy closes the 83 implementation executables discovered under `bin/`,
+`scripts/`, and `src/`, every detected CLI route, and the 241-edge local module
+graph. Every current test and GitHub execution file, the dependency lock, and
+the compiler's complete 15-schema runtime contract closure are byte-frozen;
+root executables are prohibited, and the repo-wide
+tracked-path inventory rejects a new side path outside the four explicitly
+inert adapter/output roots. Frozen paths must remain regular files, and
+symbolic links are rejected at the repository root and under executable, test,
+and workflow roots. The normal command executes 34 schema-validated
+causal mutations in memory.
+
+Protected shared code must be source-identity-branch-free: it cannot dispatch
+on a concrete package, source family, component, adapter key, or output key.
+Generic identity validation is permitted only by the exact 113-row allowance
+registry, which cannot grow. A source-specific addition may cochange only
+`sources/design-system-compiler`, `fixtures/design-system-compiler`,
+`artifacts/design-system-compiler`, `artifacts/capability-index`,
+`plans/design-system-compiler.md`, and `plans/surfaces-dev.md`. A path outside
+that closed data, derived-output, and required-instruction allowance fails the
+adapter change set, including code, command, schema, runtime, other
+documentation, or reusable platform changes.
+The adapter manifest, adapter contracts, and source locks are validated against
+their canonical schemas. Fixture and output roots are JSON-only; locked source
+snapshots are exact regular-file closures with checked byte counts and SHA-256
+values, including inert upstream `.mjs` and `.ts` source bytes. Base-aware
+admission preserves every existing adapter row and closure, freezes the four
+generic mutation fixtures, and permits exactly one new sorted adapter row under
+a unique direct-child adapter key, with its three consumer fixtures rooted
+under that key's unshared fixture directory.
+
+The v0 role registry assigns one exclusive owner to source ingestion, compiler
+orchestration, catalog authority, release compatibility, and catalog
+consumption. Catalog composition has a null owner and remains planned. No new
+canonical, neutral, or legacy executable registration and no new CLI route may
+be added. Canonical and neutral registrations cannot be removed or
+reclassified, and every canonical and neutral executable is byte-frozen in v0.
+Legacy implementation bytes are separately frozen while registered, but an
+actual legacy file deletion may remove the matching registration, hash, and
+exception so the migration queue can shrink.
+
+The first base-aware run uses immutable checkpoint
+`32543bfb7c5701c054f9c8c157a4f7cf0504fcbf` and verifies the admitted-policy,
+normalized policy-schema, and initial adapter-manifest hashes declared in the
+machine policy and schema.
+After validating the checkpoint relationship, the command enforces change-set
+separation only over the checkpoint-to-`HEAD` range. It does not claim that the
+supplied base-to-checkpoint range was reviewed or architecture-conformant. The
+policy also freezes exact raw hashes for 177 v0 implementation, test, adapter,
+dependency, guard, control, schema, mutation, workflow, and baseline-protection
+files. A future machine rule requires a separately reviewed versioned successor
+rather than an in-place v0 rewrite.
+
+Every run schema-validates the candidate policy and verifies the normalized
+policy-schema hash. Bootstrap runs also verify the admitted initial policy
+hash. When the comparison base already contains the contract, a base-aware run
+loads and validates the base policy, schema, and adapter manifest before
+applying the evolution and change-set rules. After bootstrap, the
+`.github/workflows/platform-architecture-trusted.yml` `pull_request_target`
+job runs the default branch's verifier over the candidate checkout without
+executing candidate lifecycle scripts or candidate architecture code. Its
+`platform-architecture-trusted` status must be required before merge, and the
+branch rule must require an up-to-date head. The workflow reruns on PR edits so
+a retargeted base cannot reuse a result from the previous base.
+
+Principal gate diagnostics include `POLICY_SCHEMA_INVALID`,
+`POLICY_WEAKENING`, `EXECUTABLE_PATH_UNREGISTERED`,
+`CLI_ROUTE_UNREGISTERED`, `COMPUTED_MODULE_LOAD`,
+`PROTECTED_DEPENDENCY_UNPROTECTED`, `PROTECTED_EDGE_UNDECLARED`,
+`SOURCE_IDENTITY_BRANCH`, `IDENTITY_CONTROL_FLOW`,
+`ADAPTER_MANIFEST_UNREACHABLE`, `ADAPTER_NOT_DATA_ONLY`,
+`LEGACY_EXCEPTION_ADDED`, `DIRECT_P2_CONSUMER`,
+`CHANGESET_BOUNDARY_CROSSED`, `FROZEN_ARCHITECTURE_FILE_DRIFT`,
+`LEGACY_IMPLEMENTATION_DRIFT`, `MIGRATION_BASELINE_DRIFT`, and
+`MUTATION_NOT_CAUSAL`. The diagnostics schema is the complete canonical
+registry.
+
+Run the read-only gate with:
+
+```bash
+npm run check:platform-architecture
+npm run check:platform-architecture -- --base <git-sha>
+```
+
+The first form validates the checked repository, all declared causal mutations,
+and the immutable migration baseline. The second also compares the current
+branch with the supplied base, using the verified bootstrap checkpoint when the
+policy does not yet exist in that base.
+`npm test` invokes the gate through `pretest`; the focused design-system
+compiler check invokes it before materialization; and the dedicated GitHub
+Actions job checks out full history and supplies
+`github.event.pull_request.base.sha` for pull requests or `github.event.before`
+for main-branch pushes. Only an initial all-zero push remains bootstrap-safe
+and omits `--base`.
+
+`scripts/verify-platform-path-baseline.mjs` validates
+`fixtures/platform-path-consolidation/baseline.manifest.json` against
+`schemas/platform-path-baseline.v0.schema.json`, recomputes every evidence
+self-hash with only its self-ref hash set to `null`, verifies every embedded
+catalog/report ref against the referenced JSON's JCS hash, preserves source-lock
+and catalog-authority hashes, and reconstructs the tracked implementation
+inventory. The policy binds the baseline's raw bytes to SHA-256
+`be51419b5b3f3eb43bdfae4b6a6d27e98f2b2336c18c9f5c7fb395663d6da71c`.
+Its scoped inventory contains 1,117 tracked paths. Its four policy-declared root
+exclusions are `artifacts/capability-index`,
+`artifacts/design-system-compiler`, `fixtures/design-system-compiler`, and
+`sources/design-system-compiler`. The policy records exact post-extraction
+self-hashes for the eight evidence rows changed by this work and exact
+post-extraction catalog/report-closure hashes for the seven rows whose closures
+changed. These are admitted migration values, not ongoing drift allowances: a
+later byte change fails the baseline gate. Self-hash and referenced-artifact
+integrity remain mandatory for every row.
+
+This command writes no artifact, report, or evidence. A passing result proves
+internal architecture conformance only. It does not implement the planned
+catalog composer, migrate P2 or Checkbox, rebind a downstream consumer, remove
+a legacy path, satisfy the retirement-proof contract, or add a capability-index
+target.
 
 ## P0 Focus
 P0 establishes one executable catalog proof contract. It specifies and implements the exact schema files, fixture files, output artifacts, diagnostics, and pass/fail gates that the proof must satisfy.
@@ -867,11 +1011,16 @@ compiling each adapter. A hash-bound boundary receipt feeds the same
 allowed render plan, blocks an unknown member, and keeps promotion requests
 `review_required`. Causal mutations prove that an unmapped authority addition,
 an invented lossless member key/identifier, a mapped boolean-default inversion,
-and a stale receipt fail closed. Final evidence requires one kernel hash and one
-consumer hash across both runs plus an empty source-specific implementation
-module list. Adapter/report/evidence cardinality and per-adapter artifact paths
-are derived from the manifest, so a qualifying third source remains a data-only
-addition.
+and a stale receipt fail closed. The receipt and
+`src/catalog-release-boundary.js` form the compiler's single-adapter
+compatibility envelope only; the source-neutral platform release receipt and
+catalog composition remain planned. Final evidence requires matching transitive
+local ingestion and consumer closure hashes across both runs plus an empty
+source-specific implementation-module list derived from the transitive compiler
+closure. Its 43 checked refs are the proof implementation and instruction
+inventory, not that transitive closure. Adapter/report/evidence cardinality and
+per-adapter artifact paths are derived from the manifest, so a qualifying third
+source remains a data-only addition.
 
 Passing evidence records `promotionStatus: "review_required"`. The target does
 not change P2 or Checkbox; make P2, P3, P4, or P5 portable; claim broad Spectrum

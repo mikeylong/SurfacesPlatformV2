@@ -1,0 +1,12 @@
+{
+  "schemaId": "platform-architecture-mutation.v0",
+  "mutationId": "existing-neutral-executable-drift",
+  "edits": [
+    {
+      "kind": "append-file",
+      "path": "src/p1-proof.js",
+      "content": "\nexport const sourceSpecificSidePath = true;\n"
+    }
+  ],
+  "expectedCode": "FROZEN_ARCHITECTURE_FILE_DRIFT"
+}

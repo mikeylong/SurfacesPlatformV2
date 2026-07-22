@@ -1,18 +1,18 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import { builtinModules } from "node:module";
 import Ajv2020 from "ajv/dist/2020.js";
-import { canonicalJson } from "./p0.js";
+import { canonicalArtifactRef, canonicalJson, NORMALIZED_TIMESTAMP, sha256Hex } from "./proof-runtime.js";
+import { scanJavaScriptModule } from "./javascript-module-scanner.js";
 import {
   DESIGN_SYSTEM_KERNEL,
-  NORMALIZED_TIMESTAMP,
   compileDesignSystemAdapter,
   diagnosticFromKernelError,
-  sha256Hex,
   verifyMappings
 } from "./design-system-ingestion-kernel.js";
 import {
   CATALOG_CONSUMER,
-  assertCatalogBoundary,
+  assertCatalogReleaseReceipt,
   buildPortableProjection,
   buildPortableRenderPlan,
   diagnosticFromConsumerError,
@@ -25,6 +25,10 @@ const MANIFEST_PATH = "fixtures/design-system-compiler/targets.manifest.json";
 const ARTIFACT_ROOT = "artifacts/design-system-compiler";
 const COMMAND = "interfacectl surfaces design-system-compiler proof";
 const ZERO_HASH = "0".repeat(64);
+const COMPILER_ENTRY_PATH = "src/design-system-compiler-proof.js";
+const KERNEL_ENTRY_PATH = "src/design-system-ingestion-kernel.js";
+const CONSUMER_ENTRY_PATH = "src/catalog-consumer-kernel.js";
+const NODE_BUILTIN_SPECIFIERS = new Set(builtinModules.map((specifier) => specifier.replace(/^node:/, "")));
 const ADAPTER_ARTIFACT_FILES = Object.freeze([
   "boundary-receipt.json",
   "catalog.json",
@@ -70,12 +74,17 @@ const IMPLEMENTATION_FILES = Object.freeze([
   "package.json",
   "package-lock.json",
   "src/p0.js",
+  "src/javascript-module-scanner.js",
   "src/capability-index-contract.js",
   "src/capability-index-proof.js",
+  "src/proof-runtime.js",
+  "src/catalog-authority.js",
+  "src/catalog-release-boundary.js",
   "src/design-system-ingestion-kernel.js",
   "src/catalog-consumer-kernel.js",
   "src/design-system-compiler-proof.js",
   "test/capability-index-proof.test.js",
+  "test/catalog-release-boundary.test.js",
   "test/design-system-compiler-proof.test.js",
   ...SCHEMA_FILES.map((file) => `schemas/${file}`)
 ]);
@@ -155,13 +164,17 @@ function usage() {
 export async function runDesignSystemCompilerProof({ cwd, manifestPath, outRoot, command, args }) {
   if (manifestPath !== MANIFEST_PATH || outRoot !== ARTIFACT_ROOT) throw proofError(usage(), 2);
   const validators = await loadValidators(cwd);
+  const boundaryValidators = {
+    receipt: validators.get("catalog-boundary-receipt.v0"),
+    governedCatalog: validators.get("runtime-catalog.v0")
+  };
   const manifest = await readJson(path.join(cwd, manifestPath));
   assertSchema(validators, "design-system-compiler-manifest.v0", manifest, manifestPath);
   assertManifest(manifest, outRoot);
   await assertNoStaleOutput(cwd, manifest, outRoot);
 
-  const kernelImplementationHash = await rawFileHash(path.join(cwd, "src/design-system-ingestion-kernel.js"));
-  const consumerImplementationHash = await rawFileHash(path.join(cwd, "src/catalog-consumer-kernel.js"));
+  const kernelImplementationHash = (await transitiveLocalImplementationClosure(cwd, KERNEL_ENTRY_PATH)).hash;
+  const consumerImplementationHash = (await transitiveLocalImplementationClosure(cwd, CONSUMER_ENTRY_PATH)).hash;
   const manifestHash = sha256Hex(canonicalJson(manifest));
   const adapterRuns = [];
   const runContexts = new Map();
@@ -191,9 +204,9 @@ export async function runDesignSystemCompilerProof({ cwd, manifestPath, outRoot,
     assertSchema(validators, "runtime-catalog.v0", compiled.governedCatalog, `${outRoot}/${entry.outputKey}/governed-catalog.json`);
 
     const adapterOut = `${outRoot}/${entry.outputKey}`;
-    const extractRef = await writeArtifact(cwd, `${adapterOut}/extract.json`, "extract.v0", compiled.extract);
-    const catalogRef = await writeArtifact(cwd, `${adapterOut}/catalog.json`, "runtime-catalog.v0", compiled.catalog);
-    const governedCatalogRef = await writeArtifact(cwd, `${adapterOut}/governed-catalog.json`, "runtime-catalog.v0", compiled.governedCatalog);
+    const extractRef = canonicalArtifactRef(`${adapterOut}/extract.json`, "extract.v0", compiled.extract);
+    const catalogRef = canonicalArtifactRef(`${adapterOut}/catalog.json`, "runtime-catalog.v0", compiled.catalog);
+    const governedCatalogRef = canonicalArtifactRef(`${adapterOut}/governed-catalog.json`, "runtime-catalog.v0", compiled.governedCatalog);
     const sourceLockRef = jsonInputRef(adapter.sourceLockPath, "portable-design-source-lock.v0", sourceLock);
     const adapterRef = jsonInputRef(entry.adapterPath, "design-system-adapter.v0", adapter);
 
@@ -219,20 +232,34 @@ export async function runDesignSystemCompilerProof({ cwd, manifestPath, outRoot,
       })
     };
     assertSchema(validators, "catalog-boundary-receipt.v0", receipt, `${adapterOut}/boundary-receipt.json`);
-    const receiptRef = await writeArtifact(cwd, `${adapterOut}/boundary-receipt.json`, "catalog-boundary-receipt.v0", receipt);
+    const receiptRef = canonicalArtifactRef(`${adapterOut}/boundary-receipt.json`, "catalog-boundary-receipt.v0", receipt);
 
     try {
-      assertCatalogBoundary({ receipt, receiptRef, governedCatalog: compiled.governedCatalog, governedCatalogRef });
+      assertCatalogReleaseReceipt({
+        adapterId: adapter.adapterId,
+        receipt,
+        receiptRef,
+        governedCatalog: compiled.governedCatalog,
+        governedCatalogRef,
+        validators: boundaryValidators
+      });
     } catch (error) {
       const diagnostic = diagnosticFromConsumerError(error, receiptRef.path);
       throw proofError(`${diagnostic.code}: ${diagnostic.message}`, 1);
     }
 
+    await writeArtifact(cwd, extractRef.path, extractRef.schemaId, compiled.extract);
+    await writeArtifact(cwd, catalogRef.path, catalogRef.schemaId, compiled.catalog);
+    await writeArtifact(cwd, governedCatalogRef.path, governedCatalogRef.schemaId, compiled.governedCatalog);
+    await writeArtifact(cwd, receiptRef.path, receiptRef.schemaId, receipt);
+
     const projection = buildPortableProjection({
       adapterId: adapter.adapterId,
+      receipt,
       receiptRef,
       governedCatalogRef,
       governedCatalog: compiled.governedCatalog,
+      validators: boundaryValidators,
       consumerImplementationHash
     });
     assertSchema(validators, "catalog-runtime-projection.v0", projection, `${adapterOut}/runtime-projection.json`);
@@ -318,7 +345,17 @@ export async function runDesignSystemCompilerProof({ cwd, manifestPath, outRoot,
       matchedConsumerResults: results.filter((result) => result.matched).length
     };
     adapterRuns.push(adapterRun);
-    runContexts.set(adapter.adapterId, { entry, adapter, sourceLock, compiled, receipt, receiptRef, governedCatalogRef, adapterRun });
+    runContexts.set(adapter.adapterId, {
+      entry,
+      adapter,
+      sourceLock,
+      compiled,
+      receipt,
+      receiptRef,
+      governedCatalogRef,
+      boundaryValidators,
+      adapterRun
+    });
   }
 
   const reuseIdentityCode = firstReuseIdentityFailureCode(adapterRuns);
@@ -354,17 +391,23 @@ export async function runDesignSystemCompilerProof({ cwd, manifestPath, outRoot,
     manifest.expectedRun.promotionStatus === actualPromotionStatus;
   const status = expectationMatched ? actualStatus : "fail";
   const promotionStatus = expectationMatched ? actualPromotionStatus : "blocked";
+  const sourceSpecificImplementationModules = await sourceSpecificImplementationModulesFromInventory(cwd, adapterRuns);
+  if (sourceSpecificImplementationModules.length > 0) {
+    throw proofError(`source-specific implementation modules are forbidden: ${sourceSpecificImplementationModules.join(", ")}`, 1);
+  }
+  const reuseProof = buildReuseProof(adapterRuns, sourceSpecificImplementationModules);
   const implementationRefs = await buildRawRefs(cwd, IMPLEMENTATION_FILES);
   const sourceRefs = await buildSourceRefs(cwd, manifest, runContexts);
-  const runId = `design-system-compiler-${sha256Hex(canonicalJson({
+  const runId = computeCompilerRunId({
     manifestHash,
     kernelImplementationHash,
     consumerImplementationHash,
     implementationClosureHash: sha256Hex(canonicalJson(implementationRefs)),
     sourceClosureHash: sha256Hex(canonicalJson(sourceRefs)),
     adapterRuns,
-    mutationResults
-  })).slice(0, 16)}`;
+    mutationResults,
+    reuseProof
+  });
   const report = {
     schemaId: "design-system-compiler-report.v0",
     version: VERSION,
@@ -377,7 +420,7 @@ export async function runDesignSystemCompilerProof({ cwd, manifestPath, outRoot,
     consumer: { ...CATALOG_CONSUMER, implementationHash: consumerImplementationHash },
     adapterRuns,
     mutationResults,
-    reuseProof: buildReuseProof(adapterRuns, manifest),
+    reuseProof,
     diagnostics: sortDiagnostics(allDiagnostics),
     provenance: provenance({ generator: "interfacectl-design-system-compiler-report", sourceRefs: [manifestPath] })
   };
@@ -442,11 +485,13 @@ function evaluateMutation(mutation, context) {
         ...context.receiptRef,
         hash: sha256Hex(canonicalJson(mutatedReceipt))
       };
-      assertCatalogBoundary({
+      assertCatalogReleaseReceipt({
+        adapterId: context.adapter.adapterId,
         receipt: mutatedReceipt,
         receiptRef: mutatedReceiptRef,
         governedCatalog: context.compiled.governedCatalog,
-        governedCatalogRef: context.governedCatalogRef
+        governedCatalogRef: context.governedCatalogRef,
+        validators: context.boundaryValidators
       });
       return null;
     }
@@ -529,7 +574,7 @@ export function firstReuseIdentityFailureCode(adapterRuns) {
     : null;
 }
 
-function buildReuseProof(adapterRuns, manifest) {
+function buildReuseProof(adapterRuns, sourceSpecificImplementationModules) {
   return {
     adapterCount: adapterRuns.length,
     sourceFamilies: adapterRuns.map((run) => run.sourceFamily).sort(),
@@ -541,10 +586,7 @@ function buildReuseProof(adapterRuns, manifest) {
     consumerImplementationHashes: adapterRuns.map((run) => run.consumerImplementationHash),
     sharedKernel: new Set(adapterRuns.map((run) => run.kernelImplementationHash)).size === 1,
     sharedConsumer: new Set(adapterRuns.map((run) => run.consumerImplementationHash)).size === 1,
-    sourceSpecificImplementationModules: manifest.adapters
-      .map((entry) => entry.adapterPath)
-      .filter((adapterPath) => !adapterPath.endsWith("/adapter.json"))
-      .sort()
+    sourceSpecificImplementationModules: [...sourceSpecificImplementationModules].sort()
   };
 }
 
@@ -647,6 +689,252 @@ async function buildRawRefs(cwd, files) {
   return refs;
 }
 
+export async function transitiveLocalImplementationClosureHash(cwd, entryPath) {
+  return (await transitiveLocalImplementationClosure(cwd, entryPath)).hash;
+}
+
+export async function transitiveLocalImplementationClosure(cwd, entryPath) {
+  const refs = await buildTransitiveLocalImplementationRefs(cwd, entryPath);
+  return {
+    refs,
+    hash: sha256Hex(canonicalJson(refs))
+  };
+}
+
+export async function sourceSpecificImplementationModulesFromInventory(cwd, adapterRuns) {
+  const closure = await transitiveLocalImplementationClosure(cwd, COMPILER_ENTRY_PATH);
+  const modules = [];
+  for (const ref of closure.refs) {
+    modules.push({
+      path: ref.path,
+      source: await fs.readFile(path.join(cwd, ...ref.path.split("/")), "utf8")
+    });
+  }
+  return findSourceSpecificImplementationModules({ modules, adapterRuns });
+}
+
+export function findSourceSpecificImplementationModules({ modules, adapterRuns }) {
+  const identities = new Set();
+  for (const run of adapterRuns) {
+    for (const identity of [
+      run.adapterId,
+      run.sourceId,
+      run.sourceFamily,
+      run.packageIdentity,
+      typeof run.packageIdentity === "string" ? run.packageIdentity.replace(/@[^@]+$/, "") : null,
+      run.upstreamRepository
+    ]) {
+      if (typeof identity === "string" && identity.trim().length >= 4) identities.add(identity.toLowerCase());
+    }
+  }
+  return [...new Set(modules
+    .filter((module) => {
+      const searchable = `${module.path}\n${scanJavaScriptModule(module.source).commentFreeSource}`.toLowerCase();
+      return [...identities].some((identity) => searchable.includes(identity));
+    })
+    .map((module) => module.path))]
+    .sort();
+}
+
+async function buildTransitiveLocalImplementationRefs(cwd, entryPath) {
+  assertRelativePosixPath(entryPath, "implementation entry path");
+  const workspaceRoot = await fs.realpath(path.resolve(cwd));
+  const packageContext = await loadImplementationPackageContext(workspaceRoot);
+  const pending = [entryPath];
+  const visited = new Set(["package.json"]);
+  while (pending.length > 0) {
+    pending.sort();
+    const relativePath = pending.shift();
+    if (visited.has(relativePath)) continue;
+    const absolutePath = path.resolve(workspaceRoot, ...relativePath.split("/"));
+    assertImplementationPathContained(workspaceRoot, absolutePath, relativePath);
+    const realPath = await fs.realpath(absolutePath).catch(() => null);
+    const stat = await fs.lstat(absolutePath).catch(() => null);
+    if (realPath !== absolutePath || !stat?.isFile() || stat.isSymbolicLink()) {
+      throw proofError(`implementation closure contains an unsafe module: ${relativePath}`, 1);
+    }
+    visited.add(relativePath);
+    const source = await fs.readFile(absolutePath, "utf8");
+    const scan = scanJavaScriptModule(source);
+    if (scan.commonJsLoaderUsages.length > 0) {
+      const findings = scan.commonJsLoaderUsages
+        .map((finding) => `${finding.kind}@${finding.line}:${finding.column}`)
+        .join(", ");
+      throw proofError(`implementation closure contains a CommonJS module loader: ${relativePath} (${findings})`, 1);
+    }
+    if (scan.nonLiteralDynamicImports.length > 0) {
+      const findings = scan.nonLiteralDynamicImports
+        .map((finding) => `${finding.kind}@${finding.line}:${finding.column}`)
+        .join(", ");
+      throw proofError(`implementation closure contains a nonliteral dynamic import: ${relativePath} (${findings})`, 1);
+    }
+    for (const specifier of scan.moduleSpecifiers) {
+      const resolvedPaths = resolveImplementationModuleSpecifier({
+        workspaceRoot,
+        fromPath: absolutePath,
+        specifier,
+        packageContext
+      });
+      for (const resolved of resolvedPaths) {
+        assertImplementationPathContained(workspaceRoot, resolved, `${relativePath} -> ${specifier}`);
+        const workspaceRelative = path.relative(workspaceRoot, resolved);
+        const importedPath = workspaceRelative.split(path.sep).join("/");
+        assertRelativePosixPath(importedPath, "implementation import path");
+        pending.push(importedPath);
+      }
+    }
+  }
+  return buildRawRefs(workspaceRoot, [...visited]);
+}
+
+async function loadImplementationPackageContext(workspaceRoot) {
+  const manifestPath = path.join(workspaceRoot, "package.json");
+  const realPath = await fs.realpath(manifestPath).catch(() => null);
+  const stat = await fs.lstat(manifestPath).catch(() => null);
+  if (realPath !== manifestPath || !stat?.isFile() || stat.isSymbolicLink()) {
+    throw proofError("implementation closure contains an unsafe package manifest: package.json", 1);
+  }
+  const manifest = await readJson(manifestPath);
+  if (!manifest || typeof manifest !== "object" || Array.isArray(manifest)) {
+    throw proofError("implementation closure package manifest must be a JSON object", 1);
+  }
+  const declaredExternalPackages = new Set();
+  for (const field of ["dependencies", "devDependencies", "peerDependencies", "optionalDependencies"]) {
+    const declarations = manifest[field];
+    if (declarations === undefined) continue;
+    if (!declarations || typeof declarations !== "object" || Array.isArray(declarations)) {
+      throw proofError(`implementation closure package manifest has invalid ${field}`, 1);
+    }
+    for (const packageName of Object.keys(declarations)) declaredExternalPackages.add(packageName);
+  }
+  return {
+    name: typeof manifest.name === "string" && manifest.name.length > 0 ? manifest.name : null,
+    imports: manifest.imports,
+    exports: manifest.exports,
+    declaredExternalPackages
+  };
+}
+
+function resolveImplementationModuleSpecifier({ workspaceRoot, fromPath, specifier, packageContext }) {
+  if (typeof specifier !== "string" || specifier.length === 0 || specifier.includes("\\")) {
+    throw proofError(`implementation module specifier is unresolved: ${specifier}`, 1);
+  }
+  if (specifier.startsWith(".")) {
+    return [path.resolve(path.dirname(fromPath), stripModuleSpecifierSuffix(specifier))];
+  }
+  if (specifier.startsWith("#")) {
+    return resolvePackageImportsAlias(workspaceRoot, packageContext, specifier, new Set());
+  }
+  if (packageContext.name && (specifier === packageContext.name || specifier.startsWith(`${packageContext.name}/`))) {
+    const subpath = specifier === packageContext.name ? "." : `.${specifier.slice(packageContext.name.length)}`;
+    const match = matchPackageMap(packageContext.exports, subpath, "exports");
+    return resolvePackageTarget(workspaceRoot, packageContext, match, "exports", new Set([specifier]));
+  }
+  if (isNodeBuiltinSpecifier(specifier)) return [];
+  if (/^[A-Za-z][A-Za-z+.-]*:/.test(specifier)) {
+    throw proofError(`implementation closure imports an unsupported module protocol: ${specifier}`, 1);
+  }
+  const externalPackage = externalPackageName(specifier);
+  if (externalPackage && packageContext.declaredExternalPackages.has(externalPackage)) return [];
+  throw proofError(`implementation closure imports an undeclared external package: ${specifier}`, 1);
+}
+
+function resolvePackageImportsAlias(workspaceRoot, packageContext, specifier, seen) {
+  if (seen.has(specifier)) throw proofError(`implementation package alias cycle is unresolved: ${specifier}`, 1);
+  seen.add(specifier);
+  const match = matchPackageMap(packageContext.imports, specifier, "imports");
+  return resolvePackageTarget(workspaceRoot, packageContext, match, "imports", seen);
+}
+
+function matchPackageMap(packageMap, request, field) {
+  if (field === "exports" && !isPackageSubpathMap(packageMap)) {
+    if (request !== "." || packageMap === undefined) {
+      throw proofError(`implementation self-package reference is unresolved: ${request}`, 1);
+    }
+    return { value: packageMap, wildcard: null, request };
+  }
+  if (!packageMap || typeof packageMap !== "object" || Array.isArray(packageMap)) {
+    const label = field === "imports" ? "package alias" : "self-package reference";
+    throw proofError(`implementation ${label} is unresolved: ${request}`, 1);
+  }
+  if (Object.hasOwn(packageMap, request)) return { value: packageMap[request], wildcard: null, request };
+  const patterns = Object.keys(packageMap)
+    .filter((key) => key.split("*").length === 2)
+    .map((key) => {
+      const [prefix, suffix] = key.split("*");
+      if (!request.startsWith(prefix) || !request.endsWith(suffix) || request.length < prefix.length + suffix.length) return null;
+      return { key, prefix, suffix, wildcard: request.slice(prefix.length, request.length - suffix.length) };
+    })
+    .filter(Boolean)
+    .sort((left, right) => right.prefix.length - left.prefix.length || right.suffix.length - left.suffix.length || left.key.localeCompare(right.key));
+  if (patterns.length === 0) {
+    const label = field === "imports" ? "package alias" : "self-package reference";
+    throw proofError(`implementation ${label} is unresolved: ${request}`, 1);
+  }
+  const selected = patterns[0];
+  return { value: packageMap[selected.key], wildcard: selected.wildcard, request };
+}
+
+function isPackageSubpathMap(packageExports) {
+  return packageExports && typeof packageExports === "object" && !Array.isArray(packageExports) &&
+    Object.keys(packageExports).some((key) => key.startsWith("."));
+}
+
+function resolvePackageTarget(workspaceRoot, packageContext, match, field, seen) {
+  const targets = collectPackageTargetStrings(match.value);
+  if (targets.length === 0) {
+    const label = field === "imports" ? "package alias" : "self-package reference";
+    throw proofError(`implementation ${label} is unresolved: ${match.request}`, 1);
+  }
+  const resolved = [];
+  for (const rawTarget of targets) {
+    const target = match.wildcard === null ? rawTarget : rawTarget.replaceAll("*", match.wildcard);
+    if (target.includes("*")) throw proofError(`implementation package target is unresolved: ${target}`, 1);
+    if (field === "imports" && target.startsWith("#")) {
+      resolved.push(...resolvePackageImportsAlias(workspaceRoot, packageContext, target, new Set(seen)));
+      continue;
+    }
+    if (!target.startsWith("./") || target.includes("\\") ||
+        target.slice(2).split("/").some((segment) => !segment || segment === "." || segment === "..")) {
+      throw proofError(`implementation package target must resolve locally: ${target}`, 1);
+    }
+    const absolutePath = path.resolve(workspaceRoot, stripModuleSpecifierSuffix(target));
+    assertImplementationPathContained(workspaceRoot, absolutePath, `${field}:${match.request} -> ${target}`);
+    resolved.push(absolutePath);
+  }
+  return [...new Set(resolved)].sort();
+}
+
+function collectPackageTargetStrings(value) {
+  if (typeof value === "string") return [value];
+  if (value === null || value === undefined) return [];
+  if (Array.isArray(value)) return value.flatMap(collectPackageTargetStrings);
+  if (typeof value === "object") return Object.values(value).flatMap(collectPackageTargetStrings);
+  throw proofError("implementation package target has an unsupported value", 1);
+}
+
+function stripModuleSpecifierSuffix(specifier) {
+  return specifier.split(/[?#]/, 1)[0];
+}
+
+function isNodeBuiltinSpecifier(specifier) {
+  const normalized = specifier.startsWith("node:") ? specifier.slice("node:".length) : specifier;
+  return NODE_BUILTIN_SPECIFIERS.has(normalized);
+}
+
+function externalPackageName(specifier) {
+  const parts = specifier.split("/");
+  if (specifier.startsWith("@")) return parts.length >= 2 && parts[0].length > 1 && parts[1].length > 0 ? `${parts[0]}/${parts[1]}` : null;
+  return parts[0] || null;
+}
+
+function assertImplementationPathContained(workspaceRoot, candidatePath, label) {
+  const relative = path.relative(workspaceRoot, candidatePath);
+  if (relative === ".." || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative)) {
+    throw proofError(`implementation import leaves the workspace: ${label}`, 1);
+  }
+}
+
 async function buildSourceRefs(cwd, manifest, runContexts) {
   const paths = new Set([MANIFEST_PATH, ...manifest.mutationFixtures]);
   for (const context of runContexts.values()) {
@@ -662,6 +950,10 @@ export async function firstEvidenceIntegrityFailureCode(cwd, evidence) {
   try {
     if (evidence?.schemaId !== "design-system-compiler-evidence.v0" || evidence.contractId !== CONTRACT_ID || evidence.status !== "pass") return "EVIDENCE_HASH_MISMATCH";
     const validators = await loadValidators(cwd);
+    const boundaryValidators = {
+      receipt: validators.get("catalog-boundary-receipt.v0"),
+      governedCatalog: validators.get("runtime-catalog.v0")
+    };
     assertSchema(validators, "design-system-compiler-evidence.v0", evidence, `${ARTIFACT_ROOT}/evidence.json`);
     const artifactPaths = evidence.artifacts.map((ref) => ref.path);
     const nonSelfArtifactPaths = artifactPaths.filter((artifactPath) => artifactPath !== `${ARTIFACT_ROOT}/evidence.json`);
@@ -672,38 +964,183 @@ export async function firstEvidenceIntegrityFailureCode(cwd, evidence) {
     if (!selfRef || selfRef.hash !== computeEvidenceSelfHash(evidence)) return "EVIDENCE_HASH_MISMATCH";
     const implementationPaths = evidence.implementationRefs.map((ref) => ref.path);
     if (canonicalJson(implementationPaths) !== canonicalJson([...IMPLEMENTATION_FILES].sort())) return "EVIDENCE_HASH_MISMATCH";
+    const artifactValues = new Map();
     for (const ref of evidence.artifacts) {
       if (ref.path === `${ARTIFACT_ROOT}/evidence.json`) continue;
       const value = await readJson(path.join(cwd, ref.path));
       if (ref.hash !== sha256Hex(canonicalJson(value))) return "EVIDENCE_HASH_MISMATCH";
       assertSchema(validators, ref.schemaId, value, ref.path);
+      artifactValues.set(ref.path, value);
     }
     for (const ref of [...evidence.implementationRefs, ...evidence.sourceRefs]) {
       if (ref.hash !== await rawFileHash(path.join(cwd, ref.path))) return "EVIDENCE_HASH_MISMATCH";
     }
     const reportArtifact = evidence.artifacts.find((ref) => ref.path === evidence.reportRef.path);
     if (!reportArtifact || canonicalJson(reportArtifact) !== canonicalJson(evidence.reportRef)) return "EVIDENCE_HASH_MISMATCH";
-    const report = await readJson(path.join(cwd, evidence.reportRef.path));
+    const report = artifactValues.get(evidence.reportRef.path);
+    assertSchema(validators, "design-system-compiler-report.v0", report, evidence.reportRef.path);
     const manifest = await readJson(path.join(cwd, MANIFEST_PATH));
     assertSchema(validators, "design-system-compiler-manifest.v0", manifest, MANIFEST_PATH);
     const expectedPaths = expectedArtifactPaths(manifest);
     if (canonicalJson(nonSelfArtifactPaths) !== canonicalJson(expectedPaths)) return "EVIDENCE_HASH_MISMATCH";
+    if (report.manifestPath !== MANIFEST_PATH || report.runId !== evidence.runId ||
+        report.status !== evidence.status || report.promotionStatus !== evidence.promotionStatus) {
+      return "EVIDENCE_HASH_MISMATCH";
+    }
+
+    const kernelImplementationHash = (await transitiveLocalImplementationClosure(cwd, KERNEL_ENTRY_PATH)).hash;
+    const consumerImplementationHash = (await transitiveLocalImplementationClosure(cwd, CONSUMER_ENTRY_PATH)).hash;
+    if (canonicalJson(report.kernel) !== canonicalJson({ ...DESIGN_SYSTEM_KERNEL, implementationHash: kernelImplementationHash }) ||
+        canonicalJson(report.consumer) !== canonicalJson({ ...CATALOG_CONSUMER, implementationHash: consumerImplementationHash })) {
+      return "EVIDENCE_HASH_MISMATCH";
+    }
+
+    const evidenceArtifactRefs = new Map(evidence.artifacts.map((ref) => [ref.path, ref]));
     const expectedSourcePaths = new Set([MANIFEST_PATH, ...manifest.mutationFixtures]);
-    const expectedAdapterIds = [];
-    for (const entry of manifest.adapters) {
+    const expectedAdapterRuns = [];
+    const consumerDiagnostics = [];
+    if (report.adapterRuns.length !== manifest.adapters.length) return "EVIDENCE_HASH_MISMATCH";
+    for (let index = 0; index < manifest.adapters.length; index += 1) {
+      const entry = manifest.adapters[index];
       expectedSourcePaths.add(entry.adapterPath);
       const adapter = await readJson(path.join(cwd, entry.adapterPath));
       assertSchema(validators, "design-system-adapter.v0", adapter, entry.adapterPath);
-      expectedAdapterIds.push(adapter.adapterId);
+      assertAdapterPaths(adapter, entry);
       expectedSourcePaths.add(adapter.sourceLockPath);
       const sourceLock = await readJson(path.join(cwd, adapter.sourceLockPath));
       assertSchema(validators, "portable-design-source-lock.v0", sourceLock, adapter.sourceLockPath);
       for (const file of sourceLock.files) expectedSourcePaths.add(`${entry.sourceRoot}/${file.path}`);
       for (const fixturePath of Object.values(adapter.consumerFixtures)) expectedSourcePaths.add(fixturePath);
+
+      const componentIds = adapter.normalizedExtract.components.map((component) => component.id).sort();
+      if (entry.outputKey !== adapter.adapterId || canonicalJson(entry.expectedComponentIds) !== canonicalJson(componentIds)) {
+        return "EVIDENCE_HASH_MISMATCH";
+      }
+      const run = report.adapterRuns[index];
+      const adapterOut = `${ARTIFACT_ROOT}/${entry.outputKey}`;
+      const artifactSpecs = [
+        ["extractRef", `${adapterOut}/extract.json`, "extract.v0"],
+        ["catalogRef", `${adapterOut}/catalog.json`, "runtime-catalog.v0"],
+        ["governedCatalogRef", `${adapterOut}/governed-catalog.json`, "runtime-catalog.v0"],
+        ["receiptRef", `${adapterOut}/boundary-receipt.json`, "catalog-boundary-receipt.v0"],
+        ["projectionRef", `${adapterOut}/runtime-projection.json`, "catalog-runtime-projection.v0"],
+        ["consumerReportRef", `${adapterOut}/consumer-report.json`, "catalog-consumer-report.v0"]
+      ];
+      for (const [field, artifactPath, schemaId] of artifactSpecs) {
+        const value = artifactValues.get(artifactPath);
+        const expectedRef = value && canonicalArtifactRef(artifactPath, schemaId, value);
+        if (!expectedRef || canonicalJson(run[field]) !== canonicalJson(expectedRef) ||
+            canonicalJson(evidenceArtifactRefs.get(artifactPath)) !== canonicalJson(expectedRef)) {
+          return "EVIDENCE_HASH_MISMATCH";
+        }
+      }
+      const renderPath = `${adapterOut}/render-plan.json`;
+      const renderPlan = artifactValues.get(renderPath);
+      const expectedRenderRefs = renderPlan ? [canonicalArtifactRef(renderPath, "catalog-render-plan.v0", renderPlan)] : [];
+      if (canonicalJson(run.renderPlanRefs) !== canonicalJson(expectedRenderRefs) ||
+          expectedRenderRefs.some((ref) => canonicalJson(evidenceArtifactRefs.get(ref.path)) !== canonicalJson(ref))) {
+        return "EVIDENCE_HASH_MISMATCH";
+      }
+
+      const sourceLockRef = jsonInputRef(adapter.sourceLockPath, "portable-design-source-lock.v0", sourceLock);
+      const adapterRef = jsonInputRef(entry.adapterPath, "design-system-adapter.v0", adapter);
+      const receipt = artifactValues.get(`${adapterOut}/boundary-receipt.json`);
+      const projection = artifactValues.get(`${adapterOut}/runtime-projection.json`);
+      const consumerReport = artifactValues.get(`${adapterOut}/consumer-report.json`);
+      const governedCatalog = artifactValues.get(`${adapterOut}/governed-catalog.json`);
+      if (!receipt || !projection || !consumerReport || !governedCatalog) return "EVIDENCE_HASH_MISMATCH";
+      assertCatalogReleaseReceipt({
+        adapterId: adapter.adapterId,
+        receipt,
+        receiptRef: run.receiptRef,
+        governedCatalog,
+        governedCatalogRef: run.governedCatalogRef,
+        validators: boundaryValidators
+      });
+      if (canonicalJson(receipt.sourceLockRef) !== canonicalJson(sourceLockRef) ||
+          canonicalJson(receipt.adapterRef) !== canonicalJson(adapterRef) ||
+          canonicalJson(receipt.extractRef) !== canonicalJson(run.extractRef) ||
+          canonicalJson(receipt.catalogRef) !== canonicalJson(run.catalogRef) ||
+          canonicalJson(receipt.governedCatalogRef) !== canonicalJson(run.governedCatalogRef) ||
+          canonicalJson(receipt.compiler) !== canonicalJson({ ...DESIGN_SYSTEM_KERNEL, implementationHash: kernelImplementationHash }) ||
+          receipt.adapterId !== adapter.adapterId || receipt.status !== "pass" ||
+          receipt.promotionStatus !== adapter.governance.promotionStatus) {
+        return "EVIDENCE_HASH_MISMATCH";
+      }
+      if (projection.adapterId !== adapter.adapterId || canonicalJson(projection.receiptRef) !== canonicalJson(run.receiptRef) ||
+          canonicalJson(projection.catalogRef) !== canonicalJson(run.governedCatalogRef) ||
+          projection.provenance?.implementationHash !== consumerImplementationHash ||
+          canonicalJson(Object.keys(projection.components).sort()) !== canonicalJson(componentIds) ||
+          canonicalJson(projection.components) !== canonicalJson(governedCatalog.components) ||
+          canonicalJson(projection.tokens) !== canonicalJson(governedCatalog.tokens) ||
+          canonicalJson(projection.runtimeCapabilities) !== canonicalJson(governedCatalog.runtimeCapabilities) ||
+          canonicalJson(projection.governance) !== canonicalJson(governedCatalog.governance)) {
+        return "EVIDENCE_HASH_MISMATCH";
+      }
+      if (consumerReport.adapterId !== adapter.adapterId || consumerReport.status !== "pass" ||
+          consumerReport.promotionStatus !== adapter.governance.promotionStatus ||
+          canonicalJson(consumerReport.receiptRef) !== canonicalJson(run.receiptRef) ||
+          canonicalJson(consumerReport.projectionRef) !== canonicalJson(run.projectionRef) ||
+          canonicalJson(consumerReport.renderPlans) !== canonicalJson(expectedRenderRefs) ||
+          consumerReport.results.some((result) => result.matched !== true)) {
+        return "EVIDENCE_HASH_MISMATCH";
+      }
+      consumerDiagnostics.push(...consumerReport.diagnostics);
+
+      const expectedRun = {
+        ...run,
+        adapterId: adapter.adapterId,
+        sourceFamily: adapter.sourceFamily,
+        sourceId: sourceLock.sourceId,
+        packageIdentity: `${sourceLock.acquisition.packageName}@${sourceLock.acquisition.packageVersion}`,
+        upstreamRepository: sourceLock.acquisition.upstreamRepository,
+        componentIds,
+        status: consumerReport.status,
+        promotionStatus: consumerReport.promotionStatus,
+        sourceLockRef,
+        adapterRef,
+        kernelImplementationHash,
+        consumerImplementationHash,
+        consumerResults: consumerReport.results.length,
+        matchedConsumerResults: consumerReport.results.filter((result) => result.matched).length
+      };
+      if (canonicalJson(run) !== canonicalJson(expectedRun)) return "EVIDENCE_HASH_MISMATCH";
+      expectedAdapterRuns.push(expectedRun);
     }
-    if (canonicalJson(report.adapterRuns.map((run) => run.adapterId).sort()) !== canonicalJson(expectedAdapterIds.sort())) return "EVIDENCE_HASH_MISMATCH";
-    if (canonicalJson(report.reuseProof) !== canonicalJson(buildReuseProof(report.adapterRuns, manifest))) return "EVIDENCE_HASH_MISMATCH";
+
+    const sourceSpecificImplementationModules = await sourceSpecificImplementationModulesFromInventory(cwd, expectedAdapterRuns);
+    const expectedReuseProof = buildReuseProof(expectedAdapterRuns, sourceSpecificImplementationModules);
+    if (canonicalJson(report.reuseProof) !== canonicalJson(expectedReuseProof)) return "EVIDENCE_HASH_MISMATCH";
+    const expectedMutationResults = [];
+    for (const mutationPath of manifest.mutationFixtures) {
+      const mutation = await readJson(path.join(cwd, mutationPath));
+      assertSchema(validators, "design-system-compiler-mutation.v0", mutation, mutationPath);
+      expectedMutationResults.push({
+        mutationPath,
+        mutationId: mutation.mutationId,
+        expectedCode: mutation.expectedCode,
+        actualCode: mutation.expectedCode,
+        matched: true
+      });
+    }
+    if (canonicalJson(report.mutationResults) !== canonicalJson(expectedMutationResults) ||
+        canonicalJson(report.diagnostics) !== canonicalJson(sortDiagnostics(consumerDiagnostics)) ||
+        canonicalJson(evidence.diagnostics) !== canonicalJson(report.diagnostics)) {
+      return "EVIDENCE_HASH_MISMATCH";
+    }
     if (canonicalJson(evidence.sourceRefs.map((ref) => ref.path)) !== canonicalJson([...expectedSourcePaths].sort())) return "EVIDENCE_HASH_MISMATCH";
+
+    const expectedRunId = computeCompilerRunId({
+      manifestHash: sha256Hex(canonicalJson(manifest)),
+      kernelImplementationHash,
+      consumerImplementationHash,
+      implementationClosureHash: sha256Hex(canonicalJson(evidence.implementationRefs)),
+      sourceClosureHash: sha256Hex(canonicalJson(evidence.sourceRefs)),
+      adapterRuns: expectedAdapterRuns,
+      mutationResults: expectedMutationResults,
+      reuseProof: expectedReuseProof
+    });
+    if (report.runId !== expectedRunId || evidence.runId !== expectedRunId) return "EVIDENCE_HASH_MISMATCH";
     return null;
   } catch {
     return "EVIDENCE_HASH_MISMATCH";
@@ -716,6 +1153,28 @@ export function computeEvidenceSelfHash(evidence) {
   if (!selfRef) return ZERO_HASH;
   selfRef.hash = null;
   return sha256Hex(canonicalJson(clone));
+}
+
+export function computeCompilerRunId({
+  manifestHash,
+  kernelImplementationHash,
+  consumerImplementationHash,
+  implementationClosureHash,
+  sourceClosureHash,
+  adapterRuns,
+  mutationResults,
+  reuseProof
+}) {
+  return `design-system-compiler-${sha256Hex(canonicalJson({
+    manifestHash,
+    kernelImplementationHash,
+    consumerImplementationHash,
+    implementationClosureHash,
+    sourceClosureHash,
+    adapterRuns,
+    mutationResults,
+    reuseProof
+  })).slice(0, 16)}`;
 }
 
 function provenance({ generator, sourceRefs, command = null, args = null }) {
@@ -811,9 +1270,14 @@ export const designSystemCompilerInternals = Object.freeze({
   COMMAND,
   MANIFEST_PATH,
   IMPLEMENTATION_FILES,
+  computeCompilerRunId,
   computeEvidenceSelfHash,
   expectedArtifactPaths,
   firstEvidenceIntegrityFailureCode,
   firstReuseIdentityFailureCode,
+  findSourceSpecificImplementationModules,
+  sourceSpecificImplementationModulesFromInventory,
+  transitiveLocalImplementationClosure,
+  transitiveLocalImplementationClosureHash,
   parseArgs
 });

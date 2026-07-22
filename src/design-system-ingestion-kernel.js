@@ -1,14 +1,12 @@
 import fs from "node:fs/promises";
 import path from "node:path";
-import crypto from "node:crypto";
-import { canonicalJson } from "./p0.js";
+import { canonicalJson, NORMALIZED_TIMESTAMP, sha256Hex } from "./proof-runtime.js";
+import { collectSourceRefs, findCatalogAuthorityEscalation } from "./catalog-authority.js";
 
 export const DESIGN_SYSTEM_KERNEL = Object.freeze({
   name: "surfaces-design-system-ingestion-kernel",
   version: "0.0.0"
 });
-
-export const NORMALIZED_TIMESTAMP = "1970-01-01T00:00:00.000Z";
 
 const DIAGNOSTIC_MESSAGES = Object.freeze({
   SOURCE_LOCK_MISMATCH: "The local source tree does not match its immutable reviewed lock.",
@@ -466,36 +464,6 @@ function normalizedAuthorityBaseline(adapter) {
   };
 }
 
-export function findCatalogAuthorityEscalation(candidate, baseline) {
-  for (const key of ["components", "tokens", "runtimeCapabilities", "governance"]) {
-    const escalation = findSubsetEscalation(candidate?.[key], baseline?.[key], `/${key}`);
-    if (escalation) return escalation;
-  }
-  return null;
-}
-
-function findSubsetEscalation(candidate, baseline, pointer) {
-  if (candidate === undefined) return null;
-  if (baseline === undefined) return pointer;
-  if (Array.isArray(candidate)) {
-    if (!Array.isArray(baseline)) return pointer;
-    const allowed = new Set(baseline.map((value) => canonicalJson(value)));
-    for (const [index, value] of candidate.entries()) {
-      if (!allowed.has(canonicalJson(value))) return `${pointer}/${index}`;
-    }
-    return null;
-  }
-  if (candidate && typeof candidate === "object") {
-    if (!baseline || typeof baseline !== "object" || Array.isArray(baseline)) return pointer;
-    for (const key of Object.keys(candidate).sort()) {
-      const escalation = findSubsetEscalation(candidate[key], baseline[key], `${pointer}/${escapePointer(key)}`);
-      if (escalation) return escalation;
-    }
-    return null;
-  }
-  return canonicalJson(candidate) === canonicalJson(baseline) ? null : pointer;
-}
-
 export function diagnosticFromKernelError(error, artifactPath) {
   const known = error instanceof DesignSystemKernelError;
   const code = known ? error.code : "MAPPING_TARGET_MISMATCH";
@@ -522,31 +490,6 @@ export function valueAtPointer(document, pointer) {
     current = current[key];
   }
   return current;
-}
-
-export function sha256Hex(value) {
-  return crypto.createHash("sha256").update(value).digest("hex");
-}
-
-export function collectSourceRefs(value) {
-  const refs = new Set();
-  const walk = (node) => {
-    if (Array.isArray(node)) {
-      for (const item of node) walk(item);
-      return;
-    }
-    if (!node || typeof node !== "object") return;
-    for (const [key, child] of Object.entries(node)) {
-      if (key === "sourceRef" && typeof child === "string") refs.add(child);
-      else if (key === "sourceRefs" && Array.isArray(child)) {
-        for (const ref of child) if (typeof ref === "string") refs.add(ref);
-      } else if (key === "sourceRefs" && child && typeof child === "object") {
-        for (const ref of Object.values(child)) if (typeof ref === "string") refs.add(ref);
-      } else walk(child);
-    }
-  };
-  walk(value);
-  return refs;
 }
 
 async function listRegularFiles(root) {

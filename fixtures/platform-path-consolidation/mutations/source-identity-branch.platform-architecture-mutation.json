@@ -1,0 +1,12 @@
+{
+  "schemaId": "platform-architecture-mutation.v0",
+  "mutationId": "source-identity-branch",
+  "edits": [
+    {
+      "kind": "append-file",
+      "path": "src/design-system-ingestion-kernel.js",
+      "content": "\nexport function sourceSpecificBranch(adapter) { return adapter.adapterId === \"spectrum-switch\"; }\n"
+    }
+  ],
+  "expectedCode": "SOURCE_IDENTITY_BRANCH"
+}

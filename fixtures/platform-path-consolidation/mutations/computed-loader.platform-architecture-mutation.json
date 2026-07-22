@@ -1,0 +1,12 @@
+{
+  "schemaId": "platform-architecture-mutation.v0",
+  "mutationId": "computed-loader",
+  "edits": [
+    {
+      "kind": "write-file",
+      "path": "src/computed-loader.js",
+      "content": "const target = \"./p0.js\";\nexport async function load() { return import(target); }\n"
+    }
+  ],
+  "expectedCode": "COMPUTED_MODULE_LOAD"
+}

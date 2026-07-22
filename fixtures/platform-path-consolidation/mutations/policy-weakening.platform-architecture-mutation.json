@@ -1,0 +1,12 @@
+{
+  "schemaId": "platform-architecture-mutation.v0",
+  "mutationId": "policy-weakening",
+  "edits": [
+    {
+      "kind": "remove-policy-row",
+      "collection": "branchFreeModules",
+      "value": "src/catalog-authority.js"
+    }
+  ],
+  "expectedCode": "POLICY_WEAKENING"
+}

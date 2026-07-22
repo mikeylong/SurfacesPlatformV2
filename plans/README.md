@@ -30,6 +30,7 @@ These documents are subordinate to `VISION.md` and support the phase plans witho
 18. [Spectrum Checkbox Catalog Proof Target](spectrum-checkbox-catalog.md)
 19. [Source-Independent Design-System Compiler Proof Target](design-system-compiler.md)
 20. [Capability Index Proof Target](capability-index.md)
+21. [Platform Path Consolidation](platform-path-consolidation.md)
 
 The curated design-partner testing program and templates under `plans/design-partner-testing/` are also subordinate to `VISION.md`, `PLAN.md`, and passing phase evidence. Treat them as non-proof research and planning surfaces for partner task design, synthetic dry runs, feedback capture, scorecards, and synthesis. They may point testers to evidence-backed demos for inspection, but they must not create implementation claims, proof status, catalog authority, or demo authority.
 

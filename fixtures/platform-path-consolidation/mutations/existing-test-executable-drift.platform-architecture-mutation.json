@@ -1,0 +1,12 @@
+{
+  "schemaId": "platform-architecture-mutation.v0",
+  "mutationId": "existing-test-executable-drift",
+  "edits": [
+    {
+      "kind": "append-file",
+      "path": "test/p1-proof.test.js",
+      "content": "\nexport const bespokeCompilerTestPath = true;\n"
+    }
+  ],
+  "expectedCode": "FROZEN_ARCHITECTURE_FILE_DRIFT"
+}

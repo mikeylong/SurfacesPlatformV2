@@ -115,10 +115,12 @@ compilation path. For each manifest row the kernel:
 
 The generic proof orchestrator validates and persists those values, sets
 host-derived catalog/report provenance to `null`, and issues a
-`catalog-boundary-receipt.v0` binding the source lock, adapter, extract,
-catalog, governed catalog, and shared compiler implementation hash. It also
-aggregates kernel diagnostics, report results, source and implementation refs,
-and final evidence without branching on a source family.
+`catalog-boundary-receipt.v0` single-adapter compiler compatibility envelope
+binding the source lock, adapter, extract, catalog, governed catalog, and shared
+compiler implementation hash. It also aggregates kernel diagnostics, report
+results, source and implementation refs, and final evidence without branching
+on a source family. This envelope is not the source-neutral platform release
+receipt, and it proves no catalog composition.
 
 The kernel owns the canonical source-preflight, adapter, compile, and evidence
 diagnostics. It fails closed with codes including `SOURCE_LOCK_MISMATCH`,
@@ -130,9 +132,12 @@ diagnostics. It fails closed with codes including `SOURCE_LOCK_MISMATCH`,
 ## Shared portable consumer
 
 `src/catalog-consumer-kernel.js` proves the first reusable downstream loop. It
-does not read a source-family adapter directly. It accepts only a passing,
-non-blocked, hash-valid `catalog-boundary-receipt.v0` whose governed-catalog
-path and JCS hash still match the supplied catalog.
+does not read a source-family adapter directly. It accepts only a
+schema-complete, passing, review-required, hash-valid
+`catalog-boundary-receipt.v0`. The shared compiler compatibility validator binds
+the requested adapter identity, receipt identity, governed-catalog provenance,
+adapter hash, compiler identity, canonical receipt source refs, and the exact
+supplied governed-catalog ref before projection.
 
 For each adapter, the unchanged consumer:
 
@@ -147,7 +152,8 @@ For each adapter, the unchanged consumer:
 
 A missing, stale, nonpassing, or hash-drifted receipt fails before projection
 or rendering with `CATALOG_BOUNDARY_INVALID`. This is a proof-only consumer,
-not a production renderer.
+not a production renderer. Generic platform release validation and catalog
+composition remain planned contracts.
 
 ## Contract files
 
@@ -218,13 +224,20 @@ artifacts/design-system-compiler/evidence.json
 ```
 
 The report records both adapter runs, all six consumer outcomes, causal
-mutation results, and a reuse proof. The reuse proof requires one raw
-implementation hash for every ingestion run, one raw implementation hash for
-every consumer run, `sharedKernel: true`, `sharedConsumer: true`, and an empty
-`sourceSpecificImplementationModules` array. Final evidence closes every
-generated artifact, all shared schemas and implementations, the target
-manifest, both adapters, both source locks, selected source bytes, consumer
-fixtures, report, and its own JCS self-hash.
+mutation results, and a reuse proof. The reuse proof requires one transitive
+local implementation-closure hash for every ingestion run, one transitive
+local implementation-closure hash for every consumer run, `sharedKernel: true`,
+`sharedConsumer: true`, and an empty `sourceSpecificImplementationModules`
+array derived from the transitive compiler closure. Final evidence closes every
+generated artifact, the proof's checked schemas, its implementation and
+instruction refs, the target manifest, both adapters, both source locks,
+selected source bytes, consumer fixtures, report, and its own JCS self-hash.
+Those 43 checked refs are an implementation-and-instruction inventory, not the
+transitive implementation closure. Evidence verification independently
+re-derives adapter, source, package, and component identities; transitive kernel
+and consumer closure hashes; every adapter artifact chain; reuse proof;
+diagnostics; and run ID. It does not trust those relationships merely because
+the report and evidence hashes were repaired together.
 
 ## Causal mutation and rejection coverage
 
@@ -242,20 +255,34 @@ The committed mutation fixtures prove four cross-boundary failures:
 Focused contract tests also require a changed selected source byte to fail with
 `SOURCE_LOCK_MISMATCH`, report the exact path of authority added above a
 normalized baseline, reject non-canonical CLI roots, forbid source-family and
-component names in both shared kernel implementations, and re-verify every
-artifact, implementation, source, report, and evidence hash.
+component names in the shared compiler closure, causally detect a
+source-specific executable module, reject computed module loads and symlinked
+closure paths, and re-verify every artifact, implementation, source, report,
+and evidence relationship even after coherent hash repair.
 
 ## Declining marginal-cost criterion
 
-Adding a third qualifying design system may add only:
+Adding a third qualifying design system may change only:
 
 - selected locked source bytes and one immutable source lock under
   `sources/design-system-compiler/<source-id>/`;
 - one declarative `adapter.json` in that directory;
 - allowed, blocked, and review fixtures under
-  `fixtures/design-system-compiler/<source-id>/`; and
+  `fixtures/design-system-compiler/<source-id>/`;
 - one sorted data row in
-  `fixtures/design-system-compiler/targets.manifest.json`.
+  `fixtures/design-system-compiler/targets.manifest.json`;
+- the manifest-derived output under `artifacts/design-system-compiler` and
+  aggregate capability-index output under `artifacts/capability-index`; and
+- the required instruction updates in `plans/design-system-compiler.md` and
+  `plans/surfaces-dev.md`.
+
+The architecture gate compares this change with the admitted base manifest. It
+must preserve every existing adapter row and adapter/fixture/source closure,
+leave the four generic compiler mutation fixtures unchanged, append exactly one
+sorted row under a unique direct-child adapter key, and keep each consumer
+fixture under that key's unshared
+`fixtures/design-system-compiler/<adapter-key>/` directory. A fixture may not point into an
+artifact or another adapter's data.
 
 Adapter/report/evidence cardinality and the expected per-adapter artifact
 closure are derived from the sorted manifest. The capability registry declares
@@ -265,9 +292,11 @@ change.
 
 It must not add or change a source-family implementation module, compiler
 branch, consumer branch, component special case, output schema, or capability
-registry row. If a new source cannot pass through that closure, it is not
-evidence of reuse and must not be called a supported adapter without a
-separately reviewed contract change.
+registry row, and it must not change any other doc. If a new source cannot pass
+through that closure, it is not evidence of reuse and must not be called a
+supported adapter without a
+separately reviewed source-neutral contract change with existing-adapter parity.
+That platform change must land separately from the adapter data that needs it.
 
 ## Acceptance criteria
 

@@ -1,0 +1,12 @@
+{
+  "schemaId": "platform-architecture-mutation.v0",
+  "mutationId": "direct-p2-read",
+  "edits": [
+    {
+      "kind": "write-file",
+      "path": "src/new-consumer.js",
+      "content": "export const evidencePath = \"artifacts/p2/evidence.json\";\n"
+    }
+  ],
+  "expectedCode": "DIRECT_P2_CONSUMER"
+}

@@ -61,7 +61,10 @@
       "properties": {
         "name": { "const": "surfaces-design-system-ingestion-kernel" },
         "version": { "const": "0.0.0" },
-        "implementationHash": { "$ref": "#/$defs/sha256" }
+        "implementationHash": {
+          "$ref": "#/$defs/sha256",
+          "description": "SHA-256 of the JCS-ordered transitive local ingestion implementation closure."
+        }
       },
       "additionalProperties": false
     },
@@ -72,7 +75,10 @@
         "name": { "const": "surfaces-portable-catalog-consumer" },
         "version": { "const": "0.0.0" },
         "adapter": { "const": "web-static-portable" },
-        "implementationHash": { "$ref": "#/$defs/sha256" }
+        "implementationHash": {
+          "$ref": "#/$defs/sha256",
+          "description": "SHA-256 of the JCS-ordered transitive local consumer implementation closure."
+        }
       },
       "additionalProperties": false
     },
@@ -177,8 +183,14 @@
             ]
           }
         },
-        "kernelImplementationHash": { "$ref": "#/$defs/sha256" },
-        "consumerImplementationHash": { "$ref": "#/$defs/sha256" },
+        "kernelImplementationHash": {
+          "$ref": "#/$defs/sha256",
+          "description": "Transitive local ingestion implementation closure hash used for this adapter run."
+        },
+        "consumerImplementationHash": {
+          "$ref": "#/$defs/sha256",
+          "description": "Transitive local consumer implementation closure hash used for this adapter run."
+        },
         "consumerResults": { "const": 3 },
         "matchedConsumerResults": { "const": 3 }
       },
@@ -346,7 +358,8 @@
         "sharedConsumer": { "const": true },
         "sourceSpecificImplementationModules": {
           "type": "array",
-          "maxItems": 0
+          "maxItems": 0,
+          "description": "Executable modules identified by the transitive compiler inventory as containing a data-derived adapter, source, package, or repository identity."
         }
       },
       "additionalProperties": false

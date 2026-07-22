@@ -1,0 +1,47 @@
+name: Trusted Platform Architecture
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened, ready_for_review, edited]
+
+permissions:
+  contents: read
+
+jobs:
+  platform-architecture-trusted:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out trusted base enforcement
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          fetch-depth: 0
+          path: trusted
+          persist-credentials: false
+
+      - name: Check out untrusted candidate for read-only inspection
+        uses: actions/checkout@v5
+        with:
+          repository: ${{ github.repository }}
+          ref: refs/pull/${{ github.event.pull_request.number }}/head
+          fetch-depth: 0
+          path: candidate
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: trusted/package-lock.json
+
+      - name: Install trusted dependencies without lifecycle scripts
+        run: npm ci --ignore-scripts
+        working-directory: trusted
+
+      - name: Inspect candidate with base-branch architecture enforcement
+        working-directory: candidate
+        run: |
+          node ../trusted/scripts/verify-platform-path-baseline.mjs
+          node ../trusted/scripts/check-platform-architecture.mjs --base "${{ github.event.pull_request.base.sha }}"

@@ -1,0 +1,36 @@
+{
+  "schemaId": "platform-architecture-mutation.v0",
+  "mutationId": "duplicate-canonical-owner",
+  "comparisonMode": "admitted-base",
+  "edits": [
+    {
+      "kind": "write-file",
+      "path": "src/catalog-compiler-v2.js",
+      "content": "export function compileCatalog(value) { return value; }\n"
+    },
+    {
+      "kind": "append-policy-row",
+      "collection": "catalogAuthority.registeredExecutablePaths",
+      "value": {
+        "path": "src/catalog-compiler-v2.js",
+        "classification": "canonical"
+      }
+    },
+    {
+      "kind": "append-policy-row",
+      "collection": "protectedModules",
+      "value": "src/catalog-compiler-v2.js"
+    },
+    {
+      "kind": "append-policy-row",
+      "collection": "branchFreeModules",
+      "value": "src/catalog-compiler-v2.js"
+    },
+    {
+      "kind": "append-policy-row",
+      "collection": "changeSet.protectedContractPaths",
+      "value": "src/catalog-compiler-v2.js"
+    }
+  ],
+  "expectedCode": "POLICY_WEAKENING"
+}

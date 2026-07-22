@@ -1,0 +1,14 @@
+{
+  "schemaId": "platform-architecture-mutation.v0",
+  "mutationId": "adapter-fixture-root-reuse",
+  "comparisonMode": "admitted-base",
+  "edits": [
+    {
+      "kind": "replace-text",
+      "path": "fixtures/design-system-compiler/targets.manifest.json",
+      "from": "sources/design-system-compiler/spectrum-switch/adapter.json",
+      "to": "sources/design-system-compiler/vendor/astryx-core/adapter.json"
+    }
+  ],
+  "expectedCode": "ADAPTER_MANIFEST_INVALID"
+}

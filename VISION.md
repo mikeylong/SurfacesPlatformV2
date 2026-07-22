@@ -28,6 +28,113 @@ The design system is the product authority. The Surfaces Catalog is the governed
 - Runtime projections, render plans, demos, review queues, docs, product surfaces, and evaluator findings are derived consumers. They cannot add authority.
 - Evidence makes every proof reproducible, reviewable, and safe to consume in CI, SurfaceOps, JudgmentKit, demos, and future adapters.
 
+## Platform Architecture Invariants
+
+The platform must get cheaper to extend as it accepts more design systems and
+components. A bounded source can prove the first contract, but its component
+model, package layout, naming, or proof mechanics cannot become the platform
+model.
+
+- One source-ingestion path: every new design-system source or component enters
+  through a manifest-declared, data-only adapter and the shared normalization,
+  ingestion, and catalog compiler. A new source-specific compiler, merger,
+  proof kernel, or consumer path is prohibited.
+- Declining marginal cost: a qualifying source or component addition changes
+  source locks or bytes, adapter data, manifest membership, fixtures, and
+  derived proof output. If shared implementation must change, land and prove
+  that reusable platform change separately with source-neutral contract
+  fixtures and existing-adapter parity before adding the adapter.
+- Source-identity-branch-free shared code: shared runtime, catalog-authority,
+  ingestion, release-compatibility, future composition, and consumer modules do
+  not dispatch on a concrete package, source family, component, adapter key, or
+  output key. Generic identity validation is allowed only through an exact
+  policy row; the v0 registry contains 113 non-growing allowances. Supported
+  variation is declared as schema-validated data.
+- One dependency direction: phase and target proofs may call shared platform
+  modules. Shared platform modules must not import P0, P2, target-specific
+  implementations, source-specific modules, or their internal exports. Every
+  local dependency of protected shared code remains inside the protected,
+  source-identity-branch-free closure.
+- One catalog-authority path: catalog creation, extension, governance, and
+  composition occur only through registered shared authority functions.
+  Downstream proofs must not clone an accepted catalog and add or rewrite
+  authority. The v0 policy freezes exclusive owners for source ingestion,
+  compiler orchestration, catalog authority, release compatibility, and catalog
+  consumption. Catalog composition has no v0 owner and remains planned.
+- One release boundary as an end state: every downstream consumer must
+  eventually accept a source-neutral, hash-bound catalog-release receipt and
+  perform one shared fail-closed preflight. The implemented
+  `catalog-boundary-receipt.v0` validator is narrower: it is the
+  design-system-compiler's single-adapter compatibility envelope, not the
+  generic platform release contract. Direct dependencies on P2 catalogs, P2
+  evidence, or producer internals remain legacy paths to remove, not patterns
+  to copy.
+- Generic composition remains planned: multiple adapters may combine only
+  after a shared deterministic composer proves collision rejection, source-ref
+  and provenance preservation, explicit reviewed policy, and
+  strictest-promotion propagation. No current compatibility receipt or consumer
+  output proves composition.
+- Closed adapter change boundary: a source or component addition may cochange
+  only the policy-declared adapter data, derived-output, and required
+  instruction-surface paths. v0 admits four roots under `sources/`, `fixtures/`,
+  and `artifacts/`, plus `plans/design-system-compiler.md` and
+  `plans/surfaces-dev.md`. It cannot carry a schema, shared implementation,
+  executable, route, runtime path, or other documentation change in the same
+  change set. Adapter manifests, adapter contracts, and source locks satisfy
+  their canonical schemas; fixture and derived-output roots are JSON-only;
+  source snapshots are inert exact regular-file closures with checked byte
+  counts and SHA-256 values. Base-aware admission preserves every existing
+  adapter row and closure, freezes the four generic compiler mutation fixtures,
+  and permits exactly one new sorted manifest row under a unique direct-child
+  adapter key, with fixtures rooted under that key's unshared fixture directory.
+  Symlinks, noncanonical paths, artifact-as-
+  input fixture refs, replacement adapters, and unowned adapter data are
+  rejected.
+- Preserved authority: adapters preserve source identity, source refs,
+  provenance, hashes, and lossless member identity. Any value absent from the
+  locked source requires an explicit mapping and keeps the result review-bound;
+  shared code must not infer missing product truth.
+- Shrinking exceptions: the architecture policy may name existing legacy paths
+  while consolidation is in progress. Legacy implementation bytes are frozen
+  while registered. Actual deletion may remove the matching legacy
+  registration, hash, and exception; rewriting, adding, broadening, renaming
+  around, or silently bypassing an exception is prohibited. The immutable
+  migration baseline cannot be rewritten to make drift disappear.
+- Closed execution surface: v0 registers the 83 implementation executables
+  discovered under `bin/`, `scripts/`, and `src/`, freezes every detected CLI
+  route, and freezes the exclusive non-null platform-role owners. It also
+  byte-locks every current test, workflow, local execution-control file,
+  dependency lock, admitted adapter closure, and the compiler's complete
+  15-schema runtime contract closure. The repo-wide tracked-path
+  inventory rejects a new root tool, workflow, action, test, or other side
+  path outside the four explicitly inert adapter/output roots. Frozen paths
+  must remain regular files; symbolic links are rejected at the repository
+  root and under executable, test, and workflow roots. No new
+  executable registration is permitted. Existing canonical and neutral
+  registrations cannot be removed or reclassified; legacy registrations may
+  shrink only through actual implementation deletion.
+
+Before another design-system source or component proof is added, the shared
+path must accept it without repo-specific implementation changes. The
+`check:platform-architecture` gate enforces the machine-checkable portion of
+these rules on every test run and against the pull-request or pre-push base in
+CI. The v0 guard checks the closed 83-path implementation executable inventory,
+241 local module edges, 113 exact identity-control allowances, 34 causal
+mutations, and 177 frozen implementation, test, adapter, dependency, guard,
+control, schema, mutation, workflow, and migration-protection files. Every run schema-validates the
+candidate policy and verifies its normalized policy-schema hash. Bootstrap
+runs also verify the admitted initial policy hash; base-aware runs load the
+base policy, schema, and adapter manifest and enforce the closed evolution
+rules. After this bootstrap PR merges, the trusted `pull_request_target`
+workflow runs the default branch's verifier against the candidate checkout
+without executing candidate lifecycle or architecture code. This bootstrap PR
+still requires review of its admitted hashes and candidate-owned base-aware CI.
+The gate
+emits no capability evidence and does not prove a generic catalog-release
+receipt, catalog composition, source migration, downstream rebinding, legacy
+retirement, or production readiness. Those claims still require their own proof
+contracts and passing evidence.
+
 ## Lifecycle Enforcement Model
 Surfaces governs generated UI at the points where unsupported behavior can enter, move through review, or reach a consumer.
 
@@ -157,8 +264,9 @@ source-justified, keeps inferences review-required, and emits
 an extract, catalog, governed catalog, and hash-bound boundary receipt. One
 unchanged `web-static-portable` consumer accepts that receipt, emits an inert
 render plan for an allowed fixture, blocks an unknown member, and preserves
-review-required governance for a promotion request. Passing evidence requires shared kernel
-and consumer hashes plus an empty source-specific implementation-module list.
+review-required governance for a promotion request. Passing evidence requires
+matching transitive local ingestion-kernel and consumer implementation-closure
+hashes plus an empty source-specific implementation-module list.
 The target does not make legacy P2, P3, P4, or P5 portable and does not prove
 broad Spectrum or Astryx support, live connectors, self-serve UI, runtime
 accessibility compliance, production adapters, SurfaceOps expansion,

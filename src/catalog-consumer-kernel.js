@@ -1,10 +1,6 @@
-import { canonicalJson } from "./p0.js";
-import {
-  NORMALIZED_TIMESTAMP,
-  collectSourceRefs,
-  findCatalogAuthorityEscalation,
-  sha256Hex
-} from "./design-system-ingestion-kernel.js";
+import { canonicalJson, NORMALIZED_TIMESTAMP, sha256Hex } from "./proof-runtime.js";
+import { collectSourceRefs, findCatalogAuthorityEscalation } from "./catalog-authority.js";
+import { firstCatalogReleaseFailure } from "./catalog-release-boundary.js";
 
 export const CATALOG_CONSUMER = Object.freeze({
   name: "surfaces-portable-catalog-consumer",
@@ -33,24 +29,43 @@ export class CatalogConsumerError extends Error {
   }
 }
 
-export function assertCatalogBoundary({ receipt, receiptRef, governedCatalog, governedCatalogRef }) {
-  const invalid = !receipt || receipt.schemaId !== "catalog-boundary-receipt.v0" ||
-    receipt.status !== "pass" || receipt.promotionStatus === "blocked" ||
-    !receiptRef || receiptRef.hash !== sha256Hex(canonicalJson(receipt)) ||
-    receipt.governedCatalogRef?.path !== governedCatalogRef.path ||
-    receipt.governedCatalogRef?.schemaId !== "runtime-catalog.v0" ||
-    receipt.governedCatalogRef?.hash !== governedCatalogRef.hash ||
-    governedCatalogRef.hash !== sha256Hex(canonicalJson(governedCatalog));
-  if (invalid) {
+export function assertCatalogBoundary({ adapterId, receipt, receiptRef, governedCatalog, governedCatalogRef, validators }) {
+  const failurePath = firstCatalogReleaseFailure({
+    adapterId,
+    receipt,
+    receiptRef,
+    governedCatalog,
+    governedCatalogRef,
+    validators
+  });
+  if (failurePath !== null) {
     throw new CatalogConsumerError("CATALOG_BOUNDARY_INVALID", {
       stage: "catalog-boundary",
-      path: "/governedCatalogRef/hash",
+      path: failurePath,
       sourceRef: receipt?.governedCatalogRef?.path || null
     });
   }
 }
 
-export function buildPortableProjection({ adapterId, receiptRef, governedCatalogRef, governedCatalog, consumerImplementationHash }) {
+export const assertCatalogReleaseReceipt = assertCatalogBoundary;
+
+export function buildPortableProjection({
+  adapterId,
+  receipt,
+  receiptRef,
+  governedCatalogRef,
+  governedCatalog,
+  validators,
+  consumerImplementationHash
+}) {
+  assertCatalogBoundary({
+    adapterId,
+    receipt,
+    receiptRef,
+    governedCatalog,
+    governedCatalogRef,
+    validators
+  });
   const projection = {
     schemaId: "catalog-runtime-projection.v0",
     version: "0.0.0",

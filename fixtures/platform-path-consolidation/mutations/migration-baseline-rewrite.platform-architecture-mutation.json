@@ -1,0 +1,12 @@
+{
+  "schemaId": "platform-architecture-mutation.v0",
+  "mutationId": "migration-baseline-rewrite",
+  "edits": [
+    {
+      "kind": "write-file",
+      "path": "fixtures/platform-path-consolidation/baseline.manifest.json",
+      "content": "{}\n"
+    }
+  ],
+  "expectedCode": "MIGRATION_BASELINE_DRIFT"
+}

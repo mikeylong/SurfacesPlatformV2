@@ -1,0 +1,12 @@
+{
+  "schemaId": "platform-architecture-mutation.v0",
+  "mutationId": "phase-import",
+  "edits": [
+    {
+      "kind": "append-file",
+      "path": "src/design-system-ingestion-kernel.js",
+      "content": "\nimport { p2Internals } from \"./p2-proof.js\";\n"
+    }
+  ],
+  "expectedCode": "PROTECTED_EDGE_UNDECLARED"
+}

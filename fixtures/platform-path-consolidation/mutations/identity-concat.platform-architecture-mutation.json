@@ -1,0 +1,12 @@
+{
+  "schemaId": "platform-architecture-mutation.v0",
+  "mutationId": "identity-concat",
+  "edits": [
+    {
+      "kind": "append-file",
+      "path": "src/design-system-ingestion-kernel.js",
+      "content": "\nexport function concatenatedIdentityBranch(adapter) { return adapter.adapterId.slice(0, 3) + adapter.adapterId.slice(3); }\n"
+    }
+  ],
+  "expectedCode": "IDENTITY_CONTROL_FLOW"
+}

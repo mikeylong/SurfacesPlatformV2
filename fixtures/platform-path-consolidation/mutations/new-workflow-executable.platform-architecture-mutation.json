@@ -1,0 +1,12 @@
+{
+  "schemaId": "platform-architecture-mutation.v0",
+  "mutationId": "new-workflow-executable",
+  "edits": [
+    {
+      "kind": "write-file",
+      "path": ".github/workflows/bespoke-compiler.yml",
+      "content": "name: Bespoke compiler\non: pull_request\njobs: {}\n"
+    }
+  ],
+  "expectedCode": "EXECUTABLE_PATH_UNREGISTERED"
+}

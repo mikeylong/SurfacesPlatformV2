@@ -178,7 +178,10 @@
       "properties": {
         "name": { "const": "surfaces-design-system-ingestion-kernel" },
         "version": { "const": "0.0.0" },
-        "implementationHash": { "$ref": "#/$defs/sha256" }
+        "implementationHash": {
+          "$ref": "#/$defs/sha256",
+          "description": "SHA-256 of the JCS-ordered transitive local implementation closure, including shared runtime and authority modules."
+        }
       },
       "additionalProperties": false
     },

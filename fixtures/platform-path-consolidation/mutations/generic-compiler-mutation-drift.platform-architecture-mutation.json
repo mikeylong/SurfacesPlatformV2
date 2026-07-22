@@ -1,0 +1,12 @@
+{
+  "schemaId": "platform-architecture-mutation.v0",
+  "mutationId": "generic-compiler-mutation-drift",
+  "edits": [
+    {
+      "kind": "append-file",
+      "path": "fixtures/design-system-compiler/mutations/authority-without-mapping.design-system-compiler-mutation.json",
+      "content": "\n"
+    }
+  ],
+  "expectedCode": "FROZEN_ARCHITECTURE_FILE_DRIFT"
+}

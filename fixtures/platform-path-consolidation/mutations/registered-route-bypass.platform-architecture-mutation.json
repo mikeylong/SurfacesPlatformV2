@@ -1,0 +1,21 @@
+{
+  "schemaId": "platform-architecture-mutation.v0",
+  "mutationId": "registered-route-bypass",
+  "edits": [
+    {
+      "kind": "append-file",
+      "path": "src/p0.js",
+      "content": "\nexport function registeredRouteBypass(argv) { return argv[1] === \"route-omega\"; }\n"
+    },
+    {
+      "kind": "append-policy-row",
+      "collection": "catalogAuthority.registeredRoutes",
+      "value": {
+        "path": "src/p0.js",
+        "value": "route-omega",
+        "classification": "canonical"
+      }
+    }
+  ],
+  "expectedCode": "POLICY_WEAKENING"
+}
